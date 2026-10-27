@@ -4,6 +4,11 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 本轮继续完善Time与Engine：新增ClockSnapshot、play/pause、显式纳秒步进、负时长规范化、溢出保护、时钟修订号；Engine统一转发时间命令并更新快照序列。
+- 新增时间步进、溢出不改变状态、播放/暂停代次不变、Engine时间命令幂等序列等单元测试源码；尚未获得Cargo/CI通过证据。
+- 继续保持科学时间尺度和历元显式传入，未擅自确定NASA DYN的时间约定；本轮属于0.0.1开发迭代，未单独发布新版本。
+
+
 - 开发迭代：Scene新增原子批量命令、乐观修订校验、组织父子关系无环约束、默认拒绝删除有子对象的父节点、确定性只读SceneSnapshot；Engine新增统一场景命令入口、时间跳转及基础EngineSnapshot。
 - 新增对应Rust单元测试用例；这些测试尚未执行。当前EngineSnapshot仅为最小一致状态，不是含Spatial/Resources修订的最终FrameSnapshot。
 - 代码风险：尚未实现公开Proto适配、Spatial图、资源生命周期、完整引擎状态机；Cargo与Rustc在当前执行环境不可用，尚无构建通过证据。
