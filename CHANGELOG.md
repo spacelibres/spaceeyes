@@ -4,6 +4,10 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 2026-10-27：Engine新增ExecutorFeedback统一接收Result/Failed/Cancelled，复用Simulation状态机，禁止取消后的迟到结果重新提交；结果反馈只进入ResultReady，必须经Scene事务才能Completed。增加对应单元测试源码。未执行Cargo/CI测试，待VPS统一验证，版本仍为0.0.1。
+
+
+
 - 2026-10-27：Resources新增代次化LeaseId与单次释放校验；Engine任务租约改用独立令牌。TaskExecutor新增尽力取消通知，Engine先标记取消再通知宿主。同步专项规范。真实异步执行、完整结果元数据和Proto仍待实现；构建测试未确认；版本保持0.0.1。
 
 
