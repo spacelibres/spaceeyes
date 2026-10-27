@@ -4,6 +4,11 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 开发迭代：Scene新增原子批量命令、乐观修订校验、组织父子关系无环约束、默认拒绝删除有子对象的父节点、确定性只读SceneSnapshot；Engine新增统一场景命令入口、时间跳转及基础EngineSnapshot。
+- 新增对应Rust单元测试用例；这些测试尚未执行。当前EngineSnapshot仅为最小一致状态，不是含Spatial/Resources修订的最终FrameSnapshot。
+- 代码风险：尚未实现公开Proto适配、Spatial图、资源生命周期、完整引擎状态机；Cargo与Rustc在当前执行环境不可用，尚无构建通过证据。
+
+
 - 正式启动Rust核心工程开发，版本从0.0.0统一升级为0.0.1；基于已批准核心架构与ADR-001至009。
 - 建立独立开发分支development/core-0.0.1、Cargo Workspace及核心crate基础结构；本版本为工程初始化，不宣称渲染或NASA插件完成。
 - 版本升级严格按最小位+1、100进1；所有受控文档与代码统一0.0.1。
