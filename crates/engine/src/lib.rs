@@ -175,7 +175,7 @@ impl Engine {
         if let Some(resources) = self.task_leases.remove(task_id) {
             for id in resources {
                 // Engine is the only owner of these specific acquired leases.
-                self.resources.release_lease(&id).expect("task lease invariant");
+                let _ = self.resources.release_lease(&id);
             }
         }
     }
@@ -188,7 +188,9 @@ impl Engine {
     /// Result acceptance does not mutate Scene or claim a completed transaction.
     pub fn accept_task_result(&mut self, result: &TaskResult) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
-        self.simulation.accept_result(result, self.clock.generation(), self.clock.instant())
+        let outcome = self.simulation.accept_result(result, self.clock.generation(), self.clock.instant());
+        self.release_terminal_task_leases();
+        outcome
     }
     /// Commit a validated result through the sole Scene transaction path.
     /// A failed Scene transaction leaves the task ResultReady for explicit retry/cancel.
