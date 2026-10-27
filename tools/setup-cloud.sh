@@ -49,4 +49,5 @@ PY
 fi
 source tools/dev-env.sh
 bash tools/setup-sdk.sh
+bash tools/setup-web.sh
 cargo build --workspace --locked -j 4

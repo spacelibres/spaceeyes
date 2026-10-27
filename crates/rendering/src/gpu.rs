@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
-//! Native offscreen opaque marker and sphere renderer. No mutable Scene/Time access.
+//! Shared opaque geometry pipeline for Native readback and browser Surface presentation. No mutable Scene/Time access.
 use crate::{mesh, DrawMaterial, PreparedFrame, RenderError};
 use spaceeyes_foundation::ResourceId;
 use spaceeyes_geometry::{ColorSpace, Sampling, TextureAddress, TextureData, TextureFilter};
 use spaceeyes_resources::ResourceManager;
 use std::sync::Arc;
+#[cfg(not(target_arch = "wasm32"))]
 use wgpu::util::DeviceExt;
 
 pub struct GpuRenderer {
@@ -26,6 +27,11 @@ impl GpuRenderer {
             .request_device(&wgpu::DeviceDescriptor::default())
             .await
             .map_err(|e| RenderError::Device(e.to_string()))?;
+        let mut renderer = Self::from_device(device, queue, wgpu::TextureFormat::Rgba8Unorm);
+        renderer.adapter_name = adapter_name;
+        Ok(renderer)
+    }
+    fn from_device(device: wgpu::Device, queue: wgpu::Queue, format: wgpu::TextureFormat) -> Self {
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("SpaceEyes opaque geometry"),
             source: wgpu::ShaderSource::Wgsl(include_str!("opaque.wgsl").into()),
@@ -83,7 +89,7 @@ impl GpuRenderer {
                 entry_point: Some("fs_main"),
                 compilation_options: Default::default(),
                 targets: &[Some(wgpu::ColorTargetState {
-                    format: wgpu::TextureFormat::Rgba8Unorm,
+                    format,
                     blend: None,
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
@@ -91,27 +97,14 @@ impl GpuRenderer {
             multiview_mask: None,
             cache: None,
         });
-        Ok(Self {
+        Self {
             device,
             queue,
             pipeline,
-            adapter_name,
-        })
-    }
-    /// Native readback path; browser presentation needs its async surface adapter.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn render_rgba8(
-        &self,
-        frame: &PreparedFrame,
-        width: u32,
-        height: u32,
-        resources: &mut ResourceManager,
-    ) -> Result<Vec<u8>, RenderError> {
-        if width == 0 || height == 0 || width > 4096 || height > 4096 {
-            return Err(RenderError::InvalidFrame);
+            adapter_name: String::new(),
         }
-        let row = (width * 4).div_ceil(256) * 256;
-        let bytes = u64::from(row) * u64::from(height);
+    }
+    fn frame_budget(&self, frame: &PreparedFrame) -> Result<(u32, u64), RenderError> {
         let marker_vertices = u32::try_from(frame.markers.len())
             .ok()
             .and_then(|n| n.checked_mul(3))
@@ -132,6 +125,8 @@ impl GpuRenderer {
             .and_then(|n| n.checked_add(mesh_vertices))
             .ok_or(RenderError::Budget)?;
         let vertex_bytes = u64::from(vertices.max(1)) * 52;
+        #[cfg(target_arch = "wasm32")]
+        let vertex_bytes = vertex_bytes.checked_mul(2).ok_or(RenderError::Budget)?;
         if vertex_bytes > self.device.limits().max_buffer_size {
             return Err(RenderError::Budget);
         }
@@ -142,29 +137,14 @@ impl GpuRenderer {
             .iter()
             .try_fold(4u64, |n, t| n.checked_add(t.byte_len()))
             .ok_or(RenderError::Budget)?;
-        let reserve = bytes
-            .checked_add(u64::from(width) * u64::from(height) * 8)
-            .and_then(|n| n.checked_add(vertex_bytes))
-            .and_then(|n| n.checked_add(texture_bytes))
-            .ok_or(RenderError::Budget)?;
-        let id = ResourceId::new("spaceeyes:gpu:offscreen-scratch").expect("static ID");
-        resources
-            .register(id.clone(), reserve)
-            .map_err(|_| RenderError::Budget)?;
-        let outcome = self.render_inner(frame, width, height, row, bytes, vertices);
-        resources.unregister(&id).map_err(|_| RenderError::Budget)?;
-        outcome
+        Ok((
+            vertices,
+            vertex_bytes
+                .checked_add(texture_bytes)
+                .ok_or(RenderError::Budget)?,
+        ))
     }
-    #[cfg(not(target_arch = "wasm32"))]
-    fn render_inner(
-        &self,
-        frame: &PreparedFrame,
-        width: u32,
-        height: u32,
-        row: u32,
-        bytes: u64,
-        vertices: u32,
-    ) -> Result<Vec<u8>, RenderError> {
+    fn upload_frame(&self, frame: &PreparedFrame, vertices: u32) -> Result<GpuFrame, RenderError> {
         let mut data = Vec::with_capacity(vertices as usize * 52);
         let assets = texture_assets(frame);
         let mut gpu_textures = vec![self.upload_texture(
@@ -257,6 +237,7 @@ impl GpuRenderer {
         if data.is_empty() {
             data.resize(52, 0);
         }
+        #[cfg(not(target_arch = "wasm32"))]
         let buffer = self
             .device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -264,6 +245,95 @@ impl GpuRenderer {
                 contents: &data,
                 usage: wgpu::BufferUsages::VERTEX,
             });
+        #[cfg(target_arch = "wasm32")]
+        let buffer = {
+            let buffer = self.device.create_buffer(&wgpu::BufferDescriptor {
+                label: Some("opaque streaming vertices"),
+                size: data.len() as u64,
+                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+                mapped_at_creation: false,
+            });
+            self.queue.write_buffer(&buffer, 0, &data);
+            buffer
+        };
+        Ok(GpuFrame {
+            buffer,
+            bindings,
+            batches,
+        })
+    }
+    fn encode_frame(
+        &self,
+        encoder: &mut wgpu::CommandEncoder,
+        view: &wgpu::TextureView,
+        depth_view: &wgpu::TextureView,
+        draw: &GpuFrame,
+    ) {
+        let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                view,
+                depth_slice: None,
+                resolve_target: None,
+                ops: wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                    store: wgpu::StoreOp::Store,
+                },
+            })],
+            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                view: depth_view,
+                depth_ops: Some(wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(1.0),
+                    store: wgpu::StoreOp::Discard,
+                }),
+                stencil_ops: None,
+            }),
+            ..Default::default()
+        });
+        pass.set_pipeline(&self.pipeline);
+        pass.set_vertex_buffer(0, draw.buffer.slice(..));
+        for (range, binding) in &draw.batches {
+            pass.set_bind_group(0, &draw.bindings[*binding], &[]);
+            pass.draw(range.clone(), 0..1);
+        }
+    }
+    /// Native readback path; browser presentation needs its async surface adapter.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn render_rgba8(
+        &self,
+        frame: &PreparedFrame,
+        width: u32,
+        height: u32,
+        resources: &mut ResourceManager,
+    ) -> Result<Vec<u8>, RenderError> {
+        if width == 0 || height == 0 || width > 4096 || height > 4096 {
+            return Err(RenderError::InvalidFrame);
+        }
+        let row = (width * 4).div_ceil(256) * 256;
+        let bytes = u64::from(row) * u64::from(height);
+        let (vertices, geometry_bytes) = self.frame_budget(frame)?;
+        let reserve = bytes
+            .checked_add(u64::from(width) * u64::from(height) * 8)
+            .and_then(|n| n.checked_add(geometry_bytes))
+            .ok_or(RenderError::Budget)?;
+        let id = ResourceId::new("spaceeyes:gpu:offscreen-scratch").expect("static ID");
+        resources
+            .register(id.clone(), reserve)
+            .map_err(|_| RenderError::Budget)?;
+        let outcome = self.render_inner(frame, width, height, row, bytes, vertices);
+        resources.unregister(&id).map_err(|_| RenderError::Budget)?;
+        outcome
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    fn render_inner(
+        &self,
+        frame: &PreparedFrame,
+        width: u32,
+        height: u32,
+        row: u32,
+        bytes: u64,
+        vertices: u32,
+    ) -> Result<Vec<u8>, RenderError> {
+        let draw = self.upload_frame(frame, vertices)?;
         let size = wgpu::Extent3d {
             width,
             height,
@@ -298,34 +368,7 @@ impl GpuRenderer {
             mapped_at_creation: false,
         });
         let mut encoder = self.device.create_command_encoder(&Default::default());
-        {
-            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    depth_slice: None,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                        store: wgpu::StoreOp::Store,
-                    },
-                })],
-                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                    view: &depth_view,
-                    depth_ops: Some(wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(1.0),
-                        store: wgpu::StoreOp::Discard,
-                    }),
-                    stencil_ops: None,
-                }),
-                ..Default::default()
-            });
-            pass.set_pipeline(&self.pipeline);
-            pass.set_vertex_buffer(0, buffer.slice(..));
-            for (range, binding) in batches {
-                pass.set_bind_group(0, &bindings[binding], &[]);
-                pass.draw(range, 0..1);
-            }
-        }
+        self.encode_frame(&mut encoder, &view, &depth_view, &draw);
         encoder.copy_texture_to_buffer(
             wgpu::TexelCopyTextureInfo {
                 texture: &texture,
@@ -369,7 +412,6 @@ impl GpuRenderer {
         readback.unmap();
         Ok(pixels)
     }
-    #[cfg(not(target_arch = "wasm32"))]
     fn upload_texture(&self, data: &TextureData) -> wgpu::Texture {
         let size = wgpu::Extent3d {
             width: data.width(),
@@ -406,7 +448,6 @@ impl GpuRenderer {
         );
         texture
     }
-    #[cfg(not(target_arch = "wasm32"))]
     fn bind_texture(&self, texture: &wgpu::Texture, sampling: Sampling) -> wgpu::BindGroup {
         let filter = match sampling.filter {
             TextureFilter::Nearest => wgpu::FilterMode::Nearest,
@@ -440,7 +481,6 @@ impl GpuRenderer {
             ],
         })
     }
-    #[cfg(not(target_arch = "wasm32"))]
     fn material_binding(
         &self,
         material: &DrawMaterial,
@@ -462,7 +502,6 @@ impl GpuRenderer {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn texture_assets(frame: &PreparedFrame) -> Vec<&Arc<TextureData>> {
     let mut assets: Vec<&Arc<TextureData>> = Vec::new();
     for material in frame
@@ -479,7 +518,6 @@ fn texture_assets(frame: &PreparedFrame) -> Vec<&Arc<TextureData>> {
     }
     assets
 }
-#[cfg(not(target_arch = "wasm32"))]
 fn pack_vertex(
     data: &mut Vec<u8>,
     clip: [f32; 4],
@@ -506,3 +544,13 @@ fn pack_vertex(
     }
     Ok(())
 }
+
+struct GpuFrame {
+    buffer: wgpu::Buffer,
+    bindings: Vec<wgpu::BindGroup>,
+    batches: Vec<(std::ops::Range<u32>, usize)>,
+}
+#[cfg(target_arch = "wasm32")]
+mod surface;
+#[cfg(target_arch = "wasm32")]
+pub use surface::BrowserSurface;

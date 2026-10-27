@@ -4,8 +4,10 @@
 //! Shared Scene/Time/Resources/Spatial commands and read-only session/frame queries.
 mod dispatch;
 pub mod limits;
+mod presentation;
 mod query;
 pub use dispatch::*;
+pub use presentation::{decode_host_frame, HostFrameRequest};
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));
 }

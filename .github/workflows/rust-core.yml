@@ -22,6 +22,8 @@ jobs:
           node-version-file: '.node-version'
       - name: Install locked SDK dependencies and matching WASM bindings
         run: bash tools/setup-sdk.sh
+      - name: Install browser for production WebGPU integration checks
+        run: npx playwright install --with-deps chromium
       - name: Version and dependency policy
         run: python3 tools/check-policy.py
       - name: Format
@@ -37,6 +39,8 @@ jobs:
 
       - name: Generated TS, strict types and Native/WASM interoperability
         run: bash tools/check-sdk.sh
+      - name: Production browser Surface and lifecycle integration
+        run: bash tools/check-web.sh
 
   gpu-prototype:
     runs-on: ubuntu-latest

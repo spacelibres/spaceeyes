@@ -38,7 +38,7 @@ impl Perspective {
         }
         Ok(result)
     }
-    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
+    #[cfg(feature = "gpu")]
     pub(crate) fn clip(self, p: [f64; 3]) -> Result<[f32; 4], RenderError> {
         let d = -p[2];
         let a = self.far / (self.far - self.near);

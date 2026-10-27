@@ -680,3 +680,60 @@ fn capabilities_query_cannot_be_routed_as_command_or_cross_session_read() {
     assert_eq!(status(&a), before);
     assert_eq!(a.dispatcher().command_sequence(), 0);
 }
+
+#[test]
+fn host_frame_bounds_and_routing_reject_writes_without_clock_changes() {
+    use spaceeyes_protocol_adapter::decode_host_frame;
+    let valid = p::HostFrame {
+        reference: frame("root"),
+        camera: Some(p::ObjectId {
+            value: "camera".into(),
+        }),
+        width: 2048,
+        height: 1,
+        elapsed_nanos: 250_000_000,
+    };
+    assert!(decode_host_frame(valid.clone()).is_ok());
+    for invalid in [
+        p::HostFrame {
+            width: 0,
+            ..valid.clone()
+        },
+        p::HostFrame {
+            height: 2049,
+            ..valid.clone()
+        },
+        p::HostFrame {
+            elapsed_nanos: 250_000_001,
+            ..valid.clone()
+        },
+        p::HostFrame {
+            camera: None,
+            ..valid.clone()
+        },
+    ] {
+        assert!(decode_host_frame(invalid).is_err());
+    }
+    let envelope = p::HostFrameEnvelope {
+        context: Some(context("host-frame")),
+        frame: Some(valid),
+    };
+    let mut a = adapter(8);
+    let before = status(&a);
+    let response = p::ResponseEnvelope::decode(
+        a.submit_bytes("host", &envelope.encode_to_vec())
+            .unwrap()
+            .as_slice(),
+    )
+    .unwrap();
+    assert_eq!(error(response), p::ErrorCode::InvalidArgument);
+    let response = p::ResponseEnvelope::decode(
+        a.query_bytes("host", &envelope.encode_to_vec())
+            .unwrap()
+            .as_slice(),
+    )
+    .unwrap();
+    assert_eq!(error(response), p::ErrorCode::InvalidArgument);
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().command_sequence(), 0);
+}

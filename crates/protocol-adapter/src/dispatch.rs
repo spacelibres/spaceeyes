@@ -11,7 +11,7 @@ use spaceeyes_foundation::{CoreError, Revision};
 use spaceeyes_scene::{CameraState, Material, MeshInstance, SceneCommand, SceneObject, Sphere};
 
 pub struct ProtocolAdapter {
-    dispatcher: CommandDispatcher,
+    pub(crate) dispatcher: CommandDispatcher,
 }
 impl ProtocolAdapter {
     pub fn new(dispatcher: CommandDispatcher) -> Result<Self, ProtocolError> {

@@ -151,6 +151,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "crc32fast"
 version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -252,6 +262,15 @@ name = "foldhash"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
+
+[[package]]
+name = "futures-channel"
+version = "0.3.34"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f9e3d69d39e4862ffed03ed071a76f9a13ba1d9109d355b0f0aa6b15e393c4"
+dependencies = [
+ "futures-core",
+]
 
 [[package]]
 name = "futures-core"
@@ -1189,6 +1208,7 @@ dependencies = [
 name = "spaceeyes-rendering"
 version = "0.0.1"
 dependencies = [
+ "futures-channel",
  "pollster",
  "spaceeyes-foundation",
  "spaceeyes-geometry",
@@ -1197,6 +1217,7 @@ dependencies = [
  "spaceeyes-snapshot",
  "spaceeyes-spatial",
  "spaceeyes-time",
+ "web-sys",
  "wgpu",
 ]
 
@@ -1254,10 +1275,14 @@ dependencies = [
 name = "spaceeyes-wasm"
 version = "0.0.1"
 dependencies = [
+ "console_error_panic_hook",
  "spaceeyes-engine",
  "spaceeyes-protocol-adapter",
+ "spaceeyes-rendering",
  "spaceeyes-time",
  "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]

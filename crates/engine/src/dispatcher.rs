@@ -87,6 +87,8 @@ struct Record {
 }
 pub struct CommandDispatcher {
     engine: Engine,
+    #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
+    surface: Option<(spaceeyes_rendering::gpu::BrowserSurface, crate::LeaseId)>,
     session: String,
     capacity: usize,
     sequence: u64,
@@ -100,6 +102,8 @@ impl CommandDispatcher {
         }
         Ok(Self {
             engine,
+            #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
+            surface: None,
             session,
             capacity,
             sequence: 0,
@@ -244,6 +248,10 @@ impl CommandDispatcher {
                     .map(|_| ()),
                 Command::Start => self.engine.start(),
                 Command::Stop => {
+                    #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
+                    {
+                        self.surface = None;
+                    }
                     self.engine.shutdown();
                     Ok(())
                 }
@@ -283,5 +291,84 @@ impl CommandDispatcher {
             },
         );
         result
+    }
+}
+
+#[cfg(all(feature = "gpu", target_arch = "wasm32"))]
+impl CommandDispatcher {
+    pub fn install_surface(
+        &mut self,
+        surface: spaceeyes_rendering::gpu::BrowserSurface,
+    ) -> Result<(), DispatchError> {
+        if self.surface.is_some() || self.engine.state() == EngineState::Stopped {
+            return Err(DispatchError::Domain(CoreError::InvalidState));
+        }
+        let id = spaceeyes_foundation::ResourceId::new("spaceeyes:gpu:canvas-capacity")
+            .expect("static ID");
+        self.engine
+            .register_resource(id.clone(), spaceeyes_rendering::SURFACE_CAPACITY_BYTES)
+            .map_err(DispatchError::Resource)?;
+        let lease = match self.engine.lease_resource(&id) {
+            Ok(l) => l,
+            Err(e) => {
+                let _ = self.engine.unregister_resource(&id);
+                return Err(DispatchError::Resource(e));
+            }
+        };
+        self.surface = Some((surface, lease));
+        Ok(())
+    }
+    pub async fn present_surface(
+        &mut self,
+        reference: &FrameId,
+        camera: &spaceeyes_foundation::ObjectId,
+        width: u32,
+        height: u32,
+        elapsed: u64,
+    ) -> Result<(SessionStatus, u64), spaceeyes_rendering::RenderError> {
+        use spaceeyes_rendering::{
+            prepare_camera, RenderError, MAX_CANVAS_DIMENSION, MAX_FRAME_ELAPSED_NANOS,
+        };
+        if self.engine.state() != EngineState::Running
+            || self.surface.is_none()
+            || width == 0
+            || height == 0
+            || width > MAX_CANVAS_DIMENSION
+            || height > MAX_CANVAS_DIMENSION
+            || elapsed > MAX_FRAME_ELAPSED_NANOS
+        {
+            return Err(RenderError::InvalidFrame);
+        }
+        self.engine
+            .frame_sequence
+            .checked_add(2)
+            .ok_or(RenderError::Budget)?;
+        let before_frame = self
+            .engine
+            .publish_frame(reference)
+            .map_err(|_| RenderError::InvalidFrame)?;
+        prepare_camera(&before_frame, camera, f64::from(width) / f64::from(height))?;
+        self.engine
+            .advance_nanos(elapsed)
+            .map_err(|_| RenderError::InvalidFrame)?;
+        let snapshot = self
+            .engine
+            .publish_frame(reference)
+            .map_err(|_| RenderError::InvalidFrame)?;
+        let unresolved = snapshot.unresolved.len() as u64;
+        let prepared = prepare_camera(&snapshot, camera, f64::from(width) / f64::from(height))?;
+        let before = self.engine.resources.revision();
+        let result = self
+            .surface
+            .as_mut()
+            .expect("validated surface")
+            .0
+            .render(&prepared, width, height, &mut self.engine.resources)
+            .await;
+        if self.engine.resources.revision() != before {
+            self.engine.frame_sequence += 1;
+        }
+        result?;
+        Ok((self.session_status(), unresolved))
     }
 }

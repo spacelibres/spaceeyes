@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 [dependencies]
+spaceeyes-rendering = { path = "../rendering" }
 spaceeyes-spatial = { path = "../spatial" }
 spaceeyes-resources = { path = "../resources" }
 spaceeyes-geometry = { path = "../geometry" }
@@ -20,4 +21,7 @@ protoc-bin-vendored = "3"
 
 [dev-dependencies]
 protoc-bin-vendored = "3"
-spaceeyes-rendering = { path = "../rendering" }
+
+[features]
+default = []
+gpu = ["spaceeyes-engine/gpu", "spaceeyes-rendering/gpu"]

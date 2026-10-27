@@ -7,6 +7,10 @@ use spaceeyes_spatial::{Quatd, RigidTransform, Vec3d};
 #[cfg(feature = "gpu")]
 pub mod gpu;
 pub mod mesh;
+/// Browser prototype bounds and conservative attachment-capacity reservation.
+pub const MAX_CANVAS_DIMENSION: u32 = 2048;
+pub const MAX_FRAME_ELAPSED_NANOS: u64 = 250_000_000;
+pub const SURFACE_CAPACITY_BYTES: u64 = 2048 * 2048 * 12;
 mod sphere;
 pub use sphere::{Perspective, SphereDraw};
 mod triangles;

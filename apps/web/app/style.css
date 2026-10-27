@@ -1,0 +1,198 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2026 SPACEEYES contributors */
+:root {
+  color-scheme: dark;
+  font-family: Arial, "Noto Sans SC", sans-serif;
+  background: #0a101b;
+  color: #e8edf5;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1480px;
+  margin: auto;
+  padding: 44px 48px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #89a7d3;
+  margin: 0 0 14px;
+}
+h1 {
+  font-size: 34px;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+  margin: 0;
+}
+h2 {
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+.badge {
+  font-size: 12px;
+  border: 1px solid #30415b;
+  border-radius: 30px;
+  padding: 9px 15px;
+  color: #b9c9e0;
+}
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 312px;
+  border: 1px solid #25334b;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111c2e;
+}
+.viewport {
+  position: relative;
+  background: #000;
+  min-height: 520px;
+}
+.canvas-mount {
+  position: absolute;
+  inset: 0;
+}
+.canvas-mount canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.scene-label {
+  position: absolute;
+  bottom: 20px;
+  left: 24px;
+  color: #c0cbdc;
+  font-size: 12px;
+  pointer-events: none;
+}
+.scene-label span {
+  margin-left: 12px;
+  color: #6f829d;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #8397b5;
+  font-size: 14px;
+}
+aside {
+  padding: 30px 26px;
+  border-left: 1px solid #25334b;
+}
+.description,
+.hint {
+  font-size: 13px;
+  line-height: 1.9;
+  color: #9aabc4;
+}
+.description {
+  margin: 0 0 24px;
+}
+.controls {
+  display: flex;
+  gap: 10px;
+}
+button {
+  border: 1px solid #416ba6;
+  background: #315e9a;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+button:hover {
+  background: #3e73b5;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: wait;
+}
+.secondary {
+  width: 100%;
+  background: transparent;
+  border-color: #354762;
+  color: #bccce3;
+  margin-top: 8px;
+}
+dl {
+  margin: 28px 0 20px;
+}
+dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid #25334b;
+  font-size: 12px;
+}
+dt {
+  color: #8fa2be;
+}
+dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: #d8e3f4;
+}
+.hint {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.error {
+  border: 1px solid #9c5747;
+  border-radius: 10px;
+  color: #f4bca7;
+  padding: 16px;
+  background: #2c1918;
+  font-size: 14px;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+  color: #627b9d;
+  font-size: 11px;
+  margin-top: 22px;
+  letter-spacing: 0.06em;
+}
+@media (max-width: 900px) {
+  main {
+    padding: 24px 18px;
+  }
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+  .viewport {
+    min-height: 400px;
+  }
+  aside {
+    border-left: 0;
+    border-top: 1px solid #25334b;
+  }
+  h1 {
+    font-size: 25px;
+  }
+  .badge {
+    display: none;
+  }
+  header {
+    margin-bottom: 24px;
+  }
+}

@@ -144,3 +144,13 @@ SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独�
 TS SDK放在packages/core-sdk，由唯一proto目录生成全部类型与编解码，锁定生成器和依赖并检查生成漂移。64位整数用bigint，禁止以JS number传递修订/时间等整数；oneof使用生成的可辨别联合，不手工复制Schema。SDK先发现并核对协议/必需能力，再发送受支持的全部现有命令/查询；提供结构化错误、长度及请求关联校验，不缓存场景/时钟、不隐式重试。重试沿用调用方请求ID。认证principal仅由宿主在transport闭包注入，插件不能自报。SDK不拥有WASM实例；宿主停机后释放实例。
 跨语言验收使用真实Rust Native字节宿主与wasm-bindgen生成的WASM实例执行同一TS客户端流程，并比较响应；不用mock替代互通证据。覆盖能力缺失/协议不兼容、所有已开放命令族、修订/时间大于2^53、负时间、字节纹理/网格、幂等/错误/查询/停机与多实例隔离。示例宿主stdin/stdout仅传长度帧封装的Proto，不另建JSON数据契约。WASM在Node执行不等于浏览器画布验收，M2仍须实际WebGPU/交互验证。
 新增安装、生成、检查步骤同时纳入本地严格检查和CI；无跳过用例，无第三方许可改写，Node/wasm-bindgen版本受控。M1之后仍按浏览器、统一资源/项目、科学数据和插件治理依赖顺序推进。
+
+## M2-1 浏览器画布与宿主帧（0.0.1实施增量）
+状态：本轮实施规范；保持已批准ADR和唯一Rust核心。Next.js/React宿主经既有SDK/Proto构造合成场景；共享wgpu几何/材质打包与绘制管线，新增浏览器Surface异步初始化、缩放与真实显示，不把Native回读图片贴到画布。
+宿主DOM画布绑定为基础设施接口；结构化帧数据采用HostFrameEnvelope(context=1, frame=30)，CommandEnvelope保留30，QueryEnvelope保留30。HostFrame含reference/camera/width/height/elapsed_nanos；ResponseEnvelope追加presented=14，包含当前SessionStatus、尺寸和未解析对象数。Capabilities追加browser_surface=4，只代表该编译目标含Surface支持，不表示运行设备或授权有效。通用24项操作不因此变成插件绘制权限。
+宿主帧入口只给受信宿主，身份由闭包注入。仅Running可呈现；要求当前time_generation，可选Scene修订，尺寸1..2048、经过时间0..250ms，引用/相机预检失败不得推进时间；校验后调用Engine.advance_nanos并发布同一时刻FrameSnapshot。绘制失败不撤回已经提交的时间，返回结构化错误并由宿主停循环/查询；不假装跨GPU与时间原子事务。不占命令历史，不写业务提交事件，不隐式重试。
+一次只允许一个在途GPU帧，等待提交完成后回收帧顶点/纹理临时预算，浏览器禁止同步GPU等待。Surface绑定时通过唯一Resources保守预留2048×2048×12=48MiB附件容量（两份颜色与一份深度），记录为容量预留而非实际显存测量；持有租约，Stop/实例释放时随Engine清理。Surface只保存GPU对象，不建资源注册表。本轮检测设备丢失并显式停止/清理；自动恢复与重建设计仍属M5。
+React每次挂载创建独立canvas与Engine，异步初始化/呈现期间的输入串行执行；卸载取消RAF并移除所属canvas、等待在途操作退出，再Stop/free；迟到初始化不能重新挂到已卸载DOM。帧时间来自单调RAF时间戳，暂停不推进时钟，过长间隔限250ms；不创建JS权威仿真时钟。合成场景使用根系与相机局部偏移，避免把单时刻子采样当作永久参考系。
+首个可运行宿主提供开始/暂停时间、相机偏航、状态/错误与挂载开关。验证实际Chromium WebGPU绘制像素、相机变化、暂停/播放、resize、卸载/重挂和不支持WebGPU路径；截图、生产构建、严格WASM feature编译和浏览器自动测试纳入检查。目标为M2首个增量，不声称NASA真实场景、拾取UI、完整控制台、设备恢复或硬件性能已完成。
+
+M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上传暂存双份计费；Surface保留Instance，GPU完成后回收临时预算。WASM模块加载Promise共享而Engine实例独立，避免并发初始化替换运行时；设备丢失/验证/分配错误返回失败，初始化失败或卸载时显式destroy设备。

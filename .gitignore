@@ -4,3 +4,12 @@
 
 /node_modules/
 /packages/*/dist/
+
+/apps/web/.next/
+/apps/web/public/wasm/
+/apps/web/next-env.d.ts
+/apps/web/tsconfig.tsbuildinfo
+/playwright-report/
+/test-results/
+
+/apps/web/test-results/

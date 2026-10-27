@@ -161,6 +161,7 @@ impl ProtocolAdapter {
                         schema_id: SCHEMA_ID.into(),
                     }),
                     operations: OPERATIONS.iter().map(|s| (*s).into()).collect(),
+                    browser_surface: cfg!(all(feature = "gpu", target_arch = "wasm32")),
                     limits: Some(p::ProtocolLimits {
                         max_message_bytes: MAX_MESSAGE_BYTES as u32,
                         max_identifier_bytes: MAX_IDENTIFIER_BYTES as u32,
@@ -169,6 +170,8 @@ impl ProtocolAdapter {
                         max_texture_dimension: spaceeyes_geometry::MAX_TEXTURE_DIMENSION,
                         max_mesh_vertices: spaceeyes_geometry::MAX_VERTICES as u32,
                         max_mesh_indices: spaceeyes_geometry::MAX_INDICES as u32,
+                        max_canvas_dimension: spaceeyes_rendering::MAX_CANVAS_DIMENSION,
+                        max_frame_elapsed_nanos: spaceeyes_rendering::MAX_FRAME_ELAPSED_NANOS,
                         command_history_capacity: dispatcher.command_history_capacity() as u64,
                         command_history_remaining: dispatcher.command_history_remaining() as u64,
                     }),

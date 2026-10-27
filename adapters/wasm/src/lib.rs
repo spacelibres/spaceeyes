@@ -39,4 +39,28 @@ impl WasmEngine {
             .query_bytes(principal_scope, bytes)
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))
     }
+    #[cfg(all(feature = "browser", target_arch = "wasm32"))]
+    pub async fn attach_canvas(
+        &mut self,
+        canvas: web_sys::HtmlCanvasElement,
+    ) -> Result<(), JsValue> {
+        console_error_panic_hook::set_once();
+        let surface = spaceeyes_rendering::gpu::BrowserSurface::new(canvas)
+            .await
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        self.adapter
+            .install_surface(surface)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
+    #[cfg(all(feature = "browser", target_arch = "wasm32"))]
+    pub async fn present(
+        &mut self,
+        principal_scope: &str,
+        bytes: &[u8],
+    ) -> Result<Vec<u8>, JsValue> {
+        self.adapter
+            .present_bytes(principal_scope, bytes)
+            .await
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
 }
