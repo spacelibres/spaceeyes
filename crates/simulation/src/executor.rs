@@ -23,7 +23,7 @@ pub trait TaskExecutor {
 }
 
 /// Issues ready tasks in stable order up to available in-flight slots.
-/// A dispatch failure leaves the task queued for explicit retry.
+/// A dispatch failure marks the task Failed; it is never silently re-dispatched.
 pub fn dispatch_ready(
     scheduler: &mut SimulationScheduler,
     budget: TaskBudget,
@@ -34,8 +34,11 @@ pub fn dispatch_ready(
     let mut dispatched = Vec::new();
     for id in scheduler.ready_tasks().into_iter().take(slots) {
         let request = scheduler.request(&id).ok_or(TaskError::UnknownTask)?.clone();
-        executor.dispatch(request)?;
         scheduler.start(&id)?;
+        if let Err(error) = executor.dispatch(request) {
+            scheduler.fail(&id)?;
+            return Err(error);
+        }
         dispatched.push(id);
     }
     Ok(dispatched)
