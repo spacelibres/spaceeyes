@@ -1,6 +1,6 @@
 # Resources统一资源管理系统设计规范
 
-版本：0.0.0｜状态：待审定设计草案｜日期：2026-10-27
+版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27
 设计阶段：06｜归属：SpaceEyes Rust Core｜仅设计，不编写实现代码
 依据：Rust核心、Scene、Spatial、Time、Simulation、Rendering专项规范。
 
@@ -89,3 +89,6 @@ Resources维护逻辑资源描述及GPU设备代次；Rendering的GPU适配器�
 
 ## 12. 交叉审查整改对齐（待审）
 Resources是ResourceId、租约、CPU/GPU字节配额和最终释放的唯一权威。Simulation仅管理任务队列与调度预算；Rendering负责GPU设备分配适配和占用上报。内部代次句柄不可跨进程持久化；插件权限由宿主鉴权。
+
+
+> 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
