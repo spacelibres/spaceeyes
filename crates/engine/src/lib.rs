@@ -5,7 +5,7 @@ use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
 use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
-use spaceeyes_resources::{ResourceManager, ResourceBudget, ResourceError};
+use spaceeyes_resources::{ResourceManager, ResourceBudget, ResourceError, LeaseId};
 use spaceeyes_foundation::ResourceId;
 use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError, TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
@@ -33,7 +33,7 @@ pub struct Engine {
     simulation: SimulationScheduler,
     task_budget: TaskBudget,
     resources: ResourceManager,
-    task_leases: BTreeMap<String, Vec<ResourceId>>,
+    task_leases: BTreeMap<String, Vec<LeaseId>>,
     frame_sequence: u64,
 }
 impl Engine {
@@ -118,12 +118,12 @@ impl Engine {
         self.frame_sequence += 1;
         Ok(())
     }
-    pub fn lease_resource(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
+    pub fn lease_resource(&mut self, id: &ResourceId) -> Result<LeaseId, ResourceError> {
         if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
         self.resources.lease(id)
     }
-    pub fn release_resource_lease(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
-        self.resources.release_lease(id)
+    pub fn release_resource_lease(&mut self, token: &LeaseId) -> Result<(), ResourceError> {
+        self.resources.release_lease(token)
     }
     pub fn unregister_resource(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
         if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
@@ -167,15 +167,15 @@ impl Engine {
             Some(TaskStatus::Queued | TaskStatus::Running | TaskStatus::ResultReady) => {},
             _ => return Err(ResourceError::InvalidLease),
         }
-        self.resources.lease(id)?;
-        self.task_leases.entry(task_id.to_owned()).or_default().push(id.clone());
+        let lease = self.resources.lease(id)?;
+        self.task_leases.entry(task_id.to_owned()).or_default().push(lease);
         Ok(())
     }
     fn release_task_leases(&mut self, task_id: &str) {
         if let Some(resources) = self.task_leases.remove(task_id) {
-            for id in resources {
-                // Engine is the only owner of these specific acquired leases.
-                let _ = self.resources.release_lease(&id);
+            for token in resources {
+                // Task-specific tokens cannot release another holder's lease.
+                let _ = self.resources.release_lease(&token);
             }
         }
     }
