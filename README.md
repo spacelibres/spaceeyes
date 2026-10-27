@@ -2,6 +2,8 @@
 
 版本：0.0.1（Rust核心工程初始化）
 
+开源许可：[MIT License](LICENSE)。项目自有源码、Proto定义、脚本及文档采用MIT；依赖和外部资产保留各自许可。
+
 SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust是唯一核心源码，未来编译为WASM与Native；Web界面由独立宿主提供。NASA DYN是未来独立插件，不进入核心。
 
 ## 当前代码范围
@@ -33,3 +35,9 @@ Host授权后通过ProtocolAdapter发送Proto Scene/Time命令；身份不从载
 
 ## 架构依据
 `docs/Rust核心架构设计基线.md` 已获批准；ADR-001至ADR-009已批准。未冻结的科学时间尺度、Proto字段、GPU产品后端仍在后续受控开发中明确（wgpu已获选择用于技术原型）。不得擅自把NASA DYN或插件管理放入Rust核心。
+
+## 开源许可
+
+SPACEEYES项目自有内容统一采用[MIT License](LICENSE)，包括Resources资源管理模块。所有Cargo包继承同一MIT声明，源文件使用`SPDX-License-Identifier: MIT`标识。使用、修改及再分发时保留版权与许可声明。
+
+第三方依赖及外部数据不因本项目选择MIT而被重新许可。NASA数据、图像、模型和恢复源码的处理仍遵循[来源与许可台账](docs/第三方来源与许可台账.md)。MIT是开源使用许可；Resources中的资源所有者/租约是运行时设计，继续由Engine的唯一ResourceManager管理。

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 #![cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
 use spaceeyes_engine::Engine;
 use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};

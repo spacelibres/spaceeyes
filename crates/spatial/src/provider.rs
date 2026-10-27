@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Time-dependent transform providers. No ephemeris or transport assumptions.
 use crate::{RigidTransform, SpatialError};
 use spaceeyes_time::TimeInstant;

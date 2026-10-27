@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Generic reference-frame graph with time-explicit rigid transforms.
 //! No NASA data, ephemeris computation, or implicit system clock.
 use spaceeyes_foundation::{FrameId, Revision};

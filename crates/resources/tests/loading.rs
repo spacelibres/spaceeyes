@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::ResourceId;
 use spaceeyes_resources::{ResourceBudget, ResourceError, ResourceManager, ResourceState};
 fn id() -> ResourceId {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Deterministic task dependency, cancellation, and pre-commit coordination.
 //! No domain algorithm or direct Scene mutation lives here.
 use spaceeyes_foundation::Revision;

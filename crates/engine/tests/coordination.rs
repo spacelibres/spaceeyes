@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_engine::Engine;
 use spaceeyes_foundation::{CoreError, FrameId, ObjectId, ResourceId, Revision};
 use spaceeyes_resources::ResourceError;

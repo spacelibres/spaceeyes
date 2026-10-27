@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let compiler = protoc_bin_vendored::protoc_bin_path()?;
     std::env::set_var("PROTOC", compiler);

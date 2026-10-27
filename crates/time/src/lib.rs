@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Authoritative simulation clock. No implicit system clock or assumed scientific epoch.
 use spaceeyes_foundation::CoreError;
 

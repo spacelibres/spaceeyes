@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Persistent camera parameters. Spatial pose belongs to the owning object's FrameId.
 use spaceeyes_foundation::CoreError;
 

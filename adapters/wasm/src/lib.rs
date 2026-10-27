@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! WASM byte transport; the same core and generated Proto contract as Native.
 use spaceeyes_engine::{CommandDispatcher, Engine};
 use spaceeyes_protocol_adapter::ProtocolAdapter;

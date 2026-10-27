@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use prost::Message;
 use spaceeyes_engine::{CommandDispatcher, Engine};
 use spaceeyes_protocol_adapter::{generated as p, ProtocolAdapter};

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Platform-neutral task execution contract and bounded dispatch policy.
 //! Native and WASM hosts may execute issued tasks differently.
 use crate::{SimulationScheduler, TaskError, TaskRequest};

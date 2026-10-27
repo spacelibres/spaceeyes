@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Immutable frame values shared by Engine and Renderer; no mutable module ownership.
 use spaceeyes_foundation::{FrameId, ObjectId, Revision};
 use spaceeyes_scene::SceneSnapshot;

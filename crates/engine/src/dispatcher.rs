@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Synchronous command ordering and bounded idempotency, owned at the Engine boundary.
 use crate::{Engine, EngineSnapshot};
 use spaceeyes_foundation::{CoreError, Revision};

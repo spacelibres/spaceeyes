@@ -2,6 +2,8 @@
 name = "spaceeyes-rendering"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
+repository.workspace = true
 [dependencies]
 spaceeyes-spatial = { path = "../spatial" }
 spaceeyes-resources = { path = "../resources" }

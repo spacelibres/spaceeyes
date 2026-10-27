@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_time::{FixedStepper, PlaybackRate, SimulationClock, TimeInstant};
 fn clock() -> SimulationClock {
     SimulationClock::new(TimeInstant::new("TT", "explicit", 0, 0).unwrap())

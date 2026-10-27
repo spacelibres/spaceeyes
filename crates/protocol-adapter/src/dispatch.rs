@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use crate::{
     decode_frame_id, decode_instant, decode_object_id, decode_resource_id, encode_instant,
     generated as p, ProtocolError,

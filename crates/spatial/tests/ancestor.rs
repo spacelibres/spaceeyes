@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::FrameId;
 use spaceeyes_spatial::{FrameSample, Quatd, ReferenceFrameGraph, RigidTransform, Vec3d};
 use spaceeyes_time::TimeInstant;

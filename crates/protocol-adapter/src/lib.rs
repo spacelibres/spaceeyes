@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Protobuf is the external exchange boundary; domain types remain authoritative.
 //! This initial slice supports common IDs and explicit time values only.
 mod dispatch;

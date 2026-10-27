@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::{FrameId, ObjectId};
 use spaceeyes_rendering::{prepare, View};
 use spaceeyes_scene::{Scene, SceneCommand, SceneObject};

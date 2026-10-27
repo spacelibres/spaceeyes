@@ -107,3 +107,6 @@ ResourceManager新增不透明LeaseId，包含内部资源代次与唯一租约�
 
 ## 0.0.1受控CPU加载与对象租约
 新增Declared/Loading/Ready/Failed/Cancelled状态及不透明LoadToken。声明时预留字节预算；宿主负责读取字节，完成时校验资源代次、加载序列及实际字节数，失败/取消后的迟到结果不得发布Ready。仅Registered（兼容逻辑登记）和Ready允许租约。CPU字节由Resources保存，消费者通过租约读取不可变数据。Scene对象删除/变更引用由Engine释放对应租约，共享资源不被自动注销。GPU、磁盘缓存、网络加载由后续适配实现，不把逻辑登记视为完成加载。
+
+## 0.0.1许可一致性
+Resources属于SPACEEYES自有Rust核心，和Engine、Scene、Rendering等模块统一适用根MIT License及SPDX-License-Identifier: MIT，不存在独立闭源许可。本文“资源所有权”“租约”“最终释放”均指程序运行时生命周期，与开源版权许可不同；Engine继续统一管理资源，许可调整不改变ADR-004职责边界。

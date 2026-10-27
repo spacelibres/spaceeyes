@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Authoritative scene registry and atomic command transactions.
 //! ParentId is organizational; FrameId is an independent spatial reference.
 use spaceeyes_foundation::{CoreError, FrameId, ObjectId, ResourceId, Revision};

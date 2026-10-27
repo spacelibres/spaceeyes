@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 struct VertexOut {
     @builtin(position) position: vec4f,
     @location(0) normal: vec3f,

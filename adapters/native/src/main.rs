@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Headless prototype host; no second simulation state, no NASA or assumed scientific epoch.
 use spaceeyes_engine::Engine;
 use spaceeyes_foundation::{FrameId, ObjectId, Revision};

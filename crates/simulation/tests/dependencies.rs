@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskStatus};
 use spaceeyes_time::{TimeGeneration, TimeInstant};
 #[test]

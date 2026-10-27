@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Engine owns session lifecycle, scene command entry, and consistent read snapshots.
 use spaceeyes_foundation::FrameId;
 use spaceeyes_foundation::{CoreError, Revision};

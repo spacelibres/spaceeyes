@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Authoritative resource registry. Leases are opaque, single-release tokens.
 //! IDs are stable logical references; internal generations reject stale tokens.
 use spaceeyes_foundation::ResourceId;

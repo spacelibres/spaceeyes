@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Native offscreen opaque marker and sphere renderer. No mutable Scene/Time access.
 use crate::{mesh, PreparedFrame, RenderError};
 use spaceeyes_foundation::ResourceId;

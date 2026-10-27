@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Bounded, indexed UV sphere topology. Vertices lie on the unit sphere.
 use crate::RenderError;
 pub const SPHERE_SLICES: u32 = 32;

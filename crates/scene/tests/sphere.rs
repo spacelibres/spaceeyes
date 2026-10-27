@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::{CoreError, ObjectId, Revision};
 use spaceeyes_scene::{CameraState, Scene, SceneCommand, SceneObject, Sphere};
 #[test]

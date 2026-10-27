@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Prepared sphere draws and picking against exactly the tessellation used for rendering.
 use crate::{mesh, RenderError, View};
 use spaceeyes_foundation::ObjectId;

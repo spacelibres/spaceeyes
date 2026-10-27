@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Read-only camera-relative rendering preparation and revision-aware picking.
 use spaceeyes_foundation::{ObjectId, Revision};
 use spaceeyes_snapshot::{FrameAvailability, FrameSnapshot};

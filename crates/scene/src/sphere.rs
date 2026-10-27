@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
 //! Generic opaque sphere display parameters; no astronomical meaning is implied.
 use spaceeyes_foundation::CoreError;
 #[derive(Clone, Debug, PartialEq)]
