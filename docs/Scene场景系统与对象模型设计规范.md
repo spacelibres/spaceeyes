@@ -1,6 +1,6 @@
 # Scene场景系统与SceneObject对象模型设计规范
 
-版本：0.0.0｜状态：待审定设计草案｜日期：2026-10-27  
+版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27  
 归属：SpaceEyes Rust Core｜设计阶段：01｜不包含实现代码  
 上位规范：`docs/Rust核心引擎设计规范.md`
 
@@ -95,3 +95,6 @@ Scene是唯一场景可变状态所有者；Engine为统一外部命令入口，
 
 ## 13. 第13阶段生命周期对齐
 Engine生命周期与SceneObject生命周期分别定义；Paused只属于Time。Frame失效时Scene对象保持存在并标记unresolved。对象删除释放资源租约，不直接删除共享GPU资源。ProjectSnapshot保存稳定ObjectId、ParentId、FrameId等持久状态，禁止保存内部ObjectHandle。恢复后需建立新的内部句柄。
+
+
+> 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
