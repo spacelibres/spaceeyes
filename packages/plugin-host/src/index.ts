@@ -16,7 +16,7 @@ export type {
   PluginManifest,
 } from "./manifest.js";
 
-export { PluginPolicyError, authorize } from "./policy.js";
+export { PluginPolicyError, authorize, authorizeExpansion } from "./policy.js";
 export type { HostPolicy, PluginGrant } from "./policy.js";
 
 export { PluginHost, PluginHostError } from "./host.js";

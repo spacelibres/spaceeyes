@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 
-import { authorize, type HostPolicy, type PluginGrant } from "./policy.js";
+import {
+  authorize,
+  authorizeExpansion,
+  type HostPolicy,
+  type PluginGrant,
+} from "./policy.js";
 import {
   normalizeOrigin,
   validateManifest,
@@ -56,7 +61,7 @@ export type PluginFactory = (context: PluginContext) => PluginInstance;
 
 interface Entry {
   readonly manifest: PluginManifest;
-  readonly grant: PluginGrant;
+  grant: PluginGrant;
   readonly factory: PluginFactory;
   controller?: AbortController | undefined;
   instance?: PluginInstance | undefined;
@@ -207,6 +212,30 @@ export class PluginHost {
 
   grant(id: string): PluginGrant {
     return this.entry(id).grant;
+  }
+
+  /**
+   * Re-authorize a wider grant. The plugin must be stopped so the new grant is
+   * applied on the next enable; a denied request leaves the old grant intact.
+   */
+  expandGrant(
+    id: string,
+    capabilities: readonly string[],
+    hosts: readonly string[],
+  ): PluginGrant {
+    const entry = this.entry(id);
+    if (entry.revoked) {
+      throw new PluginHostError("denied", `plugin revoked: ${id}`);
+    }
+    if (entry.enabled) {
+      throw new PluginHostError("state", "disable the plugin before expanding");
+    }
+    entry.grant = authorizeExpansion(
+      entry.grant,
+      { capabilities, hosts },
+      this.policy,
+    );
+    return entry.grant;
   }
 
   private entry(id: string): Entry {

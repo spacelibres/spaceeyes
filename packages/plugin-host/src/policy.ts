@@ -30,6 +30,52 @@ export function authorize(
   manifest: PluginManifest,
   policy: HostPolicy,
 ): PluginGrant {
+  return authorizeRequest(
+    manifest.capabilities,
+    manifest.permissions.network.hosts,
+    manifest.limits.maxFetchBytes,
+    policy,
+  );
+}
+
+/**
+ * Re-authorize a wider grant. Expansion may not remove existing capabilities or
+ * hosts, and every requested value still needs host policy approval. A denied
+ * request leaves the caller's current grant untouched.
+ */
+export function authorizeExpansion(
+  current: PluginGrant,
+  requested: {
+    readonly capabilities: readonly string[];
+    readonly hosts: readonly string[];
+  },
+  policy: HostPolicy,
+): PluginGrant {
+  for (const capability of current.capabilities) {
+    if (!requested.capabilities.includes(capability)) {
+      throw new PluginPolicyError(`expansion cannot remove ${capability}`);
+    }
+  }
+  const requestedHosts = requested.hosts.map(normalizeOrigin);
+  for (const host of current.hosts) {
+    if (!requestedHosts.includes(host)) {
+      throw new PluginPolicyError(`expansion cannot remove ${host}`);
+    }
+  }
+  return authorizeRequest(
+    requested.capabilities,
+    requested.hosts,
+    current.maxFetchBytes,
+    policy,
+  );
+}
+
+function authorizeRequest(
+  capabilities: readonly string[],
+  hosts: readonly string[],
+  requestedMaxFetchBytes: number,
+  policy: HostPolicy,
+): PluginGrant {
   if (
     !Number.isInteger(policy.maxFetchBytes) ||
     policy.maxFetchBytes < 1 ||
@@ -37,23 +83,34 @@ export function authorize(
   ) {
     throw new PluginPolicyError("invalid host maxFetchBytes");
   }
-  for (const capability of manifest.capabilities) {
+  const uniqueCapabilities: string[] = [];
+  for (const capability of capabilities) {
+    if (typeof capability !== "string" || capability.trim() === "") {
+      throw new PluginPolicyError("invalid capability");
+    }
+    if (uniqueCapabilities.includes(capability)) {
+      throw new PluginPolicyError(`duplicate capability: ${capability}`);
+    }
     if (!policy.allowedCapabilities.includes(capability)) {
       throw new PluginPolicyError(`capability not allowed: ${capability}`);
     }
+    uniqueCapabilities.push(capability);
   }
   const allowedHosts = new Set(policy.allowedNetworkHosts.map(normalizeOrigin));
-  for (const host of manifest.permissions.network.hosts) {
-    if (!allowedHosts.has(host)) {
-      throw new PluginPolicyError(`network host not allowed: ${host}`);
+  const uniqueHosts: string[] = [];
+  for (const host of hosts) {
+    const origin = normalizeOrigin(host);
+    if (uniqueHosts.includes(origin)) {
+      throw new PluginPolicyError(`duplicate network host: ${origin}`);
     }
+    if (!allowedHosts.has(origin)) {
+      throw new PluginPolicyError(`network host not allowed: ${origin}`);
+    }
+    uniqueHosts.push(origin);
   }
   return Object.freeze({
-    capabilities: Object.freeze([...manifest.capabilities]),
-    hosts: Object.freeze([...manifest.permissions.network.hosts]),
-    maxFetchBytes: Math.min(
-      manifest.limits.maxFetchBytes,
-      policy.maxFetchBytes,
-    ),
+    capabilities: Object.freeze(uniqueCapabilities),
+    hosts: Object.freeze(uniqueHosts),
+    maxFetchBytes: Math.min(requestedMaxFetchBytes, policy.maxFetchBytes),
   });
 }

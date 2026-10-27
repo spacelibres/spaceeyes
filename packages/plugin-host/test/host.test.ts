@@ -375,3 +375,64 @@ test("active contributions follow enable, disable, and revoke", async () => {
   await host.revoke(installed.id);
   assert.deepEqual(host.activeContributions(), []);
 });
+
+test("permission expansion requires a stopped plugin and never escapes policy", async () => {
+  const expandedPolicy = {
+    allowedCapabilities: ["read", "write"],
+    allowedNetworkHosts: ["https://example.com", "https://data.example.com"],
+    maxFetchBytes: 64,
+  };
+  const host = new PluginHost(expandedPolicy, new FakeTransport());
+  const installed = host.install(manifest, pluginContextCapture().factory);
+  await host.enable(installed.id);
+  assert.throws(
+    () =>
+      host.expandGrant(
+        installed.id,
+        ["read", "write"],
+        ["https://example.com"],
+      ),
+    PluginHostError,
+  );
+  await host.disable(installed.id);
+  // Removing an existing capability is not an expansion.
+  assert.throws(
+    () => host.expandGrant(installed.id, ["write"], ["https://example.com"]),
+    PluginPolicyError,
+  );
+  assert.throws(
+    () =>
+      host.expandGrant(
+        installed.id,
+        ["read", "teleport"],
+        ["https://example.com"],
+      ),
+    PluginPolicyError,
+  );
+  assert.throws(
+    () =>
+      host.expandGrant(installed.id, ["read"], ["https://evil.example.com"]),
+    PluginPolicyError,
+  );
+  assert.deepEqual(host.grant(installed.id), {
+    capabilities: ["read"],
+    hosts: ["https://example.com"],
+    maxFetchBytes: 8,
+  });
+  const grant = host.expandGrant(
+    installed.id,
+    ["read", "write"],
+    ["https://example.com", "https://data.example.com"],
+  );
+  assert.deepEqual(grant, {
+    capabilities: ["read", "write"],
+    hosts: ["https://example.com", "https://data.example.com"],
+    maxFetchBytes: 8,
+  });
+  await host.enable(installed.id);
+  await host.revoke(installed.id);
+  assert.throws(
+    () => host.expandGrant(installed.id, ["read"], ["https://example.com"]),
+    PluginHostError,
+  );
+});
