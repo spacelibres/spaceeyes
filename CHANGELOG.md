@@ -4,6 +4,9 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 2026-10-27：强化Rust Core CI，增加rustfmt与Clippy严格检查，保留workspace编译和单元测试。CI是否通过仍需GitHub执行确认；统一版本0.0.1。
+
+
 - 2026-10-27：首批Proto实现：新增common.proto、time.proto及Rust生成与适配代码。新增单元测试源码，尚未运行Cargo/CI；其它Schema待开发。版本0.0.1。
 
 
