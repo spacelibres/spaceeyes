@@ -4,7 +4,7 @@ use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
 use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
-use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError};
+use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError, TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState { Ready, Running, Stopped }
@@ -27,6 +27,7 @@ pub struct Engine {
     clock: SimulationClock,
     spatial: ReferenceFrameGraph,
     simulation: SimulationScheduler,
+    task_budget: TaskBudget,
     frame_sequence: u64,
 }
 impl Engine {
@@ -37,6 +38,7 @@ impl Engine {
             clock: SimulationClock::new(instant),
             spatial: ReferenceFrameGraph::new(),
             simulation: SimulationScheduler::new(),
+            task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
             frame_sequence: 0,
         }
     }
@@ -103,9 +105,14 @@ impl Engine {
     pub fn enqueue_task(&mut self, request: TaskRequest) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
         if request.generation != self.clock.generation() { return Err(TaskError::StaleGeneration); }
-        self.simulation.enqueue(request)
+        enqueue_bounded(&mut self.simulation, self.task_budget, request)
     }
     pub fn ready_tasks(&self) -> Vec<String> { self.simulation.ready_tasks() }
+    /// A host-provided executor handles actual work; Engine only issues ready tasks.
+    pub fn dispatch_tasks(&mut self, executor: &mut impl TaskExecutor) -> Result<Vec<String>, TaskError> {
+        if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
+        dispatch_ready(&mut self.simulation, self.task_budget, executor)
+    }
     pub fn start_task(&mut self, id: &str) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
         self.simulation.start(id)
@@ -124,9 +131,8 @@ impl Engine {
         &mut self, task_id: &str, expected_revision: Revision, commands: &[SceneCommand],
     ) -> Result<Revision, CommitTaskError> {
         if self.state == EngineState::Stopped { return Err(CommitTaskError::EngineStopped); }
-        if self.simulation.status(task_id) != Some(TaskStatus::ResultReady) {
-            return Err(CommitTaskError::Task(TaskError::InvalidState));
-        }
+        self.simulation.validate_commit(task_id, self.clock.generation(), self.clock.instant())
+            .map_err(CommitTaskError::Task)?;
         let revision = self.submit_scene(expected_revision, commands).map_err(CommitTaskError::Scene)?;
         self.simulation.complete(task_id).map_err(CommitTaskError::Task)?;
         Ok(revision)
@@ -181,6 +187,24 @@ mod tests {
 
     fn instant() -> TimeInstant {
         TimeInstant::new("TT", "UNSPECIFIED_EPOCH", 0, 0).unwrap()
+    }
+    #[test]
+    fn stepping_time_blocks_result_commit_even_without_generation_change() {
+        let mut engine = Engine::new(instant());
+        engine.enqueue_task(TaskRequest {
+            task_id: "step-task".into(), generation: TimeGeneration(0),
+            requested_instant: instant(), dependencies: vec![],
+        }).unwrap();
+        engine.start_task("step-task").unwrap();
+        engine.accept_task_result(&TaskResult {
+            task_id: "step-task".into(), generation: TimeGeneration(0),
+            requested_instant: instant(),
+        }).unwrap();
+        engine.step_nanos(1).unwrap();
+        assert_eq!(
+            engine.commit_task_scene("step-task", Revision(0), &[]),
+            Err(CommitTaskError::Task(TaskError::WrongInstant))
+        );
     }
     #[test]
     fn seek_invalidates_tasks_and_prevents_late_commit() {
