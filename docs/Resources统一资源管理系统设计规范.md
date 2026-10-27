@@ -86,3 +86,6 @@ Resources维护逻辑资源描述及GPU设备代次；Rendering的GPU适配器�
 8. ResourceManager与Rendering GPU适配器的依赖接口。
 
 当前仅为设计规范，尚未实现Rust代码或运行测试。
+
+## 12. 交叉审查整改对齐（待审）
+Resources是ResourceId、租约、CPU/GPU字节配额和最终释放的唯一权威。Simulation仅管理任务队列与调度预算；Rendering负责GPU设备分配适配和占用上报。内部代次句柄不可跨进程持久化；插件权限由宿主鉴权。
