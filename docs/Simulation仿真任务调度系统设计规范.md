@@ -76,3 +76,6 @@ Created → Validated → Queued → Running → ResultReady → Committing → 
 
 ## 12. 待审定事项
 任务粒度与执行器trait、依赖图与优先级、修订不匹配时拒绝还是重算、快照原子发布、部分数据展示、取消预算、连续播放中的代次规则、批量Scene命令原子性。当前没有Rust实现或测试结果。
+
+## 13. 交叉审查整改对齐（待审）
+Simulation负责计算任务与结果有效性校验，不直接写Scene。Engine负责统一命令入口及单一逻辑提交，Scene负责场景事务。任务结果须联合校验generation、目标时刻、coverage、来源版本及对象代次。Simulation仅管理任务队列和CPU调度预算，CPU/GPU资源字节及租约归Resources。详见Rust核心跨模块ADR整改方案。
