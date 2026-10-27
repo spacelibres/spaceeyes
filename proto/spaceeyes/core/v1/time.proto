@@ -1,0 +1,51 @@
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+
+enum TimeScale {
+  TIME_SCALE_UNSPECIFIED = 0;
+  TT = 1;
+  TDB = 2;
+  UTC = 3;
+}
+message TimeInstant {
+  TimeScale time_scale = 1;
+  string epoch_id = 2;
+  sint64 seconds = 3;
+  uint32 nanos = 4;
+}
+message TimeRange {
+  TimeInstant start = 1;
+  TimeInstant end = 2;
+  bool include_start = 3;
+  bool include_end = 4;
+}
+enum PlaybackMode {
+  PLAYBACK_MODE_UNSPECIFIED = 0;
+  PAUSED = 1;
+  PLAYING = 2;
+  LIVE = 3;
+}
+message ClockState {
+  TimeInstant instant = 1;
+  PlaybackMode mode = 2;
+  double rate = 3;
+  uint64 generation = 4;
+  uint64 revision = 5;
+}
+message PlayCommand {}
+message PauseCommand {}
+message SeekCommand { TimeInstant instant = 1; }
+message SetRateCommand { double rate = 1; }
+message LiveCommand {}
+message StepCommand { sint64 delta_nanos = 1; }
+message TimeCommand {
+  oneof action {
+    PlayCommand play = 1;
+    PauseCommand pause = 2;
+    SeekCommand seek = 3;
+    SetRateCommand set_rate = 4;
+    LiveCommand live = 5;
+    StepCommand step = 6;
+  }
+}
