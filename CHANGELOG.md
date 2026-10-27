@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+- Simulation继续实现：任务依赖登记与前置条件检查、稳定顺序就绪队列、Running/ResultReady/Completed状态分离、取消与失败处理、Seek后的旧代次任务失效、终止时取消未完成任务。
+- Engine接入SimulationScheduler，并通过唯一Scene事务入口协调TaskResult提交；场景事务失败不会误标任务Completed。新增依赖顺序、取消、过期结果、Seek失效及事务冲突单元测试源码。
+- 已同步Simulation规范。当前尚无异步执行器、任务预算、来源覆盖/参考系修订完整校验及Proto协议实现；Cargo/CI未取得通过证据，版本保持0.0.1。
+
+
+
 - 新增Spatial动态TransformProvider trait与ProviderRef，可按显式TimeInstant查询变换；支持Engine受控注册、替换提供者，参考系图修订随之更新。
 - 新增Simulation最小任务登记、任务状态及generation/目标时刻联合结果有效性检查；未引入NASA专用算法或直接Scene写入。
 - 增加动态参考系与过时任务结果单元测试源码，并同步Spatial规范。尚未获得Cargo/CI执行通过证据；动态插值、速度导数、异步任务执行与Proto仍未实现。版本保持0.0.1。
