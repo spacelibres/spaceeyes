@@ -3,6 +3,8 @@
 use std::collections::{HashMap, HashSet};
 use spaceeyes_foundation::{FrameId, Revision};
 use spaceeyes_time::TimeInstant;
+mod provider;
+pub use provider::{ProviderRef, TransformProvider};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SpatialError {
@@ -17,6 +19,7 @@ pub enum SpatialError {
     MissingTransform,
     RevisionOverflow,
     EngineUnavailable,
+    InvalidProvider,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -98,9 +101,15 @@ pub struct FrameSample {
     pub to_parent: RigidTransform,
 }
 #[derive(Clone, Debug)]
+enum FrameSource {
+    Root,
+    Sample(FrameSample),
+    Dynamic(ProviderRef),
+}
+#[derive(Clone, Debug)]
 struct FrameNode {
     parent: Option<FrameId>,
-    sample: Option<FrameSample>,
+    source: FrameSource,
 }
 #[derive(Clone, Debug, Default)]
 pub struct ReferenceFrameGraph {
@@ -114,7 +123,7 @@ impl ReferenceFrameGraph {
     pub fn register_root(&mut self, id: FrameId) -> Result<Revision, SpatialError> {
         if self.nodes.contains_key(&id) { return Err(SpatialError::DuplicateFrame); }
         let next = self.revision.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
-        self.nodes.insert(id, FrameNode { parent:None, sample:None });
+        self.nodes.insert(id, FrameNode { parent:None, source:FrameSource::Root });
         self.revision = next;
         Ok(self.revision())
     }
@@ -125,7 +134,28 @@ impl ReferenceFrameGraph {
         // Revalidate even if constructed by external data or a future provider.
         let t = sample.to_parent;
         RigidTransform::new(t.translation_m, t.rotation)?;
-        self.nodes.insert(id, FrameNode { parent:Some(parent), sample:Some(sample) });
+        self.nodes.insert(id, FrameNode { parent:Some(parent), source:FrameSource::Sample(sample) });
+        self.revision = next;
+        Ok(self.revision())
+    }
+    /// Register a dynamic child frame with a provider that accepts an explicit time.
+    /// Providers are invoked on demand; no hidden cache or implicit interpolation.
+    pub fn register_dynamic_child(
+        &mut self, id: FrameId, parent: FrameId, provider: ProviderRef,
+    ) -> Result<Revision, SpatialError> {
+        if self.nodes.contains_key(&id) { return Err(SpatialError::DuplicateFrame); }
+        if id == parent || !self.nodes.contains_key(&parent) { return Err(SpatialError::InvalidParent); }
+        let next = self.revision.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
+        self.nodes.insert(id, FrameNode { parent:Some(parent), source:FrameSource::Dynamic(provider) });
+        self.revision = next;
+        Ok(self.revision())
+    }
+    /// Invalidate a provider's results by replacing its binding, changing graph revision.
+    pub fn replace_provider(&mut self, id: &FrameId, provider: ProviderRef) -> Result<Revision, SpatialError> {
+        let node = self.nodes.get(id).ok_or(SpatialError::UnknownFrame)?;
+        if !matches!(node.source, FrameSource::Dynamic(_)) { return Err(SpatialError::InvalidProvider); }
+        let next = self.revision.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
+        self.nodes.get_mut(id).expect("checked above").source = FrameSource::Dynamic(provider);
         self.revision = next;
         Ok(self.revision())
     }
@@ -146,11 +176,15 @@ impl ReferenceFrameGraph {
         loop {
             if !seen.insert(cursor.clone()) { return Err(SpatialError::Cycle); }
             let node = self.nodes.get(&cursor).ok_or(SpatialError::UnknownFrame)?;
-            match (&node.parent, &node.sample) {
-                (None,None) => return Ok((cursor,transform)),
-                (Some(parent),Some(sample)) => {
+            match (&node.parent, &node.source) {
+                (None,FrameSource::Root) => return Ok((cursor,transform)),
+                (Some(parent),FrameSource::Sample(sample)) => {
                     if &sample.instant != instant { return Err(SpatialError::TimeNotCovered); }
                     transform = sample.to_parent.after(transform);
+                    cursor = parent.clone();
+                }
+                (Some(parent),FrameSource::Dynamic(provider)) => {
+                    transform = provider.resolve_at(instant)?.after(transform);
                     cursor = parent.clone();
                 }
                 _ => return Err(SpatialError::MissingTransform),
@@ -170,6 +204,34 @@ impl ReferenceFrameGraph {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
+    #[derive(Debug)]
+    struct MovingProvider;
+    impl TransformProvider for MovingProvider {
+        fn provider_id(&self) -> &str { "example.moving" }
+        fn version(&self) -> &str { "1" }
+        fn resolve_at(&self, instant: &TimeInstant) -> Result<RigidTransform, SpatialError> {
+            if instant.scale() != "TT" || instant.epoch() != "epoch" {
+                return Err(SpatialError::TimeNotCovered);
+            }
+            RigidTransform::new(
+                Vec3d { x: instant.seconds() as f64, y: 0.0, z: 0.0 },
+                Quatd::IDENTITY,
+            )
+        }
+    }
+    #[test]
+    fn dynamic_provider_uses_requested_instant() {
+        let mut graph = ReferenceFrameGraph::new();
+        graph.register_root(id("root")).unwrap();
+        let provider = ProviderRef::new(Arc::new(MovingProvider)).unwrap();
+        graph.register_dynamic_child(id("moving"), id("root"), provider).unwrap();
+        let t0 = at();
+        let t1 = TimeInstant::new("TT","epoch",10,0).unwrap();
+        assert_eq!(graph.resolve(&id("moving"),&id("root"),&t0).unwrap().translation_m.x, 0.0);
+        assert_eq!(graph.resolve(&id("moving"),&id("root"),&t1).unwrap().translation_m.x, 10.0);
+        assert_eq!(graph.revision(), Revision(2));
+    }
     fn id(s:&str)->FrameId { FrameId::new(s).unwrap() }
     fn at()->TimeInstant { TimeInstant::new("TT","epoch",0,0).unwrap() }
     fn translation(x:f64,y:f64,z:f64)->RigidTransform {
