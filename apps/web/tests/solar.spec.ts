@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import { expect, test } from "@playwright/test";
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 
 /** Synthetic circular `orb` bytes; no NASA fixture is used. */
@@ -92,6 +93,15 @@ test("solar scene loads provider samples through the host proxy", async ({
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
     .toBeGreaterThanOrEqual(20);
   await expect(page.getByText("太阳系星历")).toBeVisible();
+  const tampered = new Uint8Array(project);
+  tampered[tampered.length - 1] ^= 0xff;
+  await page.getByTestId("project-open").setInputFiles({
+    name: "broken.bin",
+    mimeType: "application/octet-stream",
+    buffer: Buffer.from(tampered),
+  });
+  await expect(page.getByTestId("project-error")).toBeVisible();
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
   expect(
     requested.some((path) => path.endsWith("/earth/sun/orb/def.dyn")),
   ).toBe(true);

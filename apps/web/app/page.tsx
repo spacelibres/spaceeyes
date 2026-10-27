@@ -2,7 +2,12 @@
 // Copyright (c) 2026 SPACEEYES contributors
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { BrowserSession, initialStatus, type ViewStatus } from "../lib/session";
+import {
+  BrowserSession,
+  initialStatus,
+  validateProjectFile,
+  type ViewStatus,
+} from "../lib/session";
 export default function Page() {
   const mount = useRef<HTMLDivElement>(null);
   const host = useRef<BrowserSession | null>(null);
@@ -12,6 +17,7 @@ export default function Page() {
   const [seekInput, setSeekInput] = useState("0");
   const [scene, setScene] = useState<string | null>(null);
   const [projectBytes, setProjectBytes] = useState<Uint8Array | undefined>();
+  const [projectError, setProjectError] = useState<string | null>(null);
   useEffect(() => {
     setScene(new URLSearchParams(window.location.search).get("scene"));
   }, []);
@@ -148,12 +154,27 @@ export default function Page() {
                   if (!file) return;
                   void file
                     .arrayBuffer()
-                    .then((buffer) => setProjectBytes(new Uint8Array(buffer)))
+                    .then(async (buffer) => {
+                      const bytes = new Uint8Array(buffer);
+                      if (!(await validateProjectFile(bytes))) {
+                        setProjectError(
+                          "项目文件无效或已损坏，当前场景未改变。",
+                        );
+                        return;
+                      }
+                      setProjectError(null);
+                      setProjectBytes(bytes);
+                    })
                     .catch(() => {});
                   event.target.value = "";
                 }}
               />
             </label>
+            {projectError && (
+              <span role="alert" data-testid="project-error">
+                {projectError}
+              </span>
+            )}
           </div>
           <section className="time-controls" aria-label="时间控制">
             <label>

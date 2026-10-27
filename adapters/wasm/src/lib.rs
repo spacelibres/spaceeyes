@@ -48,6 +48,13 @@ impl WasmEngine {
         spaceeyes_protocol_adapter::wrap_project_bytes(bytes)
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))
     }
+    /// Validate a project file without creating or replacing a session.
+    #[wasm_bindgen(js_name = "validateProjectFile")]
+    pub fn validate_project_file(bytes: &[u8]) -> Result<(), JsValue> {
+        spaceeyes_protocol_adapter::decode_project_file(bytes)
+            .map(|_| ())
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
     /// Call from an authenticated host; this transport performs no identity authentication.
     pub fn submit(&mut self, principal_scope: &str, bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
         self.adapter

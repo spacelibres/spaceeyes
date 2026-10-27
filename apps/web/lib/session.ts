@@ -112,6 +112,16 @@ function projectPayload(bytes: Uint8Array): Uint8Array {
   }
   return bytes;
 }
+/** Validate a project file without touching the current session. */
+export async function validateProjectFile(bytes: Uint8Array): Promise<boolean> {
+  try {
+    const bindings = await loadRuntime();
+    bindings.WasmEngine.validateProjectFile(bytes);
+    return true;
+  } catch {
+    return false;
+  }
+}
 /** Detect the DYN-backed scene from persisted provider labels. */
 function projectUsesDynamo(bytes: Uint8Array): boolean {
   try {
