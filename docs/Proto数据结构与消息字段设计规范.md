@@ -151,3 +151,7 @@ ProjectSnapshot保存稳定ObjectId、FrameId、ResourceId、Scene状态、Camer
 
 
 > 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
+
+
+## 17. 0.0.1首批Proto实现边界（2026-10-27）
+首次建立`proto/spaceeyes/core/v1/common.proto`与`time.proto`，使用prost-build和vendored protoc生成Rust类型；ProtocolAdapter负责显式时间尺度/历元校验及ObjectId、FrameId、ResourceId映射。Schema字段号在当前开发分支作为初始实现使用，**尚未宣布对外冻结**。包名v1是协议命名空间，与项目版本0.0.1不同。未实现Scene、Spatial、Simulation、Rendering、Resources和Core Envelope完整Schema，也未实现TypeScript生成、gRPC服务或NASA DYN插件。旧文中的“仅设计，不创建.proto”属于规划阶段历史说明，当前已进入代码开发。编译与往返测试代码尚待VPS执行。
