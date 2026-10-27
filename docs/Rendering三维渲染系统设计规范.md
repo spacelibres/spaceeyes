@@ -61,3 +61,6 @@ Resources模块是统一资源所有权来源，Rendering只做GPU分配适配�
 
 ## 11. 待审定事项
 图形后端；多尺度深度方案；快照增量更新；相机控制边界；环/大气/标签首期范围；GPU资源恢复；透明与LOD预算；首期RenderGraph采用固定Pass还是通用图。当前没有实现代码或运行测试。
+
+## 12. 交叉审查整改对齐（待审）
+Renderer只读取Engine发布的一致FrameSnapshot，不自行拼接不同修订的数据。相机持久状态通过统一命令维护，Renderer负责视图投影和临时GPU数据。GPU资源所有权与字节配额归Resources，Rendering仅负责设备适配及实际占用上报。
