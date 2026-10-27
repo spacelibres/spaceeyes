@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Protobuf is the external exchange boundary; domain types remain authoritative.
-//! This initial slice supports common IDs and explicit time values only.
+//! Shared Scene/Time/Resources/Spatial commands and read-only session/frame queries.
 mod dispatch;
+mod query;
 pub use dispatch::*;
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));
@@ -52,12 +53,21 @@ pub fn encode_instant(value: &TimeInstant) -> Result<generated::TimeInstant, Pro
     })
 }
 pub fn decode_object_id(value: generated::ObjectId) -> Result<ObjectId, ProtocolError> {
+    if value.value.len() > 256 {
+        return Err(ProtocolError::InvalidIdentifier);
+    }
     Ok(ObjectId::new(value.value)?)
 }
 pub fn decode_frame_id(value: generated::FrameId) -> Result<FrameId, ProtocolError> {
+    if value.value.len() > 256 {
+        return Err(ProtocolError::InvalidIdentifier);
+    }
     Ok(FrameId::new(value.value)?)
 }
 pub fn decode_resource_id(value: generated::ResourceId) -> Result<ResourceId, ProtocolError> {
+    if value.value.len() > 256 {
+        return Err(ProtocolError::InvalidIdentifier);
+    }
     Ok(ResourceId::new(value.value)?)
 }
 #[cfg(test)]

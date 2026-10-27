@@ -1178,8 +1178,10 @@ dependencies = [
  "spaceeyes-engine",
  "spaceeyes-foundation",
  "spaceeyes-geometry",
+ "spaceeyes-rendering",
  "spaceeyes-resources",
  "spaceeyes-scene",
+ "spaceeyes-spatial",
  "spaceeyes-time",
 ]
 

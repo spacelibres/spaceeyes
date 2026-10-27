@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Synchronous command ordering and bounded idempotency, owned at the Engine boundary.
-use crate::{Engine, EngineSnapshot};
+use crate::{Engine, EngineSnapshot, EngineState};
+use spaceeyes_foundation::FrameId;
 use spaceeyes_foundation::{CoreError, Revision};
 use spaceeyes_scene::SceneCommand;
+use spaceeyes_spatial::{FrameSample, SpatialError};
 use spaceeyes_time::{TimeGeneration, TimeInstant};
 use std::collections::{BTreeMap, VecDeque};
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Scene {
         expected_revision: Revision,
@@ -20,6 +22,18 @@ pub enum Command {
         id: spaceeyes_foundation::ResourceId,
         texture: spaceeyes_geometry::TextureData,
     },
+    RegisterRootFrame {
+        id: FrameId,
+        expected_revision: Revision,
+    },
+    RegisterChildFrame {
+        id: FrameId,
+        parent: FrameId,
+        sample: FrameSample,
+        expected_revision: Revision,
+    },
+    Start,
+    Stop,
     Play,
     Pause,
     SetRate(spaceeyes_time::PlaybackRate),
@@ -35,6 +49,7 @@ pub enum DispatchError {
     Overflow,
     StaleGeneration,
     Domain(CoreError),
+    Spatial(SpatialError),
     Resource(crate::ResourceError),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -43,6 +58,20 @@ pub struct CommandReceipt {
     pub frame_sequence: u64,
     pub scene_revision: Revision,
     pub resource_revision: u64,
+    pub frame_graph_revision: Revision,
+    pub session_status: SessionStatus,
+}
+/// Read-only status, also captured at commit time for stable lifecycle receipts.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SessionStatus {
+    pub lifecycle: EngineState,
+    pub clock: spaceeyes_time::ClockSnapshot,
+    pub scene_revision: Revision,
+    pub frame_graph_revision: Revision,
+    pub resource_revision: u64,
+    pub frame_sequence: u64,
+    pub object_count: u64,
+    pub resource_used_bytes: u64,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CommitEvent {
@@ -87,6 +116,40 @@ impl CommandDispatcher {
     pub fn events(&self) -> impl Iterator<Item = &CommitEvent> {
         self.events.iter()
     }
+    /// Host identity is already authenticated; this checks session/shape only.
+    pub fn validate_context(
+        &self,
+        session: &str,
+        principal_scope: &str,
+        request_id: &str,
+    ) -> Result<(), DispatchError> {
+        if session != self.session {
+            return Err(DispatchError::WrongSession);
+        }
+        if principal_scope.trim().is_empty()
+            || request_id.trim().is_empty()
+            || request_id.len() > 256
+            || principal_scope.len() > 256
+        {
+            return Err(DispatchError::InvalidContext);
+        }
+        Ok(())
+    }
+    pub fn command_sequence(&self) -> u64 {
+        self.sequence
+    }
+    pub fn session_status(&self) -> SessionStatus {
+        SessionStatus {
+            lifecycle: self.engine.state(),
+            clock: self.engine.clock().snapshot(),
+            scene_revision: self.engine.scene().revision(),
+            frame_graph_revision: self.engine.spatial().revision(),
+            resource_revision: self.engine.resources.revision(),
+            frame_sequence: self.engine.frame_sequence,
+            object_count: self.engine.scene().len() as u64,
+            resource_used_bytes: self.engine.resource_used_bytes(),
+        }
+    }
     pub fn submit(
         &mut self,
         session: &str,
@@ -104,16 +167,7 @@ impl CommandDispatcher {
         generation: Option<TimeGeneration>,
         command: Command,
     ) -> Result<CommandReceipt, DispatchError> {
-        if session != self.session {
-            return Err(DispatchError::WrongSession);
-        }
-        if principal_scope.trim().is_empty()
-            || request_id.trim().is_empty()
-            || request_id.len() > 256
-            || principal_scope.len() > 256
-        {
-            return Err(DispatchError::InvalidContext);
-        }
+        self.validate_context(session, principal_scope, request_id)?;
         let key = (principal_scope.to_owned(), request_id.to_owned());
         if let Some(record) = self.history.get(&key) {
             return if record.command == command && record.generation == generation {
@@ -131,6 +185,34 @@ impl CommandDispatcher {
             .ok_or(DispatchError::Overflow)?;
         let result = if generation.is_some_and(|g| g != self.engine.clock().generation()) {
             Err(DispatchError::StaleGeneration)
+        } else if let Command::RegisterRootFrame {
+            id,
+            expected_revision,
+        } = &command
+        {
+            if *expected_revision != self.engine.spatial().revision() {
+                Err(DispatchError::Domain(CoreError::RevisionConflict))
+            } else {
+                self.engine
+                    .register_root_frame(id.clone())
+                    .map(|_| ())
+                    .map_err(DispatchError::Spatial)
+            }
+        } else if let Command::RegisterChildFrame {
+            id,
+            parent,
+            sample,
+            expected_revision,
+        } = &command
+        {
+            if *expected_revision != self.engine.spatial().revision() {
+                Err(DispatchError::Domain(CoreError::RevisionConflict))
+            } else {
+                self.engine
+                    .register_child_frame(id.clone(), parent.clone(), sample.clone())
+                    .map(|_| ())
+                    .map_err(DispatchError::Spatial)
+            }
         } else if let Command::RegisterTexture { id, texture } = &command {
             self.engine
                 .register_texture_resource(id.clone(), texture.clone())
@@ -141,7 +223,10 @@ impl CommandDispatcher {
                 .map_err(DispatchError::Resource)
         } else {
             match &command {
-                Command::RegisterTexture { .. } | Command::RegisterMesh { .. } => {
+                Command::RegisterRootFrame { .. }
+                | Command::RegisterChildFrame { .. }
+                | Command::RegisterTexture { .. }
+                | Command::RegisterMesh { .. } => {
                     unreachable!("handled above")
                 }
                 Command::Scene {
@@ -151,6 +236,11 @@ impl CommandDispatcher {
                     .engine
                     .submit_scene(*expected_revision, commands)
                     .map(|_| ()),
+                Command::Start => self.engine.start(),
+                Command::Stop => {
+                    self.engine.shutdown();
+                    Ok(())
+                }
                 Command::SetRate(rate) => self.engine.set_rate(*rate),
                 Command::Play => self.engine.play(),
                 Command::Pause => self.engine.pause(),
@@ -161,9 +251,11 @@ impl CommandDispatcher {
         }
         .map(|()| CommandReceipt {
             command_sequence: sequence,
-            frame_sequence: self.engine.snapshot().sequence,
+            frame_sequence: self.engine.frame_sequence,
             scene_revision: self.engine.scene().revision(),
-            resource_revision: self.engine.snapshot().resource_revision,
+            resource_revision: self.engine.resources.revision(),
+            frame_graph_revision: self.engine.spatial().revision(),
+            session_status: self.session_status(),
         });
         self.sequence = sequence;
         if let Ok(receipt) = &result {

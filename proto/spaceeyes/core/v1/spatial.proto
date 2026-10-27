@@ -2,5 +2,16 @@
 // Copyright (c) 2026 SPACEEYES contributors
 syntax = "proto3";
 package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+import "spaceeyes/core/v1/time.proto";
 message Vector3d { double x=1; double y=2; double z=3; }
 message Quaterniond { double w=1; double x=2; double y=3; double z=4; }
+
+// Samples are valid only at instant; no interpolation or implicit epoch.
+message RigidTransform { Vector3d translation_m=1; Quaterniond rotation=2; }
+message RegisterRootFrame { FrameId frame_id=1; }
+message RegisterChildFrameSample { FrameId frame_id=1; FrameId parent_id=2; TimeInstant instant=3; RigidTransform to_parent=4; }
+message SpatialCommand { optional uint64 expected_revision=1; oneof action { RegisterRootFrame register_root=2; RegisterChildFrameSample register_child_sample=3; } }
+message SpatialResponse { uint64 frame_graph_revision=1; }
+message ResolveFrameQuery { FrameId source=1; FrameId target=2; }
+message FrameResolution { FrameId source=1; FrameId target=2; TimeInstant instant=3; RigidTransform transform=4; uint64 frame_graph_revision=5; }

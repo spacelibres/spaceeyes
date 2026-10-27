@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 [dependencies]
+spaceeyes-spatial = { path = "../spatial" }
 spaceeyes-resources = { path = "../resources" }
 spaceeyes-geometry = { path = "../geometry" }
 spaceeyes-engine = { path = "../engine" }
@@ -16,3 +17,6 @@ prost = "0.13"
 [build-dependencies]
 prost-build = "0.13"
 protoc-bin-vendored = "3"
+
+[dev-dependencies]
+spaceeyes-rendering = { path = "../rendering" }

@@ -37,6 +37,8 @@ enum ErrorCode {
   INTERNAL_ERROR = 12;
   IDEMPOTENCY_CONFLICT = 13;
   SNAPSHOT_EXPIRED = 14;
+  ENGINE_UNAVAILABLE = 15;
+  TIME_NOT_COVERED = 16;
 }
 message ErrorDetail { string key = 1; string value = 2; }
 message Error {

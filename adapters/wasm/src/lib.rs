@@ -33,4 +33,10 @@ impl WasmEngine {
             .submit_bytes(principal_scope, bytes)
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))
     }
+    /// Read-only transport; host authentication and authorization remain required.
+    pub fn query(&self, principal_scope: &str, bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
+        self.adapter
+            .query_bytes(principal_scope, bytes)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
 }

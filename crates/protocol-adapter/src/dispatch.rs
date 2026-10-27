@@ -64,16 +64,44 @@ impl ProtocolAdapter {
         envelope: p::CommandEnvelope,
     ) -> Result<p::ResponseEnvelope, ProtocolError> {
         let context = envelope.context.ok_or(ProtocolError::MissingField)?;
-        let version = context
-            .protocol_version
-            .ok_or(ProtocolError::MissingField)?;
-        if version.major != 1 || version.minor != 0 || version.schema_id != "spaceeyes.core.v1" {
-            return Err(ProtocolError::UnsupportedVersion);
-        }
-        if context.session_id.len() > 256 {
-            return Err(ProtocolError::InvalidContext);
-        }
+        validate_wire_context(&context)?;
         let command = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::command_envelope::Payload::Lifecycle(command) => {
+                match command.action.ok_or(ProtocolError::MissingField)? {
+                    p::lifecycle_command::Action::Start(_) => Command::Start,
+                    p::lifecycle_command::Action::Stop(_) => Command::Stop,
+                }
+            }
+            p::command_envelope::Payload::Spatial(command) => {
+                let expected_revision = Revision(
+                    command
+                        .expected_revision
+                        .ok_or(ProtocolError::MissingField)?,
+                );
+                match command.action.ok_or(ProtocolError::MissingField)? {
+                    p::spatial_command::Action::RegisterRoot(c) => Command::RegisterRootFrame {
+                        id: decode_frame_id(c.frame_id.ok_or(ProtocolError::MissingField)?)?,
+                        expected_revision,
+                    },
+                    p::spatial_command::Action::RegisterChildSample(c) => {
+                        Command::RegisterChildFrame {
+                            id: decode_frame_id(c.frame_id.ok_or(ProtocolError::MissingField)?)?,
+                            parent: decode_frame_id(
+                                c.parent_id.ok_or(ProtocolError::MissingField)?,
+                            )?,
+                            expected_revision,
+                            sample: spaceeyes_spatial::FrameSample {
+                                instant: decode_instant(
+                                    c.instant.ok_or(ProtocolError::MissingField)?,
+                                )?,
+                                to_parent: crate::query::decode_transform(
+                                    c.to_parent.ok_or(ProtocolError::MissingField)?,
+                                )?,
+                            },
+                        }
+                    }
+                }
+            }
             p::command_envelope::Payload::Scene(command) => Command::Scene {
                 expected_revision: Revision(
                     context
@@ -160,6 +188,11 @@ impl ProtocolAdapter {
             }
             _ => None,
         };
+        let spatial = matches!(
+            &command,
+            Command::RegisterRootFrame { .. } | Command::RegisterChildFrame { .. }
+        );
+        let lifecycle = matches!(&command, Command::Start | Command::Stop);
         // The generation precondition is included in dispatcher history semantics below.
         let result = self.dispatcher.submit_with_generation(
             &context.session_id,
@@ -178,7 +211,15 @@ impl ProtocolAdapter {
                 response.command_sequence = receipt.command_sequence;
                 response.committed_scene_revision = receipt.scene_revision.0;
                 response.frame_sequence = receipt.frame_sequence;
-                response.payload = Some(if let Some(resource_id) = resource_id {
+                response.payload = Some(if spatial {
+                    p::response_envelope::Payload::Spatial(p::SpatialResponse {
+                        frame_graph_revision: receipt.frame_graph_revision.0,
+                    })
+                } else if lifecycle {
+                    p::response_envelope::Payload::Session(crate::query::encode_status(
+                        &receipt.session_status,
+                    )?)
+                } else if let Some(resource_id) = resource_id {
                     p::response_envelope::Payload::Resource(p::ResourceResponse {
                         resource_id: Some(resource_id),
                         resource_revision: receipt.resource_revision,
@@ -191,20 +232,7 @@ impl ProtocolAdapter {
             }
             Err(error) => {
                 response.status = p::ResponseStatus::Rejected as i32;
-                let code = match &error {
-                    DispatchError::IdempotencyConflict => p::ErrorCode::IdempotencyConflict,
-                    DispatchError::StaleGeneration => p::ErrorCode::StaleGeneration,
-                    DispatchError::Domain(CoreError::RevisionConflict) => {
-                        p::ErrorCode::RevisionConflict
-                    }
-                    DispatchError::Domain(CoreError::UnknownFrame) => p::ErrorCode::UnknownFrame,
-                    DispatchError::Domain(CoreError::UnknownObject) => p::ErrorCode::UnknownObject,
-                    DispatchError::Resource(spaceeyes_resources::ResourceError::BudgetExceeded) => {
-                        p::ErrorCode::ResourceExceeded
-                    }
-                    DispatchError::HistoryFull => p::ErrorCode::ResourceExceeded,
-                    _ => p::ErrorCode::InvalidArgument,
-                };
+                let code = dispatch_error_code(&error);
                 response.payload = Some(p::response_envelope::Payload::Error(p::Error {
                     code: code as i32,
                     message: format!("{error:?}"),
@@ -522,5 +550,41 @@ pub fn encode_material(material: &Material) -> p::Material {
             TextureAddress::Repeat => p::SamplingAddress::Repeat as i32,
         },
         unlit: material.unlit(),
+    }
+}
+
+pub(crate) fn validate_wire_context(context: &p::RequestContext) -> Result<(), ProtocolError> {
+    let version = context
+        .protocol_version
+        .as_ref()
+        .ok_or(ProtocolError::MissingField)?;
+    if version.major != 1 || version.minor != 0 || version.schema_id != "spaceeyes.core.v1" {
+        return Err(ProtocolError::UnsupportedVersion);
+    }
+    if context.session_id.len() > 256 {
+        return Err(ProtocolError::InvalidContext);
+    }
+    Ok(())
+}
+pub(crate) fn dispatch_error_code(error: &DispatchError) -> p::ErrorCode {
+    match error {
+        DispatchError::IdempotencyConflict => p::ErrorCode::IdempotencyConflict,
+        DispatchError::StaleGeneration => p::ErrorCode::StaleGeneration,
+        DispatchError::Domain(CoreError::RevisionConflict) => p::ErrorCode::RevisionConflict,
+        DispatchError::Domain(CoreError::UnknownFrame) => p::ErrorCode::UnknownFrame,
+        DispatchError::Domain(CoreError::UnknownObject) => p::ErrorCode::UnknownObject,
+        DispatchError::Resource(spaceeyes_resources::ResourceError::BudgetExceeded) => {
+            p::ErrorCode::ResourceExceeded
+        }
+        DispatchError::Spatial(spaceeyes_spatial::SpatialError::UnknownFrame) => {
+            p::ErrorCode::UnknownFrame
+        }
+        DispatchError::Spatial(spaceeyes_spatial::SpatialError::TimeNotCovered) => {
+            p::ErrorCode::TimeNotCovered
+        }
+        DispatchError::Spatial(spaceeyes_spatial::SpatialError::EngineUnavailable)
+        | DispatchError::Domain(CoreError::AlreadyStopped) => p::ErrorCode::EngineUnavailable,
+        DispatchError::HistoryFull => p::ErrorCode::ResourceExceeded,
+        _ => p::ErrorCode::InvalidArgument,
     }
 }

@@ -34,6 +34,8 @@ message ClockState {
   double rate = 3;
   uint64 generation = 4;
   uint64 revision = 5;
+  sint32 rate_numerator = 6;
+  uint32 rate_denominator = 7;
 }
 message PlayCommand {}
 message PauseCommand {}

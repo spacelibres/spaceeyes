@@ -15,7 +15,7 @@ SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust�
 cargo build --workspace --locked
 bash tools/check.sh
 ```
-检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认98项测试通过；GPU功能开启时109项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
+检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认107项测试通过；GPU功能开启时118项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
 
 ### GPU原型与Native运行
 需要Vulkan驱动（硬件或Mesa软件驱动）；已配置云环境可直接执行：
@@ -31,7 +31,7 @@ cargo run -p spaceeyes-native --features gpu --locked -- /tmp/spaceeyes-frame.pp
 
 ### 时间与协议
 `Engine::advance_nanos`由宿主提供非负单调经过时间，暂停时不变；`PlaybackRate`支持显式有理正负倍速，连续推进保留纳秒余数，不读取系统时钟。FixedStepper单独提供有界补步配置，不持有权威时间。
-Host授权后通过ProtocolAdapter发送Proto Scene/Time命令；身份不从载荷中自报授权。WASM适配复用同一契约，目前完成编译验证，尚未进行浏览器运行验收。
+Host授权后通过ProtocolAdapter发送Proto Scene/Time/Resources/Spatial/Lifecycle命令及独立QueryEnvelope；身份不从载荷中自报授权。WASM适配复用同一契约，目前完成编译验证，尚未进行浏览器运行验收。
 
 ## 版本纪律
 项目统一版本0.0.1。每次正式版本更新只递增最小位，100进1；所有受控代码、文档和规则必须同步版本，并更新CHANGELOG.md。详细规则见 `docs/项目文档与版本规范.md`。
@@ -47,3 +47,7 @@ SPACEEYES项目自有内容统一采用[MIT License](LICENSE)，包括Resources�
 
 ### PNG/JPEG文件导入
 Native可追加第4个参数：`cargo run -p spaceeyes-native --features gpu --locked -- /tmp/import.ppm 0 0 /path/to/texture.png`（也支持JPEG，按内容识别）。输入最多8MiB，尺寸最多2048×2048；拒绝透明、16位PNG、动画PNG和损坏/截断图像，JPEG应用EXIF方向。宿主明确使用SRGB；库调用者可选择Linear或SRGB，不做ICC色彩转换。输入失败不登记纹理、不覆盖输出。压缩图像Proto接口仍待实现；输出仍为线性RGBA8的离屏PPM。
+
+### 公开会话与参考系（M1-1）
+新会话可以经`submit_bytes`创建根参考系、显式时刻的子参考系采样、相机与球体，再Start；`query_bytes`读取会话状态或当前时刻的参考系变换。WASM分别暴露`submit`/`query`，宿主仍须认证和授权。图写入要求expected_revision，查询不消耗命令幂等历史；生命周期重试返回原提交状态，当前状态须查询。Stop终止会话并回收资源，不能重新Start；Paused是播放模式。采样仅在指定时间有效，Seek越出覆盖返回TIME_NOT_COVERED，不伪造位置。命令与查询使用互斥的payload标签，误用入口会拒绝。
+该增量为TS SDK和浏览器画布解除前置阻塞；M1双语言互通、能力协商与M2交互尚待实现，下一步按[全局交付路线](docs/开发进度与验收.md)推进。

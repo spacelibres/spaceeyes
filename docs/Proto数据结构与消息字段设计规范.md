@@ -172,3 +172,13 @@ rendering.proto新增MeshVertex、TriangleMesh、MeshInstance；SceneObject字�
 MeshVertex追加uv字段3，缺省兼容旧顶点(0,0)。Material包含base_color、可选texture、显式filter/address及unlit；MeshInstance和SpherePrimitive追加material字段3，若同时携带旧base_color必须与材质一致。TextureData明确宽高、RGBA8字节与ColorSpace，未知/零值枚举拒绝。ResourceCommand字段2注册纹理，沿用资源提交修订/幂等语义与1MiB信封上限。未改变旧字段号或把图像文件格式当作Proto消息。
 
 生成Rust代码对CreateObject.object使用prost支持的Box布局，防止新增组件使oneof枚举膨胀；不改变Proto字段、字节契约或校验规则，严格Clippy仍执行，不禁用其检查。
+
+## M1-1 公开会话与参考系贯通（0.0.1增量）
+状态：本轮实施规范；保持ADR-001至009职责不变。Engine仍唯一写入者，ProtocolAdapter负责校验/映射，WASM与Native复用同一字节协议，不引入第二套状态。
+新增LifecycleCommand.start/stop、SpatialCommand.register_root/register_child_sample（要求expected_revision）；子变换为米制、wxyz四元数、显式TimeInstant的单时刻采样，绝不解释为永久静态变换或科学时间转换。根可在Ready准备；start仅Ready→Running；stop调用既有shutdown，释放资源并终止会话，不能重新start；Paused仍只是播放状态。相同请求重放返回原始提交结果，不表示当前生命周期；以查询读取当前状态。
+CommandEnvelope追加spatial=8、lifecycle=9，旧字段保持不变；ResponseEnvelope追加spatial=10、session=11、frame=12。SpatialResponse返回提交时图修订；SessionStatus包含生命周期、精确ClockState、四类修订/序列、对象数与资源登记字节。ClockState追加rate_numerator=6/rate_denominator=7以免只读double丢失有理倍速。错误新增ENGINE_UNAVAILABLE=15、TIME_NOT_COVERED=16。
+新增独立QueryEnvelope（context=1，session_status=20或resolve_frame=21），通过ProtocolAdapter.query_bytes与WasmEngine.query读取；复用RequestContext的会话、版本、宿主principal校验，最大1MiB。CommandEnvelope保留20/21，QueryEnvelope保留2至9，防止误用入口时把查询解析为写命令；查询不消耗命令幂等历史、不写事件、不推进时钟/代次/修订；相同查询ID允许读取最新状态。可选expected_scene_revision/time_generation作为读取前置条件；查询错误使用ResponseEnvelope结构化返回。resolve_frame使用当前显式时刻，返回source/target/instant/变换/图修订；Stopped只允许状态查询，拒绝参考系解析。尚无对象分页、事件订阅、动态提供者或跨会话查询。
+参考系写入先检查图修订，再调用现有Engine接口；非法变换、父节点缺失、重复ID、过时代次/图修订不得改变图、Scene或资源。所有公开ID限制256UTF-8字节；旧协议幂等记录保存规范化领域命令，四元数按已有领域构造器归一化。不新增混合Scene/Spatial原子批次；现有SceneTransaction仍原子。
+验收须从全新会话只经公开字节命令创建根/采样子系、相机与球体，查询位姿/状态，构造可绘制一致帧，再验证暂停/Seek、重试、非法输入、停机/资源清理、查询不消耗容量。Rust/WASM编译及全部严格回归必需；TS往返和浏览器画布属于后续M1/M2，不因本轮通过就宣称完成。
+
+构建一致性：protocol-adapter的build.rs显式跟踪整个proto目录，确保只改外部Schema也重新生成Rust类型，避免后续TS/Rust使用不同Schema；实际触碰Schema文件并检查Cargo重生成记录。
