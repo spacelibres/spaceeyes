@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::env::set_var("PROTOC", compiler);
     prost_build::Config::new()
         .boxed(".spaceeyes.core.v1.CreateObject.object")
+        .boxed(".spaceeyes.core.v1.PresentedSelection.object")
         .compile_protos(
             &[
                 "../../proto/spaceeyes/core/v1/common.proto",

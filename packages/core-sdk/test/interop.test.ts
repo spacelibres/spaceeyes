@@ -139,6 +139,49 @@ function state(response: ResponseEnvelope) {
   if (response.payload.case !== "session") throw new Error("expected session");
   return response.payload.value;
 }
+test("Native and WASM expose the same read-only pick rejection contract", async () => {
+  for (const backend of ["native", "wasm"] as const) {
+    const h = host(backend);
+    try {
+      const client = new CoreClient(h.transport, session);
+      await client.connect(["query.pick_presented"]);
+      const before = state(
+        await client.query(
+          { case: "sessionStatus", value: {} },
+          { requestId: "before-pick" },
+        ),
+      );
+      for (const [x, code] of [
+        [0, ErrorCode.SNAPSHOT_EXPIRED],
+        [2, ErrorCode.INVALID_ARGUMENT],
+        [NaN, ErrorCode.INVALID_ARGUMENT],
+      ] as const) {
+        await assert.rejects(
+          client.query(
+            {
+              case: "pickPresented",
+              value: { frameSequence: before.frameSequence, x, y: 0 },
+            },
+            { requestId: "pick" },
+          ),
+          (error: unknown) =>
+            error instanceof CoreRemoteError && error.code === code,
+        );
+      }
+      assert.deepEqual(
+        state(
+          await client.query(
+            { case: "sessionStatus", value: {} },
+            { requestId: "after-pick" },
+          ),
+        ),
+        before,
+      );
+    } finally {
+      await h.close();
+    }
+  }
+});
 async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
   const h = host(backend);
   const client = new CoreClient(h.transport, session);
@@ -173,7 +216,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 24);
+    assert.equal(caps.operations.length, 25);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));

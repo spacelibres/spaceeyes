@@ -14,6 +14,8 @@ import {
   TextureColorSpace,
   SamplingFilter,
   SamplingAddress,
+  CoreRemoteError,
+  ErrorCode,
   type SessionStatus,
   type CommandPayload,
 } from "@spaceeyes/core-sdk";
@@ -27,6 +29,8 @@ export type ViewStatus = {
   resourceBytes: string;
   width: number;
   height: number;
+  selectionText: string;
+  selected?: { id: string; kind: string; reference: string; sequence: string };
   error?: string;
 };
 export const initialStatus: ViewStatus = {
@@ -38,6 +42,7 @@ export const initialStatus: ViewStatus = {
   resourceBytes: "0",
   width: 0,
   height: 0,
+  selectionText: "点击画面选择对象",
 };
 const sessionId = "browser-session";
 const principal = "trusted-browser-host";
@@ -77,10 +82,65 @@ export class BrowserSession {
   private height = 0;
   private lastNotify = 0;
   private maxDimension = 2048;
+  private presentedSequence: bigint | undefined;
+  private selectionText = "点击画面选择对象";
+  private selected: ViewStatus["selected"];
+  private readonly onClick = (event: MouseEvent) => {
+    const rect = this.canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height || this.presentedSequence === undefined)
+      return;
+    const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = 1 - ((event.clientY - rect.top) / rect.height) * 2;
+    void this.enqueue(async () => {
+      try {
+        // Consume the latest completed presentation inside the serialized host queue.
+        // A presentation may have been in flight when the pointer event arrived.
+        const sequence = this.presentedSequence;
+        const currentRect = this.canvas.getBoundingClientRect();
+        if (
+          sequence === undefined ||
+          currentRect.width !== rect.width ||
+          currentRect.height !== rect.height
+        ) {
+          this.selected = undefined;
+          this.selectionText = "画布已变化，请重新选择";
+          if (!this.disposed) this.notify(this.summary("运行中"));
+          return;
+        }
+        const response = await this.client!.query(
+          { case: "pickPresented", value: { frameSequence: sequence, x, y } },
+          { requestId: `web:pick:${++this.request}` },
+        );
+        if (response.payload.case !== "selection")
+          throw new Error("缺少选择结果");
+        const result = response.payload.value;
+        const object = result.object;
+        this.selected = object
+          ? {
+              id: object.objectId!.value,
+              kind: object.sphere ? "球体" : object.mesh ? "三角网格" : "标记",
+              reference: object.frameId?.value ?? "无参考系",
+              sequence: result.frameSequence.toString(),
+            }
+          : undefined;
+        this.selectionText = object ? "已选择对象" : "未命中对象";
+      } catch (error) {
+        if (
+          !(error instanceof CoreRemoteError) ||
+          error.code !== ErrorCode.SNAPSHOT_EXPIRED
+        )
+          throw error;
+        this.selected = undefined;
+        this.selectionText = "画面已更新，请重新选择";
+      }
+      if (!this.disposed) this.notify(this.summary("运行中"));
+    }).catch((error) => this.fail(error));
+  };
   constructor(
     private canvas: HTMLCanvasElement,
     private notify: (status: ViewStatus) => void,
   ) {
+    this.canvas.addEventListener("click", this.onClick);
     void this.enqueue(() => this.initialize())
       .then(() => this.schedule())
       .catch((error) => this.fail(error));
@@ -116,6 +176,7 @@ export class BrowserSession {
       "scene.transaction",
       "lifecycle.start",
       "query.session_status",
+      "query.pick_presented",
     ]);
     if (!capabilities.browserSurface)
       throw new Error("当前核心未提供浏览器画布能力。");
@@ -286,6 +347,8 @@ export class BrowserSession {
       resourceBytes: (this.state?.resourceUsedBytes ?? 0n).toString(),
       width: this.width,
       height: this.height,
+      selectionText: this.selectionText,
+      selected: this.selected,
     };
   }
   private schedule(): void {
@@ -349,6 +412,7 @@ export class BrowserSession {
           : "画布呈现失败",
       );
     this.state = response.payload.value.session;
+    this.presentedSequence = response.frameSequence;
     this.frames++;
     if (
       !this.disposed &&
@@ -392,6 +456,8 @@ export class BrowserSession {
         },
       });
       this.yaw = yaw;
+      this.selected = undefined;
+      this.selectionText = "视角已更新，请选择对象";
       await this.refresh();
     }).catch((error) => {
       this.fail(error);
@@ -412,6 +478,10 @@ export class BrowserSession {
   dispose(): Promise<ViewStatus> {
     if (this.disposal) return this.disposal;
     this.disposed = true;
+    this.canvas.removeEventListener("click", this.onClick);
+    this.selected = undefined;
+    this.presentedSequence = undefined;
+    this.selectionText = "画布已卸载";
     if (this.raf !== undefined) cancelAnimationFrame(this.raf);
     this.disposal = (async () => {
       await this.tail;

@@ -18,12 +18,15 @@ export default defineConfig({
       executablePath:
         process.env.SPACEEYES_BROWSER_PATH ??
         (existsSync("/usr/bin/chromium") ? "/usr/bin/chromium" : undefined),
-      args: [
-        "--enable-unsafe-webgpu",
-        "--use-angle=swiftshader",
-        "--enable-features=Vulkan",
-        "--use-vulkan=swiftshader",
-      ],
+      args:
+        process.platform === "win32"
+          ? ["--enable-unsafe-webgpu"]
+          : [
+              "--enable-unsafe-webgpu",
+              "--use-angle=swiftshader",
+              "--enable-features=Vulkan",
+              "--use-vulkan=swiftshader",
+            ],
     },
   },
   webServer: {

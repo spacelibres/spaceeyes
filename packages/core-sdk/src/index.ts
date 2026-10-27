@@ -277,7 +277,9 @@ export class CoreClient {
         ? "session"
         : payload.case === "resolveFrame"
           ? "frame"
-          : "capabilities";
+          : payload.case === "pickPresented"
+            ? "selection"
+            : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

@@ -152,6 +152,60 @@ impl ProtocolAdapter {
             ));
         }
         let payload = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::query_envelope::Payload::PickPresented(query) => {
+                if state.lifecycle == EngineState::Stopped {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::EngineUnavailable,
+                        "engine stopped".into(),
+                    ));
+                }
+                let object = match dispatcher.pick_presented(query.frame_sequence, query.x, query.y)
+                {
+                    Ok(object) => object,
+                    Err(error) => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            if error == spaceeyes_rendering::RenderError::StalePick {
+                                p::ErrorCode::SnapshotExpired
+                            } else {
+                                p::ErrorCode::InvalidArgument
+                            },
+                            format!("{error:?}"),
+                        ))
+                    }
+                };
+                p::response_envelope::Payload::Selection(p::PresentedSelection {
+                    frame_sequence: query.frame_sequence,
+                    scene_revision: state.scene_revision.0,
+                    object: object.map(|o| {
+                        Box::new(p::SceneObject {
+                            object_id: Some(p::ObjectId {
+                                value: o.id().as_str().into(),
+                            }),
+                            parent_id: o.parent().map(|id| p::ObjectId {
+                                value: id.as_str().into(),
+                            }),
+                            frame_id: o.frame().map(|id| p::FrameId {
+                                value: id.as_str().into(),
+                            }),
+                            visible: o.visible(),
+                            lifecycle: p::ObjectLifecycle::Active as i32,
+                            resources: o
+                                .resource_refs()
+                                .into_iter()
+                                .map(|id| p::ResourceId {
+                                    value: id.as_str().into(),
+                                })
+                                .collect(),
+                            camera: o.camera().map(crate::dispatch::encode_camera),
+                            sphere: o.sphere().map(crate::dispatch::encode_sphere),
+                            mesh: o.mesh().map(crate::dispatch::encode_mesh_instance),
+                            unresolved: false,
+                        })
+                    }),
+                })
+            }
             p::query_envelope::Payload::Capabilities(_) => {
                 use crate::limits::*;
                 p::response_envelope::Payload::Capabilities(p::Capabilities {

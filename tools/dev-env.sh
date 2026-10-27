@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 SPACEEYES contributors
 # Source from the repository; use the provisioned toolchain without changing shell profiles.
+export PYTHONUTF8=1
 if [[ -d /workspace/.spaceeyes-tools/cargo/bin ]]; then
   export CARGO_HOME="${CARGO_HOME:-/workspace/.spaceeyes-tools/cargo}"
   export RUSTUP_HOME="${RUSTUP_HOME:-/workspace/.spaceeyes-tools/rustup}"

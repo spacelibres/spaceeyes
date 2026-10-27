@@ -1,21 +1,91 @@
 /* SPDX-License-Identifier: MIT */
 /* Copyright (c) 2026 SPACEEYES contributors */
 :root {
+  /* Approved electric-orbit palette; monochrome logo retains its original ink. */
+  --primary: #007bff;
+  --secondary: #ff3733;
+  --accent: #f4f764;
+  --deep: #0d1721;
+  --surface: #f1f5f9;
+  --ink: #122a44;
+  --card: #fcfdfe;
+  --muted: #627180;
+  --line: #c9d0d8;
+  --success: #176e55;
+  --warning: #845a0b;
+  --danger: #c01c34;
+  --primary-on-light: #006ce0;
+  --primary-on-dark: #007bff;
+  --planet-on-light: #e00400;
+  --planet-on-dark: #ff3733;
   color-scheme: dark;
   font-family: Arial, "Noto Sans SC", sans-serif;
-  background: #0a101b;
-  color: #e8edf5;
+  background: var(--deep);
+  color: var(--surface);
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
+  background:
+    radial-gradient(
+      ellipse at 95% 0%,
+      color-mix(in srgb, var(--primary) 22%, transparent),
+      transparent 60%
+    ),
+    var(--deep);
 }
 main {
+  position: relative;
+  isolation: isolate;
   max-width: 1480px;
   margin: auto;
   padding: 44px 48px;
+}
+main::before {
+  content: "";
+  position: absolute;
+  inset: 24px 2% auto 45%;
+  height: 144px;
+  border: 1px solid color-mix(in srgb, var(--secondary) 25%, transparent);
+  border-radius: 50%;
+  transform: rotate(-8deg);
+  z-index: -1;
+  pointer-events: none;
+}
+.brand {
+  display: block;
+  margin: 0 0 24px;
+  padding: 0;
+  max-width: 100%;
+  height: auto;
+}
+.selection {
+  border-top: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
+  margin: 24px 0;
+  padding-top: 16px;
+}
+.selection h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.selection p {
+  color: var(--line);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.selection dl {
+  margin: 0;
+}
+.selection dd {
+  max-width: 65%;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-family: Consolas, monospace;
+}
+canvas {
+  cursor: crosshair;
 }
 header {
   display: flex;
@@ -27,7 +97,7 @@ header {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  color: #89a7d3;
+  color: var(--accent);
   margin: 0 0 14px;
 }
 h1 {
@@ -43,18 +113,18 @@ h2 {
 }
 .badge {
   font-size: 12px;
-  border: 1px solid #30415b;
+  border: 1px solid var(--line);
   border-radius: 30px;
   padding: 9px 15px;
-  color: #b9c9e0;
+  color: var(--line);
 }
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 312px;
-  border: 1px solid #25334b;
+  border: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
   border-radius: 16px;
   overflow: hidden;
-  background: #111c2e;
+  background: var(--ink);
 }
 .viewport {
   position: relative;
@@ -76,31 +146,31 @@ h2 {
   position: absolute;
   bottom: 20px;
   left: 24px;
-  color: #c0cbdc;
+  color: var(--line);
   font-size: 12px;
   pointer-events: none;
 }
 .scene-label span {
   margin-left: 12px;
-  color: #6f829d;
+  color: var(--line);
 }
 .overlay {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  color: #8397b5;
+  color: var(--line);
   font-size: 14px;
 }
 aside {
   padding: 30px 26px;
-  border-left: 1px solid #25334b;
+  border-left: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
 }
 .description,
 .hint {
   font-size: 13px;
   line-height: 1.9;
-  color: #9aabc4;
+  color: var(--line);
 }
 .description {
   margin: 0 0 24px;
@@ -110,8 +180,8 @@ aside {
   gap: 10px;
 }
 button {
-  border: 1px solid #416ba6;
-  background: #315e9a;
+  border: 1px solid var(--primary-on-dark);
+  background: var(--primary-on-light);
   border-radius: 8px;
   padding: 11px 18px;
   font-size: 13px;
@@ -120,7 +190,7 @@ button {
   transition: background 0.15s;
 }
 button:hover {
-  background: #3e73b5;
+  background: var(--primary);
 }
 button:disabled {
   opacity: 0.4;
@@ -129,8 +199,8 @@ button:disabled {
 .secondary {
   width: 100%;
   background: transparent;
-  border-color: #354762;
-  color: #bccce3;
+  border-color: var(--line);
+  color: var(--line);
   margin-top: 8px;
 }
 dl {
@@ -141,33 +211,33 @@ dl > div {
   align-items: center;
   justify-content: space-between;
   padding: 11px 0;
-  border-bottom: 1px solid #25334b;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
   font-size: 12px;
 }
 dt {
-  color: #8fa2be;
+  color: var(--line);
 }
 dd {
   margin: 0;
   font-variant-numeric: tabular-nums;
-  color: #d8e3f4;
+  color: var(--surface);
 }
 .hint {
   font-size: 11px;
   line-height: 1.8;
 }
 .error {
-  border: 1px solid #9c5747;
+  border: 1px solid var(--danger);
   border-radius: 10px;
-  color: #f4bca7;
+  color: var(--surface);
   padding: 16px;
-  background: #2c1918;
+  background: color-mix(in srgb, var(--danger) 20%, var(--deep));
   font-size: 14px;
 }
 footer {
   display: flex;
   justify-content: space-between;
-  color: #627b9d;
+  color: var(--line);
   font-size: 11px;
   margin-top: 22px;
   letter-spacing: 0.06em;
@@ -184,7 +254,7 @@ footer {
   }
   aside {
     border-left: 0;
-    border-top: 1px solid #25334b;
+    border-top: 1px solid color-mix(in srgb, var(--line) 25%, transparent);
   }
   h1 {
     font-size: 25px;
@@ -194,5 +264,10 @@ footer {
   }
   header {
     margin-bottom: 24px;
+  }
+}
+@media (max-width: 480px) {
+  main::before {
+    display: none;
   }
 }

@@ -17,6 +17,8 @@ use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
 use std::collections::{BTreeMap, HashMap};
 mod dispatcher;
 pub use dispatcher::*;
+mod selection;
+pub use selection::PresentedSelection;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState {

@@ -87,6 +87,7 @@ struct Record {
 }
 pub struct CommandDispatcher {
     engine: Engine,
+    presented: Option<crate::PresentedSelection>,
     #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
     surface: Option<(spaceeyes_rendering::gpu::BrowserSurface, crate::LeaseId)>,
     session: String,
@@ -102,6 +103,7 @@ impl CommandDispatcher {
         }
         Ok(Self {
             engine,
+            presented: None,
             #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
             surface: None,
             session,
@@ -113,6 +115,24 @@ impl CommandDispatcher {
     }
     pub fn engine(&self) -> &Engine {
         &self.engine
+    }
+    /// Only reads a successful presentation; never publishes a new frame or advances time.
+    pub fn pick_presented(
+        &self,
+        sequence: u64,
+        x: f32,
+        y: f32,
+    ) -> Result<Option<&spaceeyes_scene::SceneObject>, spaceeyes_rendering::RenderError> {
+        use spaceeyes_rendering::RenderError;
+        if !x.is_finite() || !y.is_finite() || x.abs() > 1.0 || y.abs() > 1.0 {
+            return Err(RenderError::InvalidFrame);
+        }
+        self.presented.as_ref().ok_or(RenderError::StalePick)?.pick(
+            &self.session_status(),
+            sequence,
+            x,
+            y,
+        )
     }
     pub fn snapshot(&self) -> EngineSnapshot {
         self.engine.snapshot()
@@ -248,6 +268,7 @@ impl CommandDispatcher {
                     .map(|_| ()),
                 Command::Start => self.engine.start(),
                 Command::Stop => {
+                    self.presented = None;
                     #[cfg(all(feature = "gpu", target_arch = "wasm32"))]
                     {
                         self.surface = None;
@@ -358,6 +379,8 @@ impl CommandDispatcher {
         let unresolved = snapshot.unresolved.len() as u64;
         let prepared = prepare_camera(&snapshot, camera, f64::from(width) / f64::from(height))?;
         let before = self.engine.resources.revision();
+        // Once a new presentation is attempted an older image is not safe to query.
+        self.presented = None;
         let result = self
             .surface
             .as_mut()
@@ -369,6 +392,12 @@ impl CommandDispatcher {
             self.engine.frame_sequence += 1;
         }
         result?;
-        Ok((self.session_status(), unresolved))
+        let state = self.session_status();
+        self.presented = Some(crate::PresentedSelection::new(
+            &snapshot,
+            prepared,
+            state.clone(),
+        ));
+        Ok((state, unresolved))
     }
 }

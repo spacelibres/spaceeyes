@@ -33,4 +33,5 @@ pub const OPERATIONS: &[&str] = &[
     "query.session_status",
     "query.resolve_frame",
     "query.capabilities",
+    "query.pick_presented",
 ];

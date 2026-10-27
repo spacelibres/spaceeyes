@@ -8,8 +8,10 @@ case "${1:-}" in ""|--check) ;; *) echo "Usage: bash tools/generate-ts.sh [--che
 generated_tmp=$(mktemp -d)
 trap 'rm -rf -- "$generated_tmp"' EXIT
 mapfile -t schema_files < <(rg --files proto -g '*.proto' | sort)
+plugin_path="$PWD/node_modules/.bin/protoc-gen-es"
+case "$(uname -s)" in MINGW*|MSYS*) plugin_path="$plugin_path.cmd" ;; esac
 cargo run --quiet -p spaceeyes-protocol-adapter --example protoc --locked -- \
-  -I proto "--plugin=protoc-gen-es=$PWD/node_modules/.bin/protoc-gen-es" \
+  -I proto "--plugin=protoc-gen-es=$plugin_path" \
   "--es_out=$generated_tmp" --es_opt=target=ts,import_extension=js "${schema_files[@]}"
 python3 - "$generated_tmp" "${1:-}" <<'PY'
 from pathlib import Path

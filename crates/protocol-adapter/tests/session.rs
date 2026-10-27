@@ -17,6 +17,40 @@ fn adapter(capacity: usize) -> ProtocolAdapter {
     )
     .unwrap()
 }
+
+#[test]
+fn pick_queries_reject_missing_frames_invalid_coordinates_and_stopped_sessions_without_writes() {
+    let mut a = adapter(16);
+    let before = status(&a);
+    let read = |a: &ProtocolAdapter, x: f32| {
+        query(
+            a,
+            p::QueryEnvelope {
+                context: Some(context("pick")),
+                payload: Some(p::query_envelope::Payload::PickPresented(
+                    p::PickPresentedQuery {
+                        frame_sequence: 0,
+                        x,
+                        y: 0.0,
+                    },
+                )),
+            },
+        )
+    };
+    let error = |r: p::ResponseEnvelope| match r.payload.unwrap() {
+        p::response_envelope::Payload::Error(e) => e.code,
+        other => panic!("unexpected {other:?}"),
+    };
+    assert_eq!(error(read(&a, 0.0)), p::ErrorCode::SnapshotExpired as i32);
+    for x in [f32::NAN, f32::INFINITY, -1.01, 1.01] {
+        assert_eq!(error(read(&a, x)), p::ErrorCode::InvalidArgument as i32);
+    }
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().command_history_remaining(), 16);
+    assert_eq!(a.dispatcher().events().count(), 0);
+    completed(send(&mut a, lifecycle("stop", false)));
+    assert_eq!(error(read(&a, 0.0)), p::ErrorCode::EngineUnavailable as i32);
+}
 fn context(id: &str) -> p::RequestContext {
     p::RequestContext {
         request_id: id.into(),
@@ -640,7 +674,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 24);
+    assert_eq!(names.len(), 25);
     assert!(!names
         .iter()
         .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));

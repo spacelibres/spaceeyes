@@ -44,6 +44,13 @@ export default function Page() {
     <main>
       <header>
         <div>
+          <img
+            className="brand"
+            src="/brand/spacelibre-white.svg"
+            alt="spacelibre"
+            width="240"
+            height="53"
+          />
           <p className="eyebrow">SPACEEYES</p>
           <h1>探索，从一个视角开始</h1>
         </div>
@@ -115,6 +122,36 @@ export default function Page() {
           <p className="hint">
             时间基准：TT / 显式演示历元。当前使用合成数据，不包含真实星历。
           </p>
+          <section
+            className="selection"
+            aria-label="对象信息"
+            aria-live="polite"
+          >
+            <h3>对象信息</h3>
+            <p data-testid="selection-status">{status.selectionText}</p>
+            {status.selected && (
+              <dl>
+                <div>
+                  <dt>对象</dt>
+                  <dd data-testid="selected-object">{status.selected.id}</dd>
+                </div>
+                <div>
+                  <dt>类型</dt>
+                  <dd data-testid="selected-kind">{status.selected.kind}</dd>
+                </div>
+                <div>
+                  <dt>参考系</dt>
+                  <dd data-testid="selected-frame">
+                    {status.selected.reference}
+                  </dd>
+                </div>
+                <div>
+                  <dt>选中帧</dt>
+                  <dd>{status.selected.sequence}</dd>
+                </div>
+              </dl>
+            )}
+          </section>
           <button
             className="secondary"
             onClick={() => setEnabled((value) => !value)}

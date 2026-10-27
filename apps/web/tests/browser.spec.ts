@@ -33,6 +33,36 @@ function colored(bytes: Buffer): number {
   }
   return count;
 }
+
+test("picking reads the displayed frame, clears on empty space and survives resize/remount", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  const canvas = page.getByTestId("scene-canvas");
+  const hitCenter = async () => {
+    const box = (await canvas.boundingBox())!;
+    await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
+    await expect(page.getByTestId("selected-object")).toHaveText("demo:body");
+    await expect(page.getByTestId("selected-kind")).toHaveText("球体");
+    await expect(page.getByTestId("selected-frame")).toHaveText("demo:root");
+  };
+  await hitCenter();
+  await canvas.click({ position: { x: 8, y: 8 } });
+  await expect(page.getByTestId("selection-status")).toHaveText("未命中对象");
+  await expect(page.getByTestId("selected-object")).toHaveCount(0);
+  await page.setViewportSize({ width: 720, height: 1000 });
+  await hitCenter();
+  await page.screenshot({
+    path: "test-results/spaceeyes-selection-mobile.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "卸载画布" }).click();
+  await expect(page.getByTestId("selected-object")).toHaveCount(0);
+  await page.getByRole("button", { name: "重新挂载" }).click();
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  await hitCenter();
+});
 test("actual Surface pixels, camera, clock, resize and teardown/remount", async ({
   page,
 }) => {

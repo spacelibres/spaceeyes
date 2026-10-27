@@ -18,7 +18,7 @@ bash tools/setup-web.sh
 cargo build --workspace --locked
 bash tools/check.sh
 ```
-检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认110项Rust测试通过；GPU功能开启时121项Rust测试，另8项TS互通与5项浏览器测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
+检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。M2-2本机Windows/Rust 1.96.0验收为113项默认Rust测试、124项含GPU Rust测试、9项TS互通及7项浏览器测试；历史Linux证据与当前边界见开发进度。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
 
 ### GPU原型与Native运行
 需要Vulkan驱动（硬件或Mesa软件驱动）；已配置云环境可直接执行：
@@ -57,9 +57,12 @@ Native可追加第4个参数：`cargo run -p spaceeyes-native --features gpu --l
 
 ### TS SDK与能力发现（M1-2）
 需要Node >=22（本轮24.19.0，见.node-version）。首次执行`bash tools/setup-sdk.sh`安装锁定npm依赖和与Cargo.lock匹配的wasm-bindgen-cli；完整云安装脚本也包含此步骤。`bash tools/check-sdk.sh`验证同源生成、严格TS类型/格式、Native与真实WASM互通；已纳入`bash tools/check.sh --gpu`。
-SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。宿主创建`CoreClient(wasmTransport(engine, authenticatedPrincipal), sessionId)`后调用`await client.connect(requiredOperations)`；能力发现返回当前24项实际支持操作与限制，不授予权限。使用生成的oneof载荷发送`command`/`query`，写入由调用方提供requestId及修订/代次，64位整数使用bigint。SDK不隐式重试、不持有第二套场景，实例由宿主负责Stop/free。
+SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。宿主创建`CoreClient(wasmTransport(engine, authenticatedPrincipal), sessionId)`后调用`await client.connect(requiredOperations)`；能力发现返回当前25项实际支持操作与限制，不授予权限。使用生成的oneof载荷发送`command`/`query`，写入由调用方提供requestId及修订/代次，64位整数使用bigint。SDK不隐式重试、不持有第二套场景，实例由宿主负责Stop/free。
 运行`bash tools/generate-ts.sh`同步Proto生成文件，`--check`检查漂移；不要手改生成类型。M2-1已接通真实浏览器画布/基础交互；后续按全局规划完善拾取/相机/时间，不把Node互通替代浏览器测试。
 
 ### 浏览器宿主（M2-1）
 首次执行`bash tools/setup-web.sh`准备浏览器测试依赖；`bash tools/build-web.sh`生成browser-feature WASM/web绑定并构建Next.js生产宿主，`npm run start --workspace @spaceeyes/web`启动。验证使用`bash tools/check-web.sh`，已加入完整检查。详见[宿主说明](apps/web/README.md)。
 实际WebGPU Surface与Native共享Rust绘制管线。页面提供合成球体/网格、视角调整、播放/暂停、resize、状态和卸载；宿主帧独立于命令历史，资源预算归Resources。自动测试采用真实Chromium软件GPU，包含可见像素、时间/相机、生命周期和设备丢失故障；不提供自动GPU恢复或NASA科学数据。
+
+### 同帧拾取与对象信息（M2-2）
+点击画面，经SDK的`query.pick_presented`读取Rust保留的最近成功呈现帧，显示对象ID、类型、参考系与选中帧；空白清除选择。查询不推进时间、不消耗命令历史；帧过期、对象删除或核心状态变化后明确拒绝。点击在宿主串行队列处理时选择最近完成帧，不保证鼠标事件发生瞬间的GPU画面。缩放、卸载重挂与设备丢失经过浏览器验证。相机聚焦/跟随、完整时间轴、科学数据、市场和AI仍未完成。
