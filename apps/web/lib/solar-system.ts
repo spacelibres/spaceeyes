@@ -38,6 +38,22 @@ export const SUN = {
 
 export const SOLAR_BODIES: readonly SolarBody[] = [
   {
+    id: "solar:mercury",
+    frame: "solar:mercury",
+    parentFrame: "demo:root",
+    path: "mercury/sun/orb/def.dyn",
+    radiusM: 0.5,
+    color: { r: 0.55, g: 0.5, b: 0.45 },
+  },
+  {
+    id: "solar:venus",
+    frame: "solar:venus",
+    parentFrame: "demo:root",
+    path: "venus/sun/orb/def.dyn",
+    radiusM: 0.85,
+    color: { r: 0.9, g: 0.78, b: 0.5 },
+  },
+  {
     id: "solar:earth",
     frame: "solar:earth",
     parentFrame: "demo:root",
@@ -68,6 +84,30 @@ export const SOLAR_BODIES: readonly SolarBody[] = [
     path: "jupiter/sun/orb/def.dyn",
     radiusM: 2.2,
     color: { r: 0.8, g: 0.66, b: 0.46 },
+  },
+  {
+    id: "solar:saturn",
+    frame: "solar:saturn",
+    parentFrame: "demo:root",
+    path: "saturn/sun/orb/def.dyn",
+    radiusM: 1.8,
+    color: { r: 0.85, g: 0.75, b: 0.5 },
+  },
+  {
+    id: "solar:uranus",
+    frame: "solar:uranus",
+    parentFrame: "demo:root",
+    path: "uranus/sun/orb/def.dyn",
+    radiusM: 1.3,
+    color: { r: 0.55, g: 0.85, b: 0.9 },
+  },
+  {
+    id: "solar:neptune",
+    frame: "solar:neptune",
+    parentFrame: "demo:root",
+    path: "neptune/sun/orb/def.dyn",
+    radiusM: 1.3,
+    color: { r: 0.3, g: 0.45, b: 0.9 },
   },
 ];
 
@@ -130,10 +170,15 @@ export function displayPosition(position: Vec3): Vec3 {
 
 export const SOLAR_NAMES: Readonly<Record<string, string>> = {
   "solar:sun": "太阳",
+  "solar:mercury": "水星",
+  "solar:venus": "金星",
   "solar:earth": "地球",
   "solar:moon": "月球",
   "solar:mars": "火星",
   "solar:jupiter": "木星",
+  "solar:saturn": "土星",
+  "solar:uranus": "天王星",
+  "solar:neptune": "海王星",
 };
 
 export interface OrbitMesh {

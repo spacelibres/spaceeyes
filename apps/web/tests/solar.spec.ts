@@ -68,7 +68,7 @@ test("solar scene loads provider samples through the host proxy", async ({
   });
   await expect
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
-    .toBeGreaterThanOrEqual(10);
+    .toBeGreaterThanOrEqual(20);
   await page.getByTestId("time-axis").fill("1");
   await expect
     .poll(async () => (await page.getByTestId("clock").textContent()) ?? "")
@@ -90,7 +90,7 @@ test("solar scene loads provider samples through the host proxy", async ({
   });
   await expect
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
-    .toBeGreaterThanOrEqual(10);
+    .toBeGreaterThanOrEqual(20);
   await expect(page.getByText("太阳系星历")).toBeVisible();
   expect(
     requested.some((path) => path.endsWith("/earth/sun/orb/def.dyn")),
@@ -100,6 +100,15 @@ test("solar scene loads provider samples through the host proxy", async ({
   ).toBe(true);
   expect(
     requested.some((path) => path.endsWith("/jupiter/sun/orb/def.dyn")),
+  ).toBe(true);
+  expect(
+    requested.some((path) => path.endsWith("/mercury/sun/orb/def.dyn")),
+  ).toBe(true);
+  expect(
+    requested.some((path) => path.endsWith("/saturn/sun/orb/def.dyn")),
+  ).toBe(true);
+  expect(
+    requested.some((path) => path.endsWith("/neptune/sun/orb/def.dyn")),
   ).toBe(true);
   expect(await page.getByTestId("selection-status").textContent()).toBeTruthy();
 });
