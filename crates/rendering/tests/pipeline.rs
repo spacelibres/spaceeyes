@@ -11,6 +11,7 @@ fn frame() -> FrameSnapshot {
     let id = ObjectId::new("marker").unwrap();
     scene.create(SceneObject::new(id.clone())).unwrap();
     FrameSnapshot {
+        session: "test-session".into(),
         textures: vec![],
         meshes: vec![],
         sequence: 1,

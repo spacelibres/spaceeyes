@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 已发布快照、会话身份与 Stale 语义（C10 切片）
+- `FrameAvailability` 新增 `Stale`（仅用于保留旧帧的视觉回退）；`FrameSnapshot` 携带 `session`，`SessionStatus` 携带会话并在 Proto 追加 `session_id=9`。
+- `Engine` 一次性绑定宿主会话；`commit_frame` 原子替换已发布记录与保留帧并追加有界 `FramePublished` 事件；抓取失败保留最后一致帧并置 Stale，后续状态推进与 Stop 同样使旧帧变 Stale。
+- `retained_frame` 返回显式 STALE 副本；`Pick::validate`、`PresentedSelection::pick` 拒绝 STALE、旧序号与其他会话。
+- 验证：engine 7 项 frames 与 1 项跨会话拾取、rendering/snapshot/protocol-adapter 定向测试；完整生命周期状态与 STALE 宿主界面仍待后续。
+
+
 ### 资源 LRU 淘汰（C09切片）
 - ResourceManager记录最近租用序并新增evict_lru(target)：仅淘汰已就绪、非上传中、无租约的CPU资源；旧帧/读取者持有的Arc副本不被强拆，管理器移除Id并更新字节/修订。
 - Engine新增evict_resource_cache并跳过Stopped；Scene对象租约保持资源不可淘汰，删除对象释放后可回收。未新增Proto命令，淘汰由宿主策略显式调用。

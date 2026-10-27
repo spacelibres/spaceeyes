@@ -494,6 +494,7 @@ fn focus_requires_revision_and_generation_and_camera_queries_are_read_only() {
 fn fresh_wire_session_creates_resolves_and_prepares_pickable_scene() {
     let mut a = adapter(32);
     assert_eq!(status(&a).lifecycle, p::EngineLifecycle::Ready as i32);
+    assert_eq!(status(&a).session_id, "session");
     setup_scene(&mut a);
     completed(send(&mut a, lifecycle("start", true)));
     let current = status(&a);

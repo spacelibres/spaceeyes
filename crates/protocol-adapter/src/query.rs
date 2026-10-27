@@ -43,6 +43,7 @@ pub(crate) fn encode_transform(value: RigidTransform) -> p::RigidTransform {
 pub(crate) fn encode_status(s: &SessionStatus) -> Result<p::SessionStatus, ProtocolError> {
     let rate = s.clock.rate;
     Ok(p::SessionStatus {
+        session_id: s.session.clone(),
         lifecycle: match s.lifecycle {
             EngineState::Ready => p::EngineLifecycle::Ready,
             EngineState::Running => p::EngineLifecycle::Running,

@@ -83,7 +83,8 @@ pub struct Pick {
 }
 impl Pick {
     pub fn validate(&self, frame: &FrameSnapshot) -> Result<(), RenderError> {
-        if self.scene_revision != frame.scene.revision
+        if frame.is_stale()
+            || self.scene_revision != frame.scene.revision
             || self.sequence != frame.sequence
             || !frame.scene.objects.iter().any(|o| o.id() == &self.object)
         {

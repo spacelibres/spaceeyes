@@ -226,3 +226,6 @@ query.project_export只读、不推进时钟/代次、不消耗命令历史，St
 
 ## 对象分页查询（C12切片）
 QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObjectsQuery.page_size=0表示默认256，最大256；page_token为上一页最后一个ObjectId，按ObjectId字典序继续，空next表示结束。ObjectPage返回objects/next_page_token/scene_revision。查询实时读取，场景可在页间变化；调用方用scene_revision判断重读。超页大小/超长令牌返回INVALID_ARGUMENT，Stopped返回ENGINE_UNAVAILABLE；查询不推进时钟、不写事件/历史，不授予写权限。能力新增query.list_objects，总数37。
+
+## 会话身份字段（C10切片）
+`SessionStatus`追加`session_id=9`，返回引擎绑定的宿主会话标识；旧客户端缺省为空字符串。该字段用于区分恢复前后或不同宿主会话的快照与回执，不替代`RequestContext.session_id`的准入校验：请求会话不匹配仍在适配器层拒绝。快照值的会话身份位于Rust `FrameSnapshot.session`，当前尚未新增对外FrameSnapshot消息；`FramePublished`事件只在Rust引擎内部提供，事件订阅与重放仍属C12。

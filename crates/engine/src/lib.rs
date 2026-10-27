@@ -12,11 +12,12 @@ use spaceeyes_simulation::{
     dispatch_ready, enqueue_bounded, IssuedTask, SimulationScheduler, TaskBudget, TaskError,
     TaskExecutionToken, TaskExecutor, TaskProvenance, TaskRequest, TaskResult, TaskStatus,
 };
+use spaceeyes_snapshot::{FrameAvailability, FramePublished, FrameSnapshot};
 use spaceeyes_spatial::{
     FrameSample, ProviderRef, ReferenceFrameGraph, RigidTransform, SpatialError,
 };
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, VecDeque};
 mod dispatcher;
 pub use dispatcher::*;
 mod selection;
@@ -81,6 +82,7 @@ pub enum RestoreError {
     Resource(ResourceError),
 }
 const MAX_TASK_TARGETS: usize = 1024;
+const MAX_FRAME_EVENTS: usize = 64;
 
 #[derive(Clone, Debug)]
 struct BoundObject {
@@ -111,6 +113,13 @@ pub struct Engine {
     task_contexts: BTreeMap<String, TaskContext>,
     object_leases: HashMap<ObjectId, Vec<LeaseId>>,
     frame_sequence: u64,
+    // Bound by the host session; snapshots from another session are never current.
+    session: String,
+    // Latest atomically published frame; replaced whole, never patched in place.
+    published: Option<FramePublished>,
+    // Last consistent frame retained for explicitly STALE visual fallback.
+    retained_frame: Option<FrameSnapshot>,
+    frame_events: VecDeque<FramePublished>,
 }
 impl Engine {
     pub fn new(instant: TimeInstant) -> Self {
@@ -129,6 +138,28 @@ impl Engine {
             task_contexts: BTreeMap::new(),
             object_leases: HashMap::new(),
             frame_sequence: 0,
+            session: String::new(),
+            published: None,
+            retained_frame: None,
+            frame_events: VecDeque::new(),
+        }
+    }
+    pub fn session(&self) -> &str {
+        &self.session
+    }
+    /// Bind the host session once. Rebinding the same session is idempotent.
+    pub fn bind_session(&mut self, session: &str) -> Result<(), CoreError> {
+        if session.trim().is_empty() {
+            return Err(CoreError::InvalidState);
+        }
+        if self.session.is_empty() {
+            self.session = session.to_owned();
+            return Ok(());
+        }
+        if self.session == session {
+            Ok(())
+        } else {
+            Err(CoreError::InvalidState)
         }
     }
     pub fn project_state(&self) -> ProjectState {
@@ -225,11 +256,8 @@ impl Engine {
     }
     /// Capture time-explicit poses and every revision in one immutable value.
     /// Missing references are explicit; no zero-position scientific state is invented.
-    pub fn publish_frame(
-        &self,
-        reference: &FrameId,
-    ) -> Result<spaceeyes_snapshot::FrameSnapshot, SpatialError> {
-        use spaceeyes_snapshot::{FrameAvailability, FrameSnapshot, ObjectPose};
+    pub fn publish_frame(&self, reference: &FrameId) -> Result<FrameSnapshot, SpatialError> {
+        use spaceeyes_snapshot::ObjectPose;
         if self.state == EngineState::Stopped {
             return Err(SpatialError::EngineUnavailable);
         }
@@ -310,6 +338,7 @@ impl Engine {
         Ok(FrameSnapshot {
             textures,
             meshes,
+            session: self.session.clone(),
             sequence: self.frame_sequence,
             scene,
             clock,
@@ -324,6 +353,62 @@ impl Engine {
             poses,
             unresolved,
         })
+    }
+    /// Capture one frame and atomically replace the published snapshot record.
+    ///
+    /// A failed capture never fabricates a new frame: the previously published record is
+    /// retained and marked stale so hosts must present it as STALE or stop presenting.
+    pub fn commit_frame(&mut self, reference: &FrameId) -> Result<FrameSnapshot, SpatialError> {
+        let frame = match self.publish_frame(reference) {
+            Ok(frame) => frame,
+            Err(error) => {
+                if let Some(published) = &mut self.published {
+                    published.stale = true;
+                }
+                return Err(error);
+            }
+        };
+        let published = FramePublished {
+            session: frame.session.clone(),
+            sequence: frame.sequence,
+            generation: frame.clock.generation,
+            availability: frame.availability,
+            scene_revision: frame.scene.revision,
+            frame_graph_revision: frame.frame_graph_revision,
+            resource_revision: frame.resource_revision,
+            stale: false,
+        };
+        if self.frame_events.len() == MAX_FRAME_EVENTS {
+            self.frame_events.pop_front();
+        }
+        self.frame_events.push_back(published.clone());
+        self.published = Some(published);
+        self.retained_frame = Some(frame.clone());
+        Ok(frame)
+    }
+    /// Latest published record. Stale also covers any later state change that advanced
+    /// the session frame sequence beyond the published frame.
+    pub fn published_frame(&self) -> Option<FramePublished> {
+        self.published.as_ref().map(|published| FramePublished {
+            stale: published.stale || published.sequence != self.frame_sequence,
+            ..published.clone()
+        })
+    }
+    /// Last consistent frame retained for visual fallback. It is marked STALE whenever it
+    /// no longer represents the current scientific state; it is never a write path.
+    pub fn retained_frame(&self) -> Option<FrameSnapshot> {
+        let published = self.published_frame()?;
+        self.retained_frame.clone().map(|mut frame| {
+            frame.availability = if published.stale {
+                FrameAvailability::Stale
+            } else {
+                frame.availability
+            };
+            frame
+        })
+    }
+    pub fn frame_events(&self) -> impl Iterator<Item = &FramePublished> {
+        self.frame_events.iter()
     }
     /// Coordinate one native draw using the same authoritative resource registry as Scene/tasks.
     #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
@@ -344,7 +429,7 @@ impl Engine {
             .checked_add(1)
             .ok_or(RenderError::Budget)?;
         let snapshot = self
-            .publish_frame(reference)
+            .commit_frame(reference)
             .map_err(|_| RenderError::InvalidFrame)?;
         let prepared = prepare_camera(&snapshot, camera, f64::from(width) / f64::from(height))?;
         let before = self.resources.revision();
@@ -1255,6 +1340,10 @@ impl Engine {
         self.release_terminal_task_leases();
         self.object_leases.clear();
         self.resources.clear();
+        // The last consistent frame is frozen for diagnostics but is no longer current.
+        if let Some(published) = &mut self.published {
+            published.stale = true;
+        }
         self.state = EngineState::Stopped;
     }
 }

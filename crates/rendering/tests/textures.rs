@@ -59,6 +59,7 @@ fn frame(texture: TextureData, sampling: Sampling, uv: Option<[f32; 2]>) -> Fram
         )
         .unwrap();
     FrameSnapshot {
+        session: "test-session".into(),
         sequence: 1,
         scene: scene.snapshot(),
         poses: vec![ObjectPose {

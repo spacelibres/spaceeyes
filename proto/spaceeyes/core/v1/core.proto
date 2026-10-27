@@ -19,7 +19,7 @@ message StartEngine {}
 message StopEngine {}
 message LifecycleCommand { oneof action { StartEngine start=1; StopEngine stop=2; } }
 enum EngineLifecycle { ENGINE_LIFECYCLE_UNSPECIFIED=0; ENGINE_LIFECYCLE_READY=1; ENGINE_LIFECYCLE_RUNNING=2; ENGINE_LIFECYCLE_STOPPED=3; }
-message SessionStatus { EngineLifecycle lifecycle=1; ClockState clock=2; uint64 scene_revision=3; uint64 frame_graph_revision=4; uint64 resource_revision=5; uint64 frame_sequence=6; uint64 object_count=7; uint64 resource_used_bytes=8; }
+message SessionStatus { EngineLifecycle lifecycle=1; ClockState clock=2; uint64 scene_revision=3; uint64 frame_graph_revision=4; uint64 resource_revision=5; uint64 frame_sequence=6; uint64 object_count=7; uint64 resource_used_bytes=8; string session_id=9; }
 message SessionStatusQuery {}
 // Stable ObjectId ordering; the opaque token is the last returned id.
 message ListObjectsQuery { optional string page_token=1; uint32 page_size=2; }

@@ -69,6 +69,7 @@ fn frame(objects: &[(&str, [f64; 3], f64, [f32; 3])]) -> FrameSnapshot {
         })
         .collect();
     FrameSnapshot {
+        session: "test-session".into(),
         textures: vec![],
         meshes: vec![],
         sequence: 1,

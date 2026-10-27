@@ -12,6 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         committed_scene_revision: 9_007_199_254_740_993,
         frame_sequence: u64::MAX,
         payload: Some(p::response_envelope::Payload::Session(p::SessionStatus {
+            session_id: String::new(),
             lifecycle: p::EngineLifecycle::Ready as i32,
             clock: Some(p::ClockState {
                 instant: Some(p::TimeInstant {

@@ -100,6 +100,7 @@ pub struct CommandReceipt {
 /// Read-only status, also captured at commit time for stable lifecycle receipts.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SessionStatus {
+    pub session: String,
     pub lifecycle: EngineState,
     pub clock: spaceeyes_time::ClockSnapshot,
     pub scene_revision: Revision,
@@ -188,10 +189,18 @@ pub struct CommandDispatcher {
     events: VecDeque<CommitEvent>,
 }
 impl CommandDispatcher {
-    pub fn new(engine: Engine, session: String, capacity: usize) -> Result<Self, DispatchError> {
+    pub fn new(
+        mut engine: Engine,
+        session: String,
+        capacity: usize,
+    ) -> Result<Self, DispatchError> {
         if session.trim().is_empty() || capacity == 0 {
             return Err(DispatchError::InvalidContext);
         }
+        // A snapshot captured for another session must never be treated as current.
+        engine
+            .bind_session(&session)
+            .map_err(|_| DispatchError::InvalidContext)?;
         Ok(Self {
             engine,
             presented: None,
@@ -229,6 +238,17 @@ impl CommandDispatcher {
     pub fn snapshot(&self) -> EngineSnapshot {
         self.engine.snapshot()
     }
+    /// Latest atomically published frame; never constructs a new snapshot.
+    pub fn published_frame(&self) -> Option<spaceeyes_snapshot::FramePublished> {
+        self.engine.published_frame()
+    }
+    /// Retained last consistent frame, explicitly STALE when it is no longer current.
+    pub fn retained_frame(&self) -> Option<spaceeyes_snapshot::FrameSnapshot> {
+        self.engine.retained_frame()
+    }
+    pub fn frame_events(&self) -> impl Iterator<Item = &spaceeyes_snapshot::FramePublished> {
+        self.engine.frame_events()
+    }
     pub fn events(&self) -> impl Iterator<Item = &CommitEvent> {
         self.events.iter()
     }
@@ -262,6 +282,7 @@ impl CommandDispatcher {
     }
     pub fn session_status(&self) -> SessionStatus {
         SessionStatus {
+            session: self.session.clone(),
             lifecycle: self.engine.state(),
             clock: self.engine.clock().snapshot(),
             scene_revision: self.engine.scene().revision(),
@@ -576,7 +597,7 @@ impl CommandDispatcher {
             .map_err(|_| RenderError::InvalidFrame)?;
         let snapshot = self
             .engine
-            .publish_frame(reference)
+            .commit_frame(reference)
             .map_err(|_| RenderError::InvalidFrame)?;
         let unresolved = snapshot.unresolved.len() as u64;
         let prepared = prepare_camera(&snapshot, camera, f64::from(width) / f64::from(height))?;

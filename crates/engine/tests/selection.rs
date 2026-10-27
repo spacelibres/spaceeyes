@@ -106,4 +106,11 @@ fn old_sequence_or_any_changed_authoritative_state_rejects_selection() {
         selection.pick(&changed, status.frame_sequence, 0.0, 0.0),
         Err(RenderError::StalePick)
     );
+    // A status from another session can never validate this presentation.
+    changed = status.clone();
+    changed.session = "other-session".into();
+    assert_eq!(
+        selection.pick(&changed, status.frame_sequence, 0.0, 0.0),
+        Err(RenderError::StalePick)
+    );
 }
