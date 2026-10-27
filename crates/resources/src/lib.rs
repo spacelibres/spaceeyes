@@ -75,6 +75,7 @@ struct Entry {
     bytes: u64,
     generation: u64,
     leases: u64,
+    last_used: u64,
 }
 /// Portable CPU contents or a declaration, without lease or load identities.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -101,6 +102,7 @@ pub struct ResourceManager {
     by_class: [u64; 3],
     used: u64,
     revision: u64,
+    access_clock: u64,
 }
 impl ResourceManager {
     pub fn new(budget: ResourceBudget) -> Self {
@@ -121,6 +123,7 @@ impl ResourceManager {
             by_class: [0; 3],
             used: 0,
             revision: 0,
+            access_clock: 0,
         }
     }
     pub fn records(&self) -> Vec<ResourceRecord> {
@@ -304,6 +307,7 @@ impl ResourceManager {
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
         self.generations.insert(id.clone(), generation);
+        let last_used = self.bump_access();
         self.entries.insert(
             id,
             Entry {
@@ -318,6 +322,7 @@ impl ResourceManager {
                 bytes,
                 generation,
                 leases: 0,
+                last_used,
             },
         );
         self.used = used;
@@ -456,6 +461,7 @@ impl ResourceManager {
         self.entries.get_mut(id).expect("validated").leases = count;
         self.active.insert(sequence, token.clone());
         self.next_lease = sequence;
+        self.touch(id);
         Ok(token)
     }
     pub fn release_lease(&mut self, token: &LeaseId) -> Result<(), ResourceError> {
@@ -475,6 +481,55 @@ impl ResourceManager {
             .expect("validated")
             .leases -= 1;
         Ok(())
+    }
+    fn bump_access(&mut self) -> u64 {
+        self.access_clock = self.access_clock.saturating_add(1);
+        self.access_clock
+    }
+    fn touch(&mut self, id: &ResourceId) {
+        let at = self.bump_access();
+        if let Some(entry) = self.entries.get_mut(id) {
+            entry.last_used = at;
+        }
+    }
+    /// Evict least-recently-used ready CPU resources that are not leased.
+    /// Existing readers keep their `Arc` clones; the manager forgets the id.
+    pub fn evict_lru(&mut self, target_bytes: u64) -> Vec<ResourceId> {
+        if target_bytes == 0 {
+            return Vec::new();
+        }
+        let Some(revision) = self.revision.checked_add(1) else {
+            return Vec::new();
+        };
+        let mut candidates: Vec<(u64, String, ResourceId)> = self
+            .entries
+            .iter()
+            .filter(|(_, entry)| {
+                entry.class == ResourceClass::Cpu
+                    && !entry.uploading
+                    && entry.leases == 0
+                    && entry.state == ResourceState::Ready
+            })
+            .map(|(id, entry)| (entry.last_used, id.as_str().to_owned(), id.clone()))
+            .collect();
+        candidates.sort_by(|left, right| left.0.cmp(&right.0).then(left.1.cmp(&right.1)));
+        let mut evicted = Vec::new();
+        let mut freed = 0u64;
+        for (_, _, id) in candidates {
+            if freed >= target_bytes {
+                break;
+            }
+            if let Some(entry) = self.entries.remove(&id) {
+                self.used -= entry.bytes;
+                self.by_class[entry.class.index()] -= entry.bytes;
+                freed = freed.saturating_add(entry.bytes);
+                evicted.push(id);
+            }
+        }
+        if !evicted.is_empty() {
+            self.revision = revision;
+        }
+        evicted
     }
     pub fn unregister(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
         let entry = self.entries.get(id).ok_or(ResourceError::Unknown)?;

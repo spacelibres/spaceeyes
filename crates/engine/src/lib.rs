@@ -1229,6 +1229,24 @@ impl Engine {
         self.frame_sequence = sequence;
         Ok(())
     }
+    /// Evict unleased ready CPU assets by LRU. Object leases keep scene assets pinned.
+    pub fn evict_resource_cache(
+        &mut self,
+        target_bytes: u64,
+    ) -> Result<Vec<ResourceId>, ResourceError> {
+        if self.state == EngineState::Stopped {
+            return Err(ResourceError::EngineUnavailable);
+        }
+        let sequence = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
+        let evicted = self.resources.evict_lru(target_bytes);
+        if !evicted.is_empty() {
+            self.frame_sequence = sequence;
+        }
+        Ok(evicted)
+    }
     pub fn resource_bytes(&self, lease: &LeaseId) -> Result<&[u8], ResourceError> {
         self.resources.read(lease)
     }

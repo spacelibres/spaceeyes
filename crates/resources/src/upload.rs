@@ -142,6 +142,7 @@ impl ResourceManager {
         };
         self.generations
             .insert(status.descriptor.resource_id.clone(), generation);
+        let last_used = self.bump_access();
         self.entries.insert(
             status.descriptor.resource_id.clone(),
             Entry {
@@ -156,6 +157,7 @@ impl ResourceManager {
                 bytes,
                 generation,
                 leases: 0,
+                last_used,
             },
         );
         self.uploads.insert(

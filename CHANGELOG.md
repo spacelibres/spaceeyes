@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+
+### 资源 LRU 淘汰（C09切片）
+- ResourceManager记录最近租用序并新增evict_lru(target)：仅淘汰已就绪、非上传中、无租约的CPU资源；旧帧/读取者持有的Arc副本不被强拆，管理器移除Id并更新字节/修订。
+- Engine新增evict_resource_cache并跳过Stopped；Scene对象租约保持资源不可淘汰，删除对象释放后可回收。未新增Proto命令，淘汰由宿主策略显式调用。
+- 验证：resources 2项cache测试（LRU顺序/租约/声明与加载跳过/原子修订/零目标）、engine 1项集成（Scene租约、删除后回收、Stop拒绝）；未逐次全量。
+
 ### 对象分页查询（C12切片）
 - Proto新增ListObjectsQuery/ObjectPage，QueryEnvelope 28与ResponseEnvelope 20；按ObjectId字典序返回场景对象，支持0-256页大小与不透明page_token，返回next_page_token与scene_revision。
 - ProtocolAdapter校验页大小/令牌长度，Stopped拒绝；查询只读、不推进时钟、不消耗命令历史。能力总数增至37。
