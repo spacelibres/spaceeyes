@@ -16,7 +16,7 @@
 - **SceneObject**：封装通用属性与资源引用；不允许外部直接修改内部字段。
 - **ParentId**：场景组织关系，主要用于树形管理、选择和生命周期策略；**不自动代表物理参考系或空间变换继承**。
 - **FrameId**：独立的空间参考系标识，实际变换由Spatial模块负责。
-- **SceneSnapshot**：不可变的场景状态视图，供渲染、查询和恢复使用。
+- **SceneSnapshot**：Scene生成的不可变场景局部视图；Renderer只消费Engine发布的一致FrameSnapshot；持久恢复使用独立ProjectSnapshot。
 
 ## 3. 对象模型（候选）
 
@@ -57,7 +57,7 @@ Active → Detached → Attached（如允许重新挂载）
 
 ## 7. 状态更新与快照
 
-命令先校验目标ID、状态和不变量，成功后以单一权威顺序应用；失败不得造成隐式部分写入。批量命令的原子或逐项结果策略待审定。SceneSnapshot应包含场景修订号、仿真时间引用、对象通用状态、组织关系与资源句柄引用；快照是只读数据，不允许渲染器反向修改权威Scene。
+命令先校验目标ID、状态和不变量，成功后以单一权威顺序应用；失败不得造成隐式部分写入。批量Scene事务首期按已批准ADR-002采用全有或全无；逐项best-effort如未来需要须定义独立命令。SceneSnapshot应包含场景修订号、仿真时间引用、对象通用状态、组织关系与资源句柄引用；快照是只读数据，不允许渲染器反向修改权威Scene。
 
 ## 8. Proto公开边界
 
@@ -90,4 +90,8 @@ Active → Detached → Attached（如允许重新挂载）
 
 
 ## 12. 交叉审查整改对齐（待审）
-Scene是唯一场景可变状态所有者；Engine为统一外部命令入口，Simulation仅提出经验证的SceneCommand。SceneSnapshot由Engine联合Time与Spatial修订形成一致FrameSnapshot。Frame撤销不隐式删除对象。单命令原子，批量默认全有或全无为待批准提议。
+Scene是唯一场景可变状态所有者；Engine为统一外部命令入口，Simulation仅提出经验证的SceneCommand。SceneSnapshot由Engine联合Time与Spatial修订形成一致FrameSnapshot。Frame撤销不隐式删除对象。单命令原子，批量默认全有或全无属于已批准ADR-002的设计约束。
+
+
+## 13. 第13阶段生命周期对齐
+Engine生命周期与SceneObject生命周期分别定义；Paused只属于Time。Frame失效时Scene对象保持存在并标记unresolved。对象删除释放资源租约，不直接删除共享GPU资源。ProjectSnapshot保存稳定ObjectId、ParentId、FrameId等持久状态，禁止保存内部ObjectHandle。恢复后需建立新的内部句柄。
