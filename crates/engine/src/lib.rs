@@ -7,10 +7,10 @@ use spaceeyes_foundation::{ObjectId, ResourceId};
 use spaceeyes_resources::{
     LeaseId, ResourceClass, ResourceError, ResourceLimits, ResourceManager, ResourceUsage,
 };
-use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
+use spaceeyes_scene::{ObjectHandle, Scene, SceneCommand, SceneObject, SceneSnapshot};
 use spaceeyes_simulation::{
-    dispatch_ready, enqueue_bounded, SimulationScheduler, TaskBudget, TaskError, TaskExecutor,
-    TaskProvenance, TaskRequest, TaskResult, TaskStatus,
+    dispatch_ready, enqueue_bounded, IssuedTask, SimulationScheduler, TaskBudget, TaskError,
+    TaskExecutionToken, TaskExecutor, TaskProvenance, TaskRequest, TaskResult, TaskStatus,
 };
 use spaceeyes_spatial::{
     FrameSample, ProviderRef, ReferenceFrameGraph, RigidTransform, SpatialError,
@@ -47,8 +47,14 @@ pub struct EngineSnapshot {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ExecutorFeedback {
     Result(TaskResult),
-    Failed { task_id: String },
-    Cancelled { task_id: String },
+    Failed {
+        task_id: String,
+        token: TaskExecutionToken,
+    },
+    Cancelled {
+        task_id: String,
+        token: TaskExecutionToken,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -74,6 +80,25 @@ pub enum RestoreError {
     Spatial(SpatialError),
     Resource(ResourceError),
 }
+const MAX_TASK_TARGETS: usize = 1024;
+
+#[derive(Clone, Debug)]
+struct BoundObject {
+    handle: ObjectHandle,
+    snapshot: SceneObject,
+}
+#[derive(Clone, Debug)]
+enum TaskTargets {
+    SceneRevision(Revision),
+    Objects(HashMap<ObjectId, BoundObject>),
+}
+#[derive(Clone, Debug)]
+struct TaskContext {
+    token: TaskExecutionToken,
+    frame_graph_revision: Revision,
+    targets: TaskTargets,
+}
+
 pub struct Engine {
     state: EngineState,
     scene: Scene,
@@ -83,6 +108,7 @@ pub struct Engine {
     task_budget: TaskBudget,
     resources: ResourceManager,
     task_leases: BTreeMap<String, Vec<LeaseId>>,
+    task_contexts: BTreeMap<String, TaskContext>,
     object_leases: HashMap<ObjectId, Vec<LeaseId>>,
     frame_sequence: u64,
 }
@@ -100,6 +126,7 @@ impl Engine {
             task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
             resources: ResourceManager::with_limits(limits),
             task_leases: BTreeMap::new(),
+            task_contexts: BTreeMap::new(),
             object_leases: HashMap::new(),
             frame_sequence: 0,
         }
@@ -657,7 +684,159 @@ impl Engine {
         if request.generation != self.clock.generation() {
             return Err(TaskError::StaleGeneration);
         }
-        enqueue_bounded(&mut self.simulation, self.task_budget, request)
+        self.enqueue_task_with_targets(request, TaskTargets::SceneRevision(self.scene.revision()))
+    }
+    /// Bind existing objects by registry, generation and immutable input value.
+    /// Changes to unrelated objects may still proceed.
+    /// Targets include every object written, parent and camera tracking dependency.
+    /// Creation requires enqueue_task's conservative Scene revision binding.
+    pub fn enqueue_task_for_objects(
+        &mut self,
+        request: TaskRequest,
+        targets: &[ObjectId],
+    ) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped {
+            return Err(TaskError::InvalidState);
+        }
+        if request.generation != self.clock.generation() {
+            return Err(TaskError::StaleGeneration);
+        }
+        if targets.len() > MAX_TASK_TARGETS {
+            return Err(TaskError::TargetLimit);
+        }
+        if targets.is_empty() {
+            return Err(TaskError::InvalidTarget);
+        }
+        let mut handles = HashMap::new();
+        for id in targets {
+            let handle = self.scene.handle(id).ok_or(TaskError::InvalidTarget)?;
+            let snapshot = self
+                .scene
+                .get_by_handle(&handle)
+                .map_err(|_| TaskError::InvalidTarget)?
+                .clone();
+            handles.insert(id.clone(), BoundObject { handle, snapshot });
+        }
+        self.validate_object_dependencies(&handles)?;
+        self.enqueue_task_with_targets(request, TaskTargets::Objects(handles))
+    }
+    fn enqueue_task_with_targets(
+        &mut self,
+        request: TaskRequest,
+        targets: TaskTargets,
+    ) -> Result<(), TaskError> {
+        let id = request.task_id.clone();
+        enqueue_bounded(&mut self.simulation, self.task_budget, request)?;
+        let token = self
+            .simulation
+            .issued_task(&id)
+            .expect("just enqueued")
+            .token;
+        self.task_contexts.insert(
+            id,
+            TaskContext {
+                token,
+                frame_graph_revision: self.spatial.revision(),
+                targets,
+            },
+        );
+        Ok(())
+    }
+    /// Synchronous hosts obtain the same execution identity dispatched to executors.
+    pub fn issued_task(&self, id: &str) -> Option<IssuedTask> {
+        self.simulation.issued_task(id)
+    }
+    fn validate_object_dependencies(
+        &self,
+        handles: &HashMap<ObjectId, BoundObject>,
+    ) -> Result<(), TaskError> {
+        // Check every captured object before inspecting relationship declarations;
+        // both object replacement and in-place input changes invalidate old work.
+        for bound in handles.values() {
+            let object = self
+                .scene
+                .get_by_handle(&bound.handle)
+                .map_err(|_| TaskError::InvalidTarget)?;
+            if object != &bound.snapshot {
+                return Err(TaskError::RevisionMismatch);
+            }
+        }
+        for bound in handles.values() {
+            let object = &bound.snapshot;
+            for dependency in [
+                object.parent(),
+                object
+                    .camera()
+                    .and_then(|camera| camera.tracking())
+                    .map(|tracking| tracking.target()),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                if !handles.contains_key(dependency) {
+                    return Err(TaskError::UndeclaredTarget);
+                }
+            }
+        }
+        Ok(())
+    }
+    fn validate_task_context(
+        &mut self,
+        id: &str,
+        token: &TaskExecutionToken,
+    ) -> Result<(), TaskError> {
+        self.simulation.validate_token(id, token)?;
+        let context = self.task_contexts.get(id).ok_or(TaskError::InvalidState)?;
+        if &context.token != token {
+            return Err(TaskError::ExecutionMismatch);
+        }
+        let outcome = if context.frame_graph_revision != self.spatial.revision() {
+            Err(TaskError::RevisionMismatch)
+        } else {
+            match &context.targets {
+                TaskTargets::SceneRevision(revision) if *revision != self.scene.revision() => {
+                    Err(TaskError::RevisionMismatch)
+                }
+                TaskTargets::SceneRevision(_) => Ok(()),
+                TaskTargets::Objects(handles) => self.validate_object_dependencies(handles),
+            }
+        };
+        if outcome.is_err() {
+            self.simulation.mark_stale(id, token)?;
+            self.release_terminal_task_leases();
+        }
+        outcome
+    }
+    fn validate_task_commands(&self, id: &str, commands: &[SceneCommand]) -> Result<(), TaskError> {
+        let context = self.task_contexts.get(id).ok_or(TaskError::InvalidState)?;
+        let TaskTargets::Objects(handles) = &context.targets else {
+            return Ok(());
+        };
+        for command in commands {
+            let (object, dependency) = match command {
+                SceneCommand::Create(_) => return Err(TaskError::CreateNotAllowed),
+                SceneCommand::SetParent { object, parent } => (object, parent.as_ref()),
+                SceneCommand::SetCamera { object, camera } => (
+                    object,
+                    camera
+                        .as_ref()
+                        .and_then(|camera| camera.tracking())
+                        .map(|tracking| tracking.target()),
+                ),
+                SceneCommand::SetMesh { object, .. }
+                | SceneCommand::SetSphere { object, .. }
+                | SceneCommand::SetResources { object, .. }
+                | SceneCommand::SetFrame { object, .. }
+                | SceneCommand::SetVisibility { object, .. }
+                | SceneCommand::Delete { object } => (object, None),
+            };
+            if !handles.contains_key(object)
+                || dependency.is_some_and(|id| !handles.contains_key(id))
+            {
+                return Err(TaskError::UndeclaredTarget);
+            }
+        }
+        Ok(())
     }
     pub fn bind_task_provenance(
         &mut self,
@@ -704,6 +883,7 @@ impl Engine {
         }
         self.simulation.forget_terminal(id)?;
         self.release_task_leases(id);
+        self.task_contexts.remove(id);
         Ok(())
     }
     pub fn cancel_task(&mut self, id: &str) -> Result<(), TaskError> {
@@ -718,8 +898,12 @@ impl Engine {
         id: &str,
         executor: &mut impl TaskExecutor,
     ) -> Result<(), TaskError> {
+        let task = self
+            .simulation
+            .issued_task(id)
+            .ok_or(TaskError::UnknownTask)?;
         self.cancel_task(id)?;
-        executor.request_cancel(id)
+        executor.request_cancel(task)
     }
     pub fn fail_task(&mut self, id: &str) -> Result<(), TaskError> {
         self.simulation.fail(id)?;
@@ -757,8 +941,9 @@ impl Engine {
     }
     fn release_terminal_task_leases(&mut self) {
         let ids: Vec<String> = self
-            .task_leases
+            .task_contexts
             .keys()
+            .chain(self.task_leases.keys())
             .filter(|id| {
                 matches!(
                     self.simulation.status(id),
@@ -774,12 +959,18 @@ impl Engine {
             .collect();
         for id in ids {
             self.release_task_leases(&id);
+            self.task_contexts.remove(&id);
         }
     }
     /// Result acceptance does not mutate Scene or claim a completed transaction.
     pub fn accept_task_result(&mut self, result: &TaskResult) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped {
             return Err(TaskError::InvalidState);
+        }
+        self.simulation
+            .validate_token(&result.task_id, &result.token)?;
+        if self.simulation.status(&result.task_id) == Some(TaskStatus::Running) {
+            self.validate_task_context(&result.task_id, &result.token)?;
         }
         let outcome =
             self.simulation
@@ -798,8 +989,16 @@ impl Engine {
         }
         match feedback {
             ExecutorFeedback::Result(result) => self.accept_task_result(&result),
-            ExecutorFeedback::Failed { task_id } => self.fail_task(&task_id),
-            ExecutorFeedback::Cancelled { task_id } => self.cancel_task(&task_id),
+            ExecutorFeedback::Failed { task_id, token } => {
+                self.simulation.fail_execution(&task_id, &token)?;
+                self.release_terminal_task_leases();
+                Ok(())
+            }
+            ExecutorFeedback::Cancelled { task_id, token } => {
+                self.simulation.cancel_execution(&task_id, &token)?;
+                self.release_terminal_task_leases();
+                Ok(())
+            }
         }
     }
     /// Commit a validated result through the sole Scene transaction path.
@@ -807,25 +1006,50 @@ impl Engine {
     pub fn commit_task_scene(
         &mut self,
         task_id: &str,
+        token: &TaskExecutionToken,
         expected_revision: Revision,
         commands: &[SceneCommand],
     ) -> Result<Revision, CommitTaskError> {
         if self.state == EngineState::Stopped {
             return Err(CommitTaskError::EngineStopped);
         }
-        self.simulation
-            .validate_commit(task_id, self.clock.generation(), self.clock.instant())
+        if let Err(error) = self.simulation.validate_commit(
+            task_id,
+            token,
+            self.clock.generation(),
+            self.clock.instant(),
+        ) {
+            if matches!(error, TaskError::StaleGeneration | TaskError::WrongInstant) {
+                self.simulation
+                    .mark_stale(task_id, token)
+                    .map_err(CommitTaskError::Task)?;
+                self.release_terminal_task_leases();
+            }
+            return Err(CommitTaskError::Task(error));
+        }
+        self.validate_task_context(task_id, token)
             .map_err(CommitTaskError::Task)?;
-        self.simulation
-            .validate_provenance(task_id, self.scene.revision(), self.spatial.revision())
+        if let Err(error) = self.simulation.validate_provenance(
+            task_id,
+            self.scene.revision(),
+            self.spatial.revision(),
+        ) {
+            self.simulation
+                .mark_stale(task_id, token)
+                .map_err(CommitTaskError::Task)?;
+            self.release_terminal_task_leases();
+            return Err(CommitTaskError::Task(error));
+        }
+        self.validate_task_commands(task_id, commands)
             .map_err(CommitTaskError::Task)?;
         let revision = self
             .submit_scene(expected_revision, commands)
             .map_err(CommitTaskError::Scene)?;
         self.simulation
-            .complete(task_id)
+            .complete(task_id, token)
             .map_err(CommitTaskError::Task)?;
         self.release_task_leases(task_id);
+        self.task_contexts.remove(task_id);
         Ok(revision)
     }
     /// All spatial graph writes pass through Engine, never through plugins.
@@ -991,6 +1215,46 @@ mod tests {
         TimeInstant::new("TT", "UNSPECIFIED_EPOCH", 0, 0).unwrap()
     }
     #[test]
+    fn task_cannot_borrow_latest_scene_revision_after_enqueue() {
+        let mut engine = Engine::new(instant());
+        engine
+            .enqueue_task(TaskRequest {
+                task_id: "bound".into(),
+                generation: TimeGeneration(0),
+                requested_instant: instant(),
+                dependencies: vec![],
+            })
+            .unwrap();
+        engine.start_task("bound").unwrap();
+        engine
+            .accept_task_result(&TaskResult {
+                token: engine.issued_task("bound").unwrap().token,
+                task_id: "bound".into(),
+                generation: TimeGeneration(0),
+                requested_instant: instant(),
+            })
+            .unwrap();
+        engine
+            .submit_scene(
+                Revision(0),
+                &[SceneCommand::Create(SceneObject::new(
+                    ObjectId::new("other").unwrap(),
+                ))],
+            )
+            .unwrap();
+        assert_eq!(
+            engine.commit_task_scene(
+                "bound",
+                &engine.issued_task("bound").unwrap().token,
+                Revision(1),
+                &[]
+            ),
+            Err(CommitTaskError::Task(TaskError::RevisionMismatch))
+        );
+        assert_eq!(engine.task_status("bound"), Some(TaskStatus::Stale));
+    }
+
+    #[test]
     fn executor_feedback_rejects_late_results_after_cancel() {
         let mut engine = Engine::new(instant());
         let request = TaskRequest {
@@ -1004,10 +1268,12 @@ mod tests {
         engine
             .receive_executor_feedback(ExecutorFeedback::Cancelled {
                 task_id: "feedback-task".into(),
+                token: engine.issued_task("feedback-task").unwrap().token,
             })
             .unwrap();
         assert_eq!(
             engine.receive_executor_feedback(ExecutorFeedback::Result(TaskResult {
+                token: engine.issued_task("feedback-task").unwrap().token,
                 task_id: "feedback-task".into(),
                 generation: TimeGeneration(0),
                 requested_instant: instant(),
@@ -1033,6 +1299,7 @@ mod tests {
         engine.start_task("feedback-success").unwrap();
         engine
             .receive_executor_feedback(ExecutorFeedback::Result(TaskResult {
+                token: engine.issued_task("feedback-success").unwrap().token,
                 task_id: "feedback-success".into(),
                 generation: TimeGeneration(0),
                 requested_instant: instant(),
@@ -1043,7 +1310,12 @@ mod tests {
             Some(TaskStatus::ResultReady)
         );
         engine
-            .commit_task_scene("feedback-success", Revision(0), &[])
+            .commit_task_scene(
+                "feedback-success",
+                &engine.issued_task("feedback-success").unwrap().token,
+                Revision(0),
+                &[],
+            )
             .unwrap();
         assert_eq!(
             engine.task_status("feedback-success"),
@@ -1074,13 +1346,19 @@ mod tests {
         engine.start_task("commit").unwrap();
         engine
             .accept_task_result(&TaskResult {
+                token: engine.issued_task("commit").unwrap().token,
                 task_id: "commit".into(),
                 generation: engine.clock().generation(),
                 requested_instant: engine.clock().instant().clone(),
             })
             .unwrap();
         engine
-            .commit_task_scene("commit", Revision(0), &[])
+            .commit_task_scene(
+                "commit",
+                &engine.issued_task("commit").unwrap().token,
+                Revision(0),
+                &[],
+            )
             .unwrap();
         assert_eq!(
             engine.unregister_resource(&resource),
@@ -1103,6 +1381,7 @@ mod tests {
         engine.start_task("step-task").unwrap();
         engine
             .accept_task_result(&TaskResult {
+                token: engine.issued_task("step-task").unwrap().token,
                 task_id: "step-task".into(),
                 generation: TimeGeneration(0),
                 requested_instant: instant(),
@@ -1110,7 +1389,12 @@ mod tests {
             .unwrap();
         engine.step_nanos(1).unwrap();
         assert_eq!(
-            engine.commit_task_scene("step-task", Revision(0), &[]),
+            engine.commit_task_scene(
+                "step-task",
+                &engine.issued_task("step-task").unwrap().token,
+                Revision(0),
+                &[]
+            ),
             Err(CommitTaskError::Task(TaskError::WrongInstant))
         );
     }
@@ -1129,7 +1413,12 @@ mod tests {
         engine.seek(instant()).unwrap();
         assert_eq!(engine.task_status("task-a"), Some(TaskStatus::Stale));
         assert_eq!(
-            engine.commit_task_scene("task-a", Revision(0), &[]),
+            engine.commit_task_scene(
+                "task-a",
+                &engine.issued_task("task-a").unwrap().token,
+                Revision(0),
+                &[]
+            ),
             Err(CommitTaskError::Task(TaskError::InvalidState))
         );
     }
@@ -1147,6 +1436,7 @@ mod tests {
         engine.start_task("task-b").unwrap();
         engine
             .accept_task_result(&TaskResult {
+                token: engine.issued_task("task-b").unwrap().token,
                 task_id: "task-b".into(),
                 generation: TimeGeneration(0),
                 requested_instant: instant(),
@@ -1156,6 +1446,7 @@ mod tests {
         assert_eq!(
             engine.commit_task_scene(
                 "task-b",
+                &engine.issued_task("task-b").unwrap().token,
                 Revision(9),
                 &[SceneCommand::Create(SceneObject::new(id.clone()))]
             ),
@@ -1165,6 +1456,7 @@ mod tests {
         engine
             .commit_task_scene(
                 "task-b",
+                &engine.issued_task("task-b").unwrap().token,
                 Revision(0),
                 &[SceneCommand::Create(SceneObject::new(id))],
             )
@@ -1293,6 +1585,7 @@ mod tests {
         engine.start_task("playback").unwrap();
         engine
             .accept_task_result(&TaskResult {
+                token: engine.issued_task("playback").unwrap().token,
                 task_id: "playback".into(),
                 generation: TimeGeneration(0),
                 requested_instant: instant(),
@@ -1303,6 +1596,7 @@ mod tests {
         assert_eq!(
             engine.commit_task_scene(
                 "playback",
+                &engine.issued_task("playback").unwrap().token,
                 Revision(0),
                 &[SceneCommand::Create(SceneObject::new(
                     ObjectId::new("stale").unwrap()
@@ -1314,3 +1608,6 @@ mod tests {
         assert_eq!(engine.snapshot().generation, TimeGeneration(0));
     }
 }
+
+#[cfg(test)]
+mod task_tests;

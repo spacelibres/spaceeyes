@@ -5,6 +5,9 @@
 use spaceeyes_foundation::Revision;
 use spaceeyes_time::{TimeGeneration, TimeInstant};
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static NEXT_SCHEDULER: AtomicU64 = AtomicU64::new(1);
 mod executor;
 pub use executor::{dispatch_ready, enqueue_bounded, TaskBudget, TaskExecutor};
 
@@ -27,6 +30,12 @@ pub enum TaskError {
     InvalidProvenance,
     RevisionMismatch,
     CoverageMismatch,
+    ExecutionMismatch,
+    SequenceExhausted,
+    InvalidTarget,
+    TargetLimit,
+    UndeclaredTarget,
+    CreateNotAllowed,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskRequest {
@@ -35,13 +44,36 @@ pub struct TaskRequest {
     pub requested_instant: TimeInstant,
     pub dependencies: Vec<String>,
 }
+/// Opaque execution identity, minted only by its owning scheduler.
+/// Task IDs, clock generations and instants cannot substitute for this token.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TaskExecutionToken {
+    scheduler: u64,
+    sequence: u64,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct IssuedTask {
+    pub request: TaskRequest,
+    pub token: TaskExecutionToken,
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskResult {
+    pub token: TaskExecutionToken,
     pub task_id: String,
     pub generation: TimeGeneration,
     pub requested_instant: TimeInstant,
 }
-/// Optional provenance contract for tasks requiring strict scientific context.
+impl From<&IssuedTask> for TaskResult {
+    fn from(task: &IssuedTask) -> Self {
+        Self {
+            token: task.token,
+            task_id: task.request.task_id.clone(),
+            generation: task.request.generation,
+            requested_instant: task.request.requested_instant.clone(),
+        }
+    }
+}
+/// Optional context metadata, not a strict scientific provider policy.
 /// Coverage is an inclusive range in one explicit time scale and epoch.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskProvenance {
@@ -94,12 +126,28 @@ impl TaskStatus {
 #[derive(Clone, Debug)]
 struct TaskEntry {
     request: TaskRequest,
+    token: TaskExecutionToken,
     status: TaskStatus,
     provenance: Option<TaskProvenance>,
 }
-#[derive(Default)]
 pub struct SimulationScheduler {
     tasks: BTreeMap<String, TaskEntry>,
+    identity: u64,
+    sequence: u64,
+}
+impl Default for SimulationScheduler {
+    fn default() -> Self {
+        let identity = NEXT_SCHEDULER
+            .try_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+                value.checked_add(1)
+            })
+            .expect("scheduler identity exhausted");
+        Self {
+            tasks: BTreeMap::new(),
+            identity,
+            sequence: 0,
+        }
+    }
 }
 impl SimulationScheduler {
     pub fn new() -> Self {
@@ -124,15 +172,25 @@ impl SimulationScheduler {
                 return Err(TaskError::MissingDependency);
             }
         }
+        let sequence = self
+            .sequence
+            .checked_add(1)
+            .ok_or(TaskError::SequenceExhausted)?;
+        let token = TaskExecutionToken {
+            scheduler: self.identity,
+            sequence,
+        };
         // Dependencies must already exist, so insertion cannot create a cycle.
         self.tasks.insert(
             request.task_id.clone(),
             TaskEntry {
                 request,
+                token,
                 status: TaskStatus::Queued,
                 provenance: None,
             },
         );
+        self.sequence = sequence;
         Ok(())
     }
     /// Bind provenance before dispatch; it becomes immutable for this task.
@@ -167,6 +225,23 @@ impl SimulationScheduler {
     pub fn request(&self, id: &str) -> Option<&TaskRequest> {
         self.tasks.get(id).map(|entry| &entry.request)
     }
+    pub fn issued_task(&self, id: &str) -> Option<IssuedTask> {
+        self.tasks.get(id).map(|entry| IssuedTask {
+            request: entry.request.clone(),
+            token: entry.token,
+        })
+    }
+    pub fn validate_token(&self, id: &str, token: &TaskExecutionToken) -> Result<(), TaskError> {
+        let entry = self.tasks.get(id).ok_or(TaskError::UnknownTask)?;
+        if &entry.token != token {
+            return Err(TaskError::ExecutionMismatch);
+        }
+        Ok(())
+    }
+    /// Clear history without ever reusing an execution sequence.
+    pub fn clear(&mut self) {
+        self.tasks.clear();
+    }
     pub fn queued_count(&self) -> usize {
         self.tasks
             .values()
@@ -183,9 +258,11 @@ impl SimulationScheduler {
     pub fn validate_commit(
         &self,
         id: &str,
+        token: &TaskExecutionToken,
         generation: TimeGeneration,
         instant: &TimeInstant,
     ) -> Result<(), TaskError> {
+        self.validate_token(id, token)?;
         let entry = self.tasks.get(id).ok_or(TaskError::UnknownTask)?;
         if entry.status != TaskStatus::ResultReady {
             return Err(TaskError::InvalidState);
@@ -249,6 +326,7 @@ impl SimulationScheduler {
         generation: TimeGeneration,
         instant: &TimeInstant,
     ) -> Result<(), TaskError> {
+        self.validate_token(&result.task_id, &result.token)?;
         let entry = self
             .tasks
             .get_mut(&result.task_id)
@@ -270,7 +348,8 @@ impl SimulationScheduler {
         Ok(())
     }
     /// Engine calls this only after the corresponding Scene transaction succeeds.
-    pub fn complete(&mut self, id: &str) -> Result<(), TaskError> {
+    pub fn complete(&mut self, id: &str, token: &TaskExecutionToken) -> Result<(), TaskError> {
+        self.validate_token(id, token)?;
         let entry = self.tasks.get_mut(id).ok_or(TaskError::UnknownTask)?;
         if entry.status != TaskStatus::ResultReady {
             return Err(TaskError::InvalidState);
@@ -293,6 +372,32 @@ impl SimulationScheduler {
             return Err(TaskError::AlreadyCompleted);
         }
         entry.status = TaskStatus::Failed;
+        self.propagate_dependency_failures();
+        Ok(())
+    }
+    pub fn cancel_execution(
+        &mut self,
+        id: &str,
+        token: &TaskExecutionToken,
+    ) -> Result<(), TaskError> {
+        self.validate_token(id, token)?;
+        self.cancel(id)
+    }
+    pub fn fail_execution(
+        &mut self,
+        id: &str,
+        token: &TaskExecutionToken,
+    ) -> Result<(), TaskError> {
+        self.validate_token(id, token)?;
+        self.fail(id)
+    }
+    pub fn mark_stale(&mut self, id: &str, token: &TaskExecutionToken) -> Result<(), TaskError> {
+        self.validate_token(id, token)?;
+        let entry = self.tasks.get_mut(id).ok_or(TaskError::UnknownTask)?;
+        if entry.status.terminal() {
+            return Err(TaskError::AlreadyCompleted);
+        }
+        entry.status = TaskStatus::Stale;
         self.propagate_dependency_failures();
         Ok(())
     }
@@ -379,13 +484,27 @@ mod tests {
             dependencies: deps.iter().map(|s| s.to_string()).collect(),
         }
     }
-    fn result(id: &str) -> TaskResult {
-        TaskResult {
-            task_id: id.into(),
-            generation: TimeGeneration(0),
-            requested_instant: instant(0),
-        }
+    fn result(scheduler: &SimulationScheduler, id: &str) -> TaskResult {
+        TaskResult::from(&scheduler.issued_task(id).unwrap())
     }
+    #[test]
+    fn another_scheduler_cannot_complete_the_same_task_id() {
+        let mut first = SimulationScheduler::new();
+        let mut second = SimulationScheduler::new();
+        for scheduler in [&mut first, &mut second] {
+            scheduler.enqueue(task("same", &[])).unwrap();
+            scheduler.start("same").unwrap();
+        }
+        let foreign = result(&first, "same");
+        first
+            .accept_result(&foreign, TimeGeneration(0), &instant(0))
+            .unwrap();
+        assert!(second
+            .accept_result(&foreign, TimeGeneration(0), &instant(0))
+            .is_err());
+        assert_eq!(second.status("same"), Some(TaskStatus::Running));
+    }
+
     #[test]
     fn provenance_rejects_wrong_coverage_and_revision() {
         let mut s = SimulationScheduler::new();
@@ -413,10 +532,10 @@ mod tests {
         assert_eq!(s.ready_tasks(), vec!["a"]);
         assert_eq!(s.start("b"), Err(TaskError::DependencyNotReady));
         s.start("a").unwrap();
-        s.accept_result(&result("a"), TimeGeneration(0), &instant(0))
+        s.accept_result(&result(&s, "a"), TimeGeneration(0), &instant(0))
             .unwrap();
         assert!(s.ready_tasks().is_empty());
-        s.complete("a").unwrap();
+        s.complete("a", &s.issued_task("a").unwrap().token).unwrap();
         assert_eq!(s.ready_tasks(), vec!["b"]);
     }
     #[test]
@@ -439,7 +558,7 @@ mod tests {
         s.invalidate_generation(TimeGeneration(1));
         assert_eq!(s.status("a"), Some(TaskStatus::Stale));
         assert_eq!(
-            s.accept_result(&result("a"), TimeGeneration(1), &instant(0)),
+            s.accept_result(&result(&s, "a"), TimeGeneration(1), &instant(0)),
             Err(TaskError::InvalidState)
         );
         s.enqueue(task("b", &[])).unwrap();
@@ -452,7 +571,7 @@ mod tests {
         s.enqueue(task("a", &[])).unwrap();
         s.start("a").unwrap();
         assert_eq!(
-            s.accept_result(&result("a"), TimeGeneration(0), &instant(1)),
+            s.accept_result(&result(&s, "a"), TimeGeneration(0), &instant(1)),
             Err(TaskError::WrongInstant)
         );
     }
@@ -466,3 +585,6 @@ mod tests {
         assert_eq!(s.start("b"), Err(TaskError::InvalidState));
     }
 }
+
+#[cfg(test)]
+mod identity_tests;

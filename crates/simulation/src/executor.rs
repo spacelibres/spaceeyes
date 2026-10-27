@@ -2,7 +2,7 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Platform-neutral task execution contract and bounded dispatch policy.
 //! Native and WASM hosts may execute issued tasks differently.
-use crate::{SimulationScheduler, TaskError, TaskRequest};
+use crate::{IssuedTask, SimulationScheduler, TaskError, TaskRequest};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TaskBudget {
@@ -24,9 +24,9 @@ impl TaskBudget {
 /// A host schedules this request on its own executor; this method does not
 /// perform work or mutate Scene. A future async adapter can use the same contract.
 pub trait TaskExecutor {
-    fn dispatch(&mut self, task: TaskRequest) -> Result<(), TaskError>;
+    fn dispatch(&mut self, task: IssuedTask) -> Result<(), TaskError>;
     /// Best-effort host notification; the scheduler rejects late results regardless.
-    fn request_cancel(&mut self, _task_id: &str) -> Result<(), TaskError> {
+    fn request_cancel(&mut self, _task: IssuedTask) -> Result<(), TaskError> {
         Ok(())
     }
 }
@@ -42,10 +42,7 @@ pub fn dispatch_ready(
     let slots = budget.max_in_flight.saturating_sub(active);
     let mut dispatched = Vec::new();
     for id in scheduler.ready_tasks().into_iter().take(slots) {
-        let request = scheduler
-            .request(&id)
-            .ok_or(TaskError::UnknownTask)?
-            .clone();
+        let request = scheduler.issued_task(&id).ok_or(TaskError::UnknownTask)?;
         scheduler.start(&id)?;
         if let Err(error) = executor.dispatch(request) {
             scheduler.fail(&id)?;
@@ -76,8 +73,8 @@ mod tests {
     #[derive(Default)]
     struct Recorder(Vec<String>);
     impl TaskExecutor for Recorder {
-        fn dispatch(&mut self, task: TaskRequest) -> Result<(), TaskError> {
-            self.0.push(task.task_id);
+        fn dispatch(&mut self, task: IssuedTask) -> Result<(), TaskError> {
+            self.0.push(task.request.task_id);
             Ok(())
         }
     }

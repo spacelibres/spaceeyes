@@ -253,7 +253,7 @@ impl ResourceManager {
             .err()
             .or_else(|| {
                 if matches!(session.status.descriptor.format, UploadFormat::Rgba8 { .. })
-                    && session.bytes.chunks_exact(4).any(|p| p[3] != 255)
+                    && session.bytes.as_chunks::<4>().0.iter().any(|p| p[3] != 255)
                 {
                     Some(ResourceError::InvalidSize)
                 } else {

@@ -98,3 +98,10 @@ Engine建立task_id与受控ResourceId租约的关联，任务取消、失败、
 
 ## 0.0.1执行器取消协作
 TaskExecutor新增request_cancel通知接口，Engine先将任务标记Cancelled并回收任务租约，再向宿主执行器发出尽力取消通知。即使通知失败，迟到结果也不得提交。实际线程/Worker中断与异步完成回调仍需后续实现。
+
+## M3-2a 任务执行身份与目标代次（0.0.1增量）
+SimulationScheduler每次入队签发不透明TaskExecutionToken（调度器实例身份+单调序号），IssuedTask随请求发给宿主执行器，TaskResult与Failed/Cancelled回调必须带token；forget/clear后重用task_id不能重用token。Engine.commit_task_scene也必须携带token，接受结果及最终提交均复核；错误token不修改本实例合法任务，不释放其租约。显式Rust宿主按当前ID取消仍允许，但异步request_cancel通知携带IssuedTask；取消先提交再通知，通知失败不复活任务。
+
+普通enqueue_task保守绑定入队SceneRevision及FrameGraphRevision，调用者提供最新修订不能绕过旧上下文。enqueue_task_for_objects(request, targets)为既存对象捕获ObjectHandle及当时SceneObject值，输入最多1024项且非空；所有写目标、父对象和相机跟随依赖必须声明。此模式允许无关对象变更，但禁止Create（创建用普通修订绑定任务）；在接受结果和提交时复核句柄代次/注册表、目标及声明依赖对象原始值、图修订。上下文失效标Stale、传播依赖失败并清租约；未声明写入/Scene事务错误维持ResultReady可显式修复重试。终态、遗忘、Seek及Stop清理任务上下文，恢复使用新实例。
+
+此为内部Rust宿主契约，不是插件绕过Proto的任务接口。可选TaskProvenance仅提供上下文校验，严格provider版本/coverage来源策略、确定并行结果提交队列、真实异步Worker/网络执行器及完整任务Proto仍按后续计划实现。
