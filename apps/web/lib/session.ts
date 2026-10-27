@@ -22,13 +22,16 @@ import {
   type ResponseEnvelope,
 } from "@spaceeyes/core-sdk";
 import type { DynamoSegmentLoader } from "@spaceeyes/nasa-dynamo";
+import type { SolarState } from "./solar-system";
 import {
   createSolarLoader,
+  displayPosition,
   orbitMesh,
-  solarPosition,
+  solarState,
   solarSeconds,
   SOLAR_BODIES,
   SOLAR_CAMERA,
+  SOLAR_NAMES,
   SUN,
 } from "./solar-system";
 import type { WasmEngine } from "../public/wasm/spaceeyes_wasm.js";
@@ -49,6 +52,7 @@ export type ViewStatus = {
   cameraTarget?: string;
   actionError?: string;
   selected?: { id: string; kind: string; reference: string; sequence: string };
+  selectedEphemeris?: string;
   error?: string;
 };
 export const initialStatus: ViewStatus = {
@@ -114,6 +118,7 @@ export class BrowserSession {
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("scene") === "solar";
   private solarLoader: DynamoSegmentLoader | undefined;
+  private readonly solarStates = new Map<string, SolarState>();
   private solarInstant: string | undefined;
   private solarTimeEt: number | undefined;
   private solarIndex = 0;
@@ -538,6 +543,20 @@ export class BrowserSession {
     const time = this.state?.clock?.instant;
     const seconds = time?.seconds ?? 0n;
     const nanos = time?.nanos ?? 0;
+    const separated = this.selected
+      ? this.solarStates.get(this.selected.id)
+      : undefined;
+    const selectedEphemeris = separated
+      ? `${SOLAR_NAMES[this.selected!.id] ?? this.selected!.id} · 距父级 ${Math.hypot(
+          separated.position.x,
+          separated.position.y,
+          separated.position.z,
+        ).toFixed(0)} km · 速度 ${Math.hypot(
+          separated.velocity.x,
+          separated.velocity.y,
+          separated.velocity.z,
+        ).toFixed(2)} km/s`
+      : undefined;
     return {
       phase,
       frameCount: this.frames,
@@ -554,6 +573,7 @@ export class BrowserSession {
       height: this.height,
       selectionText: this.selectionText,
       selected: this.selected,
+      selectedEphemeris,
       cameraMode: this.cameraState?.tracking ? "跟随目标" : "自由视角",
       cameraTarget: this.cameraState?.tracking?.target?.value,
       actionError: this.actionError,
@@ -658,8 +678,10 @@ export class BrowserSession {
     for (const body of SOLAR_BODIES) {
       try {
         const loaded = await this.solarLoader.load(body.path, timeEt);
-        const position = solarPosition(loaded, timeEt);
-        if (position === null) continue;
+        const ephemeris = solarState(loaded, timeEt);
+        if (ephemeris === null) continue;
+        this.solarStates.set(body.id, ephemeris);
+        const position = displayPosition(ephemeris.position);
         const response = await this.client.command(
           {
             case: "spatial",

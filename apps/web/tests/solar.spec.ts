@@ -68,6 +68,10 @@ test("solar scene loads provider samples through the host proxy", async ({
   await expect
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
     .toBeGreaterThanOrEqual(10);
+  await page.getByTestId("time-axis").fill("1");
+  await expect
+    .poll(async () => (await page.getByTestId("clock").textContent()) ?? "")
+    .not.toBe("0.000000000");
   await expect(page.getByText("太阳系星历")).toBeVisible();
   expect(
     requested.some((path) => path.endsWith("/earth/sun/orb/def.dyn")),

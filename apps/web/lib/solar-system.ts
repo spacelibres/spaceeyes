@@ -87,10 +87,25 @@ export function solarSeconds(instant: {
 }
 
 /** Position in display metres, or `null` when the window cannot answer. */
+/** Position in display metres, or `null` when the window cannot answer. */
 export function solarPosition(
   loaded: LoadedDynamo,
   timeEt: number,
 ): Vec3 | null {
+  const state = solarState(loaded, timeEt);
+  return state === null ? null : displayPosition(state.position);
+}
+
+export interface SolarState {
+  readonly position: Vec3;
+  readonly velocity: Vec3;
+}
+
+/** Scientific kilometres and km/s from the evaluator. */
+export function solarState(
+  loaded: LoadedDynamo,
+  timeEt: number,
+): SolarState | null {
   const state = evaluateEphemeris(
     {
       header: loaded.file.header,
@@ -100,13 +115,26 @@ export function solarPosition(
     timeEt,
   );
   if (state.status !== "ready" || state.kind !== "position") return null;
+  return { position: state.position, velocity: state.velocity };
+}
+
+/** Convert scientific kilometres to the display-space metres used by the scene. */
+export function displayPosition(position: Vec3): Vec3 {
   const factor = 1000 * DISPLAY_METRES_PER_KM;
   return {
-    x: state.position.x * factor,
-    y: state.position.y * factor,
-    z: state.position.z * factor,
+    x: position.x * factor,
+    y: position.y * factor,
+    z: position.z * factor,
   };
 }
+
+export const SOLAR_NAMES: Readonly<Record<string, string>> = {
+  "solar:sun": "太阳",
+  "solar:earth": "地球",
+  "solar:moon": "月球",
+  "solar:mars": "火星",
+  "solar:jupiter": "木星",
+};
 
 export interface OrbitMesh {
   readonly vertices: readonly {

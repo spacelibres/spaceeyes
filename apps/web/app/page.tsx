@@ -146,6 +146,27 @@ export default function Page() {
                 步进1秒
               </button>
             </div>
+            <label htmlFor="time-axis">时间轴 / 历元相对天</label>
+            <input
+              id="time-axis"
+              data-testid="time-axis"
+              type="range"
+              min={-3650}
+              max={3650}
+              step={1}
+              disabled={!ready || status.playing}
+              defaultValue={0}
+              onChange={(event) => {
+                const days = Number(event.target.value);
+                setSeekInput(String(days * 86400));
+                void host.current
+                  ?.seekSeconds(String(days * 86400))
+                  .catch(() => {});
+              }}
+            />
+            <p className="hint">
+              时间轴按当前显式历元的天数偏移，不是 UTC 日期；暂停后可拖动。
+            </p>
             <form
               onSubmit={(event) => {
                 event.preventDefault();
@@ -226,6 +247,11 @@ export default function Page() {
           >
             <h3>对象信息</h3>
             <p data-testid="selection-status">{status.selectionText}</p>
+            {status.selectedEphemeris && (
+              <p className="hint" data-testid="ephemeris">
+                {status.selectedEphemeris}
+              </p>
+            )}
             {status.selected && (
               <dl>
                 <div>
