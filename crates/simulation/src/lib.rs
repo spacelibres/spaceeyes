@@ -2,12 +2,15 @@
 //! No domain algorithm or direct Scene mutation lives here.
 use std::collections::{BTreeMap, BTreeSet};
 use spaceeyes_time::{TimeGeneration, TimeInstant};
+mod executor;
+pub use executor::{TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskError {
     EmptyTaskId, DuplicateTask, UnknownTask, MissingDependency,
     DependencyCycle, DependencyNotReady, DependencyFailed,
     StaleGeneration, WrongInstant, AlreadyCompleted, InvalidState,
+    InvalidBudget, QueueFull,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskRequest {
@@ -51,6 +54,23 @@ impl SimulationScheduler {
         }
         // Dependencies must already exist, so insertion cannot create a cycle.
         self.tasks.insert(request.task_id.clone(), TaskEntry { request, status: TaskStatus::Queued });
+        Ok(())
+    }
+    pub fn request(&self, id: &str) -> Option<&TaskRequest> {
+        self.tasks.get(id).map(|entry| &entry.request)
+    }
+    pub fn queued_count(&self) -> usize {
+        self.tasks.values().filter(|entry| entry.status == TaskStatus::Queued).count()
+    }
+    pub fn active_count(&self) -> usize {
+        self.tasks.values().filter(|entry| matches!(entry.status, TaskStatus::Running | TaskStatus::ResultReady)).count()
+    }
+    /// Verify freshness immediately before the Engine's authoritative Scene commit.
+    pub fn validate_commit(&self, id: &str, generation: TimeGeneration, instant: &TimeInstant) -> Result<(), TaskError> {
+        let entry = self.tasks.get(id).ok_or(TaskError::UnknownTask)?;
+        if entry.status != TaskStatus::ResultReady { return Err(TaskError::InvalidState); }
+        if entry.request.generation != generation { return Err(TaskError::StaleGeneration); }
+        if &entry.request.requested_instant != instant { return Err(TaskError::WrongInstant); }
         Ok(())
     }
     pub fn status(&self, id: &str) -> Option<TaskStatus> {
