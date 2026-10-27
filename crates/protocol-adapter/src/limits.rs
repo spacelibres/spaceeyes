@@ -14,7 +14,7 @@ pub const OPERATIONS: &[&str] = &[
     "spatial.register_root",
     "spatial.register_child_sample",
     "spatial.register_provider_frame",
-    "spatial.update_provider_sample",
+    "spatial.update_provider_frame_sample",
     "scene.create",
     "scene.remove",
     "scene.set_parent",

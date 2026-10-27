@@ -4,10 +4,16 @@
 
 ## [0.0.1] — 2026-10-27
 
+### 太阳系星历浏览器接入（M4前置）
+- 新增只读`/api/dynamo/[...path]`代理：仅允许合法控制器路径，20秒超时、16MiB上限、`no-store`，不打包或镜像NASA数据；许可未确认前不缓存。
+- 浏览器新增`?scene=solar`：注册太阳/地球/月球/火星/木星提供者帧与球体，按核心当前TimeInstant提交DYN样本；播放时核心先推进时钟，宿主再更新样本并重绘，不建立JS时钟权威。显示比例固定为1 km=1e-6 m，明确不是科学尺度。
+- 新增合成字节Playwright测试，拦截代理并验证四个天体路径请求、提供者帧呈现及运行状态；不包含NASA夹具。
+- 验证：Next生产构建、Web typecheck、solar Playwright通过；真实NASA数据、插件权限沙箱、纹理/轨道/时间轴与科学精度仍未验证。按用户新指令未逐次全量。
+
 ### M4前置：提供者样本帧与公开契约
 - Spatial新增`FrameSource::ProviderSample`：帧绑定provider_id/provider_version，宿主按当前显式时刻提交刚体样本；核心不插值、不算轨迹、不联网。首次更新前返回MissingTransform，恢复时缺失提供者建立占位并可由后续样本重新绑定。
 - Engine新增register_provider_frame/update_provider_frame_sample并递增帧序列；更新仅接受提供者样本帧或恢复占位，先校验修订溢出再原子替换。Proto新增ProviderIdentity、RegisterProviderFrame、UpdateProviderFrameSample（oneof 4/5），要求expected_revision且限制来源标识长度。
-- ProtocolAdapter映射并校验新动作，新增spatial.register_provider_frame/update_provider_sample能力；生成TS类型与SDK技能书同步。错误映射MissingTransform→PROVIDER_UNAVAILABLE、InvalidProvider/非法标识→INVALID_ARGUMENT。
+- ProtocolAdapter映射并校验新动作，新增spatial.register_provider_frame/update_provider_frame_sample能力；生成TS类型与SDK技能书同步。错误映射MissingTransform→PROVIDER_UNAVAILABLE、InvalidProvider/非法标识→INVALID_ARGUMENT。
 - 验证：Spatial 8项单测与1项祖先测试、protocol-adapter 16项session及相关集成测试、严格workspace check通过；TS SDK构建通过。按用户新指令未逐次全量，整体回归留待批量完成后统一执行；浏览器接入、导数/插值/覆盖缓存仍未实现。
 
 ### P04 NASA DYN插件核心与分段加载

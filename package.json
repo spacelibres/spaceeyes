@@ -13,7 +13,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build --workspace @spaceeyes/core-sdk",
+    "build": "npm run build --workspace @spaceeyes/nasa-dynamo && npm run build --workspace @spaceeyes/core-sdk",
     "test": "npm test --workspace @spaceeyes/core-sdk"
   },
   "devDependencies": {

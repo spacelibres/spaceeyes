@@ -10,6 +10,11 @@ export default function Page() {
   const [enabled, setEnabled] = useState(true);
   const [status, setStatus] = useState<ViewStatus>(initialStatus);
   const [seekInput, setSeekInput] = useState("0");
+  const [scene, setScene] = useState<string | null>(null);
+  useEffect(() => {
+    setScene(new URLSearchParams(window.location.search).get("scene"));
+  }, []);
+  const solar = scene === "solar";
   useEffect(() => {
     if (!enabled || !mount.current) return;
     const id = ++generation.current;
@@ -65,7 +70,15 @@ export default function Page() {
           )}
           {!enabled && <div className="overlay">画布已卸载</div>}
           <div className="scene-label">
-            合成场景 <span>球体 / 三角网格</span>
+            {solar ? (
+              <>
+                太阳系星历 <span>NASA DYN / 显示压缩</span>
+              </>
+            ) : (
+              <>
+                合成场景 <span>球体 / 三角网格</span>
+              </>
+            )}
           </div>
         </div>
         <aside>
@@ -91,6 +104,9 @@ export default function Page() {
             >
               视角 +15°
             </button>
+            <a href={solar ? "/" : "?scene=solar"}>
+              {solar ? "返回演示场景" : "打开太阳系星历"}
+            </a>
           </div>
           <section className="time-controls" aria-label="时间控制">
             <label>
@@ -195,7 +211,9 @@ export default function Page() {
             </div>
           </dl>
           <p className="hint">
-            时间基准：TT / 显式演示历元。当前使用合成数据，不包含真实星历。
+            {solar
+              ? "时间基准：TT / 显式演示历元；位置来自 NASA DYN 插件，并按显示比例压缩，不是科学尺度。"
+              : "时间基准：TT / 显式演示历元。当前使用合成数据，不包含真实星历。"}
           </p>
           <section
             className="selection"

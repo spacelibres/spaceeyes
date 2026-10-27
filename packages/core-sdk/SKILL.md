@@ -72,7 +72,7 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 上传块幂等历史仅保留长度与SHA-256指纹，不长期保留块内容。正常命令历史耗尽后普通写入仍拒绝，核心保留至多4个会话取消及一次Stop的独立成功回执空间；无效取消不能消耗该空间。取消/Stop请使用新的requestId且不附过期timeGeneration；相同请求重试仍得到原回执。
 
 ## M4前置：提供者样本帧（0.0.1开发增量）
-新增`spatial.register_provider_frame`与`spatial.update_provider_sample`。前者在既有父参考系下建立由数据插件提供变换的帧，并记录provider_id/provider_version（非空，分别最多256/128字节）；后者为该帧提交一个显式时刻的刚体变换。核心不插值、不计算轨迹、不联网，只校验修订与时刻覆盖。
+新增`spatial.register_provider_frame`与`spatial.update_provider_frame_sample`。前者在既有父参考系下建立由数据插件提供变换的帧，并记录provider_id/provider_version（非空，分别最多256/128字节）；后者为该帧提交一个显式时刻的刚体变换。核心不插值、不计算轨迹、不联网，只校验修订与时刻覆盖。
 
 流程：先`spatial.register_root`，再`register_provider_frame`；首次`update_provider_sample`前解析该帧返回PROVIDER_UNAVAILABLE，恢复后缺失提供者占位也等待宿主重新提交。每次时钟变化后，宿主必须用同一当前TimeInstant重新提交样本，否则查询返回TIME_NOT_COVERED。只能更新提供者帧或恢复占位；对根/静态样本/动态提供者帧更新返回INVALID_ARGUMENT。所有写入须带expected frame_graph_revision；不匹配返回REVISION_CONFLICT。
 

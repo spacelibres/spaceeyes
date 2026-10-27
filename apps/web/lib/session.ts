@@ -19,7 +19,17 @@ import {
   type SessionStatus,
   type CommandPayload,
   type CameraState,
+  type ResponseEnvelope,
 } from "@spaceeyes/core-sdk";
+import type { DynamoSegmentLoader } from "@spaceeyes/nasa-dynamo";
+import {
+  createSolarLoader,
+  solarPosition,
+  solarSeconds,
+  SOLAR_BODIES,
+  SOLAR_CAMERA,
+  SUN,
+} from "./solar-system";
 import type { WasmEngine } from "../public/wasm/spaceeyes_wasm.js";
 import { formatSimulationTime, parseSimulationSeconds } from "./time";
 export type ViewStatus = {
@@ -97,6 +107,13 @@ export class BrowserSession {
   private cameraCreated = false;
   private cameraState: CameraState | undefined;
   private actionError: string | undefined;
+  private readonly solarMode =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("scene") === "solar";
+  private solarLoader: DynamoSegmentLoader | undefined;
+  private solarInstant: string | undefined;
+  private solarTimeEt: number | undefined;
+  private solarIndex = 0;
   private readonly onClick = (event: MouseEvent) => {
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height || this.presentedSequence === undefined)
@@ -195,6 +212,12 @@ export class BrowserSession {
       "time.set_rate",
       "time.step",
       "time.seek",
+      ...(this.solarMode
+        ? [
+            "spatial.register_provider_frame",
+            "spatial.update_provider_frame_sample",
+          ]
+        : []),
     ]);
     if (!capabilities.browserSurface)
       throw new Error("当前核心未提供浏览器画布能力。");
@@ -202,7 +225,7 @@ export class BrowserSession {
     if (this.disposed) return;
     await this.engine.attach_canvas(this.canvas);
     if (this.disposed) return;
-    await this.command({
+    const rootResponse = await this.command({
       case: "spatial",
       value: {
         expectedRevision: 0n,
@@ -212,6 +235,34 @@ export class BrowserSession {
         },
       },
     });
+    if (this.solarMode) {
+      if (rootResponse.payload.case !== "spatial")
+        throw new Error("缺少参考系修订");
+      let revision = rootResponse.payload.value.frameGraphRevision;
+      for (const body of SOLAR_BODIES) {
+        const response = await this.command({
+          case: "spatial",
+          value: {
+            expectedRevision: revision,
+            action: {
+              case: "registerProviderFrame",
+              value: {
+                frameId: { value: body.frame },
+                parentId: { value: body.parentFrame },
+                provider: {
+                  providerId: "spaceeyes.nasa.dynamo",
+                  providerVersion: "0.0.1",
+                },
+              },
+            },
+          },
+        });
+        if (response.payload.case !== "spatial")
+          throw new Error("缺少参考系修订");
+        revision = response.payload.value.frameGraphRevision;
+      }
+      this.solarLoader = createSolarLoader();
+    }
     const pixels = new Uint8Array(
       Array.from({ length: 16 }, (_, i) =>
         (Math.floor(i / 4) + (i % 4)) % 2 === 0
@@ -264,14 +315,69 @@ export class BrowserSession {
       address: SamplingAddress.CLAMP,
     };
     await this.refresh();
-    await this.command({
-      case: "sceneTransaction",
-      value: {
-        expectedRevision: this.state!.sceneRevision,
-        commands: [
+    const solarCommands = this.solarMode
+      ? [
+          ...SOLAR_BODIES.map((body) => ({
+            action: {
+              case: "create" as const,
+              value: {
+                object: {
+                  objectId: { value: body.id },
+                  frameId: { value: body.frame },
+                  visible: true,
+                  lifecycle: ObjectLifecycle.ACTIVE,
+                  sphere: {
+                    radiusM: body.radiusM,
+                    material: {
+                      baseColor: body.color,
+                      filter: SamplingFilter.NEAREST,
+                      address: SamplingAddress.CLAMP,
+                    },
+                  },
+                },
+              },
+            },
+          })),
           {
             action: {
-              case: "create",
+              case: "create" as const,
+              value: {
+                object: {
+                  objectId: { value: SUN.id },
+                  frameId: { value: SUN.frame },
+                  visible: true,
+                  lifecycle: ObjectLifecycle.ACTIVE,
+                  sphere: {
+                    radiusM: SUN.radiusM,
+                    material: {
+                      baseColor: SUN.color,
+                      filter: SamplingFilter.NEAREST,
+                      address: SamplingAddress.CLAMP,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            action: {
+              case: "create" as const,
+              value: {
+                object: {
+                  objectId: { value: "demo:camera" },
+                  frameId: { value: "demo:root" },
+                  visible: true,
+                  lifecycle: ObjectLifecycle.ACTIVE,
+                  camera: this.camera(0),
+                },
+              },
+            },
+          },
+        ]
+      : [
+          {
+            action: {
+              case: "create" as const,
               value: {
                 object: {
                   objectId: { value: "demo:body" },
@@ -285,7 +391,7 @@ export class BrowserSession {
           },
           {
             action: {
-              case: "create",
+              case: "create" as const,
               value: {
                 object: {
                   objectId: { value: "demo:mesh-object" },
@@ -299,7 +405,7 @@ export class BrowserSession {
           },
           {
             action: {
-              case: "create",
+              case: "create" as const,
               value: {
                 object: {
                   objectId: { value: "demo:camera" },
@@ -311,7 +417,12 @@ export class BrowserSession {
               },
             },
           },
-        ],
+        ];
+    await this.command({
+      case: "sceneTransaction",
+      value: {
+        expectedRevision: this.state!.sceneRevision,
+        commands: solarCommands,
       },
     });
     await this.command({
@@ -323,19 +434,26 @@ export class BrowserSession {
   }
   private camera(yaw: number) {
     const half = (yaw * Math.PI) / 360;
+    const positionM = this.solarMode
+      ? SOLAR_CAMERA.positionM
+      : { x: 0, y: 0, z: 6 };
     return {
-      positionM: { x: 0, y: 0, z: 6 },
+      positionM,
       orientation: { w: Math.cos(half), x: 0, y: Math.sin(half), z: 0 },
       projection: {
         kind: {
           case: "perspective" as const,
-          value: { verticalFovRadians: Math.PI / 3, nearM: 0.1, farM: 100 },
+          value: {
+            verticalFovRadians: Math.PI / 3,
+            nearM: this.solarMode ? SOLAR_CAMERA.nearM : 0.1,
+            farM: this.solarMode ? SOLAR_CAMERA.farM : 100,
+          },
         },
       },
     };
   }
-  private async command(payload: CommandPayload): Promise<void> {
-    await this.client!.command(payload, {
+  private async command(payload: CommandPayload): Promise<ResponseEnvelope> {
+    return this.client!.command(payload, {
       requestId: `web:command:${++this.request}`,
       ...(this.state
         ? {
@@ -411,6 +529,23 @@ export class BrowserSession {
         ? 0
         : Math.min(250, Math.max(0, timestamp - this.previousTime));
     this.previousTime = timestamp;
+    await this.presentFrame(BigInt(Math.round(elapsed * 1000000)));
+    if (this.solarMode && (await this.updateSolarSamples())) {
+      // The core advanced the clock during the first presentation; redraw with
+      // transfers for the new instant without advancing time again.
+      await this.presentFrame(0n);
+    }
+    this.frames++;
+    if (
+      !this.disposed &&
+      (this.frames === 1 || timestamp - this.lastNotify > 120)
+    ) {
+      this.lastNotify = timestamp;
+      this.notify(this.summary("运行中"));
+    }
+  }
+  private async presentFrame(elapsedNanos: bigint): Promise<void> {
+    if (!this.engine || !this.state) return;
     const id = `web:frame:${++this.request}`;
     const request = create(HostFrameEnvelopeSchema, {
       context: {
@@ -425,7 +560,7 @@ export class BrowserSession {
         camera: { value: "demo:camera" },
         width: this.width,
         height: this.height,
-        elapsedNanos: BigInt(Math.round(elapsed * 1000000)),
+        elapsedNanos,
       },
     });
     const response = fromBinary(
@@ -447,14 +582,65 @@ export class BrowserSession {
       );
     this.state = response.payload.value.session;
     this.presentedSequence = response.frameSequence;
-    this.frames++;
+  }
+  private async updateSolarSamples(): Promise<boolean> {
+    const state = this.state;
+    const clock = state?.clock;
+    if (!this.solarLoader || !this.client || !state || !clock) return false;
+    const instant = clock.instant;
+    if (!instant) return false;
+    const key = `${instant.seconds}:${instant.nanos}`;
+    if (key === this.solarInstant) return false;
+    const timeEt = solarSeconds(instant);
     if (
-      !this.disposed &&
-      (this.frames === 1 || timestamp - this.lastNotify > 120)
-    ) {
-      this.lastNotify = timestamp;
-      this.notify(this.summary("运行中"));
+      this.solarTimeEt !== undefined &&
+      Math.abs(timeEt - this.solarTimeEt) < 1
+    )
+      return false;
+    let revision = state.frameGraphRevision;
+    let changed = false;
+    for (const body of SOLAR_BODIES) {
+      try {
+        const loaded = await this.solarLoader.load(body.path, timeEt);
+        const position = solarPosition(loaded, timeEt);
+        if (position === null) continue;
+        const response = await this.client.command(
+          {
+            case: "spatial",
+            value: {
+              expectedRevision: revision,
+              action: {
+                case: "updateProviderFrameSample",
+                value: {
+                  frameId: { value: body.frame },
+                  instant,
+                  toParent: {
+                    translationM: position,
+                    rotation: { w: 1, x: 0, y: 0, z: 0 },
+                  },
+                },
+              },
+            },
+          },
+          {
+            requestId: `web:solar:${++this.solarIndex}`,
+            expectedSceneRevision: state.sceneRevision,
+            timeGeneration: clock.generation,
+          },
+        );
+        if (response.payload.case !== "spatial")
+          throw new Error("缺少参考系修订");
+        revision = response.payload.value.frameGraphRevision;
+        changed = true;
+      } catch (error) {
+        // Keep the last valid sample; never invent a scientific position.
+        this.actionError =
+          error instanceof Error ? error.message : String(error);
+      }
     }
+    this.solarInstant = key;
+    this.solarTimeEt = timeEt;
+    return changed;
   }
   async togglePlayback(): Promise<void> {
     return this.enqueue(async () => {
