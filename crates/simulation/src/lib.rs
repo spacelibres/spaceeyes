@@ -2,6 +2,7 @@
 //! No domain algorithm or direct Scene mutation lives here.
 use std::collections::{BTreeMap, BTreeSet};
 use spaceeyes_time::{TimeGeneration, TimeInstant};
+use spaceeyes_foundation::Revision;
 mod executor;
 pub use executor::{TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
@@ -10,7 +11,7 @@ pub enum TaskError {
     EmptyTaskId, DuplicateTask, UnknownTask, MissingDependency,
     DependencyCycle, DependencyNotReady, DependencyFailed,
     StaleGeneration, WrongInstant, AlreadyCompleted, InvalidState,
-    InvalidBudget, QueueFull,
+    InvalidBudget, QueueFull, InvalidProvenance, RevisionMismatch, CoverageMismatch,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskRequest {
@@ -25,6 +26,37 @@ pub struct TaskResult {
     pub generation: TimeGeneration,
     pub requested_instant: TimeInstant,
 }
+/// Optional provenance contract for tasks requiring strict scientific context.
+/// Coverage is an inclusive range in one explicit time scale and epoch.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TaskProvenance {
+    pub scene_revision: Revision,
+    pub frame_graph_revision: Revision,
+    pub provider_id: String,
+    pub provider_version: String,
+    pub coverage_start: TimeInstant,
+    pub coverage_end: TimeInstant,
+}
+impl TaskProvenance {
+    pub fn validate(&self, instant: &TimeInstant) -> Result<(), TaskError> {
+        if self.provider_id.trim().is_empty() || self.provider_version.trim().is_empty() {
+            return Err(TaskError::InvalidProvenance);
+        }
+        if self.coverage_start.scale() != self.coverage_end.scale()
+            || self.coverage_start.epoch() != self.coverage_end.epoch()
+            || instant.scale() != self.coverage_start.scale()
+            || instant.epoch() != self.coverage_start.epoch() {
+            return Err(TaskError::CoverageMismatch);
+        }
+        let start = (self.coverage_start.seconds(), self.coverage_start.nanos());
+        let end = (self.coverage_end.seconds(), self.coverage_end.nanos());
+        let target = (instant.seconds(), instant.nanos());
+        if start > end || target < start || target > end {
+            return Err(TaskError::CoverageMismatch);
+        }
+        Ok(())
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TaskStatus { Queued, Running, ResultReady, Completed, Cancelled, Failed, Stale }
 impl TaskStatus {
@@ -36,6 +68,7 @@ impl TaskStatus {
 struct TaskEntry {
     request: TaskRequest,
     status: TaskStatus,
+    provenance: Option<TaskProvenance>,
 }
 #[derive(Default)]
 pub struct SimulationScheduler {
@@ -53,7 +86,29 @@ impl SimulationScheduler {
             if !self.tasks.contains_key(dependency) { return Err(TaskError::MissingDependency); }
         }
         // Dependencies must already exist, so insertion cannot create a cycle.
-        self.tasks.insert(request.task_id.clone(), TaskEntry { request, status: TaskStatus::Queued });
+        self.tasks.insert(request.task_id.clone(), TaskEntry { request, status: TaskStatus::Queued, provenance: None });
+        Ok(())
+    }
+    /// Bind provenance before dispatch; it becomes immutable for this task.
+    pub fn bind_provenance(&mut self, id: &str, provenance: TaskProvenance) -> Result<(), TaskError> {
+        let entry = self.tasks.get_mut(id).ok_or(TaskError::UnknownTask)?;
+        if entry.status != TaskStatus::Queued || entry.provenance.is_some() {
+            return Err(TaskError::InvalidState);
+        }
+        provenance.validate(&entry.request.requested_instant)?;
+        entry.provenance = Some(provenance);
+        Ok(())
+    }
+    pub fn validate_provenance(
+        &self, id: &str, scene: Revision, frames: Revision,
+    ) -> Result<(), TaskError> {
+        let entry = self.tasks.get(id).ok_or(TaskError::UnknownTask)?;
+        if let Some(provenance) = &entry.provenance {
+            provenance.validate(&entry.request.requested_instant)?;
+            if provenance.scene_revision != scene || provenance.frame_graph_revision != frames {
+                return Err(TaskError::RevisionMismatch);
+            }
+        }
         Ok(())
     }
     pub fn request(&self, id: &str) -> Option<&TaskRequest> {
@@ -71,6 +126,7 @@ impl SimulationScheduler {
         if entry.status != TaskStatus::ResultReady { return Err(TaskError::InvalidState); }
         if entry.request.generation != generation { return Err(TaskError::StaleGeneration); }
         if &entry.request.requested_instant != instant { return Err(TaskError::WrongInstant); }
+        if let Some(provenance) = &entry.provenance { provenance.validate(instant)?; }
         Ok(())
     }
     pub fn status(&self, id: &str) -> Option<TaskStatus> {
@@ -158,6 +214,20 @@ mod tests {
     }
     fn result(id:&str)->TaskResult {
         TaskResult { task_id:id.into(), generation:TimeGeneration(0), requested_instant:instant(0) }
+    }
+    #[test]
+    fn provenance_rejects_wrong_coverage_and_revision() {
+        let mut s = SimulationScheduler::new();
+        s.enqueue(task("a", &[])).unwrap();
+        let p = TaskProvenance {
+            scene_revision: Revision(2), frame_graph_revision: Revision(3),
+            provider_id: "provider".into(), provider_version: "1".into(),
+            coverage_start: instant(0), coverage_end: instant(1),
+        };
+        s.bind_provenance("a", p).unwrap();
+        assert_eq!(s.validate_provenance("a", Revision(2), Revision(4)),
+            Err(TaskError::RevisionMismatch));
+        assert_eq!(s.validate_provenance("a", Revision(2), Revision(3)), Ok(()));
     }
     #[test]
     fn dependency_order_and_commit_gate() {
