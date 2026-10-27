@@ -2,7 +2,6 @@
 name = "spaceeyes-engine"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 [dependencies]
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-scene = { path = "../scene" }
