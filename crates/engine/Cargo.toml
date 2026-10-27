@@ -8,3 +8,4 @@ spaceeyes-scene = { path = "../scene" }
 spaceeyes-time = { path = "../time" }
 spaceeyes-spatial = { path = "../spatial" }
 spaceeyes-simulation = { path = "../simulation" }
+spaceeyes-resources = { path = "../resources" }
