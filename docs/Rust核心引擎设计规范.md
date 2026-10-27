@@ -1,6 +1,6 @@
 # SPACEEYES Rust核心引擎设计规范
 
-版本：0.0.0｜状态：待审定设计草案｜日期：2026-10-27  
+版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27  
 项目：SPACEEYES｜阶段：仅架构设计，未实现、未验证  
 依据：`docs/太空之眼平台架构书.md` 的核心边界及统一架构决策。
 
@@ -122,3 +122,6 @@ Rust为唯一核心技术源码，WebAssembly和Native仅是不同编译目标�
 
 ## 15. 第13阶段统一设计语义
 Engine负责唯一公开写命令入口、生命周期协调和FrameSnapshot原子发布。Scene是场景唯一权威，Time是时钟唯一权威，Spatial是参考系权威，Resources是资源权威；Simulation可并发计算但不得直接写Scene。Paused是Time播放模式而非Engine生命周期。SceneSnapshot是局部只读状态，FrameSnapshot是渲染一致帧，ProjectSnapshot是项目持久化，三者不得互换。以上遵循已批准ADR-001至ADR-009；尚未创建实现代码。
+
+
+> 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
