@@ -103,7 +103,7 @@ ResourceStatus：1 resource_id:ResourceId；2 state:ResourceState；3 resource_e
 公开不暴露Rust内部槽位或GPU指针；资源最终释放权归Resources。
 
 ## 10. core.proto字段设计
-CommandEnvelope：1 context:RequestContext；oneof payload：2 scene:SceneCommand；3 time:TimeCommand；4 camera:CameraCommand；5 resource:ResourceCommand；6 simulation:SimulationCommand。
+CommandEnvelope：1 context:RequestContext；oneof payload：2 scene:SceneCommand；3 time:TimeCommand；4 resource:ResourceCommand；5 simulation:SimulationCommand；6 restore_project:RestoreProjectRequest。相机变更通过SceneCommand.set_camera进入Scene事务，不设平行CameraCommand写入口。
 QueryEnvelope：1 context:RequestContext；oneof payload：2 scene:SceneQuery；3 spatial:SpatialQuery；4 time:TimeQuery；5 resource:ResourceQuery。
 ResponseEnvelope：1 request_id:string；2 status:ResponseStatus；oneof payload：3 scene:SceneResponse；4 time:TimeResponse；5 resource:ResourceResponse；6 error:Error。
 EventEnvelope：1 event_id:string；2 session_id:string；3 sequence:uint64；4 causation_id:optional string；oneof payload：5 scene:SceneEvent；6 time:TimeEvent；7 resource:ResourceEvent；8 simulation:SimulationEvent。
@@ -144,3 +144,7 @@ FrameAvailability：UNSPECIFIED=0、COMPLETE=1、PARTIAL=2、STALE=3。PARTIAL�
 - FrameSnapshot用于渲染的一致帧，ProjectSnapshot用于持久化，两者不可互换；项目created_at/updated_at属于墙上时间，不是TimeInstant。
 - CameraState为Scene持久逻辑状态；CameraCommand必须经Engine进入Scene事务，避免与SceneCommand.set_camera形成双写入口。
 - 本章节为Markdown字段建议，不是正式.proto或冻结的字段号。
+
+
+## 16. 第13阶段生命周期字段约束
+ProjectSnapshot保存稳定ObjectId、FrameId、ResourceId、Scene状态、CameraState和时间配置；恢复时必须创建新会话内部句柄及TimeGeneration，旧任务代次不跨恢复继承。ProjectManifest的created_at/updated_at使用独立墙上时钟元数据类型。FrameAvailability的PARTIAL表示可用数据不完整，STALE表示旧时刻帧，不能与Engine生命周期Failed混用。
