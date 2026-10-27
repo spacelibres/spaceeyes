@@ -19,4 +19,5 @@ prost-build = "0.13"
 protoc-bin-vendored = "3"
 
 [dev-dependencies]
+protoc-bin-vendored = "3"
 spaceeyes-rendering = { path = "../rendering" }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
+use crate::limits;
 use crate::{
     decode_frame_id, decode_instant, decode_object_id, decode_resource_id, encode_instant,
     generated as p, ProtocolError,
@@ -26,7 +27,7 @@ impl ProtocolAdapter {
         principal_scope: &str,
         bytes: &[u8],
     ) -> Result<Vec<u8>, ProtocolError> {
-        if bytes.len() > 1024 * 1024 {
+        if bytes.len() > limits::MAX_MESSAGE_BYTES {
             return Err(ProtocolError::MessageTooLarge);
         }
         let envelope =
@@ -245,13 +246,13 @@ impl ProtocolAdapter {
     }
 }
 fn checked_object(id: p::ObjectId) -> Result<spaceeyes_foundation::ObjectId, ProtocolError> {
-    if id.value.len() > 256 {
+    if id.value.len() > limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidIdentifier);
     }
     decode_object_id(id)
 }
 fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, ProtocolError> {
-    if commands.len() > 1024 {
+    if commands.len() > limits::MAX_SCENE_COMMANDS {
         return Err(ProtocolError::MessageTooLarge);
     }
     let mut output = Vec::new();
@@ -281,7 +282,7 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
                     object: id.clone(),
                     visible: object.visible,
                 });
-                if object.resources.len() > 256 {
+                if object.resources.len() > limits::MAX_OBJECT_RESOURCES {
                     return Err(ProtocolError::MessageTooLarge);
                 }
                 if let Some(mesh) = object.mesh {
@@ -339,7 +340,7 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
                 frame: c.frame_id.map(decode_frame_id).transpose()?,
             }),
             Action::SetResources(c) => {
-                if c.resources.len() > 256 {
+                if c.resources.len() > limits::MAX_OBJECT_RESOURCES {
                     return Err(ProtocolError::MessageTooLarge);
                 }
                 output.push(SceneCommand::SetResources {
@@ -558,10 +559,13 @@ pub(crate) fn validate_wire_context(context: &p::RequestContext) -> Result<(), P
         .protocol_version
         .as_ref()
         .ok_or(ProtocolError::MissingField)?;
-    if version.major != 1 || version.minor != 0 || version.schema_id != "spaceeyes.core.v1" {
+    if version.major != limits::PROTOCOL_MAJOR
+        || version.minor != limits::PROTOCOL_MINOR
+        || version.schema_id != limits::SCHEMA_ID
+    {
         return Err(ProtocolError::UnsupportedVersion);
     }
-    if context.session_id.len() > 256 {
+    if context.session_id.len() > limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidContext);
     }
     Ok(())

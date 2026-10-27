@@ -14,3 +14,9 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/spaceeyes-xdg-$UID}"
 mkdir -p "$XDG_RUNTIME_DIR"
 chmod 700 "$XDG_RUNTIME_DIR"
 export MESA_SHADER_CACHE_DIR="${MESA_SHADER_CACHE_DIR:-/tmp/spaceeyes-mesa-cache-$UID}"
+
+if [[ -d /workspace/.spaceeyes-tools ]]; then
+  export npm_config_cache="${npm_config_cache:-/workspace/.spaceeyes-tools/npm-cache}"
+else
+  export npm_config_cache="${npm_config_cache:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/spaceeyes-npm-cache-$UID}"
+fi

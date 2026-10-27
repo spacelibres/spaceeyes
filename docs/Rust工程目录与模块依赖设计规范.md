@@ -138,3 +138,9 @@ SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独�
 
 ## 图像文件导入增量（0.0.1）
 外层image-import模块接受最多8MiB的PNG/JPEG字节，解码尺寸最多2048×2048，仅支持8位不透明图像。调用方显式选择Linear/SRGB，不做ICC色彩转换；JPEG采用严格解码并应用EXIF方向。解码失败不得登记Resources。Native宿主负责有界文件读取，成功后通过现有Engine接口登记TextureData，核心不依赖文件或编解码器。本轮先交付库与Native文件导入；Proto压缩图像命令后续扩展。输入不可信时解码库的内部内存限制不能等同于进程级隔离。
+
+## M1-2 能力发现与双语言客户端（0.0.1）
+状态：本轮实施规范；依赖M1-1，不改变已批准ADR。Protocol能力发现是只读QueryEnvelope.capabilities=22，CommandEnvelope保留22；ResponseEnvelope.capabilities=13。返回当前支持的操作标识、协议版本、消息/ID/批次/纹理/网格上限与当前会话历史容量/剩余量。能力表示实现支持，不表示身份授权或当前生命周期允许；不宣传Live、GPU画布、动态提供者、事件订阅或项目文件等未开放能力。上限与执行校验使用相同常量，历史容量取实际dispatcher配置，Stopped仍能发现能力。
+TS SDK放在packages/core-sdk，由唯一proto目录生成全部类型与编解码，锁定生成器和依赖并检查生成漂移。64位整数用bigint，禁止以JS number传递修订/时间等整数；oneof使用生成的可辨别联合，不手工复制Schema。SDK先发现并核对协议/必需能力，再发送受支持的全部现有命令/查询；提供结构化错误、长度及请求关联校验，不缓存场景/时钟、不隐式重试。重试沿用调用方请求ID。认证principal仅由宿主在transport闭包注入，插件不能自报。SDK不拥有WASM实例；宿主停机后释放实例。
+跨语言验收使用真实Rust Native字节宿主与wasm-bindgen生成的WASM实例执行同一TS客户端流程，并比较响应；不用mock替代互通证据。覆盖能力缺失/协议不兼容、所有已开放命令族、修订/时间大于2^53、负时间、字节纹理/网格、幂等/错误/查询/停机与多实例隔离。示例宿主stdin/stdout仅传长度帧封装的Proto，不另建JSON数据契约。WASM在Node执行不等于浏览器画布验收，M2仍须实际WebGPU/交互验证。
+新增安装、生成、检查步骤同时纳入本地严格检查和CI；无跳过用例，无第三方许可改写，Node/wasm-bindgen版本受控。M1之后仍按浏览器、统一资源/项目、科学数据和插件治理依赖顺序推进。

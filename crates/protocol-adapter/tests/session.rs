@@ -596,3 +596,87 @@ fn wire_rotation_and_inverse_resolution_preserve_transform_convention() {
     assert_eq!((q.x, q.y), (0., 0.));
     assert_eq!(f.frame_graph_revision, 2);
 }
+
+#[test]
+fn capability_discovery_reports_executable_limits_and_live_history_without_writes() {
+    let mut a = adapter(3);
+    let capabilities = |a: &ProtocolAdapter| {
+        let response = completed(query(
+            a,
+            p::QueryEnvelope {
+                context: Some(context("discover")),
+                payload: Some(p::query_envelope::Payload::Capabilities(
+                    p::CapabilitiesQuery {},
+                )),
+            },
+        ));
+        let p::response_envelope::Payload::Capabilities(caps) = response.payload.unwrap() else {
+            panic!()
+        };
+        caps
+    };
+    let before = status(&a);
+    let caps = capabilities(&a);
+    let limits = caps.limits.unwrap();
+    assert_eq!(
+        limits.max_message_bytes,
+        spaceeyes_protocol_adapter::limits::MAX_MESSAGE_BYTES as u32
+    );
+    assert_eq!(limits.max_identifier_bytes, 256);
+    assert_eq!(
+        limits.max_texture_dimension,
+        spaceeyes_geometry::MAX_TEXTURE_DIMENSION
+    );
+    assert_eq!(
+        limits.max_mesh_vertices,
+        spaceeyes_geometry::MAX_VERTICES as u32
+    );
+    assert_eq!(
+        (
+            limits.command_history_capacity,
+            limits.command_history_remaining
+        ),
+        (3, 3)
+    );
+    let names: std::collections::HashSet<_> = caps.operations.iter().collect();
+    assert_eq!(names.len(), caps.operations.len());
+    assert_eq!(names.len(), 24);
+    assert!(!names
+        .iter()
+        .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().events().count(), 0);
+    completed(send(&mut a, root("root", 0)));
+    assert_eq!(
+        capabilities(&a).limits.unwrap().command_history_remaining,
+        2
+    );
+    completed(send(&mut a, lifecycle("stop", false)));
+    assert_eq!(
+        capabilities(&a).limits.unwrap().command_history_remaining,
+        1
+    );
+}
+#[test]
+fn capabilities_query_cannot_be_routed_as_command_or_cross_session_read() {
+    let mut a = adapter(3);
+    let q = p::QueryEnvelope {
+        context: Some(context("discover")),
+        payload: Some(p::query_envelope::Payload::Capabilities(
+            p::CapabilitiesQuery {},
+        )),
+    };
+    let before = status(&a);
+    let response = p::ResponseEnvelope::decode(
+        a.submit_bytes("host", &q.encode_to_vec())
+            .unwrap()
+            .as_slice(),
+    )
+    .unwrap();
+    assert_eq!(error(response), p::ErrorCode::InvalidArgument);
+    let mut wrong = q;
+    wrong.context.as_mut().unwrap().session_id = "other".into();
+    assert_eq!(error(query(&a, wrong)), p::ErrorCode::InvalidArgument);
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().command_sequence(), 0);
+}

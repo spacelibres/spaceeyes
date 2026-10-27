@@ -17,6 +17,11 @@ jobs:
         with:
           components: rustfmt, clippy
           targets: wasm32-unknown-unknown
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - name: Install locked SDK dependencies and matching WASM bindings
+        run: bash tools/setup-sdk.sh
       - name: Version and dependency policy
         run: python3 tools/check-policy.py
       - name: Format
@@ -29,6 +34,9 @@ jobs:
         run: cargo test --workspace --locked
       - name: Build WASM core transport
         run: cargo build -p spaceeyes-wasm --target wasm32-unknown-unknown --locked
+
+      - name: Generated TS, strict types and Native/WASM interoperability
+        run: bash tools/check-sdk.sh
 
   gpu-prototype:
     runs-on: ubuntu-latest

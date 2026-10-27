@@ -135,6 +135,12 @@ impl CommandDispatcher {
         }
         Ok(())
     }
+    pub fn command_history_capacity(&self) -> usize {
+        self.capacity
+    }
+    pub fn command_history_remaining(&self) -> usize {
+        self.capacity - self.history.len()
+    }
     pub fn command_sequence(&self) -> u64 {
         self.sequence
     }

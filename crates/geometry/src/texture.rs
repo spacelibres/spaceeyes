@@ -2,6 +2,7 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Immutable opaque texture texels; image codecs and GPU objects live outside this domain.
 use spaceeyes_foundation::CoreError;
+pub const MAX_TEXTURE_DIMENSION: u32 = 2048;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ColorSpace {
     Linear,
@@ -44,8 +45,8 @@ impl TextureData {
         rgba8: Vec<u8>,
         color_space: ColorSpace,
     ) -> Result<Self, CoreError> {
-        if !(1..=2048).contains(&width)
-            || !(1..=2048).contains(&height)
+        if !(1..=MAX_TEXTURE_DIMENSION).contains(&width)
+            || !(1..=MAX_TEXTURE_DIMENSION).contains(&height)
             || rgba8.len() as u64 != u64::from(width) * u64::from(height) * 4
             || rgba8.as_chunks::<4>().0.iter().any(|p| p[3] != 255)
         {

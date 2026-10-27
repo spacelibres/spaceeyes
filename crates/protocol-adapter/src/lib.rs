@@ -3,6 +3,7 @@
 //! Protobuf is the external exchange boundary; domain types remain authoritative.
 //! Shared Scene/Time/Resources/Spatial commands and read-only session/frame queries.
 mod dispatch;
+pub mod limits;
 mod query;
 pub use dispatch::*;
 pub mod generated {
@@ -53,19 +54,19 @@ pub fn encode_instant(value: &TimeInstant) -> Result<generated::TimeInstant, Pro
     })
 }
 pub fn decode_object_id(value: generated::ObjectId) -> Result<ObjectId, ProtocolError> {
-    if value.value.len() > 256 {
+    if value.value.len() > limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidIdentifier);
     }
     Ok(ObjectId::new(value.value)?)
 }
 pub fn decode_frame_id(value: generated::FrameId) -> Result<FrameId, ProtocolError> {
-    if value.value.len() > 256 {
+    if value.value.len() > limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidIdentifier);
     }
     Ok(FrameId::new(value.value)?)
 }
 pub fn decode_resource_id(value: generated::ResourceId) -> Result<ResourceId, ProtocolError> {
-    if value.value.len() > 256 {
+    if value.value.len() > limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidIdentifier);
     }
     Ok(ResourceId::new(value.value)?)

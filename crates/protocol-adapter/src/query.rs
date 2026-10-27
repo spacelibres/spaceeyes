@@ -88,7 +88,7 @@ impl ProtocolAdapter {
         principal_scope: &str,
         bytes: &[u8],
     ) -> Result<Vec<u8>, ProtocolError> {
-        if bytes.len() > 1024 * 1024 {
+        if bytes.len() > crate::limits::MAX_MESSAGE_BYTES {
             return Err(ProtocolError::MessageTooLarge);
         }
         let envelope =
@@ -152,6 +152,28 @@ impl ProtocolAdapter {
             ));
         }
         let payload = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::query_envelope::Payload::Capabilities(_) => {
+                use crate::limits::*;
+                p::response_envelope::Payload::Capabilities(p::Capabilities {
+                    protocol_version: Some(p::ProtocolVersion {
+                        major: PROTOCOL_MAJOR,
+                        minor: PROTOCOL_MINOR,
+                        schema_id: SCHEMA_ID.into(),
+                    }),
+                    operations: OPERATIONS.iter().map(|s| (*s).into()).collect(),
+                    limits: Some(p::ProtocolLimits {
+                        max_message_bytes: MAX_MESSAGE_BYTES as u32,
+                        max_identifier_bytes: MAX_IDENTIFIER_BYTES as u32,
+                        max_scene_commands: MAX_SCENE_COMMANDS as u32,
+                        max_object_resources: MAX_OBJECT_RESOURCES as u32,
+                        max_texture_dimension: spaceeyes_geometry::MAX_TEXTURE_DIMENSION,
+                        max_mesh_vertices: spaceeyes_geometry::MAX_VERTICES as u32,
+                        max_mesh_indices: spaceeyes_geometry::MAX_INDICES as u32,
+                        command_history_capacity: dispatcher.command_history_capacity() as u64,
+                        command_history_remaining: dispatcher.command_history_remaining() as u64,
+                    }),
+                })
+            }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)
             }

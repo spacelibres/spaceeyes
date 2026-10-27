@@ -48,4 +48,5 @@ manifest['ICD']['library_path'] = str(library)
 PY
 fi
 source tools/dev-env.sh
+bash tools/setup-sdk.sh
 cargo build --workspace --locked -j 4

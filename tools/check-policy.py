@@ -4,6 +4,7 @@
 """Enforce the repository's current version and acyclic core dependency rules."""
 from pathlib import Path
 import re
+import json
 import tomllib
 
 root = Path(__file__).resolve().parents[1]
@@ -47,9 +48,21 @@ for node in graph:
     walk(node)
 for name in ['foundation', 'geometry', 'time', 'scene', 'spatial', 'resources', 'rendering', 'snapshot', 'simulation']:
     assert root / 'crates/engine' not in graph[root / f'crates/{name}'], f'{name}: reverse Engine dependency'
+root_package=json.loads((root / 'package.json').read_text())
+assert root_package['version']==version and root_package['license']=='MIT'
+lock=json.loads((root / 'package-lock.json').read_text())
+assert lock['version']==version and lock['packages']['']['version']==version
+assert root_package['workspaces']==['packages/core-sdk'], 'unexpected JS workspace: review architecture'
+for member in root_package['workspaces']:
+    package=json.loads((root / member / 'package.json').read_text())
+    assert package['version']==version and package['license']=='MIT', f'{member}: metadata mismatch'
+    assert lock['packages'][member]['version']==version and lock['packages'][member]['license']=='MIT'
+    skill=(root / member / 'SKILL.md').read_text()
+    assert f'版本：{version}' in skill, 'SDK skill/version mismatch'
 source_files = [p for folder in packages for p in folder.rglob('*.rs')]
 source_files += list((root / 'proto').rglob('*.proto')) + list((root / 'crates/rendering/src').glob('*.wgsl'))
 source_files += list((root / 'tools').glob('*.sh')) + list((root / 'tools').glob('*.py'))
+source_files += list((root / 'packages/core-sdk/src').rglob('*.ts')) + list((root / 'packages/core-sdk/test').rglob('*.ts'))
 for path in source_files:
     assert any('SPDX-License-Identifier: MIT' in line for line in path.read_text().splitlines()[:5]), f'{path.relative_to(root)}: missing MIT SPDX identifier'
-print(f'Policy passed: uniform {version}; {len(packages)} packages; production dependencies acyclic; MIT metadata/SPDX consistent.')
+print(f'Policy passed: uniform {version}; {len(packages)} packages; production dependencies acyclic; MIT metadata/SPDX consistent; TS workspace/SDK skill version aligned.')

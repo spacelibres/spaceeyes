@@ -1,0 +1,23 @@
+{
+  "name": "spaceeyes-workspace",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/core-sdk"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build --workspace @spaceeyes/core-sdk",
+    "test": "npm test --workspace @spaceeyes/core-sdk"
+  },
+  "devDependencies": {
+    "@bufbuild/protoc-gen-es": "2.16.0",
+    "@types/node": "24.10.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3"
+  }
+}
