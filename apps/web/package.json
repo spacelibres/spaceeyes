@@ -14,7 +14,8 @@
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "@spaceeyes/core-sdk": "0.0.1",
-    "@spaceeyes/nasa-dynamo": "0.0.1"
+    "@spaceeyes/nasa-dynamo": "0.0.1",
+    "@spaceeyes/plugin-host": "0.0.1"
   },
   "devDependencies": {
     "@types/react": "19.2.14",

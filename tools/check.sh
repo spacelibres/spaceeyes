@@ -15,6 +15,8 @@ cargo build -p spaceeyes-wasm --target wasm32-unknown-unknown --locked -j 4
 bash tools/check-sdk.sh
 npm exec -- prettier --check packages/nasa-dynamo/package.json packages/nasa-dynamo/tsconfig.json 'packages/nasa-dynamo/src/*.ts' 'packages/nasa-dynamo/test/*.ts'
 npm test --workspace @spaceeyes/nasa-dynamo
+npm exec -- prettier --check packages/plugin-host/package.json packages/plugin-host/tsconfig.json 'packages/plugin-host/src/*.ts' 'packages/plugin-host/test/*.ts'
+npm test --workspace @spaceeyes/plugin-host
 bash tools/check-web.sh
 if [[ "${1:-}" == --gpu ]]; then
   cargo test --workspace --all-features --locked -j 4

@@ -1,0 +1,16 @@
+{
+  "name": "@spaceeyes/plugin-host",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/test/*.test.js"
+  },
+  "dependencies": {
+    "@spaceeyes/nasa-dynamo": "0.0.1"
+  }
+}

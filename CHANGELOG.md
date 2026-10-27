@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+### 最小可信插件宿主与DYN授权接入（P03切片）
+- 新增`packages/plugin-host`：严格清单校验、能力/网络主机子集授权、https origin归一化、相对路径与防穿越、响应上限、安装/启停/撤权、启动失败回滚与在途取消；插件无权直接fetch。
+- DYN适配器把NASA来源与分段加载器接入宿主；浏览器太阳系数据源改经宿主context访问只读代理，卸载时停用插件并中止请求。
+- 验证：宿主7项单测（越权主机/能力、路径穿越、超限、启停、撤权、在途中止、启动失败、DYN合成加载）、Web typecheck/生产构建与10项Chromium测试通过。
+- 边界：同进程可信宿主，不是Worker/iframe沙箱；贡献点、对象/资源所有权、权限扩大重授、制品签名/版本锁与市场仍未实现。
+
 ### 项目快照导出与恢复（C11切片）
 - Proto新增`ProjectSnapshot`、`ProjectClock`、`ProjectFrameRecord`、`ProjectResourceRecord`与只读`query.project_export`；能力总数增至36项。
 - ProtocolAdapter实现结构化编解码：校验schema版本、时钟模式/倍速、标识长度、32字节来源摘要与资源字节长度；场景对象按父级依赖恢复，未知版本/非法数据拒绝。WASM新增`WasmEngine.from_project(session, bytes)`，恢复创建新句柄/修订/任务代次，不恢复GPU句柄、任务或上传。

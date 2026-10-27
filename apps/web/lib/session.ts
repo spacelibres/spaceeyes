@@ -23,9 +23,14 @@ import {
   type ResponseEnvelope,
 } from "@spaceeyes/core-sdk";
 import type { DynamoSegmentLoader } from "@spaceeyes/nasa-dynamo";
+import {
+  DYNAMO_ORIGIN,
+  DYNAMO_PLUGIN_ID,
+  PluginHost,
+  createDynamoPlugin,
+} from "@spaceeyes/plugin-host";
 import type { SolarState } from "./solar-system";
 import {
-  createSolarLoader,
   displayPosition,
   orbitMesh,
   solarState,
@@ -128,6 +133,7 @@ export class BrowserSession {
   private actionError: string | undefined;
   private solarMode = false;
   private solarLoader: DynamoSegmentLoader | undefined;
+  private pluginHost: PluginHost | undefined;
   private readonly solarStates = new Map<string, SolarState>();
   private solarInstant: string | undefined;
   private solarTimeEt: number | undefined;
@@ -253,7 +259,7 @@ export class BrowserSession {
     if (this.disposed) return;
     if (this.projectBytes) {
       this.cameraCreated = true;
-      this.solarLoader = this.solarMode ? createSolarLoader() : undefined;
+      this.solarLoader = this.solarMode ? await this.enableDynamo() : undefined;
       await this.refresh();
       await this.command({
         case: "lifecycle",
@@ -298,7 +304,7 @@ export class BrowserSession {
           throw new Error("缺少参考系修订");
         revision = response.payload.value.frameGraphRevision;
       }
-      this.solarLoader = createSolarLoader();
+      this.solarLoader = await this.enableDynamo();
     }
     const pixels = new Uint8Array(
       Array.from({ length: 16 }, (_, i) =>
@@ -540,6 +546,34 @@ export class BrowserSession {
         },
       },
     };
+  }
+  private async enableDynamo(): Promise<DynamoSegmentLoader> {
+    const plugin = createDynamoPlugin();
+    const host = new PluginHost(
+      {
+        allowedCapabilities: [...plugin.manifest.capabilities],
+        allowedNetworkHosts: [DYNAMO_ORIGIN],
+        maxFetchBytes: 16 * 1024 * 1024,
+      },
+      {
+        request: async (_origin, path, signal) => {
+          const response = await fetch(`/api/dynamo/${path}`, {
+            cache: "no-store",
+            signal,
+          });
+          if (!response.ok) {
+            throw new Error(`星历请求失败（${response.status}）：${path}`);
+          }
+          return new Uint8Array(await response.arrayBuffer());
+        },
+      },
+    );
+    host.install(plugin.manifest, plugin.factory);
+    await host.enable(plugin.manifest.id);
+    const loader = plugin.loader();
+    if (loader === undefined) throw new Error("星历插件未提供加载器");
+    this.pluginHost = host;
+    return loader;
   }
   private async command(payload: CommandPayload): Promise<ResponseEnvelope> {
     return this.client!.command(payload, {
@@ -963,6 +997,13 @@ export class BrowserSession {
             this.state = response.payload.value;
         }
       } finally {
+        try {
+          await this.pluginHost?.disable(DYNAMO_PLUGIN_ID);
+        } catch {
+          // Disposal continues even when plugin shutdown fails.
+        }
+        this.pluginHost = undefined;
+        this.solarLoader = undefined;
         this.engine?.free();
         this.engine = undefined;
       }

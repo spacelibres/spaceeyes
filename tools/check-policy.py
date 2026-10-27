@@ -52,7 +52,7 @@ root_package=json.loads((root / 'package.json').read_text())
 assert root_package['version']==version and root_package['license']=='MIT'
 lock=json.loads((root / 'package-lock.json').read_text())
 assert lock['version']==version and lock['packages']['']['version']==version
-assert root_package['workspaces']==['packages/core-sdk', 'packages/nasa-dynamo', 'apps/web'], 'unexpected JS workspace: review architecture'
+assert root_package['workspaces']==['packages/core-sdk', 'packages/nasa-dynamo', 'packages/plugin-host', 'apps/web'], 'unexpected JS workspace: review architecture'
 for member in root_package['workspaces']:
     package=json.loads((root / member / 'package.json').read_text())
     assert package['version']==version and package['license']=='MIT', f'{member}: metadata mismatch'
@@ -64,6 +64,7 @@ source_files += list((root / 'proto').rglob('*.proto')) + list((root / 'crates/r
 source_files += list((root / 'tools').glob('*.sh')) + list((root / 'tools').glob('*.py'))
 source_files += list((root / 'packages/core-sdk/src').rglob('*.ts')) + list((root / 'packages/core-sdk/test').rglob('*.ts'))
 source_files += list((root / 'packages/nasa-dynamo/src').rglob('*.ts')) + list((root / 'packages/nasa-dynamo/test').rglob('*.ts'))
+source_files += list((root / 'packages/plugin-host/src').rglob('*.ts')) + list((root / 'packages/plugin-host/test').rglob('*.ts'))
 for folder in ['apps/web/app','apps/web/lib','apps/web/tests']:
     source_files += [p for p in (root / folder).rglob('*') if p.suffix in {'.ts','.tsx','.css'}]
 source_files += [root / 'apps/web/next.config.mjs', root / 'apps/web/playwright.config.ts']

@@ -7,13 +7,14 @@
   "workspaces": [
     "packages/core-sdk",
     "packages/nasa-dynamo",
+    "packages/plugin-host",
     "apps/web"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build --workspace @spaceeyes/nasa-dynamo && npm run build --workspace @spaceeyes/core-sdk",
+    "build": "npm run build --workspace @spaceeyes/nasa-dynamo && npm run build --workspace @spaceeyes/plugin-host && npm run build --workspace @spaceeyes/core-sdk",
     "test": "npm test --workspace @spaceeyes/core-sdk"
   },
   "devDependencies": {
