@@ -12,6 +12,10 @@ pub struct ResourceId(String);
 pub enum CoreError {
     EmptyIdentifier,
     DuplicateObject,
+    ParentNotFound,
+    HierarchyCycle,
+    HasChildren,
+    RevisionConflict,
     UnknownObject,
     InvalidState,
     AlreadyStopped,
