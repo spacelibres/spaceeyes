@@ -2,6 +2,12 @@
 // Copyright (c) 2026 SPACEEYES contributors
 
 export type PluginKind = "data-source" | "compute";
+export type ContributionKind = "panel" | "layer" | "command";
+export interface PluginContribution {
+  readonly id: string;
+  readonly kind: ContributionKind;
+  readonly title: string;
+}
 
 export interface PluginManifest {
   readonly id: string;
@@ -12,6 +18,7 @@ export interface PluginManifest {
     readonly network: { readonly hosts: readonly string[] };
   };
   readonly limits: { readonly maxFetchBytes: number };
+  readonly contributions: readonly PluginContribution[];
 }
 
 export class PluginManifestError extends Error {
@@ -24,6 +31,9 @@ export class PluginManifestError extends Error {
 const ID = /^[a-z][a-z0-9._-]{2,127}$/;
 const VERSION = /^\d+\.\d+\.\d+$/;
 const CAPABILITY = /^[a-z][a-z0-9._-]{0,127}$/;
+const CONTRIBUTION_ID = /^[a-z][a-z0-9._-]{0,63}$/;
+export const MAX_CONTRIBUTIONS = 16;
+export const MAX_CONTRIBUTION_TITLE_CHARS = 128;
 export const MAX_MANIFEST_FETCH_BYTES = 16 * 1024 * 1024;
 
 /** Normalize an https origin; paths, credentials, queries and fragments are invalid. */
@@ -101,6 +111,31 @@ export function validateManifest(value: unknown): PluginManifest {
   ) {
     fail("invalid maxFetchBytes");
   }
+  const rawContributions = manifest.contributions ?? [];
+  if (!Array.isArray(rawContributions)) fail("contributions must be an array");
+  if (rawContributions.length > MAX_CONTRIBUTIONS)
+    fail("too many contributions");
+  const contributions: PluginContribution[] = [];
+  for (const value of rawContributions) {
+    const entry = record(value, "contribution");
+    const id = entry.id;
+    if (typeof id !== "string" || !CONTRIBUTION_ID.test(id))
+      fail("invalid contribution id");
+    if (contributions.some((item) => item.id === id))
+      fail("duplicate contribution id");
+    const kind = entry.kind;
+    if (kind !== "panel" && kind !== "layer" && kind !== "command")
+      fail("invalid contribution kind");
+    const title = entry.title;
+    if (
+      typeof title !== "string" ||
+      title.trim() === "" ||
+      [...title].length > MAX_CONTRIBUTION_TITLE_CHARS ||
+      /[\u0000-\u001f\u007f]/.test(title)
+    )
+      fail("invalid contribution title");
+    contributions.push(Object.freeze({ id, kind, title }));
+  }
   return Object.freeze({
     id,
     version,
@@ -110,5 +145,6 @@ export function validateManifest(value: unknown): PluginManifest {
       network: Object.freeze({ hosts: Object.freeze(normalizedHosts) }),
     }),
     limits: Object.freeze({ maxFetchBytes }),
+    contributions: Object.freeze(contributions),
   });
 }

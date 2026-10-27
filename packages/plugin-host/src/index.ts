@@ -2,12 +2,19 @@
 // Copyright (c) 2026 SPACEEYES contributors
 
 export {
+  MAX_CONTRIBUTIONS,
+  MAX_CONTRIBUTION_TITLE_CHARS,
   MAX_MANIFEST_FETCH_BYTES,
   PluginManifestError,
   normalizeOrigin,
   validateManifest,
 } from "./manifest.js";
-export type { PluginKind, PluginManifest } from "./manifest.js";
+export type {
+  ContributionKind,
+  PluginContribution,
+  PluginKind,
+  PluginManifest,
+} from "./manifest.js";
 
 export { PluginPolicyError, authorize } from "./policy.js";
 export type { HostPolicy, PluginGrant } from "./policy.js";

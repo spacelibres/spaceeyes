@@ -5,6 +5,7 @@ import { authorize, type HostPolicy, type PluginGrant } from "./policy.js";
 import {
   normalizeOrigin,
   validateManifest,
+  type ContributionKind,
   type PluginManifest,
 } from "./manifest.js";
 
@@ -175,6 +176,33 @@ export class PluginHost {
 
   isEnabled(id: string): boolean {
     return this.entry(id).enabled;
+  }
+
+  /** Contributions of enabled, non-revoked plugins, namespaced by plugin id. */
+  activeContributions(): readonly {
+    pluginId: string;
+    id: string;
+    kind: ContributionKind;
+    title: string;
+  }[] {
+    const result: {
+      pluginId: string;
+      id: string;
+      kind: ContributionKind;
+      title: string;
+    }[] = [];
+    for (const [pluginId, entry] of this.entries) {
+      if (!entry.enabled || entry.revoked) continue;
+      for (const contribution of entry.manifest.contributions) {
+        result.push({
+          pluginId,
+          id: `${pluginId}:${contribution.id}`,
+          kind: contribution.kind,
+          title: contribution.title,
+        });
+      }
+    }
+    return result;
   }
 
   grant(id: string): PluginGrant {

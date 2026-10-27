@@ -33,6 +33,7 @@ export function createDynamoPlugin(): DynamoPlugin {
       network: { hosts: [...NASA_DYNAMO_MANIFEST.permissions.network.hosts] },
     },
     limits: { maxFetchBytes: NASA_DYNAMO_MANIFEST.limits.maxFileBytes },
+    contributions: [],
   };
   return {
     manifest,

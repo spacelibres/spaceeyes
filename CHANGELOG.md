@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 插件贡献点声明与生命周期联动（P03 切片）
+- 清单新增可选 `contributions`（panel/layer/command，最多 16 项，标题与非控制字符受限，同一插件内唯一）；`activeContributions()` 以 `pluginId:contributionId` 命名空间暴露。
+- 贡献点随启用出现、停用消失、撤权后不可恢复；不构成渲染或写入权限。
+- 验证：plugin-host 9 项单测通过。
+
+
 ### 项目文件 v2 清单与 v1 迁移（C11 切片）
 - 新增 v2 容器：清单长度/载荷长度、覆盖清单与载荷的 SHA-256、项目标识与墙上时钟纳秒；v1 文件仍可读取并映射为空清单。
 - 浏览器保存写入 v2（`encodeProjectFileWithTime`，项目标识 `spaceeyes-browser`），打开兼容 v1/v2；清单篡改/越界/倒序时间拒绝。

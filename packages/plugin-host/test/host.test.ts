@@ -313,3 +313,65 @@ test("DYN plugin loads through the granted host context", async () => {
   await host.disable(dynamo.manifest.id);
   assert.equal(dynamo.loader(), undefined);
 });
+
+test("manifest contributions are bounded, unique, and namespaced", () => {
+  assert.throws(
+    () =>
+      validateManifest({
+        ...manifest,
+        contributions: [{ id: "panel", kind: "panel", title: "" }],
+      }),
+    PluginManifestError,
+  );
+  assert.throws(
+    () =>
+      validateManifest({
+        ...manifest,
+        contributions: [
+          { id: "panel", kind: "panel", title: "A" },
+          { id: "panel", kind: "layer", title: "B" },
+        ],
+      }),
+    PluginManifestError,
+  );
+  assert.throws(
+    () =>
+      validateManifest({
+        ...manifest,
+        contributions: [{ id: "panel", kind: "window", title: "A" }],
+      }),
+    PluginManifestError,
+  );
+  const validated = validateManifest({
+    ...manifest,
+    contributions: [{ id: "panel", kind: "panel", title: "Ephemeris" }],
+  });
+  assert.deepEqual(validated.contributions, [
+    { id: "panel", kind: "panel", title: "Ephemeris" },
+  ]);
+});
+
+test("active contributions follow enable, disable, and revoke", async () => {
+  const host = new PluginHost(policy, new FakeTransport());
+  const installed = host.install(
+    {
+      ...manifest,
+      contributions: [
+        { id: "ephemeris-panel", kind: "panel", title: "Ephemeris" },
+        { id: "orbit-layer", kind: "layer", title: "Orbit layer" },
+      ],
+    },
+    pluginContextCapture().factory,
+  );
+  assert.deepEqual(host.activeContributions(), []);
+  await host.enable(installed.id);
+  assert.deepEqual(
+    host.activeContributions().map((item) => `${item.id}:${item.kind}`),
+    ["test.plugin:ephemeris-panel:panel", "test.plugin:orbit-layer:layer"],
+  );
+  await host.disable(installed.id);
+  assert.deepEqual(host.activeContributions(), []);
+  await host.enable(installed.id);
+  await host.revoke(installed.id);
+  assert.deepEqual(host.activeContributions(), []);
+});
