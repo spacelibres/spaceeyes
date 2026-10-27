@@ -88,3 +88,7 @@ Seek/Reset/Live源切换增加`TimeGeneration`，清理或标记旧任务失效�
 7. 外部UTC、J2000与DYN时间约定的验证方法。
 
 **状态：设计草案；没有编写引擎代码。**
+
+
+## 12. 交叉审查整改对齐（待审）
+TimeGeneration在Seek、Reset、Live源切换和语义重置时递增，连续播放不逐帧递增。异步结果除generation外还必须核对目标时刻和coverage。TimeSnapshot参与Engine一致FrameSnapshot。TT/TDB及J2000零点仍需科学验证，不得默认。
