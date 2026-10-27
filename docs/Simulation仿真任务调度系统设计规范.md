@@ -94,3 +94,7 @@ Simulation负责计算任务与结果有效性校验，不直接写Scene。Engin
 
 ## 16. 0.0.1任务资源租约协调
 Engine建立task_id与受控ResourceId租约的关联，任务取消、失败、过时代次、提交完成或Engine关闭时释放任务租约。Simulation不直接拥有ResourceManager；Resources仍是唯一资源所有权与配额权威。当前关联仅为Engine内存级逻辑租约，尚无跨会话持久化、执行器强制取消、租约身份令牌或GPU资源恢复。
+
+
+## 0.0.1执行器取消协作
+TaskExecutor新增request_cancel通知接口，Engine先将任务标记Cancelled并回收任务租约，再向宿主执行器发出尽力取消通知。即使通知失败，迟到结果也不得提交。实际线程/Worker中断与异步完成回调仍需后续实现。
