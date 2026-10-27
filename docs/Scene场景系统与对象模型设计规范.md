@@ -87,3 +87,7 @@ Active → Detached → Attached（如允许重新挂载）
 ## 11. 建议审定的对象身份与删除策略（尚未批准）
 
 建议公开ObjectId稳定、内部ObjectHandle带代次；删除有子对象的父对象默认拒绝，级联删除必须显式命令；ParentId仅表示组织关系，不等于Spatial的FrameId。该提案等待项目负责人确认后再标记为已批准。具体编码和删除事务语义仍待详细设计。
+
+
+## 12. 交叉审查整改对齐（待审）
+Scene是唯一场景可变状态所有者；Engine为统一外部命令入口，Simulation仅提出经验证的SceneCommand。SceneSnapshot由Engine联合Time与Spatial修订形成一致FrameSnapshot。Frame撤销不隐式删除对象。单命令原子，批量默认全有或全无为待批准提议。
