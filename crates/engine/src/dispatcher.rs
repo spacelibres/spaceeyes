@@ -16,6 +16,10 @@ pub enum Command {
         id: spaceeyes_foundation::ResourceId,
         mesh: spaceeyes_geometry::TriangleMesh,
     },
+    RegisterTexture {
+        id: spaceeyes_foundation::ResourceId,
+        texture: spaceeyes_geometry::TextureData,
+    },
     Play,
     Pause,
     SetRate(spaceeyes_time::PlaybackRate),
@@ -127,13 +131,19 @@ impl CommandDispatcher {
             .ok_or(DispatchError::Overflow)?;
         let result = if generation.is_some_and(|g| g != self.engine.clock().generation()) {
             Err(DispatchError::StaleGeneration)
+        } else if let Command::RegisterTexture { id, texture } = &command {
+            self.engine
+                .register_texture_resource(id.clone(), texture.clone())
+                .map_err(DispatchError::Resource)
         } else if let Command::RegisterMesh { id, mesh } = &command {
             self.engine
                 .register_mesh_resource(id.clone(), mesh.clone())
                 .map_err(DispatchError::Resource)
         } else {
             match &command {
-                Command::RegisterMesh { .. } => unreachable!("handled above"),
+                Command::RegisterTexture { .. } | Command::RegisterMesh { .. } => {
+                    unreachable!("handled above")
+                }
                 Command::Scene {
                     expected_revision,
                     commands,

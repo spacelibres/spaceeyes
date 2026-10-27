@@ -30,14 +30,14 @@ fn request(id: &str) -> p::CommandEnvelope {
         }),
         payload: Some(p::command_envelope::Payload::Scene(p::SceneCommand {
             action: Some(p::scene_command::Action::Create(p::CreateObject {
-                object: Some(p::SceneObject {
+                object: Some(Box::new(p::SceneObject {
                     object_id: Some(p::ObjectId {
                         value: "object".into(),
                     }),
                     visible: true,
                     lifecycle: p::ObjectLifecycle::Active as i32,
                     ..Default::default()
-                }),
+                })),
             })),
         })),
     }
@@ -282,6 +282,7 @@ fn sphere_wire_command_roundtrip_and_invalid_geometry_roll_back() {
                 value: "object".into(),
             }),
             sphere: Some(p::SpherePrimitive {
+                material: None,
                 radius_m: -1.0,
                 base_color: Some(p::ColorRgb {
                     r: 1.0,
@@ -308,6 +309,7 @@ fn sphere_wire_command_roundtrip_and_invalid_geometry_roll_back() {
         .sphere()
         .is_none());
     assert!(decode_sphere(p::SpherePrimitive {
+        material: None,
         radius_m: 1.0,
         base_color: None
     })
@@ -359,7 +361,9 @@ fn mesh_resource_wire_registration_is_validated_and_replays_original_receipt() {
     let mut second = registration.clone();
     second.context.as_mut().unwrap().request_id = "geometry2".into();
     if let Some(p::command_envelope::Payload::Resource(c)) = &mut second.payload {
-        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap();
+        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap() else {
+            panic!("expected mesh command")
+        };
         c.resource_id.as_mut().unwrap().value = "other".into();
     }
     assert_eq!(
@@ -386,7 +390,9 @@ fn mesh_resource_wire_registration_is_validated_and_replays_original_receipt() {
     let mut invalid = registration;
     invalid.context.as_mut().unwrap().request_id = "invalid".into();
     if let Some(p::command_envelope::Payload::Resource(c)) = &mut invalid.payload {
-        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap();
+        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap() else {
+            panic!("expected mesh command")
+        };
         c.resource_id.as_mut().unwrap().value = "bad".into();
         c.mesh.as_mut().unwrap().indices = vec![0, 1, 99];
     }
@@ -396,4 +402,112 @@ fn mesh_resource_wire_registration_is_validated_and_replays_original_receipt() {
         p::ResponseStatus::Rejected as i32
     );
     assert_eq!(a.dispatcher().snapshot(), before);
+}
+#[test]
+fn texture_and_material_wire_contracts_are_typed_and_backwards_compatible() {
+    use spaceeyes_foundation::{FrameId, ResourceId};
+    use spaceeyes_geometry::{ColorSpace, TextureData};
+    use spaceeyes_protocol_adapter::{
+        decode_material, decode_mesh_geometry, decode_texture, encode_sphere, encode_texture,
+    };
+    use spaceeyes_scene::{Material, Sphere};
+    let texture = TextureData::new(1, 1, vec![100, 150, 200, 255], ColorSpace::Srgb).unwrap();
+    assert_eq!(decode_texture(encode_texture(&texture)).unwrap(), texture);
+    let mut engine = Engine::new(TimeInstant::new("TT", "epoch", 0, 0).unwrap());
+    engine
+        .register_root_frame(FrameId::new("root").unwrap())
+        .unwrap();
+    let mut a = ProtocolAdapter::new(CommandDispatcher::new(engine, "session".into(), 20).unwrap())
+        .unwrap();
+    let mut registration = request("texture");
+    registration.payload = Some(p::command_envelope::Payload::Resource(p::ResourceCommand {
+        action: Some(p::resource_command::Action::RegisterTexture(
+            p::RegisterTextureResource {
+                resource_id: Some(p::ResourceId {
+                    value: "tex".into(),
+                }),
+                texture: Some(encode_texture(&texture)),
+            },
+        )),
+    }));
+    let first = send(&mut a, registration.clone());
+    assert_eq!(first.status, p::ResponseStatus::Completed as i32);
+    assert_eq!(send(&mut a, registration), first);
+    let sphere = Sphere::with_material(
+        1.0,
+        Material::new(
+            [1.0; 3],
+            Some(ResourceId::new("tex").unwrap()),
+            Default::default(),
+            true,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let mut create = request("textured");
+    if let Some(p::command_envelope::Payload::Scene(c)) = &mut create.payload {
+        if let Some(p::scene_command::Action::Create(c)) = &mut c.action {
+            let object = c.object.as_mut().unwrap();
+            object.frame_id = Some(p::FrameId {
+                value: "root".into(),
+            });
+            object.sphere = Some(encode_sphere(&sphere));
+        }
+    }
+    assert_eq!(
+        send(&mut a, create.clone()).status,
+        p::ResponseStatus::Completed as i32
+    );
+    assert!(a.dispatcher().snapshot().scene.objects[0]
+        .sphere()
+        .unwrap()
+        .material()
+        .unlit());
+    create.context.as_mut().unwrap().request_id = "conflicting-color".into();
+    create.context.as_mut().unwrap().expected_scene_revision = Some(1);
+    if let Some(p::command_envelope::Payload::Scene(c)) = &mut create.payload {
+        if let Some(p::scene_command::Action::Create(c)) = &mut c.action {
+            c.object
+                .as_mut()
+                .unwrap()
+                .sphere
+                .as_mut()
+                .unwrap()
+                .base_color
+                .as_mut()
+                .unwrap()
+                .r = 0.5;
+        }
+    }
+    let before = a.dispatcher().snapshot();
+    assert_eq!(
+        send(&mut a, create).status,
+        p::ResponseStatus::Rejected as i32
+    );
+    assert_eq!(a.dispatcher().snapshot(), before);
+    let mut unknown = encode_texture(&texture);
+    unknown.color_space = 0;
+    assert!(decode_texture(unknown).is_err());
+    let mut material = spaceeyes_protocol_adapter::encode_material(sphere.material());
+    material.filter = 0;
+    assert!(decode_material(material).is_err());
+    let old = p::TriangleMesh {
+        vertices: [[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [0.0, 1.0, 0.0]]
+            .into_iter()
+            .map(|[x, y, z]| p::MeshVertex {
+                position_m: Some(p::Vector3d { x, y, z }),
+                normal: Some(p::Vector3d {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                }),
+                uv: None,
+            })
+            .collect(),
+        indices: vec![0, 1, 2],
+    };
+    assert_eq!(
+        decode_mesh_geometry(old).unwrap().vertices()[0].uv(),
+        [0.0; 2]
+    );
 }

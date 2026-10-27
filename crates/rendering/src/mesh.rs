@@ -9,6 +9,7 @@ pub const SPHERE_DRAW_VERTICES: u32 = SPHERE_SLICES * (SPHERE_STACKS - 1) * 6;
 pub struct MeshVertex {
     pub position: [f32; 3],
     pub normal: [f32; 3],
+    pub uv: [f32; 2],
 }
 #[derive(Clone, Debug)]
 pub struct SphereMesh {
@@ -32,6 +33,7 @@ pub fn unit_sphere(slices: u32, stacks: u32) -> Result<SphereMesh, RenderError> 
             vertices.push(MeshVertex {
                 position: p,
                 normal: p,
+                uv: [x as f32 / slices as f32, y as f32 / stacks as f32],
             });
         }
     }

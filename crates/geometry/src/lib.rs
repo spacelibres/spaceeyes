@@ -2,16 +2,29 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Validated immutable local triangle geometry, independent of graphics backends and Proto.
 use spaceeyes_foundation::CoreError;
+mod texture;
+pub use texture::*;
 pub const MAX_VERTICES: usize = 65_536;
 pub const MAX_INDICES: usize = 196_608;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Vertex {
     position_m: [f64; 3],
     normal: [f64; 3],
+    uv: [f32; 2],
 }
 impl Eq for Vertex {}
 impl Vertex {
     pub fn new(position_m: [f64; 3], normal: [f64; 3]) -> Result<Self, CoreError> {
+        Self::with_uv(position_m, normal, [0.0; 2])
+    }
+    pub fn with_uv(
+        position_m: [f64; 3],
+        normal: [f64; 3],
+        uv: [f32; 2],
+    ) -> Result<Self, CoreError> {
+        if !uv.iter().all(|v| v.is_finite() && v.abs() <= 1e6) {
+            return Err(CoreError::InvalidState);
+        }
         if !position_m.iter().all(|p| p.is_finite() && p.abs() <= 1e12)
             || !normal.iter().all(|n| n.is_finite())
         {
@@ -23,11 +36,15 @@ impl Vertex {
         }
         Ok(Self {
             position_m,
+            uv,
             normal: normal.map(|n| n / norm),
         })
     }
     pub fn position_m(&self) -> [f64; 3] {
         self.position_m
+    }
+    pub fn uv(&self) -> [f32; 2] {
+        self.uv
     }
     pub fn normal(&self) -> [f64; 3] {
         self.normal
@@ -72,6 +89,6 @@ impl TriangleMesh {
         &self.indices
     }
     pub fn byte_len(&self) -> u64 {
-        (self.vertices.len() as u64) * 48 + (self.indices.len() as u64) * 4
+        (self.vertices.len() as u64) * 56 + (self.indices.len() as u64) * 4
     }
 }

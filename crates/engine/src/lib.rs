@@ -197,6 +197,7 @@ impl Engine {
         let clock = self.clock.snapshot();
         let mut poses = Vec::new();
         let mut unresolved = Vec::new();
+        let mut textures: Vec<spaceeyes_snapshot::TextureAsset> = Vec::new();
         let mut meshes: Vec<spaceeyes_snapshot::MeshAsset> = Vec::new();
         for object in &scene.objects {
             if object.resource_refs().iter().any(|id| {
@@ -210,6 +211,23 @@ impl Engine {
             }) {
                 unresolved.push(object.id().clone());
                 continue;
+            }
+            if let Some(id) = object.material().and_then(|m| m.texture()) {
+                let texture = self
+                    .object_leases
+                    .get(object.id())
+                    .and_then(|leases| leases.iter().find(|lease| lease.resource() == id))
+                    .and_then(|lease| self.resources.read_texture(lease).ok());
+                let Some(texture) = texture else {
+                    unresolved.push(object.id().clone());
+                    continue;
+                };
+                if !textures.iter().any(|asset| &asset.resource == id) {
+                    textures.push(spaceeyes_snapshot::TextureAsset {
+                        resource: id.clone(),
+                        texture,
+                    });
+                }
             }
             if let Some(instance) = object.mesh() {
                 let asset = self
@@ -247,6 +265,7 @@ impl Engine {
             }
         }
         Ok(FrameSnapshot {
+            textures,
             meshes,
             sequence: self.frame_sequence,
             scene,
@@ -371,9 +390,22 @@ impl Engine {
                 SceneCommand::SetMesh {
                     object,
                     mesh: Some(_),
+                }
+                | SceneCommand::SetSphere {
+                    object,
+                    sphere: Some(_),
                 } => Some(object),
                 _ => None,
             };
+            if let Some(texture) = object
+                .and_then(|id| scene.get(id))
+                .and_then(|object| object.material())
+                .and_then(|m| m.texture())
+            {
+                if !self.resources.texture_available(texture) {
+                    return Err(CoreError::ResourceUnavailable);
+                }
+            }
             if let Some(instance) = object
                 .and_then(|id| scene.get(id))
                 .and_then(|object| object.mesh())
@@ -514,6 +546,22 @@ impl Engine {
             .ok_or(CoreError::InvalidState)?;
         self.clock.advance_nanos(elapsed_nanos)?;
         self.frame_sequence = next_sequence;
+        Ok(())
+    }
+    pub fn register_texture_resource(
+        &mut self,
+        id: ResourceId,
+        texture: spaceeyes_geometry::TextureData,
+    ) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped {
+            return Err(ResourceError::EngineUnavailable);
+        }
+        let sequence = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
+        self.resources.register_texture(id, texture)?;
+        self.frame_sequence = sequence;
         Ok(())
     }
     pub fn register_mesh_resource(

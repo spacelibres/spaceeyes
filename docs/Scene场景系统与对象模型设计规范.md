@@ -110,3 +110,6 @@ SceneObject可选Sphere组件通过SetSphere命令新增、更新或移除；参
 
 ## 0.0.1通用网格显示引用
 MeshInstance是可选只读组件，保存geometry ResourceId与有限线性RGB基色，经SetMesh事务更新或移除。Mesh/Sphere/Camera本轮互斥；网格本地坐标经对象FrameId刚体变换，ParentId不参与物理变换。组件引用隐式参与对象资源租约并与显式资源引用去重；新引用必须是已登记的TriangleMesh，不接受裸字节或占位资源。缺少/错误引用使整批事务失败。MeshInstance随SceneSnapshot和内部ProjectState保留。
+
+## 0.0.1基础材质
+Sphere与MeshInstance共享不可变Material，保存有限线性RGB、可选texture ResourceId、明确采样设置及unlit标志，通过现有SetSphere/SetMesh事务更新，不设平行状态写入口。旧new(radius/color或geometry/color)保持无纹理Lit兼容。纹理引用自动参与对象资源租约并去重，新绑定必须指向Ready的TextureData；错误/未加载类型使整批事务回滚。Scene只引用纹理，不持有像素。采样枚举是geometry下层值，Scene对geometry的依赖不指向渲染状态。

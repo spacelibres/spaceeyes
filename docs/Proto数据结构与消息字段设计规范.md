@@ -167,3 +167,8 @@ rendering.proto新增ColorRgb及SpherePrimitive（1 radius_m、2 base_color）�
 
 ## 0.0.1网格资源切片
 rendering.proto新增MeshVertex、TriangleMesh、MeshInstance；SceneObject字段10为mesh，SceneCommand字段10为set_mesh。resources.proto新增RegisterMeshResource及ResourceCommand.register_mesh，沿用CommandEnvelope字段4 resource；ResponseEnvelope字段5 resource返回稳定资源ID/提交修订。结构化数据仍由唯一Proto定义，不新增自定义二进制格式。网格消息数量、局部坐标及法线由geometry领域构造器校验，信封仍受1MiB上限限制；大模型文件流式传输以后单独设计。
+
+## 0.0.1纹理/材质切片
+MeshVertex追加uv字段3，缺省兼容旧顶点(0,0)。Material包含base_color、可选texture、显式filter/address及unlit；MeshInstance和SpherePrimitive追加material字段3，若同时携带旧base_color必须与材质一致。TextureData明确宽高、RGBA8字节与ColorSpace，未知/零值枚举拒绝。ResourceCommand字段2注册纹理，沿用资源提交修订/幂等语义与1MiB信封上限。未改变旧字段号或把图像文件格式当作Proto消息。
+
+生成Rust代码对CreateObject.object使用prost支持的Box布局，防止新增组件使oneof枚举膨胀；不改变Proto字段、字节契约或校验规则，严格Clippy仍执行，不禁用其检查。

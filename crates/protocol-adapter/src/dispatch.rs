@@ -7,7 +7,7 @@ use crate::{
 use prost::Message;
 use spaceeyes_engine::{Command, CommandDispatcher, DispatchError};
 use spaceeyes_foundation::{CoreError, Revision};
-use spaceeyes_scene::{CameraState, MeshInstance, SceneCommand, SceneObject, Sphere};
+use spaceeyes_scene::{CameraState, Material, MeshInstance, SceneCommand, SceneObject, Sphere};
 
 pub struct ProtocolAdapter {
     dispatcher: CommandDispatcher,
@@ -98,13 +98,25 @@ impl ProtocolAdapter {
                 }
             }
             p::command_envelope::Payload::Resource(command) => {
-                let p::resource_command::Action::RegisterMesh(command) =
-                    command.action.ok_or(ProtocolError::MissingField)?;
-                Command::RegisterMesh {
-                    id: decode_resource_id(
-                        command.resource_id.ok_or(ProtocolError::MissingField)?,
-                    )?,
-                    mesh: decode_mesh_geometry(command.mesh.ok_or(ProtocolError::MissingField)?)?,
+                match command.action.ok_or(ProtocolError::MissingField)? {
+                    p::resource_command::Action::RegisterMesh(command) => Command::RegisterMesh {
+                        id: decode_resource_id(
+                            command.resource_id.ok_or(ProtocolError::MissingField)?,
+                        )?,
+                        mesh: decode_mesh_geometry(
+                            command.mesh.ok_or(ProtocolError::MissingField)?,
+                        )?,
+                    },
+                    p::resource_command::Action::RegisterTexture(command) => {
+                        Command::RegisterTexture {
+                            id: decode_resource_id(
+                                command.resource_id.ok_or(ProtocolError::MissingField)?,
+                            )?,
+                            texture: decode_texture(
+                                command.texture.ok_or(ProtocolError::MissingField)?,
+                            )?,
+                        }
+                    }
                 }
             }
             p::command_envelope::Payload::Time(command) => {
@@ -141,9 +153,11 @@ impl ProtocolAdapter {
             }
         };
         let resource_id = match &command {
-            Command::RegisterMesh { id, .. } => Some(p::ResourceId {
-                value: id.as_str().to_owned(),
-            }),
+            Command::RegisterMesh { id, .. } | Command::RegisterTexture { id, .. } => {
+                Some(p::ResourceId {
+                    value: id.as_str().to_owned(),
+                })
+            }
             _ => None,
         };
         // The generation precondition is included in dispatcher history semantics below.
@@ -354,14 +368,17 @@ pub fn encode_camera(camera: &CameraState) -> p::CameraState {
 }
 
 pub fn decode_sphere(sphere: p::SpherePrimitive) -> Result<Sphere, ProtocolError> {
-    let color = sphere.base_color.ok_or(ProtocolError::MissingField)?;
-    Sphere::new(sphere.radius_m, [color.r, color.g, color.b])
-        .map_err(|_| ProtocolError::InvalidContext)
+    Sphere::with_material(
+        sphere.radius_m,
+        decode_appearance(sphere.base_color, sphere.material)?,
+    )
+    .map_err(|_| ProtocolError::InvalidContext)
 }
 pub fn encode_sphere(sphere: &Sphere) -> p::SpherePrimitive {
     let [r, g, b] = sphere.base_color();
     p::SpherePrimitive {
         radius_m: sphere.radius_m(),
+        material: Some(encode_material(sphere.material())),
         base_color: Some(p::ColorRgb { r, g, b }),
     }
 }
@@ -379,7 +396,9 @@ pub fn decode_mesh_geometry(
         .map(|v| {
             let p = v.position_m.ok_or(ProtocolError::MissingField)?;
             let n = v.normal.ok_or(ProtocolError::MissingField)?;
-            Vertex::new([p.x, p.y, p.z], [n.x, n.y, n.z]).map_err(|_| ProtocolError::InvalidContext)
+            let uv = v.uv.map(|uv| [uv.x, uv.y]).unwrap_or([0.0; 2]);
+            Vertex::with_uv([p.x, p.y, p.z], [n.x, n.y, n.z], uv)
+                .map_err(|_| ProtocolError::InvalidContext)
         })
         .collect::<Result<Vec<_>, _>>()?;
     TriangleMesh::new(vertices, mesh.indices).map_err(|_| ProtocolError::InvalidContext)
@@ -393,6 +412,10 @@ pub fn encode_mesh_geometry(mesh: &spaceeyes_geometry::TriangleMesh) -> p::Trian
                 let [x, y, z] = v.position_m();
                 let [nx, ny, nz] = v.normal();
                 p::MeshVertex {
+                    uv: Some(p::Vector2f {
+                        x: v.uv()[0],
+                        y: v.uv()[1],
+                    }),
                     position_m: Some(p::Vector3d { x, y, z }),
                     normal: Some(p::Vector3d {
                         x: nx,
@@ -406,19 +429,98 @@ pub fn encode_mesh_geometry(mesh: &spaceeyes_geometry::TriangleMesh) -> p::Trian
     }
 }
 pub fn decode_mesh_instance(mesh: p::MeshInstance) -> Result<MeshInstance, ProtocolError> {
-    let color = mesh.base_color.ok_or(ProtocolError::MissingField)?;
-    MeshInstance::new(
+    Ok(MeshInstance::with_material(
         decode_resource_id(mesh.geometry.ok_or(ProtocolError::MissingField)?)?,
-        [color.r, color.g, color.b],
-    )
-    .map_err(|_| ProtocolError::InvalidContext)
+        decode_appearance(mesh.base_color, mesh.material)?,
+    ))
 }
 pub fn encode_mesh_instance(mesh: &MeshInstance) -> p::MeshInstance {
     let [r, g, b] = mesh.base_color();
     p::MeshInstance {
+        material: Some(encode_material(mesh.material())),
         geometry: Some(p::ResourceId {
             value: mesh.geometry().as_str().to_owned(),
         }),
         base_color: Some(p::ColorRgb { r, g, b }),
+    }
+}
+
+pub fn decode_texture(
+    texture: p::TextureData,
+) -> Result<spaceeyes_geometry::TextureData, ProtocolError> {
+    use spaceeyes_geometry::{ColorSpace, TextureData};
+    let color = match p::TextureColorSpace::try_from(texture.color_space) {
+        Ok(p::TextureColorSpace::Linear) => ColorSpace::Linear,
+        Ok(p::TextureColorSpace::Srgb) => ColorSpace::Srgb,
+        _ => return Err(ProtocolError::InvalidContext),
+    };
+    TextureData::new(texture.width, texture.height, texture.rgba8, color)
+        .map_err(|_| ProtocolError::InvalidContext)
+}
+pub fn encode_texture(texture: &spaceeyes_geometry::TextureData) -> p::TextureData {
+    p::TextureData {
+        width: texture.width(),
+        height: texture.height(),
+        rgba8: texture.rgba8().to_vec(),
+        color_space: match texture.color_space() {
+            spaceeyes_geometry::ColorSpace::Linear => p::TextureColorSpace::Linear as i32,
+            spaceeyes_geometry::ColorSpace::Srgb => p::TextureColorSpace::Srgb as i32,
+        },
+    }
+}
+fn decode_appearance(
+    color: Option<p::ColorRgb>,
+    material: Option<p::Material>,
+) -> Result<Material, ProtocolError> {
+    if let Some(material) = material {
+        let material = decode_material(material)?;
+        if color.is_some_and(|c| [c.r, c.g, c.b] != material.base_color()) {
+            return Err(ProtocolError::InvalidContext);
+        }
+        Ok(material)
+    } else {
+        let color = color.ok_or(ProtocolError::MissingField)?;
+        Material::new([color.r, color.g, color.b], None, Default::default(), false)
+            .map_err(|_| ProtocolError::InvalidContext)
+    }
+}
+pub fn decode_material(material: p::Material) -> Result<Material, ProtocolError> {
+    use spaceeyes_geometry::{Sampling, TextureAddress, TextureFilter};
+    let filter = match p::SamplingFilter::try_from(material.filter) {
+        Ok(p::SamplingFilter::Nearest) => TextureFilter::Nearest,
+        Ok(p::SamplingFilter::Linear) => TextureFilter::Linear,
+        _ => return Err(ProtocolError::InvalidContext),
+    };
+    let address = match p::SamplingAddress::try_from(material.address) {
+        Ok(p::SamplingAddress::Clamp) => TextureAddress::Clamp,
+        Ok(p::SamplingAddress::Repeat) => TextureAddress::Repeat,
+        _ => return Err(ProtocolError::InvalidContext),
+    };
+    let color = material.base_color.ok_or(ProtocolError::MissingField)?;
+    Material::new(
+        [color.r, color.g, color.b],
+        material.texture.map(decode_resource_id).transpose()?,
+        Sampling { filter, address },
+        material.unlit,
+    )
+    .map_err(|_| ProtocolError::InvalidContext)
+}
+pub fn encode_material(material: &Material) -> p::Material {
+    use spaceeyes_geometry::{TextureAddress, TextureFilter};
+    let [r, g, b] = material.base_color();
+    p::Material {
+        base_color: Some(p::ColorRgb { r, g, b }),
+        texture: material.texture().map(|id| p::ResourceId {
+            value: id.as_str().to_owned(),
+        }),
+        filter: match material.sampling().filter {
+            TextureFilter::Nearest => p::SamplingFilter::Nearest as i32,
+            TextureFilter::Linear => p::SamplingFilter::Linear as i32,
+        },
+        address: match material.sampling().address {
+            TextureAddress::Clamp => p::SamplingAddress::Clamp as i32,
+            TextureAddress::Repeat => p::SamplingAddress::Repeat as i32,
+        },
+        unlit: material.unlit(),
     }
 }

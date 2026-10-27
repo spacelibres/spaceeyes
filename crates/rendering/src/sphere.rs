@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Prepared sphere draws and picking against exactly the tessellation used for rendering.
-use crate::{mesh, RenderError, View};
+use crate::{mesh, DrawMaterial, RenderError, View};
 use spaceeyes_foundation::ObjectId;
+use spaceeyes_spatial::{RigidTransform, Vec3d};
 #[derive(Clone, Debug)]
 pub struct SphereDraw {
     pub object: ObjectId,
     pub center_camera: [f64; 3],
     pub radius_m: f64,
-    pub base_color: [f32; 3],
+    pub material: DrawMaterial,
+    pub rotation_to_camera: RigidTransform,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Perspective {
@@ -77,10 +79,14 @@ impl Perspective {
         let mut closest = f64::INFINITY;
         for triangle in mesh.indices.as_chunks::<3>().0 {
             let vertex = |i: u32| {
-                let p = mesh.vertices[i as usize].position;
-                std::array::from_fn(|axis| {
-                    sphere.center_camera[axis] + f64::from(p[axis]) * sphere.radius_m
-                })
+                let [x, y, z] = mesh.vertices[i as usize].position;
+                let p = sphere.rotation_to_camera.apply(Vec3d {
+                    x: f64::from(x),
+                    y: f64::from(y),
+                    z: f64::from(z),
+                });
+                let p = [p.x, p.y, p.z];
+                std::array::from_fn(|axis| sphere.center_camera[axis] + p[axis] * sphere.radius_m)
             };
             let a = vertex(triangle[0]);
             let b = vertex(triangle[1]);

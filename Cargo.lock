@@ -1087,6 +1087,7 @@ name = "spaceeyes-scene"
 version = "0.0.1"
 dependencies = [
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
 ]
 
 [[package]]

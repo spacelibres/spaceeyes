@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Read-only triangle draws use exactly the model transform shared with picking.
-use crate::{sphere::ray_triangle, Perspective};
+use crate::{sphere::ray_triangle, DrawMaterial, Perspective};
 use spaceeyes_foundation::ObjectId;
 use spaceeyes_geometry::TriangleMesh;
 use spaceeyes_spatial::{RigidTransform, Vec3d};
@@ -11,7 +11,7 @@ pub struct MeshDraw {
     pub object: ObjectId,
     pub geometry: Arc<TriangleMesh>,
     pub object_to_camera: RigidTransform,
-    pub base_color: [f32; 3],
+    pub material: DrawMaterial,
 }
 impl MeshDraw {
     pub(crate) fn point(&self, index: u32) -> [f64; 3] {

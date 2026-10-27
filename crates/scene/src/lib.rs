@@ -11,6 +11,8 @@ mod sphere;
 pub use sphere::Sphere;
 mod mesh;
 pub use mesh::MeshInstance;
+mod material;
+pub use material::Material;
 static NEXT_REGISTRY: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -66,7 +68,23 @@ impl SceneObject {
                 refs.push(mesh.geometry());
             }
         }
+        let texture = self
+            .mesh
+            .as_ref()
+            .and_then(|m| m.material().texture())
+            .or_else(|| self.sphere.as_ref().and_then(|s| s.material().texture()));
+        if let Some(texture) = texture {
+            if !refs.contains(&texture) {
+                refs.push(texture);
+            }
+        }
         refs
+    }
+    pub fn material(&self) -> Option<&Material> {
+        self.mesh
+            .as_ref()
+            .map(|m| m.material())
+            .or_else(|| self.sphere.as_ref().map(|s| s.material()))
     }
     pub fn sphere(&self) -> Option<&Sphere> {
         self.sphere.as_ref()

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Immutable frame values shared by Engine and Renderer; no mutable module ownership.
 use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
-use spaceeyes_geometry::TriangleMesh;
+use spaceeyes_geometry::{TextureData, TriangleMesh};
 use spaceeyes_scene::SceneSnapshot;
 use spaceeyes_spatial::RigidTransform;
 use spaceeyes_time::ClockSnapshot;
@@ -21,6 +21,7 @@ pub struct ObjectPose {
 #[derive(Clone, Debug, PartialEq)]
 pub struct FrameSnapshot {
     pub meshes: Vec<MeshAsset>,
+    pub textures: Vec<TextureAsset>,
     pub sequence: u64,
     pub scene: SceneSnapshot,
     pub clock: ClockSnapshot,
@@ -36,4 +37,10 @@ pub struct FrameSnapshot {
 pub struct MeshAsset {
     pub resource: ResourceId,
     pub geometry: Arc<TriangleMesh>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TextureAsset {
+    pub resource: ResourceId,
+    pub texture: Arc<TextureData>,
 }

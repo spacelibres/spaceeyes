@@ -86,6 +86,7 @@ fn frame() -> FrameSnapshot {
         .unwrap(),
     });
     FrameSnapshot {
+        textures: vec![],
         sequence: 1,
         scene: scene.snapshot(),
         poses,

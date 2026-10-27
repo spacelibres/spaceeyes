@@ -19,7 +19,7 @@ fn mesh_registration_leases_restore_and_budget_are_consistent() {
     let mut r = ResourceManager::new(ResourceBudget { max_bytes: 200 });
     let id = ResourceId::new("triangle").unwrap();
     r.register_mesh(id.clone(), mesh()).unwrap();
-    assert_eq!(r.used_bytes(), 156);
+    assert_eq!(r.used_bytes(), 180);
     let first = r.lease(&id).unwrap();
     let second = r.lease(&id).unwrap();
     let snapshot = r.read_mesh(&first).unwrap();
@@ -27,7 +27,7 @@ fn mesh_registration_leases_restore_and_budget_are_consistent() {
         r.register_mesh(ResourceId::new("over-budget").unwrap(), mesh()),
         Err(ResourceError::BudgetExceeded)
     );
-    assert_eq!(r.used_bytes(), 156);
+    assert_eq!(r.used_bytes(), 180);
     let records = r.records();
     let mut restored =
         ResourceManager::restore(ResourceBudget { max_bytes: 200 }, &records).unwrap();

@@ -113,3 +113,6 @@ Resources属于SPACEEYES自有Rust核心，和Engine、Scene、Rendering等模�
 
 ## 0.0.1通用三角网格资源
 新增纯领域geometry crate：有限米制局部顶点、归一化法线、三角形索引，构造时校验数量、索引、退化面及本地坐标策略界限。Resources登记只读TriangleMesh并按顶点/索引逻辑字节量计费；Scene只存MeshInstance.geometry ResourceId和基色，不另存权威顶点。对象/任务租约沿用唯一ResourceManager。帧快照可共享不可变Arc网格以保持旧帧有效，这不构成第二套注册表；当前配额统计为登记及GPU临时占用，不声称涵盖用户长期保留的旧快照内存。内部ProjectState保留网格值，恢复时重新登记与校验大小，不持久化租约。
+
+## 0.0.1纹理资源
+TextureData为独立的已校验领域值：1–2048像素宽高、恰好width×height×4字节、全部alpha=255及显式Linear/SRGB。Resources唯一登记与租约控制，Typed纹理与字节/网格类型不得混用；项目恢复校验内容互斥与大小。FrameSnapshot共享只读纹理值，沿用已记录的旧快照保留配额限制；本轮不增加第二个缓存注册表。GPU只分配帧内纹理并上报逻辑占用。

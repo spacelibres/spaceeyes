@@ -86,3 +86,6 @@ Native绘制改为Engine::render_rgba8协调，由Engine内部唯一ResourceMana
 
 ## 0.0.1通用不透明三角网格
 读取FrameSnapshot的只读MeshAsset与对象参考系姿态，先f64相机相对刚体变换，再生成现有透视裁剪顶点。法线只施加旋转，不加平移；本轮不支持缩放/骨骼。网格、球体及标记共用同一不透明深度管线与临时GPU预算；拾取使用同一顶点/索引及变换，比较所有图元最近有效深度。新增Mesh资源Proto入口，不在Scene或Renderer建立第二套资产注册表；纹理、透明、复杂材质和模型文件导入仍不属于本轮。
+
+## 0.0.1纹理与基础材质
+本轮支持Resources拥有的只读不透明RGBA8纹理，明确Linear/SRGB色彩空间；UV原点为图像左上，行按自上而下存储。基础材质为线性基色×纹理，支持Lit/Unlit、Nearest/Linear、ClampToEdge/Repeat；未绑定纹理使用白色。网格UV随顶点保存，老构造器默认(0,0)，球体生成经纬UV。GPU使用真实纹理/采样器与透视正确UV插值，不用CPU涂色替代；SRGB纹理由GPU解码，离屏RGBA8回读目标仍为线性值，不声称完成显示色调映射。纹理上传及GPU纹理/顶点/帧缓冲均计入Engine唯一Resources临时预算，帧后回收。暂不支持PNG/JPEG导入、透明、mipmap或PBR。测试应覆盖UV方向、nearest/linear、clamp/repeat、sRGB、透视插值及错误引用回滚。

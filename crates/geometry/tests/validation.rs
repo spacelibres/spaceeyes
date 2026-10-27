@@ -28,5 +28,5 @@ fn mesh_retains_indices_normalizes_normals_and_reports_its_allocation() {
     let mesh = TriangleMesh::new(vertices(), vec![0, 1, 2]).unwrap();
     assert_eq!(mesh.vertices()[0].normal(), [0.0, 0.0, 1.0]);
     assert_eq!(mesh.indices(), &[0, 1, 2]);
-    assert_eq!(mesh.byte_len(), 156);
+    assert_eq!(mesh.byte_len(), 180);
 }

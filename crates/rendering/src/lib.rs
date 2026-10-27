@@ -11,6 +11,8 @@ mod sphere;
 pub use sphere::{Perspective, SphereDraw};
 mod triangles;
 pub use triangles::MeshDraw;
+mod material;
+pub use material::DrawMaterial;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RenderError {
@@ -208,7 +210,13 @@ fn prepare_oriented(
                 object: object.id().clone(),
                 geometry: asset.geometry.clone(),
                 object_to_camera: model,
-                base_color: instance.base_color(),
+                material: DrawMaterial::prepare(
+                    frame,
+                    instance.base_color(),
+                    instance.material().texture(),
+                    instance.material().sampling(),
+                    instance.material().unlit(),
+                )?,
             });
             continue;
         }
@@ -220,7 +228,17 @@ fn prepare_oriented(
                     object: object.id().clone(),
                     center_camera: [relative.x, relative.y, relative.z],
                     radius_m: sphere.radius_m(),
-                    base_color: sphere.base_color(),
+                    material: DrawMaterial::prepare(
+                        frame,
+                        sphere.base_color(),
+                        sphere.material().texture(),
+                        sphere.material().sampling(),
+                        sphere.material().unlit(),
+                    )?,
+                    rotation_to_camera: reference_to_camera_rotation.after(
+                        RigidTransform::new(Vec3d::ZERO, pose.transform.rotation)
+                            .map_err(|_| RenderError::InvalidFrame)?,
+                    ),
                 });
             }
             continue;

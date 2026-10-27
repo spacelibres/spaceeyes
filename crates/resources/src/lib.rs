@@ -3,7 +3,7 @@
 //! Authoritative resource registry. Leases are opaque, single-release tokens.
 //! IDs are stable logical references; internal generations reject stale tokens.
 use spaceeyes_foundation::ResourceId;
-use spaceeyes_geometry::TriangleMesh;
+use spaceeyes_geometry::{TextureData, TriangleMesh};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -61,6 +61,7 @@ struct Entry {
     load_sequence: u64,
     data: Option<Arc<[u8]>>,
     mesh: Option<Arc<TriangleMesh>>,
+    texture: Option<Arc<TextureData>>,
     bytes: u64,
     generation: u64,
     leases: u64,
@@ -72,6 +73,7 @@ pub struct ResourceRecord {
     pub bytes: u64,
     pub data: Option<Vec<u8>>,
     pub mesh: Option<TriangleMesh>,
+    pub texture: Option<TextureData>,
     pub logical_only: bool,
 }
 #[derive(Clone)]
@@ -109,6 +111,7 @@ impl ResourceManager {
                 bytes: e.bytes,
                 data: e.data.as_ref().map(|d| d.to_vec()),
                 mesh: e.mesh.as_deref().cloned(),
+                texture: e.texture.as_deref().cloned(),
                 logical_only: e.state == ResourceState::Registered,
             })
             .collect();
@@ -121,6 +124,20 @@ impl ResourceManager {
     ) -> Result<Self, ResourceError> {
         let mut result = Self::new(budget);
         for record in records {
+            if usize::from(record.data.is_some())
+                + usize::from(record.mesh.is_some())
+                + usize::from(record.texture.is_some())
+                > 1
+            {
+                return Err(ResourceError::InvalidState);
+            }
+            if let Some(texture) = &record.texture {
+                if record.logical_only || record.bytes != texture.byte_len() {
+                    return Err(ResourceError::InvalidSize);
+                }
+                result.register_texture(record.id.clone(), texture.clone())?;
+                continue;
+            }
             if let Some(mesh) = &record.mesh {
                 if record.logical_only || record.data.is_some() || record.bytes != mesh.byte_len() {
                     return Err(ResourceError::InvalidSize);
@@ -153,6 +170,31 @@ impl ResourceManager {
         entry.mesh = Some(Arc::new(mesh));
         entry.state = ResourceState::Ready;
         Ok(())
+    }
+    pub fn register_texture(
+        &mut self,
+        id: ResourceId,
+        texture: TextureData,
+    ) -> Result<(), ResourceError> {
+        self.register(id.clone(), texture.byte_len())?;
+        let entry = self.entries.get_mut(&id).expect("registered");
+        entry.texture = Some(Arc::new(texture));
+        entry.state = ResourceState::Ready;
+        Ok(())
+    }
+    pub fn texture_available(&self, id: &ResourceId) -> bool {
+        self.entries
+            .get(id)
+            .is_some_and(|e| e.state == ResourceState::Ready && e.texture.is_some())
+    }
+    pub fn read_texture(&self, token: &LeaseId) -> Result<Arc<TextureData>, ResourceError> {
+        if self.active.get(&token.sequence) != Some(token) {
+            return Err(ResourceError::InvalidLease);
+        }
+        self.entries
+            .get(&token.resource)
+            .and_then(|e| e.texture.clone())
+            .ok_or(ResourceError::NotReady)
     }
     pub fn mesh_available(&self, id: &ResourceId) -> bool {
         self.entries
@@ -210,6 +252,7 @@ impl ResourceManager {
                 load_sequence: 0,
                 data: None,
                 mesh: None,
+                texture: None,
                 bytes,
                 generation,
                 leases: 0,

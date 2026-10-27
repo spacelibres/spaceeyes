@@ -3,9 +3,9 @@
 //! Headless prototype host; no second simulation state, no NASA or assumed scientific epoch.
 use spaceeyes_engine::Engine;
 use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
-use spaceeyes_geometry::{TriangleMesh, Vertex};
+use spaceeyes_geometry::{ColorSpace, TextureData, TriangleMesh, Vertex};
 use spaceeyes_rendering::{gpu::GpuRenderer, prepare_camera};
-use spaceeyes_scene::{CameraState, MeshInstance, SceneCommand, SceneObject, Sphere};
+use spaceeyes_scene::{CameraState, Material, MeshInstance, SceneCommand, SceneObject, Sphere};
 use spaceeyes_spatial::{FrameSample, Quatd, RigidTransform, Vec3d};
 use spaceeyes_time::TimeInstant;
 use std::io::Write;
@@ -22,6 +22,24 @@ fn run() -> Result<(), String> {
     let root = FrameId::new("demo:root").unwrap();
     engine
         .register_root_frame(root.clone())
+        .map_err(|e| format!("{e:?}"))?;
+    let texture = ResourceId::new("demo:checker-texture").unwrap();
+    let pixels = (0..8)
+        .flat_map(|y| {
+            (0..8).flat_map(move |x| {
+                if (x + y) % 2 == 0 {
+                    [235, 160, 40, 255]
+                } else {
+                    [40, 90, 210, 255]
+                }
+            })
+        })
+        .collect();
+    engine
+        .register_texture_resource(
+            texture.clone(),
+            TextureData::new(8, 8, pixels, ColorSpace::Linear).map_err(|e| format!("{e:?}"))?,
+        )
         .map_err(|e| format!("{e:?}"))?;
     let objects = [
         ([-0.7, 0.0, -6.0], 1.35, [1.0, 0.35, 0.06]),
@@ -61,7 +79,21 @@ fn run() -> Result<(), String> {
                     },
                     SceneCommand::SetSphere {
                         object,
-                        sphere: Some(Sphere::new(*radius, *color).map_err(|e| format!("{e:?}"))?),
+                        sphere: Some(if i == 0 {
+                            Sphere::with_material(
+                                *radius,
+                                Material::new(
+                                    [1.0; 3],
+                                    Some(texture.clone()),
+                                    Default::default(),
+                                    false,
+                                )
+                                .unwrap(),
+                            )
+                            .unwrap()
+                        } else {
+                            Sphere::new(*radius, *color).map_err(|e| format!("{e:?}"))?
+                        }),
                     },
                 ],
             )
@@ -102,7 +134,10 @@ fn run() -> Result<(), String> {
                 },
                 SceneCommand::SetMesh {
                     object,
-                    mesh: Some(MeshInstance::new(geometry, [0.75, 0.3, 0.95]).unwrap()),
+                    mesh: Some(MeshInstance::with_material(
+                        geometry,
+                        Material::new([1.0; 3], Some(texture), Default::default(), false).unwrap(),
+                    )),
                 },
             ],
         )
@@ -191,8 +226,9 @@ fn pyramid() -> Result<TriangleMesh, String> {
             u[2] * v[0] - u[0] * v[2],
             u[0] * v[1] - u[1] * v[0],
         ];
-        for index in [a, b, c] {
-            vertices.push(Vertex::new(points[index], normal).map_err(|e| format!("{e:?}"))?);
+        for (index, uv) in [(a, [0.0, 1.0]), (b, [1.0, 1.0]), (c, [0.5, 0.0])] {
+            vertices
+                .push(Vertex::with_uv(points[index], normal, uv).map_err(|e| format!("{e:?}"))?);
         }
     }
     TriangleMesh::new(vertices, (0..12).collect()).map_err(|e| format!("{e:?}"))

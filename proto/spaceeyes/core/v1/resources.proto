@@ -5,5 +5,6 @@ package spaceeyes.core.v1;
 import "spaceeyes/core/v1/common.proto";
 import "spaceeyes/core/v1/rendering.proto";
 message RegisterMeshResource { ResourceId resource_id=1; TriangleMesh mesh=2; }
-message ResourceCommand { oneof action { RegisterMeshResource register_mesh=1; } }
+message RegisterTextureResource { ResourceId resource_id=1; TextureData texture=2; }
+message ResourceCommand { oneof action { RegisterMeshResource register_mesh=1; RegisterTextureResource register_texture=2; } }
 message ResourceResponse { ResourceId resource_id=1; uint64 resource_revision=2; }
