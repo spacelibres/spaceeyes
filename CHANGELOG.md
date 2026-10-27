@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 参考系导数与解析缓存（C04 切片）
+- 新增 `FrameDerivative`/`FrameState` 与 `TransformProvider::derivative_at`（缺省无导数）；`resolve_state` 沿链合成变换与角速度/线速度，含 ω×r 与逆变换，缺导数返回 `DerivativeUnavailable`。
+- `FrameState::point_velocity` 给出源系固定点在目标系的瞬时速度。
+- `resolve` 增加按源/目标/显式时刻键控的 256 项有界缓存，图修订变化即失效。
+- 验证：spatial 5 项导数测试与既有测试通过；覆盖区间/来源元数据、插值与科学参考系仍未实现。
+
+
 ### 有界事件流与游标重放（C12 切片）
 - Proto 新增只读 `query.events`（`EventsQuery`/`EventPage`/`CoreEvent`/`CoreEventKind`），能力总数增至 38，SDK 响应映射同步。
 - 事件序列单调递增，默认/最大页 128；高于当前序列的游标返回 `STALE_GENERATION`，溢出时以 `replay_from` 暴露丢失窗口。事件缓冲与命令幂等历史分开配置。

@@ -4,6 +4,7 @@
 //! No NASA data, ephemeris computation, or implicit system clock.
 use spaceeyes_foundation::{FrameId, Revision};
 use spaceeyes_time::TimeInstant;
+use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 mod provider;
 pub use provider::{ProviderRef, TransformProvider};
@@ -22,6 +23,8 @@ pub enum SpatialError {
     RevisionOverflow,
     EngineUnavailable,
     InvalidProvider,
+    /// A velocity/derivative request crossed a frame whose derivative is unknown.
+    DerivativeUnavailable,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -44,6 +47,20 @@ impl Vec3d {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
             z: self.z + rhs.z,
+        }
+    }
+    fn sub(self, rhs: Self) -> Self {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+        }
+    }
+    fn cross(self, rhs: Self) -> Self {
+        Self {
+            x: self.y * rhs.z - self.z * rhs.y,
+            y: self.z * rhs.x - self.x * rhs.z,
+            z: self.x * rhs.y - self.y * rhs.x,
         }
     }
     fn neg(self) -> Self {
@@ -166,6 +183,42 @@ impl RigidTransform {
     }
 }
 
+/// First derivative of a child frame relative to its parent, expressed in the parent.
+/// A provider without this capability must return `None`, never an assumed zero.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FrameDerivative {
+    pub linear_velocity_m_s: Vec3d,
+    pub angular_velocity_rad_s: Vec3d,
+}
+impl FrameDerivative {
+    pub const ZERO: Self = Self {
+        linear_velocity_m_s: Vec3d::ZERO,
+        angular_velocity_rad_s: Vec3d::ZERO,
+    };
+    fn finite(self) -> bool {
+        self.linear_velocity_m_s.finite() && self.angular_velocity_rad_s.finite()
+    }
+}
+/// Position and first derivative of one frame expressed in another frame.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FrameState {
+    pub transform: RigidTransform,
+    pub derivative: FrameDerivative,
+}
+impl FrameState {
+    const IDENTITY: Self = Self {
+        transform: RigidTransform::IDENTITY,
+        derivative: FrameDerivative::ZERO,
+    };
+    /// Velocity in the target frame of a point fixed in the source frame.
+    pub fn point_velocity(&self, source_point_m: Vec3d) -> Vec3d {
+        let offset = self.transform.rotation.rotate(source_point_m);
+        self.derivative
+            .linear_velocity_m_s
+            .add(self.derivative.angular_velocity_rad_s.cross(offset))
+    }
+}
+
 /// A transform is only valid at its explicitly declared instant.
 /// Static samples are not interpolated; dynamic providers are evaluated separately.
 #[derive(Clone, Debug, PartialEq)]
@@ -195,6 +248,22 @@ struct FrameNode {
     parent: Option<FrameId>,
     source: FrameSource,
 }
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct ResolveKey {
+    source: FrameId,
+    target: FrameId,
+    scale: String,
+    epoch: String,
+    seconds: i64,
+    nanos: u32,
+}
+#[derive(Clone, Debug, Default)]
+struct ResolveCache {
+    revision: u64,
+    entries: HashMap<ResolveKey, RigidTransform>,
+}
+const MAX_RESOLVE_CACHE: usize = 256;
+
 /// Stable project data, never an internal graph handle.
 #[derive(Clone, Debug, PartialEq)]
 pub struct FrameRecord {
@@ -207,6 +276,8 @@ pub struct FrameRecord {
 pub struct ReferenceFrameGraph {
     nodes: HashMap<FrameId, FrameNode>,
     revision: u64,
+    // Bounded memo of pure provider resolutions, cleared whenever the graph changes.
+    cache: RefCell<ResolveCache>,
 }
 impl ReferenceFrameGraph {
     pub fn new() -> Self {
@@ -556,6 +627,17 @@ impl ReferenceFrameGraph {
         target: &FrameId,
         instant: &TimeInstant,
     ) -> Result<RigidTransform, SpatialError> {
+        let key = ResolveKey {
+            source: source.clone(),
+            target: target.clone(),
+            scale: instant.scale().to_owned(),
+            epoch: instant.epoch().to_owned(),
+            seconds: instant.seconds(),
+            nanos: instant.nanos(),
+        };
+        if let Some(cached) = self.cached(&key) {
+            return Ok(cached);
+        }
         let source_chain = self.ancestors(source)?;
         let target_chain = self.ancestors(target)?;
         let targets: HashSet<_> = target_chain.iter().collect();
@@ -566,8 +648,154 @@ impl ReferenceFrameGraph {
         let source_to_common = self.to_ancestor(source, ancestor, instant)?;
         let target_to_common = self.to_ancestor(target, ancestor, instant)?;
         let result = target_to_common.inverse().after(source_to_common);
-        RigidTransform::new(result.translation_m, result.rotation)
+        let result = RigidTransform::new(result.translation_m, result.rotation)?;
+        self.store(key, result);
+        Ok(result)
     }
+    /// Resolve positions and first derivatives in one consistent evaluation.
+    /// Every crossed edge must supply an explicit derivative; missing data is an error,
+    /// never an assumed zero velocity.
+    pub fn resolve_state(
+        &self,
+        source: &FrameId,
+        target: &FrameId,
+        instant: &TimeInstant,
+    ) -> Result<FrameState, SpatialError> {
+        let source_chain = self.ancestors(source)?;
+        let target_chain = self.ancestors(target)?;
+        let targets: HashSet<_> = target_chain.iter().collect();
+        let ancestor = source_chain
+            .iter()
+            .find(|id| targets.contains(id))
+            .ok_or(SpatialError::Disconnected)?;
+        let source_to_common = self.to_ancestor_state(source, ancestor, instant)?;
+        let target_to_common = self.to_ancestor_state(target, ancestor, instant)?;
+        compose_state(invert_state(target_to_common)?, source_to_common)
+    }
+    fn cached(&self, key: &ResolveKey) -> Option<RigidTransform> {
+        let mut cache = self.cache.borrow_mut();
+        if cache.revision != self.revision {
+            cache.entries.clear();
+            cache.revision = self.revision;
+        }
+        cache.entries.get(key).copied()
+    }
+    fn store(&self, key: ResolveKey, transform: RigidTransform) {
+        let mut cache = self.cache.borrow_mut();
+        if cache.revision != self.revision {
+            cache.entries.clear();
+            cache.revision = self.revision;
+        }
+        if cache.entries.len() >= MAX_RESOLVE_CACHE {
+            cache.entries.clear();
+        }
+        cache.entries.insert(key, transform);
+    }
+    fn to_ancestor_state(
+        &self,
+        start: &FrameId,
+        ancestor: &FrameId,
+        instant: &TimeInstant,
+    ) -> Result<FrameState, SpatialError> {
+        let mut cursor = start;
+        let mut state = FrameState::IDENTITY;
+        while cursor != ancestor {
+            let node = self.nodes.get(cursor).ok_or(SpatialError::UnknownFrame)?;
+            let edge = match &node.source {
+                FrameSource::Root => return Err(SpatialError::Disconnected),
+                FrameSource::Sample(sample) => {
+                    if &sample.instant != instant {
+                        return Err(SpatialError::TimeNotCovered);
+                    }
+                    return Err(SpatialError::DerivativeUnavailable);
+                }
+                FrameSource::Dynamic(provider) => {
+                    let transform = provider.resolve_at(instant)?;
+                    let derivative = provider
+                        .derivative_at(instant)?
+                        .ok_or(SpatialError::DerivativeUnavailable)?;
+                    FrameState {
+                        transform,
+                        derivative,
+                    }
+                }
+                FrameSource::ProviderSample { sample, .. } => {
+                    let sample = sample.as_ref().ok_or(SpatialError::MissingTransform)?;
+                    if &sample.instant != instant {
+                        return Err(SpatialError::TimeNotCovered);
+                    }
+                    return Err(SpatialError::DerivativeUnavailable);
+                }
+                FrameSource::Unavailable { .. } => return Err(SpatialError::MissingTransform),
+            };
+            state = compose_state(edge, state)?;
+            cursor = node.parent.as_ref().ok_or(SpatialError::Disconnected)?;
+        }
+        Ok(state)
+    }
+}
+
+fn compose_state(parent: FrameState, child: FrameState) -> Result<FrameState, SpatialError> {
+    // parent: B->C, child: A->B, so the result is A->C.
+    let transform = RigidTransform::new(
+        parent
+            .transform
+            .rotation
+            .rotate(child.transform.translation_m)
+            .add(parent.transform.translation_m),
+        parent.transform.rotation.mul(child.transform.rotation),
+    )?;
+    let rotated_translation = parent
+        .transform
+        .rotation
+        .rotate(child.transform.translation_m);
+    let derivative = FrameDerivative {
+        linear_velocity_m_s: parent
+            .transform
+            .rotation
+            .rotate(child.derivative.linear_velocity_m_s)
+            .add(
+                parent
+                    .derivative
+                    .angular_velocity_rad_s
+                    .cross(rotated_translation),
+            )
+            .add(parent.derivative.linear_velocity_m_s),
+        angular_velocity_rad_s: parent
+            .transform
+            .rotation
+            .rotate(child.derivative.angular_velocity_rad_s)
+            .add(parent.derivative.angular_velocity_rad_s),
+    };
+    if !derivative.finite() {
+        return Err(SpatialError::InvalidTransform);
+    }
+    Ok(FrameState {
+        transform,
+        derivative,
+    })
+}
+fn invert_state(state: FrameState) -> Result<FrameState, SpatialError> {
+    let transform = state.transform.inverse();
+    let derivative = FrameDerivative {
+        linear_velocity_m_s: transform.rotation.rotate(
+            state
+                .derivative
+                .angular_velocity_rad_s
+                .cross(state.transform.translation_m)
+                .sub(state.derivative.linear_velocity_m_s),
+        ),
+        angular_velocity_rad_s: transform
+            .rotation
+            .rotate(state.derivative.angular_velocity_rad_s.neg()),
+    };
+    if !derivative.finite() {
+        return Err(SpatialError::InvalidTransform);
+    }
+    Ok(FrameState {
+        transform,
+        derivative,
+    })
 }
 
 #[cfg(test)]

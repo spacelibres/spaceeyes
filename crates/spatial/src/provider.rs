@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Time-dependent transform providers. No ephemeris or transport assumptions.
-use crate::{RigidTransform, SpatialError};
+use crate::{FrameDerivative, RigidTransform, SpatialError};
 use spaceeyes_time::TimeInstant;
 use std::sync::Arc;
 
@@ -12,6 +12,14 @@ pub trait TransformProvider: Send + Sync + std::fmt::Debug {
     fn provider_id(&self) -> &str;
     fn version(&self) -> &str;
     fn resolve_at(&self, instant: &TimeInstant) -> Result<RigidTransform, SpatialError>;
+    /// Optional first derivative in the parent frame at the same instant.
+    /// Returning `None` means velocity transforms are unsupported; never assume zero.
+    fn derivative_at(
+        &self,
+        _instant: &TimeInstant,
+    ) -> Result<Option<FrameDerivative>, SpatialError> {
+        Ok(None)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -34,5 +42,15 @@ impl ProviderRef {
     pub fn resolve_at(&self, instant: &TimeInstant) -> Result<RigidTransform, SpatialError> {
         let transform = self.inner.resolve_at(instant)?;
         RigidTransform::new(transform.translation_m, transform.rotation)
+    }
+    pub fn derivative_at(
+        &self,
+        instant: &TimeInstant,
+    ) -> Result<Option<FrameDerivative>, SpatialError> {
+        match self.inner.derivative_at(instant)? {
+            Some(derivative) if derivative.finite() => Ok(Some(derivative)),
+            Some(_) => Err(SpatialError::InvalidTransform),
+            None => Ok(None),
+        }
     }
 }

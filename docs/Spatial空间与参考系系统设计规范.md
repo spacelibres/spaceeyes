@@ -109,3 +109,7 @@ CommandEnvelope追加spatial=8、lifecycle=9，旧字段保持不变；ResponseE
 新增独立QueryEnvelope（context=1，session_status=20或resolve_frame=21），通过ProtocolAdapter.query_bytes与WasmEngine.query读取；复用RequestContext的会话、版本、宿主principal校验，最大1MiB。CommandEnvelope保留20/21，QueryEnvelope保留2至9，防止误用入口时把查询解析为写命令；查询不消耗命令幂等历史、不写事件、不推进时钟/代次/修订；相同查询ID允许读取最新状态。可选expected_scene_revision/time_generation作为读取前置条件；查询错误使用ResponseEnvelope结构化返回。resolve_frame使用当前显式时刻，返回source/target/instant/变换/图修订；Stopped只允许状态查询，拒绝参考系解析。尚无对象分页、事件订阅、动态提供者或跨会话查询。
 参考系写入先检查图修订，再调用现有Engine接口；非法变换、父节点缺失、重复ID、过时代次/图修订不得改变图、Scene或资源。所有公开ID限制256UTF-8字节；旧协议幂等记录保存规范化领域命令，四元数按已有领域构造器归一化。不新增混合Scene/Spatial原子批次；现有SceneTransaction仍原子。
 验收须从全新会话只经公开字节命令创建根/采样子系、相机与球体，查询位姿/状态，构造可绘制一致帧，再验证暂停/Seek、重试、非法输入、停机/资源清理、查询不消耗容量。Rust/WASM编译及全部严格回归必需；TS往返和浏览器画布属于后续M1/M2，不因本轮通过就宣称完成。
+
+## C04 参考系导数与解析缓存（0.0.1增量）
+新增`FrameDerivative{linear_velocity_m_s,angular_velocity_rad_s}`与`FrameState{transform,derivative,point_velocity}`；`TransformProvider`增加可选`derivative_at`，缺省返回`None`表示不支持速度变换，绝不假定零速度。`ReferenceFrameGraph::resolve_state(source,target,instant)`沿链组合刚体变换与导数：旋转项ω×r、平移项、旋转参考系下的角速度合成与逆变换均按明确次序计算；跨过静态样本、提供者样本或无导数提供者时返回`DerivativeUnavailable`，位置解析仍可单独成功。`point_velocity(p)`给出固定在源系中的点在目标系的瞬时速度。
+`resolve`增加按（源、目标、显式时刻）键控的有界memo（最多256项），图修订变化即整体失效；只能缓存纯函数式提供者结果，不缓存导数轨迹，也不代表覆盖区间或来源元数据。测试覆盖角速度合成与逆变换、ω×r速度项、缺导数显式错误与修订失效。尚未实现：覆盖区间/来源元数据公开、插值、科学参考系与多尺度场景；不宣称C04全部完成。
