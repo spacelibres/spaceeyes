@@ -1,6 +1,6 @@
 # SPACEEYES Core SDK 使用技能书
 
-版本：0.0.1｜状态：M2-2同帧选择查询；不代表完整插件运行时
+版本：0.0.1｜状态：M2-3聚焦/跟随及逻辑相机查询；不代表完整插件运行时
 
 项目自有SDK与文档使用根MIT许可证。依据：唯一proto目录、批准ADR、全局开发路线。生成文件禁止手改；运行`bash tools/generate-ts.sh`后用`--check`验证。锁文件安装：`bash tools/setup-sdk.sh`；完整互通验证：`bash tools/check-sdk.sh`。
 
@@ -44,3 +44,10 @@ export async function pickDisplayed(
 ```
 
 空白成功时`selection.object`缺省；不得将其解释为失败。捕获CoreRemoteError的SNAPSHOT_EXPIRED后提示重选，禁止无界自动重试或伪造命中。验收覆盖真实浏览器命中/空白、缩放/卸载、非法坐标、帧变化与对象删除后拒绝，以及Native/WASM查询无副作用。
+
+## M2-3 相机聚焦与跟随契约（0.0.1开发增量）
+Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follow），要求expectedSceneRevision及当前TimeGeneration；在当前时刻解析Spatial并经唯一Scene事务提交。聚焦沿目标参考系+Z放置、沿-Z观察；球体/标记取参考系原点，网格取引用顶点AABB中心。距离必须在当前相机near/far内，不自动修改投影。跟随保存在CameraState.tracking(targetId,distanceM)，每帧从同一FrameSnapshot求值目标位置及旋转，不累计运动、不写Scene。基础CameraState.position/orientation属于拥有相机的FrameId；tracking生效时派生视图使用目标参考系，基础位姿作为显式逻辑状态保留，不冒充当前世界位置。禁止自引用、相机目标与跟随链；被跟随对象删除/改成相机时事务拒绝，可先清除跟随再删除。参考系/时间覆盖缺失明确失败；Renderer不回退到原点。query.camera_state只读逻辑状态；旧SetCamera未提供tracking即清除跟随，旧wire字段编号不变。宿主不持有第二套权威相机，不基于Scene ParentId算坐标。
+
+使用camera.focus前须协商camera.focus和query.camera_state；命令必须携带expectedSceneRevision及timeGeneration。目标须是当前存在且具有参考系的非相机对象，不能把旧拾取摘要直接当成当前对象状态。距离须有限且处于已有相机near/far内。跟随是目标参考系相对视角，不是惯性稳定、物理航行或相机平滑动画。
+
+允许通过query.camera_state读取逻辑相机与tracking；禁止把其基础position当成跟随后的实时世界位置，禁止在TS逐帧积分目标运动。SetCamera不提供tracking会清除跟随；可在同一Scene事务中清除跟随后删除目标。被跟随目标直接删除、同ID替换或变为相机时整批拒绝。遇到TIME_NOT_COVERED、缺失资源等应展示明确错误，不伪造中心或绕过Engine写入。

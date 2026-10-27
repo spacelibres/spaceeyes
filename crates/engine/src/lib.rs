@@ -19,6 +19,8 @@ mod dispatcher;
 pub use dispatcher::*;
 mod selection;
 pub use selection::PresentedSelection;
+mod camera_control;
+pub use camera_control::CameraControlError;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState {

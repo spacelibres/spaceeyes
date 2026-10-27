@@ -125,7 +125,21 @@ pub fn prepare_camera(
         },
     )
     .map_err(|_| RenderError::InvalidCamera)?;
-    let combined = pose.transform.after(local);
+    let combined = if let Some(tracking) = camera.tracking() {
+        target_anchor(frame, tracking.target())?.after(
+            RigidTransform::new(
+                Vec3d {
+                    x: 0.0,
+                    y: 0.0,
+                    z: tracking.distance_m(),
+                },
+                Quatd::IDENTITY,
+            )
+            .map_err(|_| RenderError::InvalidCamera)?,
+        )
+    } else {
+        pose.transform.after(local)
+    };
     let combined = RigidTransform::new(combined.translation_m, combined.rotation)
         .map_err(|_| RenderError::InvalidCamera)?;
     let rotation = RigidTransform::new(Vec3d::ZERO, combined.rotation)
@@ -146,6 +160,54 @@ pub fn prepare_camera(
         },
         rotation,
     )
+}
+/// Object display center in the snapshot reference; no astronomical or parent assumptions.
+pub fn target_anchor(
+    frame: &FrameSnapshot,
+    target: &ObjectId,
+) -> Result<RigidTransform, RenderError> {
+    let object = frame
+        .scene
+        .objects
+        .iter()
+        .find(|o| o.id() == target)
+        .ok_or(RenderError::CameraUnavailable)?;
+    if object.camera().is_some() {
+        return Err(RenderError::InvalidCamera);
+    }
+    let pose = frame
+        .poses
+        .iter()
+        .find(|p| &p.object == target)
+        .ok_or(RenderError::CameraUnavailable)?;
+    let mut center = Vec3d::ZERO;
+    if let Some(instance) = object.mesh() {
+        let mesh = &frame
+            .meshes
+            .iter()
+            .find(|m| &m.resource == instance.geometry())
+            .ok_or(RenderError::CameraUnavailable)?
+            .geometry;
+        let mut min = [f64::INFINITY; 3];
+        let mut max = [f64::NEG_INFINITY; 3];
+        for &index in mesh.indices() {
+            let point = mesh.vertices()[index as usize].position_m();
+            for axis in 0..3 {
+                min[axis] = min[axis].min(point[axis]);
+                max[axis] = max[axis].max(point[axis]);
+            }
+        }
+        center = Vec3d {
+            x: min[0] * 0.5 + max[0] * 0.5,
+            y: min[1] * 0.5 + max[1] * 0.5,
+            z: min[2] * 0.5 + max[2] * 0.5,
+        };
+    }
+    let center =
+        RigidTransform::new(center, Quatd::IDENTITY).map_err(|_| RenderError::InvalidCamera)?;
+    let result = pose.transform.after(center);
+    RigidTransform::new(result.translation_m, result.rotation)
+        .map_err(|_| RenderError::InvalidCamera)
 }
 fn prepare_oriented(
     frame: &FrameSnapshot,

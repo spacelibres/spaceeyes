@@ -34,4 +34,6 @@ pub const OPERATIONS: &[&str] = &[
     "query.resolve_frame",
     "query.capabilities",
     "query.pick_presented",
+    "camera.focus",
+    "query.camera_state",
 ];

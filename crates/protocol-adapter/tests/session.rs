@@ -215,6 +215,7 @@ fn setup_scene(a: &mut ProtocolAdapter) {
             visible: true,
             lifecycle: p::ObjectLifecycle::Active as i32,
             camera: Some(p::CameraState {
+                tracking: None,
                 position_m: Some(p::Vector3d {
                     x: 0.,
                     y: 0.,
@@ -254,6 +255,74 @@ fn setup_scene(a: &mut ProtocolAdapter) {
             }),
         ),
     ));
+}
+
+#[test]
+fn focus_requires_revision_and_generation_and_camera_queries_are_read_only() {
+    let mut a = adapter(64);
+    setup_scene(&mut a);
+    let mut focus = command(
+        "focus",
+        p::command_envelope::Payload::Camera(p::CameraCommand {
+            action: Some(p::camera_command::Action::Focus(p::FocusCamera {
+                camera: Some(p::ObjectId {
+                    value: "camera".into(),
+                }),
+                target: Some(p::ObjectId {
+                    value: "body".into(),
+                }),
+                distance_m: 6.0,
+                follow: true,
+            })),
+        }),
+    );
+    let before = status(&a);
+    assert_eq!(
+        error(send(&mut a, focus.clone())),
+        p::ErrorCode::InvalidArgument
+    );
+    focus.context.as_mut().unwrap().time_generation = Some(0);
+    assert_eq!(
+        error(send(&mut a, focus.clone())),
+        p::ErrorCode::InvalidArgument
+    );
+    focus.context.as_mut().unwrap().expected_scene_revision = Some(1);
+    let receipt = completed(send(&mut a, focus.clone()));
+    assert_eq!(receipt.committed_scene_revision, 2);
+    assert_eq!(send(&mut a, focus.clone()), receipt);
+    let current = status(&a);
+    assert_eq!(current.clock, before.clock);
+    let read = p::QueryEnvelope {
+        context: Some(context("camera-read")),
+        payload: Some(p::query_envelope::Payload::CameraState(
+            p::CameraStateQuery {
+                camera: Some(p::ObjectId {
+                    value: "camera".into(),
+                }),
+            },
+        )),
+    };
+    let history = a.dispatcher().command_history_remaining();
+    let result = completed(query(&a, read.clone()));
+    let p::response_envelope::Payload::Camera(info) = result.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        info.state.unwrap().tracking.unwrap().target.unwrap().value,
+        "body"
+    );
+    assert_eq!(status(&a), current);
+    assert_eq!(a.dispatcher().command_history_remaining(), history);
+    focus.context.as_mut().unwrap().request_id = "conflict".into();
+    assert_eq!(
+        error(send(&mut a, focus.clone())),
+        p::ErrorCode::RevisionConflict
+    );
+    focus.context.as_mut().unwrap().request_id = "stale".into();
+    focus.context.as_mut().unwrap().time_generation = Some(99);
+    assert_eq!(error(send(&mut a, focus)), p::ErrorCode::StaleGeneration);
+    completed(send(&mut a, lifecycle("stop", false)));
+    assert_eq!(error(query(&a, read)), p::ErrorCode::EngineUnavailable);
 }
 #[test]
 fn fresh_wire_session_creates_resolves_and_prepares_pickable_scene() {
@@ -674,7 +743,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 25);
+    assert_eq!(names.len(), 27);
     assert!(!names
         .iter()
         .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));

@@ -18,6 +18,7 @@ import {
   ErrorCode,
   type SessionStatus,
   type CommandPayload,
+  type CameraState,
 } from "@spaceeyes/core-sdk";
 import type { WasmEngine } from "../public/wasm/spaceeyes_wasm.js";
 export type ViewStatus = {
@@ -30,6 +31,9 @@ export type ViewStatus = {
   width: number;
   height: number;
   selectionText: string;
+  cameraMode: string;
+  cameraTarget?: string;
+  actionError?: string;
   selected?: { id: string; kind: string; reference: string; sequence: string };
   error?: string;
 };
@@ -43,6 +47,7 @@ export const initialStatus: ViewStatus = {
   width: 0,
   height: 0,
   selectionText: "点击画面选择对象",
+  cameraMode: "自由视角",
 };
 const sessionId = "browser-session";
 const principal = "trusted-browser-host";
@@ -85,6 +90,10 @@ export class BrowserSession {
   private presentedSequence: bigint | undefined;
   private selectionText = "点击画面选择对象";
   private selected: ViewStatus["selected"];
+  private selectionRevision: bigint | undefined;
+  private cameraCreated = false;
+  private cameraState: CameraState | undefined;
+  private actionError: string | undefined;
   private readonly onClick = (event: MouseEvent) => {
     const rect = this.canvas.getBoundingClientRect();
     if (!rect.width || !rect.height || this.presentedSequence === undefined)
@@ -115,6 +124,7 @@ export class BrowserSession {
           throw new Error("缺少选择结果");
         const result = response.payload.value;
         const object = result.object;
+        this.selectionRevision = object ? result.sceneRevision : undefined;
         this.selected = object
           ? {
               id: object.objectId!.value,
@@ -177,6 +187,8 @@ export class BrowserSession {
       "lifecycle.start",
       "query.session_status",
       "query.pick_presented",
+      "camera.focus",
+      "query.camera_state",
     ]);
     if (!capabilities.browserSurface)
       throw new Error("当前核心未提供浏览器画布能力。");
@@ -300,6 +312,7 @@ export class BrowserSession {
       case: "lifecycle",
       value: { action: { case: "start", value: {} } },
     });
+    this.cameraCreated = true;
     await this.refresh();
   }
   private camera(yaw: number) {
@@ -333,6 +346,14 @@ export class BrowserSession {
     );
     if (response.payload.case !== "session") throw new Error("缺少会话状态");
     this.state = response.payload.value;
+    if (this.cameraCreated) {
+      const camera = await this.client!.query(
+        { case: "cameraState", value: { camera: { value: "demo:camera" } } },
+        { requestId: "web:camera-state" },
+      );
+      if (camera.payload.case !== "camera") throw new Error("缺少相机状态");
+      this.cameraState = camera.payload.value.state;
+    }
   }
   private summary(phase: ViewStatus["phase"]): ViewStatus {
     const time = this.state?.clock?.instant;
@@ -349,6 +370,9 @@ export class BrowserSession {
       height: this.height,
       selectionText: this.selectionText,
       selected: this.selected,
+      cameraMode: this.cameraState?.tracking ? "跟随目标" : "自由视角",
+      cameraTarget: this.cameraState?.tracking?.target?.value,
+      actionError: this.actionError,
     };
   }
   private schedule(): void {
@@ -462,6 +486,70 @@ export class BrowserSession {
     }).catch((error) => {
       this.fail(error);
       throw error;
+    });
+  }
+  private cameraAction(operation: () => Promise<void>): Promise<void> {
+    return this.enqueue(async () => {
+      this.actionError = undefined;
+      try {
+        await operation();
+      } catch (error) {
+        if (!(error instanceof CoreRemoteError)) throw error;
+        this.actionError = `相机操作未完成：${error.message}`;
+      }
+      await this.refresh();
+      if (!this.disposed) this.notify(this.summary("运行中"));
+    }).catch((error) => {
+      this.fail(error);
+      throw error;
+    });
+  }
+  focusSelected(follow: boolean): Promise<void> {
+    return this.cameraAction(async () => {
+      if (!this.selected) return;
+      await this.refresh();
+      if (this.selectionRevision !== this.state!.sceneRevision) {
+        this.selected = undefined;
+        this.selectionText = "场景已变化，请重新选择";
+        return;
+      }
+      await this.command({
+        case: "camera",
+        value: {
+          action: {
+            case: "focus",
+            value: {
+              camera: { value: "demo:camera" },
+              target: { value: this.selected.id },
+              distanceM: 6,
+              follow,
+            },
+          },
+        },
+      });
+      this.selected = undefined;
+      this.selectionRevision = undefined;
+      this.selectionText = "视角已更新，请选择对象";
+    });
+  }
+  resetCamera(): Promise<void> {
+    return this.cameraAction(async () => {
+      await this.command({
+        case: "scene",
+        value: {
+          action: {
+            case: "setCamera",
+            value: {
+              objectId: { value: "demo:camera" },
+              camera: this.camera(0),
+            },
+          },
+        },
+      });
+      this.yaw = 0;
+      this.selected = undefined;
+      this.selectionRevision = undefined;
+      this.selectionText = "视角已恢复，请选择对象";
     });
   }
   private fail(error: unknown): void {

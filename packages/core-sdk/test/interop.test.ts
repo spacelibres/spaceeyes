@@ -216,7 +216,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 25);
+    assert.equal(caps.operations.length, 27);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));
@@ -387,6 +387,70 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "scene",
     );
     assert.equal((await status()).resourceUsedBytes, 188n);
+    const focusPayload = {
+      case: "camera" as const,
+      value: {
+        action: {
+          case: "focus" as const,
+          value: {
+            camera: { value: "camera" },
+            target: { value: "mesh-object" },
+            distanceM: 6,
+            follow: true,
+          },
+        },
+      },
+    };
+    const options = {
+      requestId: "focus-mesh",
+      expectedSceneRevision: revision,
+      timeGeneration: 0n,
+    };
+    const focused = record(await client.command(focusPayload, options));
+    revision = focused.committedSceneRevision;
+    assert.deepEqual(await client.command(focusPayload, options), focused);
+    const cameraInfo = record(
+      await client.query(
+        { case: "cameraState", value: { camera: { value: "camera" } } },
+        { requestId: "camera-read" },
+      ),
+    );
+    assert.equal(cameraInfo.payload.case, "camera");
+    if (cameraInfo.payload.case === "camera") {
+      assert.equal(
+        cameraInfo.payload.value.state?.tracking?.target?.value,
+        "mesh-object",
+      );
+      assert.equal(cameraInfo.payload.value.state?.positionM?.x, 0.5);
+      assert.equal(cameraInfo.payload.value.state?.positionM?.y, 0.5);
+      assert.equal(cameraInfo.payload.value.state?.positionM?.z, 0);
+    }
+    await assert.rejects(
+      client.command(focusPayload, {
+        ...options,
+        requestId: "focus-stale",
+        timeGeneration: 99n,
+      }),
+      (e: unknown) =>
+        e instanceof CoreRemoteError && e.code === ErrorCode.STALE_GENERATION,
+    );
+    await assert.rejects(
+      client.command(focusPayload, { ...options, requestId: "focus-conflict" }),
+      (e: unknown) =>
+        e instanceof CoreRemoteError && e.code === ErrorCode.REVISION_CONFLICT,
+    );
+    await command(
+      {
+        case: "scene",
+        value: {
+          action: {
+            case: "setCamera",
+            value: { objectId: { value: "camera" }, camera },
+          },
+        },
+      },
+      "reset-follow",
+    );
     await command(
       {
         case: "scene",

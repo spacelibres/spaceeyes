@@ -67,6 +67,27 @@ impl ProtocolAdapter {
         let context = envelope.context.ok_or(ProtocolError::MissingField)?;
         validate_wire_context(&context)?;
         let command = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::command_envelope::Payload::Camera(command) => {
+                let p::camera_command::Action::Focus(c) =
+                    command.action.ok_or(ProtocolError::MissingField)?;
+                if context.time_generation.is_none()
+                    || !c.distance_m.is_finite()
+                    || c.distance_m <= 0.0
+                {
+                    return Err(ProtocolError::InvalidContext);
+                }
+                Command::FocusCamera {
+                    expected_revision: Revision(
+                        context
+                            .expected_scene_revision
+                            .ok_or(ProtocolError::MissingField)?,
+                    ),
+                    camera: checked_object(c.camera.ok_or(ProtocolError::MissingField)?)?,
+                    target: checked_object(c.target.ok_or(ProtocolError::MissingField)?)?,
+                    distance_m: c.distance_m,
+                    follow: c.follow,
+                }
+            }
             p::command_envelope::Payload::Lifecycle(command) => {
                 match command.action.ok_or(ProtocolError::MissingField)? {
                     p::lifecycle_command::Action::Start(_) => Command::Start,
@@ -358,6 +379,16 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
 }
 
 pub fn decode_camera(value: p::CameraState) -> Result<CameraState, ProtocolError> {
+    let tracking = value
+        .tracking
+        .map(|t| {
+            spaceeyes_scene::CameraTracking::new(
+                checked_object(t.target.ok_or(ProtocolError::MissingField)?)?,
+                t.distance_m,
+            )
+            .map_err(|_| ProtocolError::InvalidContext)
+        })
+        .transpose()?;
     let position = value.position_m.ok_or(ProtocolError::MissingField)?;
     let rotation = value.orientation.ok_or(ProtocolError::MissingField)?;
     let projection = value
@@ -373,12 +404,19 @@ pub fn decode_camera(value: p::CameraState) -> Result<CameraState, ProtocolError
         projection.near_m,
         projection.far_m,
     )
+    .and_then(|camera| camera.with_tracking(tracking))
     .map_err(|_| ProtocolError::InvalidContext)
 }
 pub fn encode_camera(camera: &CameraState) -> p::CameraState {
     let [x, y, z] = camera.position_m();
     let [w, qx, qy, qz] = camera.orientation_wxyz();
     p::CameraState {
+        tracking: camera.tracking().map(|t| p::CameraTracking {
+            target: Some(p::ObjectId {
+                value: t.target().as_str().into(),
+            }),
+            distance_m: t.distance_m(),
+        }),
         position_m: Some(p::Vector3d { x, y, z }),
         orientation: Some(p::Quaterniond {
             w,

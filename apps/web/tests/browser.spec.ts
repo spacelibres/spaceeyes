@@ -404,3 +404,60 @@ test("device loss stops presentation and clears the session instead of freezing"
     page.getByRole("button", { name: "播放", exact: true }),
   ).toBeDisabled();
 });
+
+test("selected mesh focus and follow use core camera state and reset restores the view", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  const canvas = page.getByTestId("scene-canvas");
+  await expect(
+    page.getByRole("button", { name: "聚焦对象", exact: true }),
+  ).toBeDisabled();
+  const before = await canvas.screenshot();
+  const pixels = PNG.sync.read(before);
+  const row = Math.floor(pixels.height / 2);
+  let edge = -1;
+  for (let x = pixels.width - 1; x > pixels.width / 2; x--) {
+    const i = (row * pixels.width + x) * 4;
+    if (pixels.data[i] > 50 || pixels.data[i + 2] > 50) {
+      edge = x;
+      break;
+    }
+  }
+  expect(edge).toBeGreaterThan(pixels.width / 2);
+  await canvas.click({ position: { x: edge - 8, y: row } });
+  await expect(page.getByTestId("selected-object")).toHaveText(
+    "demo:mesh-object",
+  );
+  await page.getByRole("button", { name: "聚焦对象", exact: true }).click();
+  await expect(page.getByTestId("camera-mode")).toHaveText("自由视角");
+  await expect(page.getByTestId("selected-object")).toHaveCount(0);
+  const selectCenter = async () => {
+    const box = (await canvas.boundingBox())!;
+    await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
+    await expect(page.getByTestId("selected-object")).toHaveText(
+      "demo:mesh-object",
+    );
+  };
+  await selectCenter();
+  await page.getByRole("button", { name: "跟随对象", exact: true }).click();
+  await expect(page.getByTestId("camera-mode")).toHaveText("跟随目标");
+  await expect(page.getByTestId("camera-target")).toHaveText(
+    "demo:mesh-object",
+  );
+  await expect
+    .poll(async () => !(await canvas.screenshot()).equals(before))
+    .toBe(true);
+  await page.getByRole("button", { name: "恢复视角", exact: true }).click();
+  await expect(page.getByTestId("camera-mode")).toHaveText("自由视角");
+  await expect(page.getByTestId("camera-target")).toHaveCount(0);
+  const box = (await canvas.boundingBox())!;
+  await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } });
+  await expect(page.getByTestId("selected-object")).toHaveText("demo:body");
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  await page.screenshot({
+    path: "test-results/spaceeyes-camera-controls.png",
+    fullPage: true,
+  });
+});

@@ -6,7 +6,7 @@ use spaceeyes_foundation::{CoreError, FrameId, ObjectId, ResourceId, Revision};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 mod camera;
-pub use camera::CameraState;
+pub use camera::{CameraState, CameraTracking};
 mod sphere;
 pub use sphere::Sphere;
 mod mesh;
@@ -315,6 +315,28 @@ impl Scene {
         }
         // Create may contain a cloned object's relationships; validate those too.
         for object in proposed.values() {
+            if let Some(tracking) = object.camera().and_then(CameraState::tracking) {
+                let target = proposed
+                    .get(tracking.target())
+                    .ok_or(CoreError::UnknownObject)?;
+                if target.id() == object.id() || target.camera().is_some() {
+                    return Err(CoreError::InvalidState);
+                }
+                if target.frame().is_none() {
+                    return Err(CoreError::UnknownFrame);
+                }
+                // A delete/recreate under the same ID must not silently transfer tracking.
+                if generations.get(target.id()) != self.generations.get(target.id())
+                    && self
+                        .objects
+                        .get(object.id())
+                        .and_then(SceneObject::camera)
+                        .and_then(CameraState::tracking)
+                        .is_some_and(|old| old.target() == tracking.target())
+                {
+                    return Err(CoreError::InvalidHandle);
+                }
+            }
             if usize::from(object.camera.is_some())
                 + usize::from(object.sphere.is_some())
                 + usize::from(object.mesh.is_some())

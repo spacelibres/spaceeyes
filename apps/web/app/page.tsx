@@ -93,6 +93,16 @@ export default function Page() {
           </div>
           <dl>
             <div>
+              <dt>相机模式</dt>
+              <dd data-testid="camera-mode">{status.cameraMode}</dd>
+            </div>
+            {status.cameraTarget && (
+              <div>
+                <dt>跟随目标</dt>
+                <dd data-testid="camera-target">{status.cameraTarget}</dd>
+              </div>
+            )}
+            <div>
               <dt>状态</dt>
               <dd data-testid="phase">{status.phase}</dd>
             </div>
@@ -151,6 +161,33 @@ export default function Page() {
                 </div>
               </dl>
             )}
+            <div className="controls">
+              <button
+                disabled={!ready || !status.selected}
+                onClick={() => {
+                  void host.current?.focusSelected(false).catch(() => {});
+                }}
+              >
+                聚焦对象
+              </button>
+              <button
+                disabled={!ready || !status.selected}
+                onClick={() => {
+                  void host.current?.focusSelected(true).catch(() => {});
+                }}
+              >
+                跟随对象
+              </button>
+            </div>
+            <button
+              className="secondary"
+              disabled={!ready}
+              onClick={() => {
+                void host.current?.resetCamera().catch(() => {});
+              }}
+            >
+              恢复视角
+            </button>
           </section>
           <button
             className="secondary"
@@ -163,6 +200,11 @@ export default function Page() {
       {status.error && (
         <p role="alert" className="error">
           {status.error}
+        </p>
+      )}
+      {status.actionError && (
+        <p role="alert" className="error">
+          {status.actionError}
         </p>
       )}
       <footer>

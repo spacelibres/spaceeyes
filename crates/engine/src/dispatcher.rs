@@ -10,6 +10,13 @@ use spaceeyes_time::{TimeGeneration, TimeInstant};
 use std::collections::{BTreeMap, VecDeque};
 #[derive(Clone, Debug, PartialEq)]
 pub enum Command {
+    FocusCamera {
+        expected_revision: Revision,
+        camera: spaceeyes_foundation::ObjectId,
+        target: spaceeyes_foundation::ObjectId,
+        distance_m: f64,
+        follow: bool,
+    },
     Scene {
         expected_revision: Revision,
         commands: Vec<SceneCommand>,
@@ -215,6 +222,21 @@ impl CommandDispatcher {
             .ok_or(DispatchError::Overflow)?;
         let result = if generation.is_some_and(|g| g != self.engine.clock().generation()) {
             Err(DispatchError::StaleGeneration)
+        } else if let Command::FocusCamera {
+            expected_revision,
+            camera,
+            target,
+            distance_m,
+            follow,
+        } = &command
+        {
+            self.engine
+                .focus_camera(*expected_revision, camera, target, *distance_m, *follow)
+                .map(|_| ())
+                .map_err(|error| match error {
+                    crate::CameraControlError::Domain(e) => DispatchError::Domain(e),
+                    crate::CameraControlError::Spatial(e) => DispatchError::Spatial(e),
+                })
         } else if let Command::RegisterRootFrame {
             id,
             expected_revision,
@@ -253,7 +275,8 @@ impl CommandDispatcher {
                 .map_err(DispatchError::Resource)
         } else {
             match &command {
-                Command::RegisterRootFrame { .. }
+                Command::FocusCamera { .. }
+                | Command::RegisterRootFrame { .. }
                 | Command::RegisterChildFrame { .. }
                 | Command::RegisterTexture { .. }
                 | Command::RegisterMesh { .. } => {

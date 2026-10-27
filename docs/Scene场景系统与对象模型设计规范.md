@@ -113,3 +113,6 @@ MeshInstance是可选只读组件，保存geometry ResourceId与有限线性RGB�
 
 ## 0.0.1基础材质
 Sphere与MeshInstance共享不可变Material，保存有限线性RGB、可选texture ResourceId、明确采样设置及unlit标志，通过现有SetSphere/SetMesh事务更新，不设平行状态写入口。旧new(radius/color或geometry/color)保持无纹理Lit兼容。纹理引用自动参与对象资源租约并去重，新绑定必须指向Ready的TextureData；错误/未加载类型使整批事务回滚。Scene只引用纹理，不持有像素。采样枚举是geometry下层值，Scene对geometry的依赖不指向渲染状态。
+
+## M2-3 相机聚焦与跟随契约（0.0.1开发增量）
+Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follow），要求expectedSceneRevision及当前TimeGeneration；在当前时刻解析Spatial并经唯一Scene事务提交。聚焦沿目标参考系+Z放置、沿-Z观察；球体/标记取参考系原点，网格取引用顶点AABB中心。距离必须在当前相机near/far内，不自动修改投影。跟随保存在CameraState.tracking(targetId,distanceM)，每帧从同一FrameSnapshot求值目标位置及旋转，不累计运动、不写Scene。基础CameraState.position/orientation属于拥有相机的FrameId；tracking生效时派生视图使用目标参考系，基础位姿作为显式逻辑状态保留，不冒充当前世界位置。禁止自引用、相机目标与跟随链；被跟随对象删除/改成相机时事务拒绝，可先清除跟随再删除。参考系/时间覆盖缺失明确失败；Renderer不回退到原点。query.camera_state只读逻辑状态；旧SetCamera未提供tracking即清除跟随，旧wire字段编号不变。宿主不持有第二套权威相机，不基于Scene ParentId算坐标。

@@ -5,6 +5,25 @@ use spaceeyes_scene::{CameraState, Scene, SceneCommand, SceneObject};
 fn camera() -> CameraState {
     CameraState::new([1.0, 2.0, 3.0], [2.0, 0.0, 0.0, 0.0], 1.0, 0.1, 100.0).unwrap()
 }
+
+#[test]
+fn tracking_distances_are_finite_positive_and_inside_projection() {
+    use spaceeyes_scene::CameraTracking;
+    let target = ObjectId::new("body").unwrap();
+    for distance in [f64::NAN, f64::INFINITY, 0.0, -1.0] {
+        assert!(CameraTracking::new(target.clone(), distance).is_err());
+    }
+    for distance in [0.01, 0.1, 100.0, 101.0] {
+        assert!(camera()
+            .with_tracking(Some(CameraTracking::new(target.clone(), distance).unwrap()))
+            .is_err());
+    }
+    let tracked = camera()
+        .with_tracking(Some(CameraTracking::new(target.clone(), 6.0).unwrap()))
+        .unwrap();
+    assert_eq!(tracked.tracking().unwrap().target(), &target);
+    assert!(tracked.with_tracking(None).unwrap().tracking().is_none());
+}
 #[test]
 fn camera_is_normalized_and_rejects_invalid_pose_or_projection() {
     assert_eq!(camera().orientation_wxyz(), [1.0, 0.0, 0.0, 0.0]);

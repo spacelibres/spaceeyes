@@ -152,6 +152,35 @@ impl ProtocolAdapter {
             ));
         }
         let payload = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::query_envelope::Payload::CameraState(query) => {
+                if state.lifecycle == EngineState::Stopped {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::EngineUnavailable,
+                        "engine stopped".into(),
+                    ));
+                }
+                let id = crate::decode_object_id(query.camera.ok_or(ProtocolError::MissingField)?)?;
+                let object = match dispatcher.engine().scene().get(&id) {
+                    Some(o) if o.camera().is_some() => o,
+                    _ => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            p::ErrorCode::UnknownObject,
+                            "camera unavailable".into(),
+                        ))
+                    }
+                };
+                p::response_envelope::Payload::Camera(p::CameraInfo {
+                    camera: Some(p::ObjectId {
+                        value: id.as_str().into(),
+                    }),
+                    reference: object.frame().map(|id| p::FrameId {
+                        value: id.as_str().into(),
+                    }),
+                    state: object.camera().map(crate::dispatch::encode_camera),
+                })
+            }
             p::query_envelope::Payload::PickPresented(query) => {
                 if state.lifecycle == EngineState::Stopped {
                     return Ok(rejection(
