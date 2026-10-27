@@ -11,6 +11,10 @@ mod budget;
 pub use budget::{FrameReservation, ResourceClass, ResourceLimits, ResourceUsage};
 mod upload;
 pub use upload::*;
+#[cfg(not(target_arch = "wasm32"))]
+mod disk;
+#[cfg(not(target_arch = "wasm32"))]
+pub use disk::DiskSource;
 static NEXT_MANAGER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -30,6 +34,7 @@ pub enum ResourceError {
     InvalidUpload,
     DigestMismatch,
     InvalidFormat,
+    NotFound,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ResourceBudget {

@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 受控磁盘来源加载器（C09 切片）
+- 新增原生 `DiskSource`：根目录白名单、只接受根内相对路径、拒绝绝对路径与 `..`、读取后二次规范检查、文件大小上限与 SHA-256 校验。
+- 通过既有 `begin/append/finish_upload` 发布，保持所有权、预算与修订原子性；校验失败零预留。WASM 目标不含该模块。
+- 验证：resources 3 项磁盘测试。网络加载、墙钟超时与并发 I/O 仍未实现。
+
+
 ### 受控 PNG/JPEG 上传解码（C09 切片）
 - 上传格式新增 `EncodedImage`（Proto PNG=3/JPEG=4）与 8 MiB 上限及 `max_encoded_image_bytes` 能力。
 - 核心用 `image-import` 解码，声明 codec 必须匹配实际魔数，失败返回 `InvalidFormat` 并释放预留。

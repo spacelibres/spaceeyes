@@ -146,3 +146,6 @@ ResourceManager记录每次租用的单调访问序，`evict_lru(target_bytes)`�
 
 ## C09 受控PNG/JPEG上传解码（0.0.1增量）
 上传格式新增`EncodedImage{codec,color_space}`与Proto值`RESOURCE_UPLOAD_FORMAT_PNG=3`、`JPEG=4`；编码流上限8MiB（`max_encoded_image_bytes`），尺寸、解码与不透明校验由核心`spaceeyes-image-import`执行，声明编解码器必须与实际魔数一致，否则`InvalidFormat`并取消上传。解码成功后按**解码后**RGBA字节计费：CPU占用替换上传暂存预留，若解码尺寸仍超出总额/CPU预算则取消并返回`BudgetExceeded`，不接受只按压缩体积计费。仍然只支持8位不透明PNG/JPEG；ICC转换、动画、16位、透明与网络/磁盘I/O仍未实现，宿主须继续提供来源与摘要。
+
+## C09 受控磁盘来源加载器（0.0.1增量）
+原生宿主可使用`DiskSource`：构造时规范化根目录，读取只接受根内相对路径，拒绝绝对路径、`..`、`.`/根前缀与NUL，并在`canonicalize`后再次检查未逃逸根目录（覆盖符号链接逃逸）；文件非空且不超过配置上限（上限不得超过16MiB上传限制）。内容必须匹配`UploadSource.sha256`，随后经既有`begin/append/finish_upload`发布，保持所有权、预算与修订原子性；验证失败不保留任何预留。WASM目标不编译该模块，浏览器仍通过宿主代理与`EncodedImage`上传。网络HTTP加载、墙钟超时、并发I/O与后台预取仍未实现。
