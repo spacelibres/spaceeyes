@@ -4,6 +4,10 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 2026-10-27：Simulation新增TaskProvenance（Scene/FrameGraph修订、提供者ID及版本、显式同尺度时间覆盖区间），支持任务派发前绑定和Engine最终Scene提交前复核；拒绝覆盖区间及修订不匹配。为兼容现有基础任务，未绑定来源的任务仍按旧规则处理，此严格校验尚未强制适用于所有任务。新增单元测试源码，Cargo/CI尚未验证。版本保持0.0.1。
+
+
+
 - 2026-10-27：Engine新增ExecutorFeedback统一接收Result/Failed/Cancelled，复用Simulation状态机，禁止取消后的迟到结果重新提交；结果反馈只进入ResultReady，必须经Scene事务才能Completed。增加对应单元测试源码。未执行Cargo/CI测试，待VPS统一验证，版本仍为0.0.1。
 
 
