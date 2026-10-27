@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 全局核心迭代：Resources新增ResourceManager逻辑登记、字节预算、共享租约计数、禁止带租约释放及资源修订号；Engine统一资源操作入口，EngineSnapshot增加resource_revision。
+- 修复Simulation执行器分发失败后可能重新派发同一任务的问题：先标记Running，失败则标记Failed，不再隐式重试。
+- 已同步Resources规范并增加资源预算与租约单元测试源码。未实现任务资源租约自动绑定、真实异步执行、GPU资源和Proto；未取得Cargo/CI通过证据。版本保持0.0.1。
+
+
+
 - 本轮Simulation：新增平台中立TaskExecutor接口、TaskBudget有界并发/排队策略、确定性ready任务分发与QueueFull/InvalidBudget错误。Engine接入有界任务登记和宿主执行器分发接口。
 - 修复潜在时间一致性缺口：TaskResult进入ResultReady后，Engine在最终Scene提交前再次校验TimeGeneration与目标时刻，避免连续步进后同代次旧结果提交。
 - 新增预算/分发/时间变化阻止提交的单元测试源码，并同步Simulation设计规范。当前只提供执行适配接口，尚未实现真实异步运行器、CPU时间预算或Resources字节预算。Cargo/CI仍未取得通过证据，版本保持0.0.1。
