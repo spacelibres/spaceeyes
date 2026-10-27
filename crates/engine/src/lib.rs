@@ -31,9 +31,15 @@ mod upload;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState {
+    /// Constructed but not initialized; only status queries are allowed.
+    Created,
+    Initializing,
     Ready,
     Running,
+    /// Cleanup in progress; new writes and tasks are rejected.
+    Stopping,
     Stopped,
+    Failed,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -146,6 +152,46 @@ pub struct Engine {
 impl Engine {
     pub fn new(instant: TimeInstant) -> Self {
         Self::with_resource_limits(instant, ResourceLimits::PROTOTYPE)
+    }
+    /// Construct an uninitialized engine. Hosts that own device/asset setup can
+    /// use this two-phase form; `new` remains the single-phase synchronous form.
+    pub fn prepare(instant: TimeInstant) -> Self {
+        let mut engine = Self::with_resource_limits(instant, ResourceLimits::PROTOTYPE);
+        engine.state = EngineState::Created;
+        engine
+    }
+    /// Run host initialization and only then enter Ready. Failure releases every
+    /// reservation and leaves an explicitly Failed engine that can be shut down.
+    pub fn initialize<F>(&mut self, init: F) -> Result<(), CoreError>
+    where
+        F: FnOnce(&mut Engine) -> Result<(), CoreError>,
+    {
+        if self.state != EngineState::Created {
+            return Err(CoreError::InvalidState);
+        }
+        self.state = EngineState::Initializing;
+        match init(self) {
+            Ok(()) => {
+                self.state = EngineState::Ready;
+                Ok(())
+            }
+            Err(error) => {
+                self.release_all_resources();
+                self.state = EngineState::Failed;
+                Err(error)
+            }
+        }
+    }
+    /// Writes and new tasks are accepted only in Ready or Running.
+    fn accepts_commands(&self) -> bool {
+        matches!(self.state, EngineState::Ready | EngineState::Running)
+    }
+    fn release_all_resources(&mut self) {
+        self.simulation.cancel_all();
+        self.task_leases.clear();
+        self.task_contexts.clear();
+        self.object_leases.clear();
+        self.resources.clear();
     }
     pub fn with_resource_limits(instant: TimeInstant, limits: ResourceLimits) -> Self {
         Self {
@@ -281,7 +327,7 @@ impl Engine {
     /// Missing references are explicit; no zero-position scientific state is invented.
     pub fn publish_frame(&self, reference: &FrameId) -> Result<FrameSnapshot, SpatialError> {
         use spaceeyes_snapshot::ObjectPose;
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         if !self.spatial.contains(reference) {
@@ -475,7 +521,7 @@ impl Engine {
         expected_revision: Revision,
         commands: &[SceneCommand],
     ) -> Result<Revision, CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         // Stage every change, including lease identities, before publishing either registry.
@@ -609,7 +655,7 @@ impl Engine {
         Ok(next)
     }
     pub fn seek(&mut self, instant: TimeInstant) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         let sequence = self
@@ -624,7 +670,7 @@ impl Engine {
         Ok(())
     }
     pub fn play(&mut self) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         if self.clock.mode() == spaceeyes_time::ClockMode::Playing {
@@ -639,7 +685,7 @@ impl Engine {
         Ok(())
     }
     pub fn pause(&mut self) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         if self.clock.mode() == spaceeyes_time::ClockMode::Paused {
@@ -654,7 +700,7 @@ impl Engine {
         Ok(())
     }
     pub fn step_nanos(&mut self, delta: i128) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         if delta == 0 {
@@ -669,7 +715,7 @@ impl Engine {
         Ok(())
     }
     pub fn set_rate(&mut self, rate: spaceeyes_time::PlaybackRate) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         if self.clock.snapshot().rate == rate {
@@ -685,7 +731,7 @@ impl Engine {
     }
     /// Host-driven rational-rate playback, separate from explicit simulation steps.
     pub fn advance_nanos(&mut self, elapsed_nanos: u64) -> Result<(), CoreError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CoreError::AlreadyStopped);
         }
         if self.clock.mode() == spaceeyes_time::ClockMode::Paused
@@ -707,7 +753,7 @@ impl Engine {
         id: ResourceId,
         texture: spaceeyes_geometry::TextureData,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -723,7 +769,7 @@ impl Engine {
         id: ResourceId,
         mesh: spaceeyes_geometry::TriangleMesh,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -735,7 +781,7 @@ impl Engine {
         Ok(())
     }
     pub fn register_resource(&mut self, id: ResourceId, bytes: u64) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -752,7 +798,7 @@ impl Engine {
         id: ResourceId,
         bytes: u64,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -764,7 +810,7 @@ impl Engine {
         Ok(())
     }
     pub fn lease_resource(&mut self, id: &ResourceId) -> Result<LeaseId, ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         self.resources.lease(id)
@@ -773,7 +819,7 @@ impl Engine {
         self.resources.release_lease(token)
     }
     pub fn unregister_resource(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -794,7 +840,7 @@ impl Engine {
         request: TaskRequest,
         priority: TaskPriority,
     ) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         if request.generation != self.clock.generation() {
@@ -815,7 +861,7 @@ impl Engine {
         request: TaskRequest,
         targets: &[ObjectId],
     ) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         if request.generation != self.clock.generation() {
@@ -964,7 +1010,7 @@ impl Engine {
         id: &str,
         provenance: TaskProvenance,
     ) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         if provenance.scene_revision != self.scene.revision()
@@ -996,7 +1042,7 @@ impl Engine {
         &mut self,
         executor: &mut impl TaskExecutor,
     ) -> Result<Vec<String>, TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         let result = dispatch_ready(&mut self.simulation, self.task_budget, executor);
@@ -1004,7 +1050,7 @@ impl Engine {
         result
     }
     pub fn start_task(&mut self, id: &str) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         if self.simulation.active_count() >= self.task_budget.max_in_flight {
@@ -1013,7 +1059,7 @@ impl Engine {
         self.simulation.start(id)
     }
     pub fn forget_terminal_task(&mut self, id: &str) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         self.simulation.forget_terminal(id)?;
@@ -1052,7 +1098,7 @@ impl Engine {
         task_id: &str,
         id: &ResourceId,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         match self.simulation.status(task_id) {
@@ -1099,7 +1145,7 @@ impl Engine {
     }
     /// Result acceptance does not mutate Scene or claim a completed transaction.
     pub fn accept_task_result(&mut self, result: &TaskResult) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         self.simulation
@@ -1119,7 +1165,7 @@ impl Engine {
         &mut self,
         feedback: ExecutorFeedback,
     ) -> Result<(), TaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(TaskError::InvalidState);
         }
         match feedback {
@@ -1145,7 +1191,7 @@ impl Engine {
         expected_revision: Revision,
         commands: &[SceneCommand],
     ) -> Result<Revision, CommitTaskError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(CommitTaskError::EngineStopped);
         }
         if let Err(error) = self.simulation.validate_commit(
@@ -1200,7 +1246,7 @@ impl Engine {
     }
     /// All spatial graph writes pass through Engine, never through plugins.
     pub fn register_root_frame(&mut self, id: FrameId) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next_sequence = self
@@ -1217,7 +1263,7 @@ impl Engine {
         parent: FrameId,
         sample: FrameSample,
     ) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next_sequence = self
@@ -1234,7 +1280,7 @@ impl Engine {
         parent: FrameId,
         provider: ProviderRef,
     ) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next = self
@@ -1252,7 +1298,7 @@ impl Engine {
         provider_id: String,
         provider_version: String,
     ) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next = self
@@ -1270,7 +1316,7 @@ impl Engine {
         id: &FrameId,
         sample: FrameSample,
     ) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next = self
@@ -1286,7 +1332,7 @@ impl Engine {
         id: &FrameId,
         provider: ProviderRef,
     ) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let next = self
@@ -1306,7 +1352,7 @@ impl Engine {
         self.spatial.resolve(source, target, instant)
     }
     pub fn remove_frame(&mut self, id: &FrameId) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(SpatialError::EngineUnavailable);
         }
         let sequence = self
@@ -1318,7 +1364,7 @@ impl Engine {
         Ok(revision)
     }
     pub fn declare_resource(&mut self, id: ResourceId, bytes: u64) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -1333,7 +1379,7 @@ impl Engine {
         &mut self,
         id: &ResourceId,
     ) -> Result<spaceeyes_resources::LoadToken, ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -1349,7 +1395,7 @@ impl Engine {
         token: &spaceeyes_resources::LoadToken,
         data: Vec<u8>,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -1364,7 +1410,7 @@ impl Engine {
         &mut self,
         token: &spaceeyes_resources::LoadToken,
     ) -> Result<(), ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -1380,7 +1426,7 @@ impl Engine {
         &mut self,
         target_bytes: u64,
     ) -> Result<Vec<ResourceId>, ResourceError> {
-        if self.state == EngineState::Stopped {
+        if !self.accepts_commands() {
             return Err(ResourceError::EngineUnavailable);
         }
         let sequence = self
@@ -1396,16 +1442,32 @@ impl Engine {
     pub fn resource_bytes(&self, lease: &LeaseId) -> Result<&[u8], ResourceError> {
         self.resources.read(lease)
     }
-    pub fn shutdown(&mut self) {
+    pub fn begin_shutdown(&mut self) {
+        if matches!(self.state, EngineState::Stopped | EngineState::Stopping) {
+            return;
+        }
+        self.state = EngineState::Stopping;
         self.simulation.cancel_all();
         self.release_terminal_task_leases();
+        self.task_contexts.clear();
         self.object_leases.clear();
-        self.resources.clear();
         // The last consistent frame is frozen for diagnostics but is no longer current.
         if let Some(published) = &mut self.published {
             published.stale = true;
         }
+    }
+    /// Release resources and reach the terminal state; safe to call twice.
+    pub fn finish_shutdown(&mut self) {
+        if self.state == EngineState::Stopped {
+            return;
+        }
+        self.state = EngineState::Stopping;
+        self.release_all_resources();
         self.state = EngineState::Stopped;
+    }
+    pub fn shutdown(&mut self) {
+        self.begin_shutdown();
+        self.finish_shutdown();
     }
 }
 #[cfg(test)]

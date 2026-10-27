@@ -73,9 +73,13 @@ pub(crate) fn encode_status(s: &SessionStatus) -> Result<p::SessionStatus, Proto
     Ok(p::SessionStatus {
         session_id: s.session.clone(),
         lifecycle: match s.lifecycle {
+            EngineState::Created => p::EngineLifecycle::Created,
+            EngineState::Initializing => p::EngineLifecycle::Initializing,
             EngineState::Ready => p::EngineLifecycle::Ready,
             EngineState::Running => p::EngineLifecycle::Running,
+            EngineState::Stopping => p::EngineLifecycle::Stopping,
             EngineState::Stopped => p::EngineLifecycle::Stopped,
+            EngineState::Failed => p::EngineLifecycle::Failed,
         } as i32,
         clock: Some(p::ClockState {
             instant: Some(encode_instant(&s.clock.instant)?),

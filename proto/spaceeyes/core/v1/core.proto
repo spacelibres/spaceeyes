@@ -18,7 +18,7 @@ message ResponseEnvelope { string request_id=1; ResponseStatus status=2; oneof p
 message StartEngine {}
 message StopEngine {}
 message LifecycleCommand { oneof action { StartEngine start=1; StopEngine stop=2; } }
-enum EngineLifecycle { ENGINE_LIFECYCLE_UNSPECIFIED=0; ENGINE_LIFECYCLE_READY=1; ENGINE_LIFECYCLE_RUNNING=2; ENGINE_LIFECYCLE_STOPPED=3; }
+enum EngineLifecycle { ENGINE_LIFECYCLE_UNSPECIFIED=0; ENGINE_LIFECYCLE_READY=1; ENGINE_LIFECYCLE_RUNNING=2; ENGINE_LIFECYCLE_STOPPED=3; ENGINE_LIFECYCLE_CREATED=4; ENGINE_LIFECYCLE_INITIALIZING=5; ENGINE_LIFECYCLE_STOPPING=6; ENGINE_LIFECYCLE_FAILED=7; }
 message SessionStatus { EngineLifecycle lifecycle=1; ClockState clock=2; uint64 scene_revision=3; uint64 frame_graph_revision=4; uint64 resource_revision=5; uint64 frame_sequence=6; uint64 object_count=7; uint64 resource_used_bytes=8; string session_id=9; }
 message SessionStatusQuery {}
 // Declared provider interval; covered=false means no published range.

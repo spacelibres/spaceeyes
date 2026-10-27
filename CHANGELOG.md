@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 完整生命周期与两阶段初始化（C10 切片）
+- `EngineState` 补齐 Created/Initializing/Stopping/Failed；`Engine::prepare` + `initialize(closure)` 支持初始化失败清理并进入 Failed；`begin_shutdown`/`finish_shutdown` 分离拒绝写入与资源释放，`shutdown` 幂等。
+- 所有写入口统一为仅 Ready/Running 接受，Stopping 保留资源但拒绝新命令/任务。
+- Proto `EngineLifecycle` 追加 CREATED=4、INITIALIZING=5、STOPPING=6、FAILED=7。
+- 验证：engine 4 项生命周期测试与既有测试通过。
+
+
 ### 正交投影相机（C13 切片）
 - `CameraState` 新增 `CameraProjection`（透视/正交），正交使用米制 `half_height_m`；`focus_camera` 保留原投影；Proto `Projection` 新增 `orthographic` kind=2。
 - 渲染统一 `ViewProjection`：NDC、深度、clip 与拾取射线按投影分支，正交屏幕尺寸与距离无关。

@@ -21,7 +21,10 @@ impl Engine {
         follow: bool,
     ) -> Result<Revision, CameraControlError> {
         use CameraControlError::{Domain, Spatial};
-        if self.state() == crate::EngineState::Stopped {
+        if !matches!(
+            self.state(),
+            crate::EngineState::Ready | crate::EngineState::Running
+        ) {
             return Err(Domain(CoreError::AlreadyStopped));
         }
         if self.scene().revision() != expected_revision {
