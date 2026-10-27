@@ -86,3 +86,7 @@ Simulation负责计算任务与结果有效性校验，不直接写Scene。Engin
 
 ## 14. 0.0.1实现进度（2026-10-27）
 已实现基础SimulationScheduler任务登记、依赖检查、确定性ready顺序、任务开始、取消、失败、ResultReady与Completed分离；Engine负责根据TimeGeneration失效旧任务，并通过唯一Scene事务入口提交已验证任务结果。Scene提交失败时任务保留ResultReady供显式处理。当前任务依赖要求先注册前置任务，避免形成循环；尚未实现异步执行器、CPU预算、超时、跨提供者数据覆盖、SceneRevision/FrameGraphRevision完整校验或Proto消息。已编写单元测试但尚无CI通过记录。此节为0.0.1范围说明，未变更已批准ADR。
+
+
+## 15. 0.0.1任务执行适配与预算推进（2026-10-27）
+新增平台中立的`TaskExecutor`分发接口、`TaskBudget`（最大同时执行数及最大排队数）、确定性有界分发、队列超限错误。Engine以默认预算协调任务，真实执行由Native/WASM宿主提供；当前未实现线程池、异步Future驱动或CPU时间测量，故不将接口分发称为异步执行器已完成。为避免连续播放同代次的旧结果提交，Engine在Scene事务前再次核验Task的generation和requested_instant。资源字节预算仍归Resources。新增测试源码尚待Cargo执行；版本保持0.0.1。
