@@ -1,6 +1,6 @@
 # Simulation仿真任务调度系统设计规范
 
-版本：0.0.0｜状态：待审定草案｜日期：2026-10-27
+版本：0.0.1｜状态：待审定草案｜日期：2026-10-27
 设计阶段：04。依据：Rust核心、Scene、Spatial、Time三份设计规范。本阶段仅设计，不写实现。
 
 ## 1. 目标与边界
@@ -79,3 +79,6 @@ Created → Validated → Queued → Running → ResultReady → Committing → 
 
 ## 13. 交叉审查整改对齐（待审）
 Simulation负责计算任务与结果有效性校验，不直接写Scene。Engine负责统一命令入口及单一逻辑提交，Scene负责场景事务。任务结果须联合校验generation、目标时刻、coverage、来源版本及对象代次。Simulation仅管理任务队列和CPU调度预算，CPU/GPU资源字节及租约归Resources。详见Rust核心跨模块ADR整改方案。
+
+
+> 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
