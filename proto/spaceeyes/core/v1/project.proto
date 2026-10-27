@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+import "spaceeyes/core/v1/time.proto";
+import "spaceeyes/core/v1/scene.proto";
+import "spaceeyes/core/v1/spatial.proto";
+import "spaceeyes/core/v1/resources.proto";
+import "spaceeyes/core/v1/rendering.proto";
+
+enum ResourceClass {
+  RESOURCE_CLASS_UNSPECIFIED = 0;
+  RESOURCE_CLASS_CPU = 1;
+  RESOURCE_CLASS_GPU = 2;
+  RESOURCE_CLASS_STAGING = 3;
+}
+
+message ProjectClock {
+  TimeInstant instant = 1;
+  PlaybackMode mode = 2;
+  sint32 rate_numerator = 3;
+  uint32 rate_denominator = 4;
+  uint64 generation = 5;
+  uint64 revision = 6;
+}
+
+message ProjectFrameSample {
+  TimeInstant instant = 1;
+  RigidTransform to_parent = 2;
+}
+
+// Persisted provider metadata is a label; samples are session state, not history.
+message ProjectFrameRecord {
+  FrameId frame_id = 1;
+  optional FrameId parent_id = 2;
+  optional ProjectFrameSample sample = 3;
+  optional ProviderIdentity provider = 4;
+}
+
+message ProjectResourceRecord {
+  ResourceId resource_id = 1;
+  uint64 bytes = 2;
+  ResourceClass class = 3;
+  optional ResourceSource source = 4;
+  bytes data = 5;
+  optional TriangleMesh mesh = 6;
+  optional TextureData texture = 7;
+  bool logical_only = 8;
+}
+
+// Versioned project snapshot. Restore creates fresh internal handles and
+// revisions; it never persists GPU handles, tasks, uploads or sessions.
+message ProjectSnapshot {
+  uint32 schema_version = 1;
+  ProjectClock clock = 2;
+  uint64 scene_revision = 3;
+  repeated SceneObject objects = 4;
+  repeated ProjectFrameRecord frames = 5;
+  repeated ProjectResourceRecord resources = 6;
+}
+
+message ProjectExportQuery {}

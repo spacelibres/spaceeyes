@@ -25,7 +25,7 @@ pub(crate) fn decode_transform(value: p::RigidTransform) -> Result<RigidTransfor
     )
     .map_err(|_| ProtocolError::InvalidContext)
 }
-fn encode_transform(value: RigidTransform) -> p::RigidTransform {
+pub(crate) fn encode_transform(value: RigidTransform) -> p::RigidTransform {
     p::RigidTransform {
         translation_m: Some(p::Vector3d {
             x: value.translation_m.x,
@@ -269,6 +269,18 @@ impl ProtocolAdapter {
                         })
                     }),
                 })
+            }
+            p::query_envelope::Payload::ProjectExport(_) => {
+                if state.lifecycle == EngineState::Stopped {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::EngineUnavailable,
+                        "engine stopped".into(),
+                    ));
+                }
+                p::response_envelope::Payload::Project(crate::encode_project(
+                    &dispatcher.engine().project_state(),
+                )?)
             }
             p::query_envelope::Payload::Capabilities(_) => {
                 use crate::limits::*;

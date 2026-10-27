@@ -38,6 +38,7 @@ pub const OPERATIONS: &[&str] = &[
     "query.pick_presented",
     "camera.focus",
     "query.camera_state",
+    "query.project_export",
     "query.resource_stats",
     "resources.begin_upload",
     "resources.append_upload",

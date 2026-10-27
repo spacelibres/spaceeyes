@@ -27,6 +27,19 @@ impl WasmEngine {
             ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         Ok(Self { adapter })
     }
+    /// Restore a new session from structured project bytes. Fresh handles and
+    /// revisions are created; no GPU handles, tasks or uploads are restored.
+    pub fn from_project(session: String, bytes: &[u8]) -> Result<WasmEngine, JsValue> {
+        let project = spaceeyes_protocol_adapter::decode_project_bytes(bytes)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        let engine = Engine::restore_project(&project, &[])
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        let dispatcher = CommandDispatcher::new(engine, session, 4096)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        let adapter =
+            ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        Ok(Self { adapter })
+    }
     /// Call from an authenticated host; this transport performs no identity authentication.
     pub fn submit(&mut self, principal_scope: &str, bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
         self.adapter

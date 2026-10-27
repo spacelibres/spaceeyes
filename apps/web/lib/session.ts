@@ -9,6 +9,7 @@ import {
   HostFrameEnvelopeSchema,
   ResponseEnvelopeSchema,
   ResponseStatus,
+  ProjectSnapshotSchema,
   PlaybackMode,
   ObjectLifecycle,
   TextureColorSpace,
@@ -91,6 +92,17 @@ function loadRuntime(): Promise<BrowserBindings> {
   }
   return runtime;
 }
+/** Detect the DYN-backed scene from persisted provider labels. */
+function projectUsesDynamo(bytes: Uint8Array): boolean {
+  try {
+    const snapshot = fromBinary(ProjectSnapshotSchema, bytes);
+    return snapshot.frames.some(
+      (frame) => frame.provider?.providerId === "spaceeyes.nasa.dynamo",
+    );
+  } catch {
+    return false;
+  }
+}
 export class BrowserSession {
   private engine: WasmEngine | undefined;
   private client: CoreClient | undefined;
@@ -114,9 +126,7 @@ export class BrowserSession {
   private cameraCreated = false;
   private cameraState: CameraState | undefined;
   private actionError: string | undefined;
-  private readonly solarMode =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("scene") === "solar";
+  private solarMode = false;
   private solarLoader: DynamoSegmentLoader | undefined;
   private readonly solarStates = new Map<string, SolarState>();
   private solarInstant: string | undefined;
@@ -177,7 +187,12 @@ export class BrowserSession {
   constructor(
     private canvas: HTMLCanvasElement,
     private notify: (status: ViewStatus) => void,
+    private readonly projectBytes?: Uint8Array,
   ) {
+    this.solarMode = this.projectBytes
+      ? projectUsesDynamo(this.projectBytes)
+      : typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("scene") === "solar";
     this.canvas.addEventListener("click", this.onClick);
     void this.enqueue(() => this.initialize())
       .then(() => this.schedule())
@@ -199,13 +214,15 @@ export class BrowserSession {
       throw new Error("此浏览器不支持 WebGPU，无法启动三维场景。");
     const bindings = await loadRuntime();
     if (this.disposed) return;
-    this.engine = new bindings.WasmEngine(
-      sessionId,
-      "TT",
-      "PROTOTYPE_EXPLICIT_EPOCH",
-      0n,
-      0,
-    );
+    this.engine = this.projectBytes
+      ? bindings.WasmEngine.from_project(sessionId, this.projectBytes)
+      : new bindings.WasmEngine(
+          sessionId,
+          "TT",
+          "PROTOTYPE_EXPLICIT_EPOCH",
+          0n,
+          0,
+        );
     this.client = new CoreClient(
       wasmTransport(this.engine, principal),
       sessionId,
@@ -220,6 +237,7 @@ export class BrowserSession {
       "time.set_rate",
       "time.step",
       "time.seek",
+      "query.project_export",
       ...(this.solarMode
         ? [
             "spatial.register_provider_frame",
@@ -233,6 +251,17 @@ export class BrowserSession {
     if (this.disposed) return;
     await this.engine.attach_canvas(this.canvas);
     if (this.disposed) return;
+    if (this.projectBytes) {
+      this.cameraCreated = true;
+      this.solarLoader = this.solarMode ? createSolarLoader() : undefined;
+      await this.refresh();
+      await this.command({
+        case: "lifecycle",
+        value: { action: { case: "start", value: {} } },
+      });
+      await this.refresh();
+      return;
+    }
     const rootResponse = await this.command({
       case: "spatial",
       value: {
@@ -719,6 +748,16 @@ export class BrowserSession {
     this.solarInstant = key;
     this.solarTimeEt = timeEt;
     return changed;
+  }
+  async exportProject(): Promise<Uint8Array> {
+    return this.enqueue(async () => {
+      const response = await this.client!.query(
+        { case: "projectExport", value: {} },
+        { requestId: `web:project:${++this.request}` },
+      );
+      if (response.payload.case !== "project") throw new Error("缺少项目快照");
+      return toBinary(ProjectSnapshotSchema, response.payload.value);
+    });
   }
   async togglePlayback(): Promise<void> {
     return this.enqueue(async () => {

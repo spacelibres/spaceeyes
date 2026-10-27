@@ -77,3 +77,10 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 流程：先`spatial.register_root`，再`register_provider_frame`；首次`update_provider_sample`前解析该帧返回PROVIDER_UNAVAILABLE，恢复后缺失提供者占位也等待宿主重新提交。每次时钟变化后，宿主必须用同一当前TimeInstant重新提交样本，否则查询返回TIME_NOT_COVERED。只能更新提供者帧或恢复占位；对根/静态样本/动态提供者帧更新返回INVALID_ARGUMENT。所有写入须带expected frame_graph_revision；不匹配返回REVISION_CONFLICT。
 
 provider_id/version是来源标签，不是科学认证或许可。宿主仍负责用已核验插件求值并遵守网络代理权限；不得把样本帧当作核心自算星历或跳过Time/Spatial修订。相机、场景对象与任务使用同一参考系图修订，样本更新会使依赖旧图修订的任务Stale。
+
+## 项目保存与打开（0.0.1开发增量）
+`query.project_export`只读返回结构化`ProjectSnapshot`（schema_version=1）：时钟/模式/倍速、Scene对象（含父级、FrameId、组件与资源引用）、参考系记录（含provider标签与单时刻样本）、资源记录（来源/摘要/字节/网格/纹理）。不保存GPU句柄、任务、上传会话、内部ObjectHandle或执行栈；保存会禁用或未实现的提供者仅保留标签，恢复为占位并等待重新采样。
+
+导出示例：`const r = await client.query({case:'projectExport',value:{}},{requestId:'project:save'})`；确认`r.payload.case==='project'`后用生成的`ProjectSnapshotSchema`编码字节并保存。恢复不是会话命令：宿主用同一项目字节创建新引擎/新会话（WASM为`WasmEngine.from_project(session, bytes)`），再建新`CoreClient`并`start`；脚本/replay不能把旧句柄注入新会话。未知版本、非法标识、非32字节来源摘要或资源长度不符应拒绝，不静默丢弃字段；损坏项目不得污染现有会话。
+
+导出受Stopped限制；`query.project_export`只读、不推进时钟、不消耗命令历史，也不代表资源可再分发。恢复后场景修订、帧序列和任务代次会重新建立，不能沿用旧回执。

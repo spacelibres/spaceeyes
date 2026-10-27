@@ -5,10 +5,12 @@
 mod dispatch;
 pub mod limits;
 mod presentation;
+mod project;
 mod query;
 mod uploads;
 pub use dispatch::*;
 pub use presentation::{decode_host_frame, HostFrameRequest};
+pub use project::{decode_project, decode_project_bytes, encode_project};
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));
 }

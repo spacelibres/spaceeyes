@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+### 项目快照导出与恢复（C11切片）
+- Proto新增`ProjectSnapshot`、`ProjectClock`、`ProjectFrameRecord`、`ProjectResourceRecord`与只读`query.project_export`；能力总数增至36项。
+- ProtocolAdapter实现结构化编解码：校验schema版本、时钟模式/倍速、标识长度、32字节来源摘要与资源字节长度；场景对象按父级依赖恢复，未知版本/非法数据拒绝。WASM新增`WasmEngine.from_project(session, bytes)`，恢复创建新句柄/修订/任务代次，不恢复GPU句柄、任务或上传。
+- 浏览器新增保存/打开项目：导出结构化字节下载，打开后重建会话并重新采样提供者帧；合成Chromium路径完成保存→打开→运行闭环。
+- 验证：protocol-adapter 17项session、5项lib、workspace Rust测试、Web typecheck/生产构建与10项Chromium测试通过。尚未实现文件封装/manifest、格式迁移、增量保存、插件数据与恢复失败UI。
+
 ### 太阳系时间轴与星历摘要
 - 浏览器时间轴按当前显式历元的天数偏移，暂停时可拖动并复用既有`time.seek`；不把偏移解释为UTC日期。
 - 选中太阳/地球/月球/火星/木星时，资料面板显示来自DYN求值的距父级距离与速度；显示比例只影响渲染，不改变科学单位数值。

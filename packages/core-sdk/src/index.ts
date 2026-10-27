@@ -24,6 +24,7 @@ export * from "./gen/spaceeyes/core/v1/scene_pb.js";
 export * from "./gen/spaceeyes/core/v1/time_pb.js";
 export * from "./gen/spaceeyes/core/v1/rendering_pb.js";
 export * from "./gen/spaceeyes/core/v1/resources_pb.js";
+export * from "./gen/spaceeyes/core/v1/project_pb.js";
 export { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 
 export interface ByteTransport {
@@ -288,7 +289,9 @@ export class CoreClient {
                 ? "camera"
                 : payload.case === "resourceStats"
                   ? "resourceStats"
-                  : "capabilities";
+                  : payload.case === "projectExport"
+                    ? "project"
+                    : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

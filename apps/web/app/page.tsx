@@ -11,6 +11,7 @@ export default function Page() {
   const [status, setStatus] = useState<ViewStatus>(initialStatus);
   const [seekInput, setSeekInput] = useState("0");
   const [scene, setScene] = useState<string | null>(null);
+  const [projectBytes, setProjectBytes] = useState<Uint8Array | undefined>();
   useEffect(() => {
     setScene(new URLSearchParams(window.location.search).get("scene"));
   }, []);
@@ -23,9 +24,13 @@ export default function Page() {
     canvas.setAttribute("aria-label", "三维演示场景");
     canvas.dataset.testid = "scene-canvas";
     mount.current.append(canvas);
-    const instance = new BrowserSession(canvas, (value) => {
-      if (generation.current === id) setStatus(value);
-    });
+    const instance = new BrowserSession(
+      canvas,
+      (value) => {
+        if (generation.current === id) setStatus(value);
+      },
+      projectBytes,
+    );
     host.current = instance;
     return () => {
       host.current = null;
@@ -44,7 +49,7 @@ export default function Page() {
             });
         });
     };
-  }, [enabled]);
+  }, [enabled, projectBytes]);
   const ready = enabled && status.phase === "运行中";
   return (
     <main>
@@ -107,6 +112,48 @@ export default function Page() {
             <a href={solar ? "/" : "?scene=solar"}>
               {solar ? "返回演示场景" : "打开太阳系星历"}
             </a>
+            <button
+              data-testid="project-save"
+              disabled={!ready}
+              onClick={() => {
+                void host.current
+                  ?.exportProject()
+                  .then((bytes) => {
+                    const copy = new Uint8Array(bytes.byteLength);
+                    copy.set(bytes);
+                    const url = URL.createObjectURL(
+                      new Blob([copy], { type: "application/octet-stream" }),
+                    );
+                    const anchor = document.createElement("a");
+                    anchor.href = url;
+                    anchor.download = "spaceeyes-project.bin";
+                    anchor.click();
+                    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+                  })
+                  .catch((error) => {
+                    console.error("project save failed", error);
+                  });
+              }}
+            >
+              保存项目
+            </button>
+            <label>
+              打开项目
+              <input
+                data-testid="project-open"
+                type="file"
+                accept=".bin,application/octet-stream"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  void file
+                    .arrayBuffer()
+                    .then((buffer) => setProjectBytes(new Uint8Array(buffer)))
+                    .catch(() => {});
+                  event.target.value = "";
+                }}
+              />
+            </label>
           </div>
           <section className="time-controls" aria-label="时间控制">
             <label>

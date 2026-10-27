@@ -219,3 +219,7 @@ M3-1b幂等清理约束：上传块历史只保留会话/偏移/长度/SHA-256�
 SpatialCommand新增ProviderIdentity、RegisterProviderFrame与UpdateProviderFrameSample；oneof使用4/5，既有2/3不变。provider_id非空且最多256 UTF-8字节，provider_version非空且最多128字节；写入均要求expected_revision。RegisterProviderFrame绑定FrameId/父FrameId与来源身份；UpdateProviderFrameSample携带显式TimeInstant与米制wxyz刚体变换。
 
 首次更新前解析返回PROVIDER_UNAVAILABLE；样本时刻与查询时刻不一致返回TIME_NOT_COVERED；对根/静态样本/动态提供者帧更新返回INVALID_ARGUMENT；修订不匹配返回REVISION_CONFLICT。恢复时缺失提供者建立占位，可被后续样本重新绑定；样本不持久化。能力发现新增spatial.register_provider_frame与spatial.update_provider_frame_sample。该接口不让核心计算轨迹或成为科学时间权威，宿主仍须用已核验插件求值与授权代理。
+
+## 项目快照导出与恢复（C11切片）
+新增`project.proto`：ProjectSnapshot（schema_version=1）、ProjectClock、ProjectFrameRecord、ProjectResourceRecord与ProjectExportQuery；QueryEnvelope追加project_export=27，ResponseEnvelope追加project=19，命令保留位不变。时钟包含instant/mode/倍速/generation/revision；参考系记录保留父关系、单时刻样本与provider标签；资源记录保留class/来源/摘要/字节/网格/纹理。不保存GPU句柄、任务、上传会话、内部ObjectHandle或执行栈。
+query.project_export只读、不推进时钟/代次、不消耗命令历史，Stopped拒绝。导出是结构化Proto，不包含文件封装/签名/压缩。恢复不是会话命令：宿主用同一字节创建新WASM引擎/新会话，场景修订、帧序列与任务代次重新建立；provider样本不持久化，恢复为占位等待重新采样。未知schema、非法时钟/标识、非32字节摘要、资源长度不符拒绝，不静默丢字段。能力新增query.project_export，总数36。

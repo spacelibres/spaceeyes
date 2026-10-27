@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 /** Synthetic circular `orb` bytes; no NASA fixture is used. */
 function syntheticOrb(): Uint8Array {
@@ -72,6 +73,24 @@ test("solar scene loads provider samples through the host proxy", async ({
   await expect
     .poll(async () => (await page.getByTestId("clock").textContent()) ?? "")
     .not.toBe("0.000000000");
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByTestId("project-save").click();
+  const download = await downloadPromise;
+  const path = await download.path();
+  if (path === null) throw new Error("project download has no path");
+  const project = await readFile(path);
+  await page.getByTestId("project-open").setInputFiles({
+    name: "project.bin",
+    mimeType: "application/octet-stream",
+    buffer: project,
+  });
+  await expect(page.getByTestId("phase")).toHaveText("运行中", {
+    timeout: 60_000,
+  });
+  await expect
+    .poll(async () => Number(await page.getByTestId("objects").textContent()))
+    .toBeGreaterThanOrEqual(10);
   await expect(page.getByText("太阳系星历")).toBeVisible();
   expect(
     requested.some((path) => path.endsWith("/earth/sun/orb/def.dyn")),

@@ -896,10 +896,11 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 35);
+    assert_eq!(names.len(), 36);
+    assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()
-        .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));
+        .any(|s| s.contains("live") || s.contains("canvas")));
     assert_eq!(status(&a), before);
     assert_eq!(a.dispatcher().events().count(), 0);
     completed(send(&mut a, root("root", 0)));
@@ -1055,4 +1056,38 @@ fn provider_sample_frames_require_identity_revision_and_instant_coverage() {
         )),
         p::ErrorCode::InvalidArgument
     );
+}
+
+#[test]
+fn project_export_is_structured_and_restores_a_fresh_engine() {
+    let mut a = adapter(16);
+    setup_scene(&mut a);
+    let read = |a: &ProtocolAdapter| {
+        query(
+            a,
+            p::QueryEnvelope {
+                context: Some(context("project-export")),
+                payload: Some(p::query_envelope::Payload::ProjectExport(
+                    p::ProjectExportQuery {},
+                )),
+            },
+        )
+    };
+    let response = completed(read(&a));
+    let p::response_envelope::Payload::Project(project) = response.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(project.schema_version, 1);
+    assert_eq!(project.objects.len(), 2);
+    assert_eq!(project.frames.len(), 2);
+    assert_eq!(project.resources.len(), 0);
+    let state = spaceeyes_protocol_adapter::decode_project(&project).unwrap();
+    let restored = Engine::restore_project(&state, &[]).unwrap();
+    assert_eq!(restored.scene().snapshot().objects.len(), 2);
+    assert_eq!(
+        restored.clock().instant(),
+        &TimeInstant::new("TT", "prototype", 0, 0).unwrap()
+    );
+    completed(send(&mut a, lifecycle("stop", false)));
+    assert_eq!(error(read(&a)), p::ErrorCode::EngineUnavailable);
 }
