@@ -16,7 +16,7 @@
 
 - 参考仓库 `spacelibres/solarsystem` 固定提交为 `4a8a83be2ff8298d7fe26fc5c9bbfe47f2fee7db`（版本 0.2.73，2026-10-25）。
 - 仓库根没有 `LICENSE`/`COPYING`/`NOTICE`；`package.json` 声明 `"license": "MIT"`、`"private": true`。GitHub 因此不识别仓库级许可文件。
-- `src/lib/dynamo/*`、`src/solar/domain/ephemeris.ts`、`src/solar/runtime/*` 是无 NASA 版权头的自研 TypeScript，可按包级 MIT 声明复用，但必须保留固定提交、文件摘要与上游署名。
+- `src/lib/dynamo/*`、`src/solar/domain/ephemeris.ts`、`src/solar/runtime/ephemeris-repository.ts` 及 `src/solar/runtime/explorer-runtime.ts` 的星历集成部分，是无 NASA 版权头的自研 TypeScript，可按包级 MIT 声明复用，但必须保留固定提交、文件摘要与上游署名。
 - `eyes/` 是恢复的 NASA Eyes 应用源码；`tests/fixtures/*.dyn`、`eyes/src/dyn/*`、`eyes/src/models/*` 是 NASA/外部数据与模型。二者均不得复制进 SPACEEYES，也不得打包进插件制品。
 - 真实 NASA 黄金样本的再分发条件仍未确认，因此真实样本只能由贡献者在本地做差分核验，不进入仓库与 CI。合成样本只验证解析与求值机制，不证明科学精度。
 
@@ -182,9 +182,11 @@ Hermite 在该组端点下退化为精确直线，容差 `1e-12`。
 
 | 查询时刻 | 期望姿态 | 期望角速度 |
 |---|---|---|
+| `0` | `identity` | `(0,0,-π/2)` |
 | `1` | `identity` | `(0,0,-π/2)` |
-| `0` | 绕 Z 轴 −90°（`w=√2/2, z=-√2/2`） | `(0,0,-π/2)` |
-| `2` | 绕 Z 轴 +90°（`w=√2/2, z=√2/2`） | `(0,0,-π/2)` |
+| `2` | `identity` | `(0,0,-π/2)` |
+
+说明：两端投影分别为 `−(π/2)t` 与 `+(π/2)(2−t)`，在任一查询时刻相差 180°；SLERP 结果落在 `identity`。该样本固定“`q · conj(axisAngle(ω,Δt))` 方向”与角速度取反，**不**验证一般姿态插值。补充样本：`t=0` 为 `identity` 且 `ω=(0,0,0)`，`t=2` 为绕 Z 轴 +90° 且 `ω=(0,0,0)`；查询 `t=1` 期望绕 Z 轴 +45°、角速度零，用于验证非退化 SLERP。
 
 ### 6.6 结构样本
 
