@@ -43,6 +43,7 @@ pub const OPERATIONS: &[&str] = &[
     "query.project_export",
     "query.list_objects",
     "query.events",
+    "query.frame_coverage",
     "query.resource_stats",
     "resources.begin_upload",
     "resources.append_upload",

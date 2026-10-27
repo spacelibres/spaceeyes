@@ -12,6 +12,11 @@ pub trait TransformProvider: Send + Sync + std::fmt::Debug {
     fn provider_id(&self) -> &str;
     fn version(&self) -> &str;
     fn resolve_at(&self, instant: &TimeInstant) -> Result<RigidTransform, SpatialError>;
+    /// Optional declared validity interval in one time scale and epoch.
+    /// Returning `None` means the provider does not publish coverage.
+    fn coverage(&self) -> Option<(TimeInstant, TimeInstant)> {
+        None
+    }
     /// Optional first derivative in the parent frame at the same instant.
     /// Returning `None` means velocity transforms are unsupported; never assume zero.
     fn derivative_at(
@@ -52,5 +57,17 @@ impl ProviderRef {
             Some(_) => Err(SpatialError::InvalidTransform),
             None => Ok(None),
         }
+    }
+    pub fn coverage(&self) -> Result<Option<(TimeInstant, TimeInstant)>, SpatialError> {
+        let Some((start, end)) = self.inner.coverage() else {
+            return Ok(None);
+        };
+        if start.scale() != end.scale() || start.epoch() != end.epoch() {
+            return Err(SpatialError::InvalidProvider);
+        }
+        if (start.seconds(), start.nanos()) > (end.seconds(), end.nanos()) {
+            return Err(SpatialError::InvalidProvider);
+        }
+        Ok(Some((start, end)))
     }
 }

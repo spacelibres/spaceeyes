@@ -232,3 +232,6 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 
 ## 事件页与事件类型（C12切片）
 `QueryEnvelope`追加`events=29`，`ResponseEnvelope`追加`events=21`；`EventsQuery{after_sequence,max_events}`按事件序列严格大于游标返回，`max_events=0`使用默认128，超过128拒绝。`EventPage`返回`events/next_sequence/replay_from`：`replay_from`为仍可重放的最旧序列，游标低于它表示事件已丢失，需以状态查询重新同步。`CoreEvent`携带会话、类型、命令序列、请求ID、三类修订、帧序列与时间代次；`command_sequence=0`表示宿主呈现帧产生的`FRAME_PUBLISHED`。事件是只读通知，不构成命令入口或写授权。
+
+## 参考系覆盖查询（C04切片）
+`QueryEnvelope`追加`frame_coverage=31`，`ResponseEnvelope`追加`frame_coverage=22`；`FrameCoverageQuery{FrameId}`、`FrameCoverage{FrameId,covered,optional start,end,provider_id,provider_version}`。`covered=false`表示该帧未声明有效区间，读取不得推断为无限覆盖；未知帧返回UNKNOWN_FRAME。能力总数39，SDK响应映射为`frameCoverage`。

@@ -421,6 +421,48 @@ impl ProtocolAdapter {
                     }
                 }
             }
+            p::query_envelope::Payload::FrameCoverage(query) => {
+                let frame =
+                    crate::decode_frame_id(query.frame.ok_or(ProtocolError::MissingField)?)?;
+                match dispatcher.engine().spatial().coverage(&frame) {
+                    Ok(coverage) => {
+                        let (covered, start, end, provider_id, provider_version) = match coverage {
+                            Some(range) => (
+                                true,
+                                Some(encode_instant(&range.start)?),
+                                Some(encode_instant(&range.end)?),
+                                range.provider_id,
+                                range.provider_version,
+                            ),
+                            None => (false, None, None, String::new(), String::new()),
+                        };
+                        p::response_envelope::Payload::FrameCoverage(p::FrameCoverage {
+                            frame: Some(p::FrameId {
+                                value: frame.as_str().into(),
+                            }),
+                            covered,
+                            start,
+                            end,
+                            provider_id,
+                            provider_version,
+                        })
+                    }
+                    Err(spaceeyes_spatial::SpatialError::UnknownFrame) => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            p::ErrorCode::UnknownFrame,
+                            "unknown frame".into(),
+                        ))
+                    }
+                    Err(error) => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            p::ErrorCode::InvalidArgument,
+                            format!("{error:?}"),
+                        ))
+                    }
+                }
+            }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)
             }

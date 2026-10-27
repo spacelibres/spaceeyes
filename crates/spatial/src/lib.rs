@@ -205,6 +205,14 @@ pub struct FrameState {
     pub transform: RigidTransform,
     pub derivative: FrameDerivative,
 }
+/// Declared provider validity interval. Not an inferred or interpolated range.
+#[derive(Clone, Debug, PartialEq)]
+pub struct FrameCoverage {
+    pub provider_id: String,
+    pub provider_version: String,
+    pub start: TimeInstant,
+    pub end: TimeInstant,
+}
 impl FrameState {
     const IDENTITY: Self = Self {
         transform: RigidTransform::IDENTITY,
@@ -380,6 +388,34 @@ impl ReferenceFrameGraph {
     }
     pub fn contains(&self, id: &FrameId) -> bool {
         self.nodes.contains_key(id)
+    }
+    /// Declared coverage for a dynamic provider frame; static samples and unknown
+    /// providers report `None` rather than inventing a range.
+    pub fn coverage(&self, id: &FrameId) -> Result<Option<FrameCoverage>, SpatialError> {
+        let node = self.nodes.get(id).ok_or(SpatialError::UnknownFrame)?;
+        let (provider_id, provider_version, range) = match &node.source {
+            FrameSource::Dynamic(provider) => (
+                provider.provider_id().to_owned(),
+                provider.version().to_owned(),
+                provider.coverage()?,
+            ),
+            FrameSource::ProviderSample {
+                provider_id,
+                version,
+                ..
+            }
+            | FrameSource::Unavailable {
+                provider_id,
+                version,
+            } => (provider_id.clone(), version.clone(), None),
+            FrameSource::Root | FrameSource::Sample(_) => return Ok(None),
+        };
+        Ok(range.map(|(start, end)| FrameCoverage {
+            provider_id,
+            provider_version,
+            start,
+            end,
+        }))
     }
     pub fn register_root(&mut self, id: FrameId) -> Result<Revision, SpatialError> {
         if self.nodes.contains_key(&id) {

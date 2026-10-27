@@ -113,3 +113,6 @@ CommandEnvelope追加spatial=8、lifecycle=9，旧字段保持不变；ResponseE
 ## C04 参考系导数与解析缓存（0.0.1增量）
 新增`FrameDerivative{linear_velocity_m_s,angular_velocity_rad_s}`与`FrameState{transform,derivative,point_velocity}`；`TransformProvider`增加可选`derivative_at`，缺省返回`None`表示不支持速度变换，绝不假定零速度。`ReferenceFrameGraph::resolve_state(source,target,instant)`沿链组合刚体变换与导数：旋转项ω×r、平移项、旋转参考系下的角速度合成与逆变换均按明确次序计算；跨过静态样本、提供者样本或无导数提供者时返回`DerivativeUnavailable`，位置解析仍可单独成功。`point_velocity(p)`给出固定在源系中的点在目标系的瞬时速度。
 `resolve`增加按（源、目标、显式时刻）键控的有界memo（最多256项），图修订变化即整体失效；只能缓存纯函数式提供者结果，不缓存导数轨迹，也不代表覆盖区间或来源元数据。测试覆盖角速度合成与逆变换、ω×r速度项、缺导数显式错误与修订失效。尚未实现：覆盖区间/来源元数据公开、插值、科学参考系与多尺度场景；不宣称C04全部完成。
+
+## C04 提供者覆盖区间公开（0.0.1增量）
+`TransformProvider::coverage`可选声明`(start,end)`；`ProviderRef`校验同时间标度/历元且start≤end，`ReferenceFrameGraph::coverage`只对动态提供者返回`FrameCoverage{provider_id,provider_version,start,end}`，静态样本与提供者样本返回`None`，未知FrameId返回`UnknownFrame`。Proto新增只读`query.frame_coverage`（QueryEnvelope=31，ResponseEnvelope=22）：`covered=false`表示未声明区间，绝不推断；错误区间返回INVALID_ARGUMENT。能力总数39。区间是提供者声明，不代替求值覆盖校验，也不转换时间标度。

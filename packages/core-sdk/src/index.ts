@@ -295,7 +295,9 @@ export class CoreClient {
                       ? "objects"
                       : payload.case === "events"
                         ? "events"
-                        : "capabilities";
+                        : payload.case === "frameCoverage"
+                          ? "frameCoverage"
+                          : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

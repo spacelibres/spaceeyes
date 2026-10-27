@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 参考系覆盖区间查询（C04 切片）
+- `TransformProvider::coverage` 与 `ReferenceFrameGraph::coverage`：只返回动态提供者声明的同标度/历元区间；静态/提供者样本为 `None`，非法区间拒绝。
+- Proto 新增只读 `query.frame_coverage`（31/22），`covered=false` 不推断覆盖，未知帧 `UNKNOWN_FRAME`；能力总数 39。
+- 验证：spatial 3 项、protocol-adapter 20 项 session、SDK Native/WASM 10 项互通通过。
+
+
 ### 恢复失败提示与当前会话保护（C11 切片）
 - 新增 WASM `validateProjectFile`（容器/摘要/schema 完整校验，不创建会话）；浏览器打开项目前先校验，失败保留当前场景并显示可见错误。
 - Playwright 覆盖：保存→打开成功后上传篡改文件，错误可见且场景继续运行。

@@ -5,7 +5,9 @@ use prost::Message;
 use spaceeyes_engine::{CommandDispatcher, Engine};
 use spaceeyes_foundation::{FrameId, ObjectId};
 use spaceeyes_protocol_adapter::{generated as p, ProtocolAdapter, ProtocolError};
+use spaceeyes_spatial::{ProviderRef, RigidTransform, SpatialError, TransformProvider};
 use spaceeyes_time::TimeInstant;
+use std::sync::Arc;
 fn adapter(capacity: usize) -> ProtocolAdapter {
     ProtocolAdapter::new(
         CommandDispatcher::new(
@@ -373,6 +375,69 @@ fn events_query_replays_typed_events_and_rejects_foreign_cursors() {
     assert_eq!(
         error(query(&a, events_query(0, 200))),
         p::ErrorCode::InvalidArgument
+    );
+}
+
+fn coverage_query(frame: &str) -> p::QueryEnvelope {
+    p::QueryEnvelope {
+        context: Some(context("coverage")),
+        payload: Some(p::query_envelope::Payload::FrameCoverage(
+            p::FrameCoverageQuery {
+                frame: self::frame(frame),
+            },
+        )),
+    }
+}
+
+#[derive(Debug)]
+struct Covered;
+impl TransformProvider for Covered {
+    fn provider_id(&self) -> &str {
+        "test.provider"
+    }
+    fn version(&self) -> &str {
+        "1"
+    }
+    fn resolve_at(&self, _instant: &TimeInstant) -> Result<RigidTransform, SpatialError> {
+        Ok(RigidTransform::IDENTITY)
+    }
+    fn coverage(&self) -> Option<(TimeInstant, TimeInstant)> {
+        Some((
+            TimeInstant::new("TT", "prototype", 0, 0).unwrap(),
+            TimeInstant::new("TT", "prototype", 10, 0).unwrap(),
+        ))
+    }
+}
+
+#[test]
+fn frame_coverage_reports_declared_provider_range_only() {
+    let instant = TimeInstant::new("TT", "prototype", 0, 0).unwrap();
+    let mut engine = Engine::new(instant);
+    engine
+        .register_root_frame(FrameId::new("root").unwrap())
+        .unwrap();
+    let provider = ProviderRef::new(Arc::new(Covered)).unwrap();
+    engine
+        .register_dynamic_frame(
+            FrameId::new("moving").unwrap(),
+            FrameId::new("root").unwrap(),
+            provider,
+        )
+        .unwrap();
+    let a = ProtocolAdapter::new(CommandDispatcher::new(engine, "session".into(), 16).unwrap())
+        .unwrap();
+    let response = completed(query(&a, coverage_query("moving")));
+    let p::response_envelope::Payload::FrameCoverage(coverage) = response.payload.unwrap() else {
+        panic!()
+    };
+    assert!(coverage.covered);
+    assert_eq!(coverage.provider_id, "test.provider");
+    assert_eq!(coverage.provider_version, "1");
+    assert_eq!(coverage.start.unwrap().seconds, 0);
+    assert_eq!(coverage.end.unwrap().seconds, 10);
+    assert_eq!(
+        error(query(&a, coverage_query("missing"))),
+        p::ErrorCode::UnknownFrame
     );
 }
 fn completed(r: p::ResponseEnvelope) -> p::ResponseEnvelope {
@@ -958,7 +1023,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 38);
+    assert_eq!(names.len(), 39);
     assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()
