@@ -16,6 +16,7 @@ pub enum SpatialError {
     TimeNotCovered,
     MissingTransform,
     RevisionOverflow,
+    EngineUnavailable,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
