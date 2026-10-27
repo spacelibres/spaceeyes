@@ -81,7 +81,7 @@ SpatialState：1 frame_id:FrameId；2 instant:TimeInstant；3 position_m:optiona
 ## 6. scene.proto字段设计
 SceneObject：1 object_id:ObjectId；2 parent_id:optional ObjectId；3 frame_id:optional FrameId；4 visible:bool；5 lifecycle:ObjectLifecycle；6 resources:repeated ResourceId；7 unresolved:bool。
 SceneCommand使用oneof action：1 create:CreateObject；2 remove:RemoveObject；3 set_parent:SetParent；4 set_visibility:SetVisibility；5 set_spatial_state:SetSpatialState；6 set_camera:SetCameraState。
-SceneTransaction：1 commands:repeated SceneCommand；2 expected_revision:optional uint64；3 atomic:bool。设计默认全有或全无；字段atomic若允许false必须明确仅用于未来显式best-effort能力，首期不允许静默部分提交。
+SceneTransaction：1 commands:repeated SceneCommand；2 expected_revision:optional uint64。首期事务强制全有或全无，不设置含糊的atomic=false开关；未来best-effort必须另定义显式消息。
 SceneSnapshot：1 scene_revision:uint64；2 objects:repeated SceneObject；3 time:TimeInstant。Scene层快照不单独宣布完整FrameSnapshot。
 
 ## 7. simulation.proto字段设计
@@ -98,7 +98,7 @@ PickResult：1 object_id:optional ObjectId；2 frame_sequence:uint64；3 hit_pos
 
 ## 9. resources.proto字段设计
 ResourceDescriptor：1 resource_id:ResourceId；2 kind:ResourceKind；3 owner_id:string；4 source_id:optional string；5 size_bytes:uint64；6 recoverable:bool；7 checksum:optional bytes。
-ResourceLease：1 lease_id:string；2 resource_id:ResourceId；3 holder_id:string；4 expires_at:optional TimeInstant。expires_at用于真实期限时须另定义墙上时钟语义，不得混用仿真时刻；首期建议不使用该字段。
+ResourceLease：1 lease_id:string；2 resource_id:ResourceId；3 holder_id:string。首期不设置expires_at；未来若有租约到期时间须使用独立墙上时钟类型，绝不复用SimulationInstant。
 ResourceStatus：1 resource_id:ResourceId；2 state:ResourceState；3 resource_epoch:uint64；4 error:optional Error。
 公开不暴露Rust内部槽位或GPU指针；资源最终释放权归Resources。
 
@@ -135,3 +135,12 @@ FrameAvailability：UNSPECIFIED=0、COMPLETE=1、PARTIAL=2、STALE=3。PARTIAL�
 
 ## 14. 后续设计约束
 下一阶段第10阶段将统一Command、Query、Event、Error的生命周期、幂等、排序、权限和失败语义；不得绕过本阶段Proto消息设计另建平行通信协议。当前不创建实际.proto文件或运行测试。
+
+
+## 15. 第10与12阶段字段对齐（第13阶段审查修订）
+- ResponseEnvelope候选新增command_sequence、committed_scene_revision、frame_sequence、task_id；EventEnvelope新增correlation_id、occurred_at，具体字段号待冻结。
+- 增加CommandStatusQuery/CommandStatusResponse；ErrorCode增加IDEMPOTENCY_CONFLICT、SNAPSHOT_EXPIRED。不能把Accepted当作Completed。
+- ProjectSnapshot与ProjectManifest为持久化消息，RestoreProjectRequest/Response和EngineLifecycleEvent为生命周期协议消息；ProjectSnapshot不得包含GPU指针、内部代次句柄或插件执行栈。
+- FrameSnapshot用于渲染的一致帧，ProjectSnapshot用于持久化，两者不可互换；项目created_at/updated_at属于墙上时间，不是TimeInstant。
+- CameraState为Scene持久逻辑状态；CameraCommand必须经Engine进入Scene事务，避免与SceneCommand.set_camera形成双写入口。
+- 本章节为Markdown字段建议，不是正式.proto或冻结的字段号。
