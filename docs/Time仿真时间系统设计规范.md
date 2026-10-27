@@ -1,6 +1,6 @@
 # Time仿真时间系统设计规范
 
-版本：0.0.0｜状态：待审定设计草案｜日期：2026-10-27  
+版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27  
 设计阶段：03｜归属：Rust Core｜不包含实现代码  
 上位规范：`docs/Rust核心引擎设计规范.md`  
 依赖规范：`docs/Spatial空间与参考系系统设计规范.md`
@@ -92,3 +92,6 @@ Seek/Reset/Live源切换增加`TimeGeneration`，清理或标记旧任务失效�
 
 ## 12. 交叉审查整改对齐（待审）
 TimeGeneration在Seek、Reset、Live源切换和语义重置时递增，连续播放不逐帧递增。异步结果除generation外还必须核对目标时刻和coverage。TimeSnapshot参与Engine一致FrameSnapshot。TT/TDB及J2000零点仍需科学验证，不得默认。
+
+
+> 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
