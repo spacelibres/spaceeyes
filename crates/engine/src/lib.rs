@@ -59,8 +59,29 @@ impl Engine {
     }
     pub fn seek(&mut self, instant: TimeInstant) -> Result<(), CoreError> {
         if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
-        self.clock.seek(instant);
+        self.clock.seek(instant)?;
         self.frame_sequence += 1;
+        Ok(())
+    }
+    pub fn play(&mut self) -> Result<(), CoreError> {
+        if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
+        let before = self.clock.snapshot().revision;
+        self.clock.play()?;
+        if self.clock.snapshot().revision != before { self.frame_sequence += 1; }
+        Ok(())
+    }
+    pub fn pause(&mut self) -> Result<(), CoreError> {
+        if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
+        let before = self.clock.snapshot().revision;
+        self.clock.pause()?;
+        if self.clock.snapshot().revision != before { self.frame_sequence += 1; }
+        Ok(())
+    }
+    pub fn step_nanos(&mut self, delta: i128) -> Result<(), CoreError> {
+        if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
+        let before = self.clock.snapshot().revision;
+        self.clock.step_nanos(delta)?;
+        if self.clock.snapshot().revision != before { self.frame_sequence += 1; }
         Ok(())
     }
     pub fn shutdown(&mut self) { self.state = EngineState::Stopped; }
@@ -82,6 +103,19 @@ mod tests {
         engine.shutdown();
         assert_eq!(engine.state(), EngineState::Stopped);
         assert_eq!(engine.seek(instant()), Err(CoreError::AlreadyStopped));
+    }
+    #[test]
+    fn time_commands_update_snapshot_once() {
+        let mut engine = Engine::new(instant());
+        engine.play().unwrap();
+        engine.play().unwrap();
+        assert_eq!(engine.snapshot().sequence, 1);
+        engine.step_nanos(1_500_000_000).unwrap();
+        assert_eq!(engine.snapshot().instant.seconds(), 1);
+        assert_eq!(engine.snapshot().instant.nanos(), 500_000_000);
+        assert_eq!(engine.snapshot().generation, TimeGeneration(0));
+        engine.pause().unwrap();
+        assert_eq!(engine.snapshot().sequence, 3);
     }
     #[test]
     fn command_and_snapshot_share_revision() {
