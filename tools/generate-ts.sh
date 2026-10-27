@@ -7,7 +7,15 @@ source tools/dev-env.sh
 case "${1:-}" in ""|--check) ;; *) echo "Usage: bash tools/generate-ts.sh [--check]" >&2; exit 2 ;; esac
 generated_tmp=$(mktemp -d)
 trap 'rm -rf -- "$generated_tmp"' EXIT
-mapfile -t schema_files < <(rg --files proto -g '*.proto' | sort)
+mapfile -t schema_files < <(python3 - <<'PY'
+from pathlib import Path
+import sys
+sys.stdout.reconfigure(newline='\n')
+for path in sorted(Path('proto').rglob('*.proto')):
+    print(path.as_posix())
+PY
+)
+(( ${#schema_files[@]} > 0 )) || { echo 'No Proto inputs found' >&2; exit 1; }
 plugin_path="$PWD/node_modules/.bin/protoc-gen-es"
 case "$(uname -s)" in MINGW*|MSYS*) plugin_path="$plugin_path.cmd" ;; esac
 cargo run --quiet -p spaceeyes-protocol-adapter --example protoc --locked -- \

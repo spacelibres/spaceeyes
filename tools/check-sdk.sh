@@ -13,7 +13,12 @@ with open('Cargo.lock','rb') as file:
 PY
 )
 [[ "$(wasm-bindgen --version)" == "wasm-bindgen $wasm_bindgen_version" ]] || { echo 'Run bash tools/setup-sdk.sh to match wasm-bindgen.' >&2; exit 1; }
-bash tools/generate-ts.sh --check
+# CI runners need not provide rg. Keep that portability guarantee executable.
+(
+  rg() { echo 'Proto generation must not require ripgrep' >&2; return 127; }
+  export -f rg
+  bash tools/generate-ts.sh --check
+)
 npm exec -- prettier --check package.json package-lock.json packages/core-sdk/package.json packages/core-sdk/tsconfig.json packages/core-sdk/src/index.ts 'packages/core-sdk/test/*.ts'
 cargo build -p spaceeyes-protocol-adapter --examples --locked -j 4
 cargo build -p spaceeyes-wasm --target wasm32-unknown-unknown --locked -j 4

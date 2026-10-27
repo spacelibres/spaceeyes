@@ -5,6 +5,7 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 source tools/dev-env.sh
 python3 tools/check-policy.py
+python3 tools/test_remote_ci.py
 cargo fmt --all -- --check
 cargo check --workspace --all-targets --locked -j 4
 cargo build --workspace --all-features --locked -j 4

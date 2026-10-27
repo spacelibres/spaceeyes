@@ -25,7 +25,9 @@ jobs:
       - name: Install browser for production WebGPU integration checks
         run: npx playwright install --with-deps chromium
       - name: Version and dependency policy
-        run: python3 tools/check-policy.py
+        run: |
+          python3 tools/check-policy.py
+          python3 tools/test_remote_ci.py
       - name: Format
         run: cargo fmt --all -- --check
       - name: Check workspace
