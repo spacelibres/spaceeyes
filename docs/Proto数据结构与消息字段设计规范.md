@@ -1,6 +1,6 @@
 # SPACEEYES Proto数据结构与消息字段设计规范
 
-版本：0.0.0｜状态：第09阶段设计草案｜日期：2026-10-27
+版本：0.0.1｜状态：第09阶段设计草案｜日期：2026-10-27
 范围：Markdown字段设计，不创建.proto文件、不编译、不进行工程测试。
 依据：第07阶段Core Protocol规范、第08阶段Rust核心对象模型、已批准ADR-001至ADR-009。
 
@@ -148,3 +148,6 @@ FrameAvailability：UNSPECIFIED=0、COMPLETE=1、PARTIAL=2、STALE=3。PARTIAL�
 
 ## 16. 第13阶段生命周期字段约束
 ProjectSnapshot保存稳定ObjectId、FrameId、ResourceId、Scene状态、CameraState和时间配置；恢复时必须创建新会话内部句柄及TimeGeneration，旧任务代次不跨恢复继承。ProjectManifest的created_at/updated_at使用独立墙上时钟元数据类型。FrameAvailability的PARTIAL表示可用数据不完整，STALE表示旧时刻帧，不能与Engine生命周期Failed混用。
+
+
+> 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
