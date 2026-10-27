@@ -101,6 +101,7 @@ pub struct FrameSample {
     pub to_parent: RigidTransform,
 }
 #[derive(Clone, Debug)]
+#[derive(Clone, Debug)]
 enum FrameSource {
     Root,
     Sample(FrameSample),
@@ -153,7 +154,7 @@ impl ReferenceFrameGraph {
     /// Invalidate a provider's results by replacing its binding, changing graph revision.
     pub fn replace_provider(&mut self, id: &FrameId, provider: ProviderRef) -> Result<Revision, SpatialError> {
         let node = self.nodes.get(id).ok_or(SpatialError::UnknownFrame)?;
-        if !matches!(node.source, FrameSource::Dynamic(_)) { return Err(SpatialError::InvalidProvider); }
+        if !matches!(&node.source, FrameSource::Dynamic(_)) { return Err(SpatialError::InvalidProvider); }
         let next = self.revision.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
         self.nodes.get_mut(id).expect("checked above").source = FrameSource::Dynamic(provider);
         self.revision = next;
