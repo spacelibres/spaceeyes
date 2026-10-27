@@ -4,6 +4,8 @@ use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
 use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
+use spaceeyes_resources::{ResourceManager, ResourceBudget, ResourceError};
+use spaceeyes_foundation::ResourceId;
 use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError, TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -16,6 +18,7 @@ pub struct EngineSnapshot {
     pub generation: TimeGeneration,
     pub sequence: u64,
     pub frame_graph_revision: Revision,
+    pub resource_revision: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -28,6 +31,7 @@ pub struct Engine {
     spatial: ReferenceFrameGraph,
     simulation: SimulationScheduler,
     task_budget: TaskBudget,
+    resources: ResourceManager,
     frame_sequence: u64,
 }
 impl Engine {
@@ -39,6 +43,7 @@ impl Engine {
             spatial: ReferenceFrameGraph::new(),
             simulation: SimulationScheduler::new(),
             task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
+            resources: ResourceManager::new(ResourceBudget { max_bytes: 256 * 1024 * 1024 }),
             frame_sequence: 0,
         }
     }
@@ -46,6 +51,7 @@ impl Engine {
     pub fn scene(&self) -> &Scene { &self.scene }
     pub fn clock(&self) -> &SimulationClock { &self.clock }
     pub fn spatial(&self) -> &ReferenceFrameGraph { &self.spatial }
+    pub fn resource_used_bytes(&self) -> u64 { self.resources.used_bytes() }
     pub fn task_status(&self, id: &str) -> Option<TaskStatus> { self.simulation.status(id) }
     pub fn snapshot(&self) -> EngineSnapshot {
         EngineSnapshot {
@@ -54,6 +60,7 @@ impl Engine {
             generation: self.clock.generation(),
             sequence: self.frame_sequence,
             frame_graph_revision: self.spatial.revision(),
+            resource_revision: self.resources.revision(),
         }
     }
     pub fn start(&mut self) -> Result<(), CoreError> {
@@ -99,6 +106,25 @@ impl Engine {
         let before = self.clock.snapshot().revision;
         self.clock.step_nanos(delta)?;
         if self.clock.snapshot().revision != before { self.frame_sequence += 1; }
+        Ok(())
+    }
+    pub fn register_resource(&mut self, id: ResourceId, bytes: u64) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
+        self.resources.register(id, bytes)?;
+        self.frame_sequence += 1;
+        Ok(())
+    }
+    pub fn lease_resource(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
+        self.resources.lease(id)
+    }
+    pub fn release_resource_lease(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
+        self.resources.release_lease(id)
+    }
+    pub fn unregister_resource(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
+        self.resources.unregister(id)?;
+        self.frame_sequence += 1;
         Ok(())
     }
     /// Register a task for the current authoritative time generation.
