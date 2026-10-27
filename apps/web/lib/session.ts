@@ -97,18 +97,27 @@ function loadRuntime(): Promise<BrowserBindings> {
   }
   return runtime;
 }
-/** Project file layout shared with the Rust verifier; the digest is checked there. */
-const PROJECT_FILE_HEADER = 8 + 2 + 4 + 32;
+/** Project file layouts shared with the Rust verifier; the digest is checked there. */
+const PROJECT_V1_HEADER = 8 + 2 + 4 + 32;
+const PROJECT_V2_HEADER = 8 + 2 + 4 + 4 + 32;
 const PROJECT_FILE_MAGIC = [83, 69, 89, 69, 83, 80, 82, 74]; // "SEYESPRJ"
 function projectPayload(bytes: Uint8Array): Uint8Array {
   if (
-    bytes.length >= PROJECT_FILE_HEADER &&
+    bytes.length >= PROJECT_V1_HEADER &&
     PROJECT_FILE_MAGIC.every((value, index) => bytes[index] === value)
   ) {
-    const view = new DataView(bytes.buffer, bytes.byteOffset + 10, 4);
-    const length = view.getUint32(0, true);
-    if (PROJECT_FILE_HEADER + length === bytes.length)
-      return bytes.subarray(PROJECT_FILE_HEADER);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const version = view.getUint16(8, true);
+    if (version === 1) {
+      const length = view.getUint32(10, true);
+      if (PROJECT_V1_HEADER + length === bytes.length)
+        return bytes.subarray(PROJECT_V1_HEADER);
+    } else if (version === 2 && bytes.length >= PROJECT_V2_HEADER) {
+      const manifest = view.getUint32(10, true);
+      const length = view.getUint32(14, true);
+      if (PROJECT_V2_HEADER + manifest + length === bytes.length)
+        return bytes.subarray(PROJECT_V2_HEADER + manifest);
+    }
   }
   return bytes;
 }
@@ -817,7 +826,11 @@ export class BrowserSession {
       if (response.payload.case !== "project") throw new Error("缺少项目快照");
       const payload = toBinary(ProjectSnapshotSchema, response.payload.value);
       const bindings = await loadRuntime();
-      return bindings.WasmEngine.encodeProjectFile(payload);
+      return bindings.WasmEngine.encodeProjectFileWithTime(
+        payload,
+        "spaceeyes-browser",
+        Date.now(),
+      );
     });
   }
   async togglePlayback(): Promise<void> {

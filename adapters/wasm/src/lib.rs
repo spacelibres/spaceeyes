@@ -65,6 +65,26 @@ impl WasmEngine {
         spaceeyes_protocol_adapter::wrap_project_bytes(bytes)
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))
     }
+    /// Wrap an exported `ProjectSnapshot` payload with host wall-clock metadata.
+    #[wasm_bindgen(js_name = "encodeProjectFileWithTime")]
+    pub fn encode_project_file_with_time(
+        bytes: &[u8],
+        project_id: String,
+        updated_ms: f64,
+    ) -> Result<Vec<u8>, JsValue> {
+        let nanos = updated_ms * 1_000_000.0;
+        if !nanos.is_finite() || nanos < 0.0 || nanos > i64::MAX as f64 {
+            return Err(JsValue::from_str("invalid wall-clock timestamp"));
+        }
+        let nanos = nanos as i64;
+        let manifest = spaceeyes_protocol_adapter::ProjectManifest {
+            project_id,
+            created_at_unix_nanos: nanos,
+            updated_at_unix_nanos: nanos,
+        };
+        spaceeyes_protocol_adapter::wrap_project_bytes_with_manifest(bytes, &manifest)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
     /// Validate a project file without creating or replacing a session.
     #[wasm_bindgen(js_name = "validateProjectFile")]
     pub fn validate_project_file(bytes: &[u8]) -> Result<(), JsValue> {

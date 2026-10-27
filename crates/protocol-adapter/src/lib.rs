@@ -13,8 +13,11 @@ pub use dispatch::*;
 pub use presentation::{decode_host_frame, HostFrameRequest};
 pub use project::{decode_project, decode_project_bytes, encode_project};
 pub use project_file::{
-    decode_project_file, encode_project_file, unwrap_project_bytes, wrap_project_bytes,
-    MAX_PROJECT_FILE_BYTES, PROJECT_FILE_HEADER_BYTES, PROJECT_FILE_MAGIC,
+    decode_project_file, encode_project_file, encode_project_file_with_manifest, read_project_file,
+    unwrap_project_bytes, wrap_project_bytes, wrap_project_bytes_with_manifest, ProjectFileInfo,
+    ProjectManifest, LEGACY_PROJECT_FILE_HEADER_BYTES, LEGACY_PROJECT_FILE_VERSION,
+    MAX_PROJECT_FILE_BYTES, MAX_PROJECT_ID_BYTES, PROJECT_FILE_HEADER_BYTES, PROJECT_FILE_MAGIC,
+    PROJECT_FILE_VERSION,
 };
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));

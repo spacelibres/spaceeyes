@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 项目文件 v2 清单与 v1 迁移（C11 切片）
+- 新增 v2 容器：清单长度/载荷长度、覆盖清单与载荷的 SHA-256、项目标识与墙上时钟纳秒；v1 文件仍可读取并映射为空清单。
+- 浏览器保存写入 v2（`encodeProjectFileWithTime`，项目标识 `spaceeyes-browser`），打开兼容 v1/v2；清单篡改/越界/倒序时间拒绝。
+- 验证：protocol-adapter 4 项容器测试、Web 构建与 10 项 Chromium 通过。
+
+
 ### 上传墙钟超时（C09 切片）
 - 上传会话可记录宿主单调 tick；`expire_uploads` 取消超期会话并释放预留，tick=0 永不自动过期。
 - 浏览器 WASM 注入 `performance.now()`、默认 15 分钟 TTL，在下一条命令前回收；Engine 提供显式过期入口。
