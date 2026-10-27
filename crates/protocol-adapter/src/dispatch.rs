@@ -122,6 +122,36 @@ impl ProtocolAdapter {
                             },
                         }
                     }
+                    p::spatial_command::Action::RegisterProviderFrame(c) => {
+                        let provider = c.provider.ok_or(ProtocolError::MissingField)?;
+                        validate_provider_identity(
+                            &provider.provider_id,
+                            &provider.provider_version,
+                        )?;
+                        Command::RegisterProviderFrame {
+                            id: decode_frame_id(c.frame_id.ok_or(ProtocolError::MissingField)?)?,
+                            parent: decode_frame_id(
+                                c.parent_id.ok_or(ProtocolError::MissingField)?,
+                            )?,
+                            provider_id: provider.provider_id,
+                            provider_version: provider.provider_version,
+                            expected_revision,
+                        }
+                    }
+                    p::spatial_command::Action::UpdateProviderFrameSample(c) => {
+                        Command::UpdateProviderFrameSample {
+                            id: decode_frame_id(c.frame_id.ok_or(ProtocolError::MissingField)?)?,
+                            sample: spaceeyes_spatial::FrameSample {
+                                instant: decode_instant(
+                                    c.instant.ok_or(ProtocolError::MissingField)?,
+                                )?,
+                                to_parent: crate::query::decode_transform(
+                                    c.to_parent.ok_or(ProtocolError::MissingField)?,
+                                )?,
+                            },
+                            expected_revision,
+                        }
+                    }
                 }
             }
             p::command_envelope::Payload::Scene(command) => Command::Scene {
@@ -240,7 +270,10 @@ impl ProtocolAdapter {
         };
         let spatial = matches!(
             &command,
-            Command::RegisterRootFrame { .. } | Command::RegisterChildFrame { .. }
+            Command::RegisterRootFrame { .. }
+                | Command::RegisterChildFrame { .. }
+                | Command::RegisterProviderFrame { .. }
+                | Command::UpdateProviderFrameSample { .. }
         );
         let lifecycle = matches!(&command, Command::Start | Command::Stop);
         // The generation precondition is included in dispatcher history semantics below.
@@ -645,6 +678,17 @@ pub(crate) fn validate_wire_context(context: &p::RequestContext) -> Result<(), P
     }
     Ok(())
 }
+fn validate_provider_identity(provider_id: &str, version: &str) -> Result<(), ProtocolError> {
+    if provider_id.trim().is_empty()
+        || provider_id.len() > 256
+        || version.trim().is_empty()
+        || version.len() > 128
+    {
+        return Err(ProtocolError::InvalidIdentifier);
+    }
+    Ok(())
+}
+
 pub(crate) fn dispatch_error_code(error: &DispatchError) -> p::ErrorCode {
     match error {
         DispatchError::Resource(spaceeyes_resources::ResourceError::PermissionDenied) => {
@@ -666,6 +710,12 @@ pub(crate) fn dispatch_error_code(error: &DispatchError) -> p::ErrorCode {
         }
         DispatchError::Spatial(spaceeyes_spatial::SpatialError::TimeNotCovered) => {
             p::ErrorCode::TimeNotCovered
+        }
+        DispatchError::Spatial(spaceeyes_spatial::SpatialError::MissingTransform) => {
+            p::ErrorCode::ProviderUnavailable
+        }
+        DispatchError::Spatial(spaceeyes_spatial::SpatialError::InvalidProvider) => {
+            p::ErrorCode::InvalidArgument
         }
         DispatchError::Spatial(spaceeyes_spatial::SpatialError::EngineUnavailable)
         | DispatchError::Domain(CoreError::AlreadyStopped) => p::ErrorCode::EngineUnavailable,

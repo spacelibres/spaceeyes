@@ -1099,6 +1099,42 @@ impl Engine {
         self.frame_sequence = next;
         Ok(revision)
     }
+    pub fn register_provider_frame(
+        &mut self,
+        id: FrameId,
+        parent: FrameId,
+        provider_id: String,
+        provider_version: String,
+    ) -> Result<Revision, SpatialError> {
+        if self.state == EngineState::Stopped {
+            return Err(SpatialError::EngineUnavailable);
+        }
+        let next = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(SpatialError::RevisionOverflow)?;
+        let revision =
+            self.spatial
+                .register_provider_child(id, parent, provider_id, provider_version)?;
+        self.frame_sequence = next;
+        Ok(revision)
+    }
+    pub fn update_provider_frame_sample(
+        &mut self,
+        id: &FrameId,
+        sample: FrameSample,
+    ) -> Result<Revision, SpatialError> {
+        if self.state == EngineState::Stopped {
+            return Err(SpatialError::EngineUnavailable);
+        }
+        let next = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(SpatialError::RevisionOverflow)?;
+        let revision = self.spatial.update_provider_sample(id, sample)?;
+        self.frame_sequence = next;
+        Ok(revision)
+    }
     pub fn replace_frame_provider(
         &mut self,
         id: &FrameId,

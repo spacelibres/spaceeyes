@@ -213,6 +213,67 @@ fn child(id: &str, parent: &str, revision: u64) -> p::CommandEnvelope {
         }),
     )
 }
+fn provider_frame(
+    id: &str,
+    parent: &str,
+    revision: u64,
+    provider_id: &str,
+    provider_version: &str,
+) -> p::CommandEnvelope {
+    command(
+        id,
+        p::command_envelope::Payload::Spatial(p::SpatialCommand {
+            expected_revision: Some(revision),
+            action: Some(p::spatial_command::Action::RegisterProviderFrame(
+                p::RegisterProviderFrame {
+                    frame_id: frame(id),
+                    parent_id: frame(parent),
+                    provider: Some(p::ProviderIdentity {
+                        provider_id: provider_id.into(),
+                        provider_version: provider_version.into(),
+                    }),
+                },
+            )),
+        }),
+    )
+}
+fn provider_sample(request: &str, revision: u64, nanos: u32, x: f64) -> p::CommandEnvelope {
+    provider_sample_for(request, revision, nanos, x, "earth")
+}
+fn provider_sample_for(
+    request: &str,
+    revision: u64,
+    nanos: u32,
+    x: f64,
+    id: &str,
+) -> p::CommandEnvelope {
+    command(
+        request,
+        p::command_envelope::Payload::Spatial(p::SpatialCommand {
+            expected_revision: Some(revision),
+            action: Some(p::spatial_command::Action::UpdateProviderFrameSample(
+                p::UpdateProviderFrameSample {
+                    frame_id: frame(id),
+                    instant: Some(p::TimeInstant {
+                        time_scale: p::TimeScale::Tt as i32,
+                        epoch_id: "prototype".into(),
+                        seconds: 0,
+                        nanos,
+                    }),
+                    to_parent: Some(p::RigidTransform {
+                        translation_m: Some(p::Vector3d { x, y: 0., z: 0. }),
+                        rotation: Some(p::Quaterniond {
+                            w: 1.,
+                            x: 0.,
+                            y: 0.,
+                            z: 0.,
+                        }),
+                    }),
+                },
+            )),
+        }),
+    )
+}
 fn lifecycle(id: &str, start: bool) -> p::CommandEnvelope {
     command(
         id,
@@ -835,7 +896,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 33);
+    assert_eq!(names.len(), 35);
     assert!(!names
         .iter()
         .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));
@@ -931,4 +992,67 @@ fn host_frame_bounds_and_routing_reject_writes_without_clock_changes() {
     assert_eq!(error(response), p::ErrorCode::InvalidArgument);
     assert_eq!(status(&a), before);
     assert_eq!(a.dispatcher().command_sequence(), 0);
+}
+
+#[test]
+fn provider_sample_frames_require_identity_revision_and_instant_coverage() {
+    let mut a = adapter(16);
+    completed(send(&mut a, root("root", 0)));
+    completed(send(
+        &mut a,
+        provider_frame("earth", "root", 1, "spaceeyes.nasa.dynamo", "0.0.1"),
+    ));
+    assert_eq!(
+        error(query(&a, resolve("earth", "root"))),
+        p::ErrorCode::ProviderUnavailable
+    );
+
+    let sample = provider_sample("sample", 2, 0, 3.0);
+    let receipt = completed(send(&mut a, sample.clone()));
+    let p::response_envelope::Payload::Spatial(spatial) = receipt.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(spatial.frame_graph_revision, 3);
+    let replay = completed(send(&mut a, sample));
+    let p::response_envelope::Payload::Spatial(spatial) = replay.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(spatial.frame_graph_revision, 3);
+
+    let resolved = completed(query(&a, resolve("earth", "root")));
+    let p::response_envelope::Payload::Frame(frame) = resolved.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        frame
+            .transform
+            .as_ref()
+            .unwrap()
+            .translation_m
+            .as_ref()
+            .unwrap()
+            .x,
+        3.0
+    );
+
+    assert_eq!(
+        error(send(&mut a, provider_sample("stale", 2, 0, 4.0))),
+        p::ErrorCode::RevisionConflict
+    );
+    completed(send(&mut a, provider_sample("future", 3, 5, 5.0)));
+    assert_eq!(
+        error(query(&a, resolve("earth", "root"))),
+        p::ErrorCode::TimeNotCovered
+    );
+    assert_eq!(
+        error(send(&mut a, provider_frame("bad", "root", 4, "", "0.0.1"))),
+        p::ErrorCode::InvalidArgument
+    );
+    assert_eq!(
+        error(send(
+            &mut a,
+            provider_sample_for("root-sample", 4, 0, 6.0, "root")
+        )),
+        p::ErrorCode::InvalidArgument
+    );
 }

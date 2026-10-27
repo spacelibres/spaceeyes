@@ -214,3 +214,8 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 格式仅Bytes（width/height/color_space均缺省）与RGBA8（显式宽高和Linear/SRGB，最多2048×2048，alpha=255）。finish缺块拒绝并保留可追加会话；完整内容摘要/类型失败自动取消并释放，成功变成Ready CPU资产且释放Staging；取消或Stop后迟到消息不能复活条目。源信息随完成资源记录保存，恢复重新验摘要；上传中记录和缓冲不导出。查询不返内容、不推进时间/命令历史。重试必须复用原请求ID及相同字节，不能换ID重复偏移；原ID重试得到历史回执，不意味着会话仍存活，应读query.upload。墙钟超时、网络/磁盘I/O、压缩解码、网格大包及插件整体所有权由M3后续实现。
 
 M3-1b幂等清理约束：上传块历史只保留会话/偏移/长度/SHA-256指纹，拒绝和完成路径均不保留payload。正常历史耗尽仍阻止新业务写入，独立有界清理回执空间保留当前最多4个上传取消及一次Stop；失败清理不耗该空间，成功清理重试仍返回原回执。
+
+## M4前置：提供者样本帧（0.0.1增量）
+SpatialCommand新增ProviderIdentity、RegisterProviderFrame与UpdateProviderFrameSample；oneof使用4/5，既有2/3不变。provider_id非空且最多256 UTF-8字节，provider_version非空且最多128字节；写入均要求expected_revision。RegisterProviderFrame绑定FrameId/父FrameId与来源身份；UpdateProviderFrameSample携带显式TimeInstant与米制wxyz刚体变换。
+
+首次更新前解析返回PROVIDER_UNAVAILABLE；样本时刻与查询时刻不一致返回TIME_NOT_COVERED；对根/静态样本/动态提供者帧更新返回INVALID_ARGUMENT；修订不匹配返回REVISION_CONFLICT。恢复时缺失提供者建立占位，可被后续样本重新绑定；样本不持久化。能力发现新增spatial.register_provider_frame与spatial.update_provider_sample。该接口不让核心计算轨迹或成为科学时间权威，宿主仍须用已核验插件求值与授权代理。

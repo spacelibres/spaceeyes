@@ -95,7 +95,12 @@ FrameGraph修订参与一致FrameSnapshot；Spatial不拥有Scene或Time可变�
 
 
 ## 14. 动态参考系提供者开发进展（0.0.1）
-已增加Rust `TransformProvider` trait与`ProviderRef`，支持按显式`TimeInstant`查询动态参考系的刚体变换，并允许通过Engine受控注册或替换提供者；替换时FrameGraph修订递增。提供者身份与版本必须非空，返回的刚体变换重新校验。Simulation新增最小任务登记与generation、目标时刻双重有效性检查。当前没有时间区间插值、速度导数、异步调度执行、Proto实现或NASA DYN插件。上述是开发范围记录，不代表运行验收。
+已增加Rust `TransformProvider` trait与`ProviderRef`，支持按显式`TimeInstant`查询动态参考系的刚体变换，并允许通过Engine受控注册或替换提供者；替换时FrameGraph修订递增。提供者身份与版本必须非空，返回的刚体变换重新校验。Simulation新增最小任务登记与generation、目标时刻双重有效性检查。当前没有时间区间插值、速度导数、异步调度执行、NASA DYN插件。上述是开发范围记录，不代表运行验收。
+
+## M4前置：提供者样本帧（0.0.1增量）
+新增`FrameSource::ProviderSample`：帧绑定provider_id/provider_version，宿主按当前显式TimeInstant提交刚体样本，核心不插值、不算轨迹、不联网。首次更新前解析返回MissingTransform；恢复时缺失提供者仍建立Unavailable占位，可由后续样本重新绑定。更新仅接受提供者样本帧或恢复占位，对根/静态样本/动态提供者拒绝；更新先校验修订溢出再原子替换，图修订与Engine帧序列递增。样本时刻不匹配返回TimeNotCovered，旧图修订的任务按既有规则Stale。
+
+公开Proto新增RegisterProviderFrame、UpdateProviderFrameSample与ProviderIdentity；provider_id/provider_version非空且分别不超过256/128字节，写入要求expected_revision。Engine/ProtocolAdapter仅做授权后的校验与转发，不成为第二套科学时间或轨迹权威。尚未实现速度/角速度导数、覆盖区间缓存、插值或多尺度精度策略。
 
 ## M1-1 公开会话与参考系贯通（0.0.1增量）
 状态：本轮实施规范；保持ADR-001至009职责不变。Engine仍唯一写入者，ProtocolAdapter负责校验/映射，WASM与Native复用同一字节协议，不引入第二套状态。

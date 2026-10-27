@@ -70,3 +70,10 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 使用前协商上述5项能力并读取maxUploadBytes/maxUploadChunkBytes/maxActiveUploads。totalBytes/offset/receivedBytes为bigint；每次从响应读取会话ID，禁止自行构造或跨实例复用。用client.command资源action beginUpload（resourceId,totalBytes,source,format,width,height,colorSpace）→appendUpload（uploadId,offset,data）→finishUpload（uploadId），响应分别为upload/upload/resource；query上传状态使用{case:"upload",value:{uploadId}}，取消用cancelUpload返回resource。请求上下文需requestId，principal仅由受信宿主注入。成功资产才能用于Scene，不能读取或渲染未完成内容。错误时读取状态或显式cancel，不做无界自动重试；不要把source标签当许可或科学来源证明。SDK不能直接访问Rust内存或绕过配额；本增量不是完整网络加载器或PNG/JPEG导入接口。
 
 上传块幂等历史仅保留长度与SHA-256指纹，不长期保留块内容。正常命令历史耗尽后普通写入仍拒绝，核心保留至多4个会话取消及一次Stop的独立成功回执空间；无效取消不能消耗该空间。取消/Stop请使用新的requestId且不附过期timeGeneration；相同请求重试仍得到原回执。
+
+## M4前置：提供者样本帧（0.0.1开发增量）
+新增`spatial.register_provider_frame`与`spatial.update_provider_sample`。前者在既有父参考系下建立由数据插件提供变换的帧，并记录provider_id/provider_version（非空，分别最多256/128字节）；后者为该帧提交一个显式时刻的刚体变换。核心不插值、不计算轨迹、不联网，只校验修订与时刻覆盖。
+
+流程：先`spatial.register_root`，再`register_provider_frame`；首次`update_provider_sample`前解析该帧返回PROVIDER_UNAVAILABLE，恢复后缺失提供者占位也等待宿主重新提交。每次时钟变化后，宿主必须用同一当前TimeInstant重新提交样本，否则查询返回TIME_NOT_COVERED。只能更新提供者帧或恢复占位；对根/静态样本/动态提供者帧更新返回INVALID_ARGUMENT。所有写入须带expected frame_graph_revision；不匹配返回REVISION_CONFLICT。
+
+provider_id/version是来源标签，不是科学认证或许可。宿主仍负责用已核验插件求值并遵守网络代理权限；不得把样本帧当作核心自算星历或跳过Time/Spatial修订。相机、场景对象与任务使用同一参考系图修订，样本更新会使依赖旧图修订的任务Stale。

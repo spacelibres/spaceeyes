@@ -11,7 +11,12 @@ message Quaterniond { double w=1; double x=2; double y=3; double z=4; }
 message RigidTransform { Vector3d translation_m=1; Quaterniond rotation=2; }
 message RegisterRootFrame { FrameId frame_id=1; }
 message RegisterChildFrameSample { FrameId frame_id=1; FrameId parent_id=2; TimeInstant instant=3; RigidTransform to_parent=4; }
-message SpatialCommand { optional uint64 expected_revision=1; oneof action { RegisterRootFrame register_root=2; RegisterChildFrameSample register_child_sample=3; } }
+// Host-evaluated frame: the core stores one explicit-instant transform supplied by
+// the authorized host. It never interpolates or computes a trajectory.
+message ProviderIdentity { string provider_id=1; string provider_version=2; }
+message RegisterProviderFrame { FrameId frame_id=1; FrameId parent_id=2; ProviderIdentity provider=3; }
+message UpdateProviderFrameSample { FrameId frame_id=1; TimeInstant instant=2; RigidTransform to_parent=3; }
+message SpatialCommand { optional uint64 expected_revision=1; oneof action { RegisterRootFrame register_root=2; RegisterChildFrameSample register_child_sample=3; RegisterProviderFrame register_provider_frame=4; UpdateProviderFrameSample update_provider_frame_sample=5; } }
 message SpatialResponse { uint64 frame_graph_revision=1; }
 message ResolveFrameQuery { FrameId source=1; FrameId target=2; }
 message FrameResolution { FrameId source=1; FrameId target=2; TimeInstant instant=3; RigidTransform transform=4; uint64 frame_graph_revision=5; }

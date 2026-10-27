@@ -53,6 +53,18 @@ pub enum Command {
         sample: FrameSample,
         expected_revision: Revision,
     },
+    RegisterProviderFrame {
+        id: FrameId,
+        parent: FrameId,
+        provider_id: String,
+        provider_version: String,
+        expected_revision: Revision,
+    },
+    UpdateProviderFrameSample {
+        id: FrameId,
+        sample: FrameSample,
+        expected_revision: Revision,
+    },
     Start,
     Stop,
     Play,
@@ -348,6 +360,41 @@ impl CommandDispatcher {
                     .map(|_| ())
                     .map_err(DispatchError::Spatial)
             }
+        } else if let Command::RegisterProviderFrame {
+            id,
+            parent,
+            provider_id,
+            provider_version,
+            expected_revision,
+        } = &command
+        {
+            if *expected_revision != self.engine.spatial().revision() {
+                Err(DispatchError::Domain(CoreError::RevisionConflict))
+            } else {
+                self.engine
+                    .register_provider_frame(
+                        id.clone(),
+                        parent.clone(),
+                        provider_id.clone(),
+                        provider_version.clone(),
+                    )
+                    .map(|_| ())
+                    .map_err(DispatchError::Spatial)
+            }
+        } else if let Command::UpdateProviderFrameSample {
+            id,
+            sample,
+            expected_revision,
+        } = &command
+        {
+            if *expected_revision != self.engine.spatial().revision() {
+                Err(DispatchError::Domain(CoreError::RevisionConflict))
+            } else {
+                self.engine
+                    .update_provider_frame_sample(id, sample.clone())
+                    .map(|_| ())
+                    .map_err(DispatchError::Spatial)
+            }
         } else if let Command::BeginUpload { descriptor } = &command {
             self.engine
                 .begin_upload(principal_scope, descriptor.clone())
@@ -398,6 +445,8 @@ impl CommandDispatcher {
                 | Command::FocusCamera { .. }
                 | Command::RegisterRootFrame { .. }
                 | Command::RegisterChildFrame { .. }
+                | Command::RegisterProviderFrame { .. }
+                | Command::UpdateProviderFrameSample { .. }
                 | Command::RegisterTexture { .. }
                 | Command::RegisterMesh { .. } => {
                     unreachable!("handled above")

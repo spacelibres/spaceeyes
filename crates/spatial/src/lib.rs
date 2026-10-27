@@ -178,6 +178,13 @@ enum FrameSource {
     Root,
     Sample(FrameSample),
     Dynamic(ProviderRef),
+    /// Host-evaluated frame. The host supplies the transform for one instant; the
+    /// core never interpolates or computes a trajectory.
+    ProviderSample {
+        provider_id: String,
+        version: String,
+        sample: Option<FrameSample>,
+    },
     Unavailable {
         provider_id: String,
         version: String,
@@ -220,6 +227,11 @@ impl ReferenceFrameGraph {
                     FrameSource::Dynamic(p) => {
                         Some((p.provider_id().to_owned(), p.version().to_owned()))
                     }
+                    FrameSource::ProviderSample {
+                        provider_id,
+                        version,
+                        ..
+                    } => Some((provider_id.clone(), version.clone())),
                     FrameSource::Unavailable {
                         provider_id,
                         version,
@@ -373,6 +385,82 @@ impl ReferenceFrameGraph {
         self.revision = next;
         Ok(self.revision())
     }
+    /// Register a provider sample frame. The frame has no transform until the
+    /// host supplies one for a concrete instant.
+    pub fn register_provider_child(
+        &mut self,
+        id: FrameId,
+        parent: FrameId,
+        provider_id: String,
+        version: String,
+    ) -> Result<Revision, SpatialError> {
+        if self.nodes.contains_key(&id) {
+            return Err(SpatialError::DuplicateFrame);
+        }
+        if id == parent || !self.nodes.contains_key(&parent) {
+            return Err(SpatialError::InvalidParent);
+        }
+        if provider_id.trim().is_empty() || version.trim().is_empty() {
+            return Err(SpatialError::InvalidProvider);
+        }
+        let next = self
+            .revision
+            .checked_add(1)
+            .ok_or(SpatialError::RevisionOverflow)?;
+        self.nodes.insert(
+            id,
+            FrameNode {
+                parent: Some(parent),
+                source: FrameSource::ProviderSample {
+                    provider_id,
+                    version,
+                    sample: None,
+                },
+            },
+        );
+        self.revision = next;
+        Ok(self.revision())
+    }
+    /// Replace the provider sample for one instant. Only provider sample frames
+    /// and restored unavailable placeholders can be updated; dynamic providers
+    /// keep their own evaluation path.
+    pub fn update_provider_sample(
+        &mut self,
+        id: &FrameId,
+        mut sample: FrameSample,
+    ) -> Result<Revision, SpatialError> {
+        let t = sample.to_parent;
+        sample.to_parent = RigidTransform::new(t.translation_m, t.rotation)?;
+        let next = self
+            .revision
+            .checked_add(1)
+            .ok_or(SpatialError::RevisionOverflow)?;
+        let node = self.nodes.get_mut(id).ok_or(SpatialError::UnknownFrame)?;
+        let replacement = match &mut node.source {
+            FrameSource::ProviderSample { sample: slot, .. } => {
+                *slot = Some(sample);
+                None
+            }
+            FrameSource::Unavailable {
+                provider_id,
+                version,
+            } => {
+                let provider_id = std::mem::take(provider_id);
+                let version = std::mem::take(version);
+                Some(FrameSource::ProviderSample {
+                    provider_id,
+                    version,
+                    sample: Some(sample),
+                })
+            }
+            _ => return Err(SpatialError::InvalidProvider),
+        };
+        if let Some(source) = replacement {
+            node.source = source;
+        }
+        self.revision = next;
+        Ok(self.revision())
+    }
     /// Invalidate a provider's results by replacing its binding, changing graph revision.
     pub fn replace_provider(
         &mut self,
@@ -446,6 +534,13 @@ impl ReferenceFrameGraph {
                     sample.to_parent
                 }
                 FrameSource::Dynamic(provider) => provider.resolve_at(instant)?,
+                FrameSource::ProviderSample { sample, .. } => {
+                    let sample = sample.as_ref().ok_or(SpatialError::MissingTransform)?;
+                    if &sample.instant != instant {
+                        return Err(SpatialError::TimeNotCovered);
+                    }
+                    sample.to_parent
+                }
                 FrameSource::Root => return Err(SpatialError::Disconnected),
                 FrameSource::Unavailable { .. } => return Err(SpatialError::MissingTransform),
             };
@@ -673,5 +768,114 @@ mod tests {
             graph.resolve(&id("a"), &id("b"), &at()),
             Err(SpatialError::Disconnected)
         );
+    }
+    #[test]
+    fn provider_sample_frame_requires_an_updated_single_instant_sample() {
+        let mut graph = ReferenceFrameGraph::new();
+        graph.register_root(id("root")).unwrap();
+        graph
+            .register_provider_child(
+                id("earth"),
+                id("root"),
+                "spaceeyes.nasa.dynamo".into(),
+                "0.0.1".into(),
+            )
+            .unwrap();
+        assert_eq!(
+            graph.resolve(&id("earth"), &id("root"), &at()),
+            Err(SpatialError::MissingTransform)
+        );
+        let revision = graph
+            .update_provider_sample(
+                &id("earth"),
+                FrameSample {
+                    instant: at(),
+                    to_parent: translation(3.0, 4.0, 0.0),
+                },
+            )
+            .unwrap();
+        assert_eq!(revision, Revision(3));
+        let position = graph
+            .resolve(&id("earth"), &id("root"), &at())
+            .unwrap()
+            .apply(Vec3d::ZERO);
+        near(position.x, 3.0);
+        near(position.y, 4.0);
+        let later = TimeInstant::new("TT", "epoch", 1, 0).unwrap();
+        assert_eq!(
+            graph.resolve(&id("earth"), &id("root"), &later),
+            Err(SpatialError::TimeNotCovered)
+        );
+        assert_eq!(
+            graph.update_provider_sample(
+                &id("root"),
+                FrameSample {
+                    instant: at(),
+                    to_parent: RigidTransform::IDENTITY,
+                },
+            ),
+            Err(SpatialError::InvalidProvider)
+        );
+        assert_eq!(
+            graph.update_provider_sample(
+                &id("missing"),
+                FrameSample {
+                    instant: at(),
+                    to_parent: RigidTransform::IDENTITY,
+                },
+            ),
+            Err(SpatialError::UnknownFrame)
+        );
+    }
+    #[test]
+    fn restored_missing_provider_can_be_rebound_by_a_provider_sample() {
+        let mut graph = ReferenceFrameGraph::new();
+        graph.register_root(id("root")).unwrap();
+        graph
+            .register_provider_child(
+                id("earth"),
+                id("root"),
+                "spaceeyes.nasa.dynamo".into(),
+                "0.0.1".into(),
+            )
+            .unwrap();
+        graph
+            .update_provider_sample(
+                &id("earth"),
+                FrameSample {
+                    instant: at(),
+                    to_parent: translation(1.0, 0.0, 0.0),
+                },
+            )
+            .unwrap();
+        let records = graph.records();
+        let mut restored = ReferenceFrameGraph::restore(&records, &[]).unwrap();
+        let record = restored
+            .records()
+            .into_iter()
+            .find(|r| r.id == id("earth"))
+            .unwrap();
+        assert_eq!(
+            record.provider,
+            Some(("spaceeyes.nasa.dynamo".into(), "0.0.1".into()))
+        );
+        assert_eq!(
+            restored.resolve(&id("earth"), &id("root"), &at()),
+            Err(SpatialError::MissingTransform)
+        );
+        restored
+            .update_provider_sample(
+                &id("earth"),
+                FrameSample {
+                    instant: at(),
+                    to_parent: translation(7.0, 0.0, 0.0),
+                },
+            )
+            .expect("restored placeholder accepts provider samples");
+        let position = restored
+            .resolve(&id("earth"), &id("root"), &at())
+            .unwrap()
+            .apply(Vec3d::ZERO);
+        near(position.x, 7.0);
     }
 }
