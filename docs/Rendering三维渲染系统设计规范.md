@@ -4,7 +4,7 @@
 设计阶段：05｜归属：Rust Core｜仅设计，不写实现代码
 
 ## 1. 目标与边界
-Rendering读取Scene、Spatial、Time和Simulation发布的一致只读快照，生成GPU绘制指令。负责相机、可见性、几何、材质、基础光照、拾取、绘制调度与GPU资源适配。不解析NASA DYN、不计算轨道、不推进仿真时钟、不修改权威Scene状态。首期对标NASA Eyes太阳系探索，但核心不固定任何天体类型。
+Rendering只读取Engine原子发布的FrameSnapshot（包含一致的Scene、Spatial与Time只读状态），生成GPU绘制指令。负责相机、可见性、几何、材质、基础光照、拾取、绘制调度与GPU资源适配。不解析NASA DYN、不计算轨道、不推进仿真时钟、不修改权威Scene状态。首期对标NASA Eyes太阳系探索，但核心不固定任何天体类型。
 
 ## 2. 设计约束
 - Rust统一源码，WASM和Native仅为不同编译目标。
@@ -30,8 +30,8 @@ Rendering读取Scene、Spatial、Time和Simulation发布的一致只读快照，
 以上是职责划分，实际crate结构待审定。
 
 ## 4. 帧流程
-TimeSnapshot + SceneSnapshot + SpatialSnapshot
-→ 快照时间及修订校验
+Engine FrameSnapshot
+→ 时间及修订一致性校验
 → 相机和局部原点
 → 可见性与LOD
 → 几何/材质准备
@@ -64,3 +64,7 @@ Resources模块是统一资源所有权来源，Rendering只做GPU分配适配�
 
 ## 12. 交叉审查整改对齐（待审）
 Renderer只读取Engine发布的一致FrameSnapshot，不自行拼接不同修订的数据。相机持久状态通过统一命令维护，Renderer负责视图投影和临时GPU数据。GPU资源所有权与字节配额归Resources，Rendering仅负责设备适配及实际占用上报。
+
+
+## 13. 第13阶段相机与快照对齐
+相机持久逻辑状态归Scene受控命令，Renderer仅派生视图/投影矩阵和临时GPU数据。FrameSnapshot与ProjectSnapshot不同：Renderer不负责持久化项目，也不得将GPU临时句柄写入ProjectSnapshot。GPU资源生命周期遵守Resources统一所有权。
