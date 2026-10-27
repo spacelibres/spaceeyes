@@ -4,6 +4,7 @@ use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
 use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
+use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState { Ready, Running, Stopped }
@@ -17,11 +18,15 @@ pub struct EngineSnapshot {
     pub frame_graph_revision: Revision,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CommitTaskError { EngineStopped, Task(TaskError), Scene(CoreError) }
+
 pub struct Engine {
     state: EngineState,
     scene: Scene,
     clock: SimulationClock,
     spatial: ReferenceFrameGraph,
+    simulation: SimulationScheduler,
     frame_sequence: u64,
 }
 impl Engine {
@@ -31,6 +36,7 @@ impl Engine {
             scene: Scene::new(),
             clock: SimulationClock::new(instant),
             spatial: ReferenceFrameGraph::new(),
+            simulation: SimulationScheduler::new(),
             frame_sequence: 0,
         }
     }
@@ -38,6 +44,7 @@ impl Engine {
     pub fn scene(&self) -> &Scene { &self.scene }
     pub fn clock(&self) -> &SimulationClock { &self.clock }
     pub fn spatial(&self) -> &ReferenceFrameGraph { &self.spatial }
+    pub fn task_status(&self, id: &str) -> Option<TaskStatus> { self.simulation.status(id) }
     pub fn snapshot(&self) -> EngineSnapshot {
         EngineSnapshot {
             scene: self.scene.snapshot(),
@@ -67,6 +74,7 @@ impl Engine {
     pub fn seek(&mut self, instant: TimeInstant) -> Result<(), CoreError> {
         if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
         self.clock.seek(instant)?;
+        self.simulation.invalidate_generation(self.clock.generation());
         self.frame_sequence += 1;
         Ok(())
     }
@@ -90,6 +98,38 @@ impl Engine {
         self.clock.step_nanos(delta)?;
         if self.clock.snapshot().revision != before { self.frame_sequence += 1; }
         Ok(())
+    }
+    /// Register a task for the current authoritative time generation.
+    pub fn enqueue_task(&mut self, request: TaskRequest) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
+        if request.generation != self.clock.generation() { return Err(TaskError::StaleGeneration); }
+        self.simulation.enqueue(request)
+    }
+    pub fn ready_tasks(&self) -> Vec<String> { self.simulation.ready_tasks() }
+    pub fn start_task(&mut self, id: &str) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
+        self.simulation.start(id)
+    }
+    pub fn cancel_task(&mut self, id: &str) -> Result<(), TaskError> {
+        self.simulation.cancel(id)
+    }
+    /// Result acceptance does not mutate Scene or claim a completed transaction.
+    pub fn accept_task_result(&mut self, result: &TaskResult) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
+        self.simulation.accept_result(result, self.clock.generation(), self.clock.instant())
+    }
+    /// Commit a validated result through the sole Scene transaction path.
+    /// A failed Scene transaction leaves the task ResultReady for explicit retry/cancel.
+    pub fn commit_task_scene(
+        &mut self, task_id: &str, expected_revision: Revision, commands: &[SceneCommand],
+    ) -> Result<Revision, CommitTaskError> {
+        if self.state == EngineState::Stopped { return Err(CommitTaskError::EngineStopped); }
+        if self.simulation.status(task_id) != Some(TaskStatus::ResultReady) {
+            return Err(CommitTaskError::Task(TaskError::InvalidState));
+        }
+        let revision = self.submit_scene(expected_revision, commands).map_err(CommitTaskError::Scene)?;
+        self.simulation.complete(task_id).map_err(CommitTaskError::Task)?;
+        Ok(revision)
     }
     /// All spatial graph writes pass through Engine, never through plugins.
     pub fn register_root_frame(&mut self, id: FrameId) -> Result<Revision, SpatialError> {
@@ -127,7 +167,10 @@ impl Engine {
     pub fn resolve_frame(&self, source: &FrameId, target: &FrameId, instant: &TimeInstant) -> Result<RigidTransform, SpatialError> {
         self.spatial.resolve(source, target, instant)
     }
-    pub fn shutdown(&mut self) { self.state = EngineState::Stopped; }
+    pub fn shutdown(&mut self) {
+        self.simulation.cancel_all();
+        self.state = EngineState::Stopped;
+    }
 }
 #[cfg(test)]
 mod tests {
@@ -138,6 +181,40 @@ mod tests {
 
     fn instant() -> TimeInstant {
         TimeInstant::new("TT", "UNSPECIFIED_EPOCH", 0, 0).unwrap()
+    }
+    #[test]
+    fn seek_invalidates_tasks_and_prevents_late_commit() {
+        let mut engine = Engine::new(instant());
+        engine.enqueue_task(TaskRequest {
+            task_id: "task-a".into(), generation: TimeGeneration(0),
+            requested_instant: instant(), dependencies: vec![],
+        }).unwrap();
+        engine.start_task("task-a").unwrap();
+        engine.seek(instant()).unwrap();
+        assert_eq!(engine.task_status("task-a"), Some(TaskStatus::Stale));
+        assert_eq!(engine.commit_task_scene("task-a", Revision(0), &[]),
+            Err(CommitTaskError::Task(TaskError::InvalidState)));
+    }
+    #[test]
+    fn result_commits_only_through_scene_transaction() {
+        let mut engine = Engine::new(instant());
+        engine.enqueue_task(TaskRequest {
+            task_id: "task-b".into(), generation: TimeGeneration(0),
+            requested_instant: instant(), dependencies: vec![],
+        }).unwrap();
+        engine.start_task("task-b").unwrap();
+        engine.accept_task_result(&TaskResult {
+            task_id: "task-b".into(), generation: TimeGeneration(0), requested_instant: instant(),
+        }).unwrap();
+        let id = ObjectId::new("demo:moon").unwrap();
+        assert_eq!(engine.commit_task_scene("task-b", Revision(9),
+            &[SceneCommand::Create(SceneObject::new(id.clone()))]),
+            Err(CommitTaskError::Scene(CoreError::RevisionConflict)));
+        assert_eq!(engine.task_status("task-b"), Some(TaskStatus::ResultReady));
+        engine.commit_task_scene("task-b", Revision(0),
+            &[SceneCommand::Create(SceneObject::new(id))]).unwrap();
+        assert_eq!(engine.task_status("task-b"), Some(TaskStatus::Completed));
+        assert_eq!(engine.snapshot().scene.revision, Revision(1));
     }
     #[test]
     fn spatial_graph_revision_appears_in_engine_snapshot() {
