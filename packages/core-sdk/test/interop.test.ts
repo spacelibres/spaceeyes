@@ -218,7 +218,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 33);
+    assert.equal(caps.operations.length, 35);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));
@@ -264,6 +264,46 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
         },
       },
       "child",
+    );
+    await command(
+      {
+        case: "spatial",
+        value: {
+          expectedRevision: 2n,
+          action: {
+            case: "registerProviderFrame",
+            value: {
+              frameId: { value: "provider-frame" },
+              parentId: { value: "root" },
+              provider: {
+                providerId: "spaceeyes.nasa.dynamo",
+                providerVersion: "0.0.1",
+              },
+            },
+          },
+        },
+      },
+      "provider-frame",
+    );
+    await command(
+      {
+        case: "spatial",
+        value: {
+          expectedRevision: 3n,
+          action: {
+            case: "updateProviderFrameSample",
+            value: {
+              frameId: { value: "provider-frame" },
+              instant,
+              toParent: {
+                translationM: { x: 1, y: 2, z: 3 },
+                rotation: { w: 1, x: 0, y: 0, z: 0 },
+              },
+            },
+          },
+        },
+      },
+      "provider-sample",
     );
     await command(
       {

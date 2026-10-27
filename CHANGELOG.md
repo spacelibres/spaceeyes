@@ -24,7 +24,7 @@
 - Spatial新增`FrameSource::ProviderSample`：帧绑定provider_id/provider_version，宿主按当前显式时刻提交刚体样本；核心不插值、不算轨迹、不联网。首次更新前返回MissingTransform，恢复时缺失提供者建立占位并可由后续样本重新绑定。
 - Engine新增register_provider_frame/update_provider_frame_sample并递增帧序列；更新仅接受提供者样本帧或恢复占位，先校验修订溢出再原子替换。Proto新增ProviderIdentity、RegisterProviderFrame、UpdateProviderFrameSample（oneof 4/5），要求expected_revision且限制来源标识长度。
 - ProtocolAdapter映射并校验新动作，新增spatial.register_provider_frame/update_provider_frame_sample能力；生成TS类型与SDK技能书同步。错误映射MissingTransform→PROVIDER_UNAVAILABLE、InvalidProvider/非法标识→INVALID_ARGUMENT。
-- 验证：Spatial 8项单测与1项祖先测试、protocol-adapter 16项session及相关集成测试、严格workspace check通过；TS SDK构建通过。按用户新指令未逐次全量，整体回归留待批量完成后统一执行；浏览器接入、导数/插值/覆盖缓存仍未实现。
+- 验证：Spatial 8项单测与1项祖先测试、protocol-adapter 16项session及相关集成测试、严格workspace check通过；TS SDK构建通过。补充Native/WASM互通测试实际发送两项新空间动作，能力总数同步35项。按用户新指令未逐次全量，整体回归由后续`tools/check.sh --gpu`统一完成；浏览器接入、导数/插值/覆盖缓存仍未实现。
 
 ### P04 NASA DYN插件核心与分段加载
 - 新增`packages/nasa-dynamo`（`@spaceeyes/nasa-dynamo` 0.0.1）：按架构§15作为独立TS数据源，不进入Rust Core，不直接联网，不持有场景/时钟权威。
