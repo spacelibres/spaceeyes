@@ -7,7 +7,8 @@
 - 正式启动Rust核心工程开发，版本从0.0.0统一升级为0.0.1；基于已批准核心架构与ADR-001至009。
 - 建立独立开发分支development/core-0.0.1、Cargo Workspace及核心crate基础结构；本版本为工程初始化，不宣称渲染或NASA插件完成。
 - 版本升级严格按最小位+1、100进1；所有受控文档与代码统一0.0.1。
-- 验证：待执行Cargo构建及测试；尚无通过证据。风险：科学时间尺度、Proto字段、GPU后端尚未冻结。
+- 增加foundation/scene/time/engine最小实现与单元测试，其他crate仅保留模块边界；添加GitHub Actions cargo check/test工作流。
+- 验证：当前执行环境未安装Cargo，无法本地运行；CI已配置，尚无通过证据。风险：科学时间尺度、Proto字段、GPU后端尚未冻结。
 
 ## [Unreleased]
 
