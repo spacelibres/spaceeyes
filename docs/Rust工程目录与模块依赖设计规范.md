@@ -1,6 +1,6 @@
 # SPACEEYES Rust工程目录与模块依赖设计规范
 
-版本：0.0.0｜状态：第11阶段设计草案｜日期：2026-10-27
+版本：0.0.1｜状态：第11阶段设计草案｜日期：2026-10-27
 范围：仅Markdown工程结构设计，不创建Cargo工程、Rust源码或测试文件。
 依据：第08阶段对象模型、第09阶段Proto字段设计、第10阶段命令事件规范、已批准ADR-001至ADR-009。
 
@@ -129,3 +129,6 @@ foundation中的FrameSnapshot只读值类型与engine发布行为的具体拆分
 
 ## 17. 第13阶段快照与依赖归属澄清
 SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独立无环snapshot-types，Engine负责构造及原子发布FrameSnapshot，Renderer只消费其只读接口。ProjectSnapshot属于协议与项目持久化设计，不作为foundation中的GPU资源对象。协议适配层依赖Engine公开Facade，不能反向成为Engine的编译依赖。项目恢复由Engine协调，WASM/Native只提供平台I/O与资源重建适配。
+
+
+> 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
