@@ -149,6 +149,8 @@ pub struct EventPage {
     pub replay_from: u64,
 }
 const MAX_EVENT_PAGE: usize = 128;
+/// Host policy default for abandoned uploads (milliseconds of host-observed time).
+const DEFAULT_UPLOAD_TTL: u64 = 15 * 60 * 1000;
 #[derive(Clone)]
 enum RecordedCommand {
     AppendUpload {
@@ -216,6 +218,8 @@ pub struct CommandDispatcher {
     session: String,
     capacity: usize,
     event_capacity: usize,
+    upload_clock: Option<Box<dyn Fn() -> u64>>,
+    upload_ttl: Option<u64>,
     sequence: u64,
     history: BTreeMap<(String, String), Record>,
     // Once normal history fills, only successful cleanup can consume these fixed slots.
@@ -250,6 +254,8 @@ impl CommandDispatcher {
             session,
             capacity,
             event_capacity,
+            upload_clock: None,
+            upload_ttl: None,
             sequence: 0,
             history: BTreeMap::new(),
             cleanup_history: BTreeMap::new(),
@@ -377,6 +383,33 @@ impl CommandDispatcher {
         }
         Ok(())
     }
+    /// Host monotonic clock in milliseconds; expired uploads release their reservations
+    /// before the next command is processed.
+    pub fn with_upload_clock(
+        engine: Engine,
+        session: String,
+        capacity: usize,
+        clock: Box<dyn Fn() -> u64>,
+    ) -> Result<Self, DispatchError> {
+        let mut dispatcher = Self::with_event_capacity(engine, session, capacity, capacity)?;
+        dispatcher.upload_clock = Some(clock);
+        dispatcher.upload_ttl = Some(DEFAULT_UPLOAD_TTL);
+        Ok(dispatcher)
+    }
+    pub fn set_upload_ttl(&mut self, ttl: u64) {
+        self.upload_ttl = Some(ttl);
+    }
+    fn tick(&self) -> u64 {
+        self.upload_clock.as_ref().map_or(0, |clock| clock())
+    }
+    fn expire_uploads(&mut self) {
+        if let Some(ttl) = self.upload_ttl {
+            let now = self.tick();
+            if now != 0 {
+                let _ = self.engine.expire_uploads(now, ttl);
+            }
+        }
+    }
     pub fn command_history_capacity(&self) -> usize {
         self.capacity
     }
@@ -436,6 +469,7 @@ impl CommandDispatcher {
         {
             return Err(DispatchError::HistoryFull);
         }
+        self.expire_uploads();
         let sequence = self
             .sequence
             .checked_add(1)
@@ -523,8 +557,9 @@ impl CommandDispatcher {
                     .map_err(DispatchError::Spatial)
             }
         } else if let Command::BeginUpload { descriptor } = &command {
+            let tick = self.tick();
             self.engine
-                .begin_upload(principal_scope, descriptor.clone())
+                .begin_upload_at(principal_scope, descriptor.clone(), tick)
                 .map(|status| {
                     upload = Some(status);
                 })

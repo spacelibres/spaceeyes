@@ -21,7 +21,7 @@ features = ["gpu"]
 optional = true
 [dependencies.web-sys]
 version = "0.3"
-features = ["HtmlCanvasElement"]
+features = ["HtmlCanvasElement", "Window", "Performance"]
 optional = true
 [dependencies.wasm-bindgen-futures]
 version = "0.4"

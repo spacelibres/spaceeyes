@@ -19,10 +19,26 @@ impl Engine {
         owner: &str,
         descriptor: UploadDescriptor,
     ) -> Result<UploadStatus, ResourceError> {
+        self.begin_upload_at(owner, descriptor, 0)
+    }
+    /// Host-stamped variant used by policies that expire abandoned uploads.
+    pub fn begin_upload_at(
+        &mut self,
+        owner: &str,
+        descriptor: UploadDescriptor,
+        tick: u64,
+    ) -> Result<UploadStatus, ResourceError> {
         let sequence = self.upload_sequence()?;
-        let status = self.resources.begin_upload(owner, descriptor)?;
+        let status = self.resources.begin_upload_at(owner, descriptor, tick)?;
         self.frame_sequence = sequence;
         Ok(status)
+    }
+    /// Release upload reservations whose host-stamped age reached `ttl`.
+    pub fn expire_uploads(&mut self, now: u64, ttl: u64) -> Result<Vec<String>, ResourceError> {
+        if !self.accepts_commands() {
+            return Err(ResourceError::EngineUnavailable);
+        }
+        Ok(self.resources.expire_uploads(now, ttl))
     }
     pub fn append_upload(
         &mut self,

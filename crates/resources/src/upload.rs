@@ -70,6 +70,8 @@ pub struct UploadStatus {
 pub(crate) struct UploadSession {
     owner: String,
     status: UploadStatus,
+    /// Host-supplied monotonic tick; 0 means the host did not stamp this session.
+    created_tick: u64,
     // Staging a scene transaction clones metadata, never all active upload buffers.
     bytes: Arc<Vec<u8>>,
 }
@@ -88,6 +90,16 @@ impl ResourceManager {
         &mut self,
         owner: &str,
         descriptor: UploadDescriptor,
+    ) -> Result<UploadStatus, ResourceError> {
+        self.begin_upload_at(owner, descriptor, 0)
+    }
+    /// Stamp the session with a host monotonic tick so it can expire. A zero tick
+    /// means the host opted out of wall-clock expiry for this session.
+    pub fn begin_upload_at(
+        &mut self,
+        owner: &str,
+        descriptor: UploadDescriptor,
+        tick: u64,
     ) -> Result<UploadStatus, ResourceError> {
         if owner.trim().is_empty() || owner.len() > MAX_SOURCE_ID_BYTES {
             return Err(ResourceError::PermissionDenied);
@@ -182,6 +194,7 @@ impl ResourceManager {
             UploadSession {
                 owner: owner.into(),
                 status: status.clone(),
+                created_tick: tick,
                 bytes: Arc::new(buffer),
             },
         );
@@ -255,6 +268,28 @@ impl ResourceManager {
         self.by_class[2] -= d.total_bytes;
         self.revision = revision;
         Ok(d.resource_id)
+    }
+    /// Cancel uploads whose host-stamped age reached `ttl`. Sessions without a
+    /// stamp (tick 0) never expire here and still require explicit cancel/Stop.
+    pub fn expire_uploads(&mut self, now: u64, ttl: u64) -> Vec<String> {
+        if ttl == 0 {
+            return Vec::new();
+        }
+        let expired: Vec<(String, String)> = self
+            .uploads
+            .iter()
+            .filter(|(_, session)| {
+                session.created_tick != 0 && now.saturating_sub(session.created_tick) >= ttl
+            })
+            .map(|(id, session)| (session.owner.clone(), id.clone()))
+            .collect();
+        let mut cancelled = Vec::new();
+        for (owner, id) in expired {
+            if self.cancel_upload(&owner, &id).is_ok() {
+                cancelled.push(id);
+            }
+        }
+        cancelled
     }
     pub fn finish_upload(
         &mut self,

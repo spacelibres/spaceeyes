@@ -5,6 +5,25 @@ use spaceeyes_engine::{CommandDispatcher, Engine};
 use spaceeyes_protocol_adapter::ProtocolAdapter;
 use spaceeyes_time::TimeInstant;
 use wasm_bindgen::prelude::*;
+fn dispatcher(engine: Engine, session: String) -> Result<CommandDispatcher, JsValue> {
+    #[cfg(all(feature = "browser", target_arch = "wasm32"))]
+    {
+        let clock = Box::new(|| {
+            web_sys::window()
+                .and_then(|window| window.performance())
+                .map(|performance| performance.now() as u64)
+                .unwrap_or(0)
+        });
+        CommandDispatcher::with_upload_clock(engine, session, 4096, clock)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
+    #[cfg(not(all(feature = "browser", target_arch = "wasm32")))]
+    {
+        CommandDispatcher::new(engine, session, 4096)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
+    }
+}
+
 #[wasm_bindgen]
 pub struct WasmEngine {
     adapter: ProtocolAdapter,
@@ -21,8 +40,7 @@ impl WasmEngine {
     ) -> Result<WasmEngine, JsValue> {
         let instant = TimeInstant::new(scale, epoch, seconds, nanos)
             .ok_or_else(|| JsValue::from_str("invalid explicit time"))?;
-        let dispatcher = CommandDispatcher::new(Engine::new(instant), session, 4096)
-            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        let dispatcher = dispatcher(Engine::new(instant), session)?;
         let adapter =
             ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         Ok(Self { adapter })
@@ -36,8 +54,7 @@ impl WasmEngine {
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         let engine = Engine::restore_project(&project, &[])
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
-        let dispatcher = CommandDispatcher::new(engine, session, 4096)
-            .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
+        let dispatcher = dispatcher(engine, session)?;
         let adapter =
             ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         Ok(Self { adapter })

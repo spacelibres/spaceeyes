@@ -149,3 +149,6 @@ ResourceManager记录每次租用的单调访问序，`evict_lru(target_bytes)`�
 
 ## C09 受控磁盘来源加载器（0.0.1增量）
 原生宿主可使用`DiskSource`：构造时规范化根目录，读取只接受根内相对路径，拒绝绝对路径、`..`、`.`/根前缀与NUL，并在`canonicalize`后再次检查未逃逸根目录（覆盖符号链接逃逸）；文件非空且不超过配置上限（上限不得超过16MiB上传限制）。内容必须匹配`UploadSource.sha256`，随后经既有`begin/append/finish_upload`发布，保持所有权、预算与修订原子性；验证失败不保留任何预留。WASM目标不编译该模块，浏览器仍通过宿主代理与`EncodedImage`上传。网络HTTP加载、墙钟超时、并发I/O与后台预取仍未实现。
+
+## C09 上传墙钟超时（0.0.1增量）
+上传会话可记录宿主注入的单调tick（毫秒）；`begin_upload_at(...,tick)`与`ResourceManager::expire_uploads(now,ttl)`在`now-created≥ttl`时取消会话并释放CPU/Staging预留。tick=0表示宿主未打戳，永不自动过期，仍由显式取消/Stop清理。`CommandDispatcher::with_upload_clock`在浏览器WASM中注入`performance.now()`并默认15分钟TTL，在下一条命令前执行回收；纯Rust宿主可显式设置TTL或继续使用无时钟构造。取消与过期都提升资源修订且不复活会话。时钟来自宿主，核心不读取系统墙钟；超时阈值仍是宿主策略，不宣称设备实测。

@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 上传墙钟超时（C09 切片）
+- 上传会话可记录宿主单调 tick；`expire_uploads` 取消超期会话并释放预留，tick=0 永不自动过期。
+- 浏览器 WASM 注入 `performance.now()`、默认 15 分钟 TTL，在下一条命令前回收；Engine 提供显式过期入口。
+- 验证：engine 2 项过期测试。
+
+
 ### 完整生命周期与两阶段初始化（C10 切片）
 - `EngineState` 补齐 Created/Initializing/Stopping/Failed；`Engine::prepare` + `initialize(closure)` 支持初始化失败清理并进入 Failed；`begin_shutdown`/`finish_shutdown` 分离拒绝写入与资源释放，`shutdown` 幂等。
 - 所有写入口统一为仅 Ready/Running 接受，Stopping 保留资源但拒绝新命令/任务。
