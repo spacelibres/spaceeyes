@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 新增Spatial动态TransformProvider trait与ProviderRef，可按显式TimeInstant查询变换；支持Engine受控注册、替换提供者，参考系图修订随之更新。
+- 新增Simulation最小任务登记、任务状态及generation/目标时刻联合结果有效性检查；未引入NASA专用算法或直接Scene写入。
+- 增加动态参考系与过时任务结果单元测试源码，并同步Spatial规范。尚未获得Cargo/CI执行通过证据；动态插值、速度导数、异步任务执行与Proto仍未实现。版本保持0.0.1。
+
+
+
 - Spatial实现：新增FrameId参考系注册/删除、父子关系检查、图修订号、Vec3d/Quatd与刚体变换、逆变换和路径组合；严格要求显式TimeInstant，时间样本不匹配时返回错误，不推断星历。
 - Engine集成Spatial图并在EngineSnapshot中提供frame_graph_revision；所有参考系写入经Engine入口。新增参考系链、逆变换、非交换旋转、非法父级、断开参考系及时间不匹配测试源码。
 - 范围：当前只支持指定历元的静态刚体变换，不支持速度导数、时间插值、动态提供者、NASA DYN或Proto实现。已同步Spatial设计规范；Cargo/CI测试尚无通过证据，版本仍为0.0.1。
