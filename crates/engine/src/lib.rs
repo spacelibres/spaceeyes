@@ -23,6 +23,7 @@ mod selection;
 pub use selection::PresentedSelection;
 mod camera_control;
 pub use camera_control::CameraControlError;
+mod upload;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState {

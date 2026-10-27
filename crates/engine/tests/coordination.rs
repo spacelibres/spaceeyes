@@ -210,6 +210,7 @@ fn restore_missing_provider_and_loading_resource_stays_explicitly_partial() {
     // Deferred CPU bytes stay declared, not Ready; stable logical references are preserved.
     let resource = ResourceId::new("deferred").unwrap();
     project.resources.push(ResourceRecord {
+        source: None,
         class: spaceeyes_resources::ResourceClass::Cpu,
         id: resource.clone(),
         bytes: 4,

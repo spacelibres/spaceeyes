@@ -37,4 +37,9 @@ pub const OPERATIONS: &[&str] = &[
     "camera.focus",
     "query.camera_state",
     "query.resource_stats",
+    "resources.begin_upload",
+    "resources.append_upload",
+    "resources.finish_upload",
+    "resources.cancel_upload",
+    "query.upload",
 ];

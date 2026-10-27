@@ -6,7 +6,7 @@
 
 宿主负责创建WASM实例及显式会话、时间尺度/历元，认证并授权调用者，然后通过`wasmTransport(engine, principal)`闭包注入身份。插件不自报principal、不持有核心内存或私有Engine接口。此transport不构成完整插件权限沙箱，当前尚无正式插件运行时。
 
-创建`CoreClient(transport, sessionId)`，先`await client.connect(requiredOperations)`，再发送生成类型约束的`command(payload, options)`与`query(payload, options)`。支持列表是实现能力，不是授权或当前状态承诺；缺失能力应停止并报告，不能绕过SDK访问私有核心。Live、画布、动态提供者、事件、项目文件等尚未开放。
+创建`CoreClient(transport, sessionId)`，先`await client.connect(requiredOperations)`，再发送生成类型约束的`command(payload, options)`与`query(payload, options)`。支持列表是实现能力，不是授权或当前状态承诺；缺失能力应停止并报告，不能绕过SDK访问私有核心。可信宿主已有browserSurface画布与私有present路由，插件不得直接调用；Live、动态提供者注册、事件订阅和项目文件等公开能力仍未开放。
 
 每个写请求由调用者提供唯一requestId；重试必须保持同一ID、载荷和前置条件。SDK不自动重试，也不维护第二套场景/时钟状态。修订、代次、秒、纳秒步进等64位字段使用bigint；不要转为number或JSON数字。对象坐标以米、四元数wxyz、时间尺度及历元显式提供；不做科学时间或参考系猜测。子参考系采样仅在该时刻有效。
 
@@ -61,3 +61,12 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。
 
 调用前协商`query.resource_stats`，使用`client.query({ case: "resourceStats", value: {} }, { requestId: "resources:stats" })`读取；字节数和修订号为bigint，不能转换成可能失真的number。以核心响应为准，不在TS维护权威计数；能力发现不替代授权。CPU/GPU/Staging注册与帧租约仅限Rust内部，插件不得调用。
+
+## M3-1b 有界资源上传（0.0.1开发增量）
+公开操作resources.begin_upload/append_upload/finish_upload/cancel_upload及query.upload。单资源非空且最多16MiB，单块非空且最多256KiB，最多4个在途会话；还受宿主CPU/Staging及总额限制，消息上限仍1MiB。begin原子预留等长CPU目标和Staging，会话由Rust生成且绑定宿主注入principal，偏移必须等于已收字节，不接受重叠/跳块。申请源source_id最多256字节、source_version最多128字节，均非空；SHA-256必须32字节并对完整实际内容验证，标签/摘要不是科学认证。
+
+格式仅Bytes（width/height/color_space均缺省）与RGBA8（显式宽高和Linear/SRGB，最多2048×2048，alpha=255）。finish缺块拒绝并保留可追加会话；完整内容摘要/类型失败自动取消并释放，成功变成Ready CPU资产且释放Staging；取消或Stop后迟到消息不能复活条目。源信息随完成资源记录保存，恢复重新验摘要；上传中记录和缓冲不导出。查询不返内容、不推进时间/命令历史。重试必须复用原请求ID及相同字节，不能换ID重复偏移；原ID重试得到历史回执，不意味着会话仍存活，应读query.upload。墙钟超时、网络/磁盘I/O、压缩解码、网格大包及插件整体所有权由M3后续实现。
+
+使用前协商上述5项能力并读取maxUploadBytes/maxUploadChunkBytes/maxActiveUploads。totalBytes/offset/receivedBytes为bigint；每次从响应读取会话ID，禁止自行构造或跨实例复用。用client.command资源action beginUpload（resourceId,totalBytes,source,format,width,height,colorSpace）→appendUpload（uploadId,offset,data）→finishUpload（uploadId），响应分别为upload/upload/resource；query上传状态使用{case:"upload",value:{uploadId}}，取消用cancelUpload返回resource。请求上下文需requestId，principal仅由受信宿主注入。成功资产才能用于Scene，不能读取或渲染未完成内容。错误时读取状态或显式cancel，不做无界自动重试；不要把source标签当许可或科学来源证明。SDK不能直接访问Rust内存或绕过配额；本增量不是完整网络加载器或PNG/JPEG导入接口。
+
+上传块幂等历史仅保留长度与SHA-256指纹，不长期保留块内容。正常命令历史耗尽后普通写入仍拒绝，核心保留至多4个会话取消及一次Stop的独立成功回执空间；无效取消不能消耗该空间。取消/Stop请使用新的requestId且不附过期timeGeneration；相同请求重试仍得到原回执。

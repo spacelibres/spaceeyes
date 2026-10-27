@@ -9,6 +9,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 mod budget;
 pub use budget::{FrameReservation, ResourceClass, ResourceLimits, ResourceUsage};
+mod upload;
+pub use upload::*;
 static NEXT_MANAGER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -24,6 +26,9 @@ pub enum ResourceError {
     InvalidState,
     StaleLoad,
     NotReady,
+    PermissionDenied,
+    InvalidUpload,
+    DigestMismatch,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ResourceBudget {
@@ -59,6 +64,8 @@ pub struct LoadToken {
 }
 #[derive(Clone, Debug)]
 struct Entry {
+    source: Option<UploadSource>,
+    uploading: bool,
     class: ResourceClass,
     state: ResourceState,
     load_sequence: u64,
@@ -72,6 +79,7 @@ struct Entry {
 /// Portable CPU contents or a declaration, without lease or load identities.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ResourceRecord {
+    pub source: Option<UploadSource>,
     pub class: ResourceClass,
     pub id: ResourceId,
     pub bytes: u64,
@@ -82,6 +90,8 @@ pub struct ResourceRecord {
 }
 #[derive(Clone)]
 pub struct ResourceManager {
+    uploads: HashMap<String, upload::UploadSession>,
+    next_upload: u64,
     identity: u64,
     entries: HashMap<ResourceId, Entry>,
     active: HashMap<u64, LeaseId>,
@@ -98,6 +108,8 @@ impl ResourceManager {
     }
     pub fn with_limits(limits: ResourceLimits) -> Self {
         Self {
+            uploads: HashMap::new(),
+            next_upload: 0,
             identity: NEXT_MANAGER
                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
                 .expect("resource identity exhausted"),
@@ -115,8 +127,9 @@ impl ResourceManager {
         let mut records: Vec<_> = self
             .entries
             .iter()
-            .filter(|(_, e)| e.class == ResourceClass::Cpu)
+            .filter(|(_, e)| e.class == ResourceClass::Cpu && !e.uploading)
             .map(|(id, e)| ResourceRecord {
+                source: e.source.clone(),
                 class: e.class,
                 id: id.clone(),
                 bytes: e.bytes,
@@ -141,6 +154,18 @@ impl ResourceManager {
     ) -> Result<Self, ResourceError> {
         let mut result = Self::with_limits(limits);
         for record in records {
+            if let Some(source) = &record.source {
+                source.validate()?;
+                let bytes = record
+                    .data
+                    .as_deref()
+                    .or_else(|| record.texture.as_ref().map(|t| t.rgba8()))
+                    .ok_or(ResourceError::InvalidState)?;
+                if record.logical_only || record.bytes > MAX_UPLOAD_BYTES {
+                    return Err(ResourceError::InvalidState);
+                }
+                upload::verify_digest(source, bytes)?;
+            }
             if record.class != ResourceClass::Cpu {
                 return Err(ResourceError::InvalidState);
             }
@@ -156,6 +181,8 @@ impl ResourceManager {
                     return Err(ResourceError::InvalidSize);
                 }
                 result.register_texture(record.id.clone(), texture.clone())?;
+                result.entries.get_mut(&record.id).expect("restored").source =
+                    record.source.clone();
                 continue;
             }
             if let Some(mesh) = &record.mesh {
@@ -177,6 +204,7 @@ impl ResourceManager {
                     result.complete_load(&token, bytes.clone())?;
                 }
             }
+            result.entries.get_mut(&record.id).expect("restored").source = record.source.clone();
         }
         Ok(result)
     }
@@ -279,6 +307,8 @@ impl ResourceManager {
         self.entries.insert(
             id,
             Entry {
+                source: None,
+                uploading: false,
                 class,
                 state: ResourceState::Registered,
                 load_sequence: 0,
@@ -389,6 +419,7 @@ impl ResourceManager {
         entry.data.as_deref().ok_or(ResourceError::NotReady)
     }
     pub fn clear(&mut self) {
+        self.uploads.clear();
         self.entries.clear();
         self.active.clear();
         self.used = 0;
@@ -408,6 +439,9 @@ impl ResourceManager {
     /// Pin a declared project reference during degraded restore; reading still requires Ready data.
     pub fn lease_reference(&mut self, id: &ResourceId) -> Result<LeaseId, ResourceError> {
         let entry = self.entries.get(id).ok_or(ResourceError::Unknown)?;
+        if entry.uploading {
+            return Err(ResourceError::NotReady);
+        }
         let count = entry.leases.checked_add(1).ok_or(ResourceError::Overflow)?;
         let sequence = self
             .next_lease
@@ -444,6 +478,9 @@ impl ResourceManager {
     }
     pub fn unregister(&mut self, id: &ResourceId) -> Result<(), ResourceError> {
         let entry = self.entries.get(id).ok_or(ResourceError::Unknown)?;
+        if entry.uploading {
+            return Err(ResourceError::InvalidState);
+        }
         if entry.leases > 0 {
             return Err(ResourceError::StillLeased);
         }

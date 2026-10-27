@@ -132,3 +132,10 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 
 ## M3-1a 分层资源预算契约（0.0.1开发增量）
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。
+
+## M3-1b 有界资源上传（0.0.1开发增量）
+公开操作resources.begin_upload/append_upload/finish_upload/cancel_upload及query.upload。单资源非空且最多16MiB，单块非空且最多256KiB，最多4个在途会话；还受宿主CPU/Staging及总额限制，消息上限仍1MiB。begin原子预留等长CPU目标和Staging，会话由Rust生成且绑定宿主注入principal，偏移必须等于已收字节，不接受重叠/跳块。申请源source_id最多256字节、source_version最多128字节，均非空；SHA-256必须32字节并对完整实际内容验证，标签/摘要不是科学认证。
+
+格式仅Bytes（width/height/color_space均缺省）与RGBA8（显式宽高和Linear/SRGB，最多2048×2048，alpha=255）。finish缺块拒绝并保留可追加会话；完整内容摘要/类型失败自动取消并释放，成功变成Ready CPU资产且释放Staging；取消或Stop后迟到消息不能复活条目。源信息随完成资源记录保存，恢复重新验摘要；上传中记录和缓冲不导出。查询不返内容、不推进时间/命令历史。重试必须复用原请求ID及相同字节，不能换ID重复偏移；原ID重试得到历史回执，不意味着会话仍存活，应读query.upload。墙钟超时、网络/磁盘I/O、压缩解码、网格大包及插件整体所有权由M3后续实现。
+
+M3-1b幂等清理约束：上传块历史只保留会话/偏移/长度/SHA-256指纹，拒绝和完成路径均不保留payload。正常历史耗尽仍阻止新业务写入，独立有界清理回执空间保留当前最多4个上传取消及一次Stop；失败清理不耗该空间，成功清理重试仍返回原回执。

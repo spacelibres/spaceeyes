@@ -10,6 +10,20 @@ use spaceeyes_time::{TimeGeneration, TimeInstant};
 use std::collections::{BTreeMap, VecDeque};
 #[derive(Clone, Debug, PartialEq)]
 pub enum Command {
+    BeginUpload {
+        descriptor: spaceeyes_resources::UploadDescriptor,
+    },
+    AppendUpload {
+        upload_id: String,
+        offset: u64,
+        data: Vec<u8>,
+    },
+    FinishUpload {
+        upload_id: String,
+    },
+    CancelUpload {
+        upload_id: String,
+    },
     FocusCamera {
         expected_revision: Revision,
         camera: spaceeyes_foundation::ObjectId,
@@ -47,6 +61,7 @@ pub enum Command {
     Seek(TimeInstant),
     Step(i128),
 }
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum DispatchError {
     InvalidContext,
@@ -61,6 +76,8 @@ pub enum DispatchError {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CommandReceipt {
+    pub upload: Option<spaceeyes_resources::UploadStatus>,
+    pub upload_resource: Option<spaceeyes_foundation::ResourceId>,
     pub command_sequence: u64,
     pub frame_sequence: u64,
     pub scene_revision: Revision,
@@ -87,8 +104,61 @@ pub struct CommitEvent {
     pub receipt: CommandReceipt,
 }
 #[derive(Clone)]
+enum RecordedCommand {
+    AppendUpload {
+        upload_id: String,
+        offset: u64,
+        length: usize,
+        sha256: [u8; 32],
+    },
+    Other(Command),
+}
+impl RecordedCommand {
+    fn from_command(command: Command) -> Self {
+        match command {
+            Command::AppendUpload {
+                upload_id,
+                offset,
+                data,
+            } => Self::AppendUpload {
+                upload_id,
+                offset,
+                length: data.len(),
+                sha256: spaceeyes_resources::upload_digest(&data),
+            },
+            other => Self::Other(other),
+        }
+    }
+    fn matches(&self, command: &Command) -> bool {
+        match (self, command) {
+            (
+                Self::AppendUpload {
+                    upload_id,
+                    offset,
+                    length,
+                    sha256,
+                },
+                Command::AppendUpload {
+                    upload_id: id,
+                    offset: start,
+                    data,
+                },
+            ) => {
+                upload_id == id
+                    && offset == start
+                    && *length == data.len()
+                    && *sha256 == spaceeyes_resources::upload_digest(data)
+            }
+            (Self::Other(other), command) => other == command,
+            _ => false,
+        }
+    }
+}
+const CLEANUP_HISTORY_CAPACITY: usize = spaceeyes_resources::MAX_UPLOAD_SESSIONS + 1;
+
+#[derive(Clone)]
 struct Record {
-    command: Command,
+    command: RecordedCommand,
     generation: Option<TimeGeneration>,
     result: Result<CommandReceipt, DispatchError>,
 }
@@ -101,6 +171,8 @@ pub struct CommandDispatcher {
     capacity: usize,
     sequence: u64,
     history: BTreeMap<(String, String), Record>,
+    // Once normal history fills, only successful cleanup can consume these fixed slots.
+    cleanup_history: BTreeMap<(String, String), Record>,
     events: VecDeque<CommitEvent>,
 }
 impl CommandDispatcher {
@@ -117,6 +189,7 @@ impl CommandDispatcher {
             capacity,
             sequence: 0,
             history: BTreeMap::new(),
+            cleanup_history: BTreeMap::new(),
             events: VecDeque::new(),
         })
     }
@@ -206,20 +279,30 @@ impl CommandDispatcher {
     ) -> Result<CommandReceipt, DispatchError> {
         self.validate_context(session, principal_scope, request_id)?;
         let key = (principal_scope.to_owned(), request_id.to_owned());
-        if let Some(record) = self.history.get(&key) {
-            return if record.command == command && record.generation == generation {
+        if let Some(record) = self
+            .history
+            .get(&key)
+            .or_else(|| self.cleanup_history.get(&key))
+        {
+            return if record.command.matches(&command) && record.generation == generation {
                 record.result.clone()
             } else {
                 Err(DispatchError::IdempotencyConflict)
             };
         }
-        if self.history.len() >= self.capacity {
+        let cleanup_only = self.history.len() >= self.capacity;
+        if cleanup_only
+            && (!matches!(&command, Command::CancelUpload { .. } | Command::Stop)
+                || self.cleanup_history.len() >= CLEANUP_HISTORY_CAPACITY)
+        {
             return Err(DispatchError::HistoryFull);
         }
         let sequence = self
             .sequence
             .checked_add(1)
             .ok_or(DispatchError::Overflow)?;
+        let mut upload = None;
+        let mut upload_resource = None;
         let result = if generation.is_some_and(|g| g != self.engine.clock().generation()) {
             Err(DispatchError::StaleGeneration)
         } else if let Command::FocusCamera {
@@ -265,6 +348,39 @@ impl CommandDispatcher {
                     .map(|_| ())
                     .map_err(DispatchError::Spatial)
             }
+        } else if let Command::BeginUpload { descriptor } = &command {
+            self.engine
+                .begin_upload(principal_scope, descriptor.clone())
+                .map(|status| {
+                    upload = Some(status);
+                })
+                .map_err(DispatchError::Resource)
+        } else if let Command::AppendUpload {
+            upload_id,
+            offset,
+            data,
+        } = &command
+        {
+            self.engine
+                .append_upload(principal_scope, upload_id, *offset, data)
+                .map(|status| {
+                    upload = Some(status);
+                })
+                .map_err(DispatchError::Resource)
+        } else if let Command::FinishUpload { upload_id } = &command {
+            self.engine
+                .finish_upload(principal_scope, upload_id)
+                .map(|id| {
+                    upload_resource = Some(id);
+                })
+                .map_err(DispatchError::Resource)
+        } else if let Command::CancelUpload { upload_id } = &command {
+            self.engine
+                .cancel_upload(principal_scope, upload_id)
+                .map(|id| {
+                    upload_resource = Some(id);
+                })
+                .map_err(DispatchError::Resource)
         } else if let Command::RegisterTexture { id, texture } = &command {
             self.engine
                 .register_texture_resource(id.clone(), texture.clone())
@@ -275,7 +391,11 @@ impl CommandDispatcher {
                 .map_err(DispatchError::Resource)
         } else {
             match &command {
-                Command::FocusCamera { .. }
+                Command::BeginUpload { .. }
+                | Command::AppendUpload { .. }
+                | Command::FinishUpload { .. }
+                | Command::CancelUpload { .. }
+                | Command::FocusCamera { .. }
                 | Command::RegisterRootFrame { .. }
                 | Command::RegisterChildFrame { .. }
                 | Command::RegisterTexture { .. }
@@ -308,6 +428,8 @@ impl CommandDispatcher {
             .map_err(DispatchError::Domain)
         }
         .map(|()| CommandReceipt {
+            upload,
+            upload_resource,
             command_sequence: sequence,
             frame_sequence: self.engine.frame_sequence,
             scene_revision: self.engine.scene().revision(),
@@ -326,14 +448,22 @@ impl CommandDispatcher {
                 receipt: receipt.clone(),
             });
         }
-        self.history.insert(
-            key,
-            Record {
-                command,
-                generation,
-                result: result.clone(),
-            },
-        );
+        // Failed cleanup must not prevent valid owners from releasing existing uploads.
+        if !cleanup_only || result.is_ok() {
+            let history = if cleanup_only {
+                &mut self.cleanup_history
+            } else {
+                &mut self.history
+            };
+            history.insert(
+                key,
+                Record {
+                    command: RecordedCommand::from_command(command),
+                    generation,
+                    result: result.clone(),
+                },
+            );
+        }
         result
     }
 }
@@ -422,5 +552,243 @@ impl CommandDispatcher {
             state.clone(),
         ));
         Ok((state, unresolved))
+    }
+}
+
+#[cfg(test)]
+mod upload_history_tests {
+    use super::*;
+    use spaceeyes_foundation::ResourceId;
+    use spaceeyes_resources::{ResourceError, UploadDescriptor, UploadFormat, UploadSource};
+
+    fn dispatcher(capacity: usize) -> CommandDispatcher {
+        CommandDispatcher::new(
+            Engine::new(TimeInstant::new("TT", "epoch", 0, 0).unwrap()),
+            "session".into(),
+            capacity,
+        )
+        .unwrap()
+    }
+    fn begin(d: &mut CommandDispatcher, request: &str) -> String {
+        d.submit(
+            "session",
+            "alice",
+            request,
+            Command::BeginUpload {
+                descriptor: UploadDescriptor {
+                    resource_id: ResourceId::new(request).unwrap(),
+                    total_bytes: 3,
+                    source: UploadSource {
+                        source_id: "fixture".into(),
+                        source_version: "1".into(),
+                        sha256: [0; 32],
+                    },
+                    format: UploadFormat::Blob,
+                },
+            },
+        )
+        .unwrap()
+        .upload
+        .unwrap()
+        .upload_id
+    }
+    fn append(upload_id: &str, offset: u64, data: &[u8]) -> Command {
+        Command::AppendUpload {
+            upload_id: upload_id.into(),
+            offset,
+            data: data.to_vec(),
+        }
+    }
+    fn assert_released(d: &CommandDispatcher) {
+        let usage = d.engine().resource_usage();
+        assert_eq!(usage.cpu_bytes, 0);
+        assert_eq!(usage.staging_bytes, 0);
+    }
+    fn assert_fingerprint(d: &CommandDispatcher, request: &str, expected_id: &str) {
+        match &d
+            .history
+            .get(&("alice".into(), request.into()))
+            .unwrap()
+            .command
+        {
+            RecordedCommand::AppendUpload {
+                upload_id,
+                offset,
+                length,
+                sha256,
+            } => {
+                assert_eq!(upload_id, expected_id);
+                assert_eq!(*offset, 0);
+                assert_eq!(*length, 3);
+                assert_eq!(
+                    *sha256,
+                    [
+                        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde,
+                        0x5d, 0xae, 0x22, 0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+                        0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad,
+                    ]
+                );
+            }
+            RecordedCommand::Other(_) => panic!("upload history retained the original command"),
+        }
+    }
+    #[test]
+    fn append_history_drops_payload_after_cancel_stop_and_invalid_upload() {
+        for stop in [false, true] {
+            let mut d = dispatcher(8);
+            let id = begin(&mut d, "begin");
+            let receipt = d.submit("session", "alice", "append", append(&id, 0, b"abc"));
+            assert_eq!(
+                d.submit("session", "alice", "append", append(&id, 0, b"abc")),
+                receipt
+            );
+            for changed in [
+                append(&id, 0, b"abd"),
+                append(&id, 1, b"abc"),
+                append(&id, 0, b"ab"),
+                append("other", 0, b"abc"),
+            ] {
+                assert_eq!(
+                    d.submit("session", "alice", "append", changed),
+                    Err(DispatchError::IdempotencyConflict)
+                );
+            }
+            let cleanup = if stop {
+                Command::Stop
+            } else {
+                Command::CancelUpload {
+                    upload_id: id.clone(),
+                }
+            };
+            d.submit("session", "alice", "cleanup", cleanup).unwrap();
+            assert_released(&d);
+            assert_eq!(
+                d.submit("session", "alice", "append", append(&id, 0, b"abc")),
+                receipt
+            );
+            // No history record may retain a chunk, even after its session is gone.
+            assert_fingerprint(&d, "append", &id);
+        }
+    }
+    #[test]
+    fn invalid_upload_append_history_drops_payload() {
+        let mut d = dispatcher(2);
+        let rejected = d.submit("session", "alice", "invalid", append("missing", 0, b"abc"));
+        assert_eq!(
+            rejected,
+            Err(DispatchError::Resource(ResourceError::InvalidUpload))
+        );
+        assert_eq!(
+            d.submit("session", "alice", "invalid", append("missing", 0, b"abc")),
+            rejected
+        );
+        assert_fingerprint(&d, "invalid", "missing");
+    }
+    #[test]
+    fn full_history_allows_idempotent_cancel_without_spending_normal_capacity() {
+        let mut d = dispatcher(1);
+        let id = begin(&mut d, "begin");
+        assert_eq!(d.command_history_remaining(), 0);
+        let command = Command::CancelUpload { upload_id: id };
+        let receipt = d
+            .submit("session", "alice", "cancel", command.clone())
+            .unwrap();
+        assert_eq!(d.submit("session", "alice", "cancel", command), Ok(receipt));
+        assert_released(&d);
+        assert_eq!(d.command_history_capacity(), 1);
+        assert_eq!(d.command_history_remaining(), 0);
+        assert_eq!(
+            d.submit("session", "alice", "write", Command::Start),
+            Err(DispatchError::HistoryFull)
+        );
+        assert_eq!(
+            d.submit("session", "alice", "cancel", Command::Stop),
+            Err(DispatchError::IdempotencyConflict)
+        );
+        assert_eq!(d.events().count(), 1);
+    }
+    #[test]
+    fn invalid_or_unauthorized_cancels_cannot_exhaust_cleanup_capacity() {
+        let mut d = dispatcher(1);
+        let id = begin(&mut d, "begin");
+        for n in 0..16 {
+            assert_eq!(
+                d.submit(
+                    "session",
+                    "alice",
+                    &format!("invalid-{n}"),
+                    Command::CancelUpload {
+                        upload_id: "missing".into()
+                    }
+                ),
+                Err(DispatchError::Resource(ResourceError::InvalidUpload))
+            );
+            assert_eq!(
+                d.submit(
+                    "session",
+                    "bob",
+                    &format!("foreign-{n}"),
+                    Command::CancelUpload {
+                        upload_id: id.clone()
+                    }
+                ),
+                Err(DispatchError::Resource(ResourceError::PermissionDenied))
+            );
+        }
+        assert!(d.cleanup_history.is_empty());
+        assert_eq!(
+            d.engine()
+                .upload_status("alice", &id)
+                .unwrap()
+                .received_bytes,
+            0
+        );
+        d.submit(
+            "session",
+            "alice",
+            "cancel",
+            Command::CancelUpload { upload_id: id },
+        )
+        .unwrap();
+        assert_released(&d);
+    }
+    #[test]
+    fn full_history_stop_releases_all_uploads_and_has_a_stable_receipt() {
+        let mut d = dispatcher(4);
+        for n in 0..4 {
+            begin(&mut d, &format!("begin-{n}"));
+        }
+        let receipt = d.submit("session", "alice", "stop", Command::Stop).unwrap();
+        assert_eq!(
+            d.submit("session", "alice", "stop", Command::Stop),
+            Ok(receipt)
+        );
+        assert_eq!(d.engine().state(), EngineState::Stopped);
+        assert_released(&d);
+        assert_eq!(d.command_history_remaining(), 0);
+    }
+    #[test]
+    fn full_history_can_cancel_all_four_uploads_then_stop() {
+        let mut d = dispatcher(4);
+        let ids: Vec<_> = (0..4)
+            .map(|n| begin(&mut d, &format!("begin-{n}")))
+            .collect();
+        for (n, id) in ids.into_iter().enumerate() {
+            let command = Command::CancelUpload { upload_id: id };
+            let request = format!("cancel-{n}");
+            let receipt = d
+                .submit("session", "alice", &request, command.clone())
+                .unwrap();
+            assert_eq!(d.submit("session", "alice", &request, command), Ok(receipt));
+        }
+        assert_released(&d);
+        d.submit("session", "alice", "stop", Command::Stop).unwrap();
+        assert_eq!(
+            d.submit("session", "alice", "extra-stop", Command::Stop),
+            Err(DispatchError::HistoryFull)
+        );
+        assert_eq!(d.history.len(), 4);
+        assert_eq!(d.cleanup_history.len(), CLEANUP_HISTORY_CAPACITY);
+        assert_eq!(d.events().count(), 4);
     }
 }

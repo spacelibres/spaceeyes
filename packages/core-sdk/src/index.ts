@@ -249,7 +249,10 @@ export class CoreClient {
     exactIntegers(CommandEnvelopeSchema, message);
     const expected =
       payload.case === "resource"
-        ? "resource"
+        ? payload.value.action?.case === "beginUpload" ||
+          payload.value.action?.case === "appendUpload"
+          ? "upload"
+          : "resource"
         : payload.case === "spatial"
           ? "spatial"
           : payload.case === "lifecycle"
@@ -273,17 +276,19 @@ export class CoreClient {
     });
     exactIntegers(QueryEnvelopeSchema, message);
     const expected =
-      payload.case === "sessionStatus"
-        ? "session"
-        : payload.case === "resolveFrame"
-          ? "frame"
-          : payload.case === "pickPresented"
-            ? "selection"
-            : payload.case === "cameraState"
-              ? "camera"
-              : payload.case === "resourceStats"
-                ? "resourceStats"
-                : "capabilities";
+      payload.case === "upload"
+        ? "upload"
+        : payload.case === "sessionStatus"
+          ? "session"
+          : payload.case === "resolveFrame"
+            ? "frame"
+            : payload.case === "pickPresented"
+              ? "selection"
+              : payload.case === "cameraState"
+                ? "camera"
+                : payload.case === "resourceStats"
+                  ? "resourceStats"
+                  : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

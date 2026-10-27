@@ -835,7 +835,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 28);
+    assert_eq!(names.len(), 33);
     assert!(!names
         .iter()
         .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));

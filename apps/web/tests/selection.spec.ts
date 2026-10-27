@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
+import { createHash } from "node:crypto";
+import { PNG } from "pngjs";
 import { test, expect } from "@playwright/test";
 import {
   create,
@@ -12,6 +14,10 @@ import {
   ResponseStatus,
   ErrorCode,
   ObjectLifecycle,
+  ResourceUploadFormat,
+  TextureColorSpace,
+  SamplingFilter,
+  SamplingAddress,
   type CommandPayload,
 } from "@spaceeyes/core-sdk";
 import type { WasmEngine } from "../public/wasm/spaceeyes_wasm.js";
@@ -144,6 +150,71 @@ test("presented selection wire contract rejects stale/deleted frames without wri
         )
       ).status,
     ).toBe(ResponseStatus.COMPLETED);
+    // The typed asset is larger than the public message cap; every chunk stays bounded.
+    const rgba = new Uint8Array(1024 * 512 * 4);
+    for (let i = 0; i < rgba.length; i += 4) rgba.set([0, 255, 64, 255], i);
+    const began = await command(
+      {
+        case: "resource",
+        value: {
+          action: {
+            case: "beginUpload",
+            value: {
+              resourceId: { value: "uploaded-texture" },
+              totalBytes: BigInt(rgba.length),
+              source: {
+                sourceId: "self-generated:green",
+                sourceVersion: "v1",
+                sha256: new Uint8Array(
+                  createHash("sha256").update(rgba).digest(),
+                ),
+              },
+              format: ResourceUploadFormat.RGBA8,
+              width: 1024,
+              height: 512,
+              colorSpace: TextureColorSpace.LINEAR,
+            },
+          },
+        },
+      },
+      "upload:begin",
+    );
+    expect(began.payload.case).toBe("upload");
+    if (began.payload.case !== "upload") throw new Error("expected upload");
+    const uploadId = began.payload.value.uploadId;
+    for (let offset = 0; offset < rgba.length; offset += 262144) {
+      expect(
+        (
+          await command(
+            {
+              case: "resource",
+              value: {
+                action: {
+                  case: "appendUpload",
+                  value: {
+                    uploadId,
+                    offset: BigInt(offset),
+                    data: rgba.slice(offset, offset + 262144),
+                  },
+                },
+              },
+            },
+            `upload:${offset}`,
+          )
+        ).status,
+      ).toBe(ResponseStatus.COMPLETED);
+    }
+    expect(
+      (
+        await command(
+          {
+            case: "resource",
+            value: { action: { case: "finishUpload", value: { uploadId } } },
+          },
+          "upload:finish",
+        )
+      ).status,
+    ).toBe(ResponseStatus.COMPLETED);
     expect(
       (
         await command(
@@ -161,7 +232,17 @@ test("presented selection wire contract rejects stale/deleted frames without wri
                         frameId: { value: "root" },
                         visible: true,
                         lifecycle: ObjectLifecycle.ACTIVE,
-                        sphere: { radiusM: 1, baseColor: { r: 1, g: 0, b: 0 } },
+                        sphere: {
+                          radiusM: 1,
+                          baseColor: { r: 1, g: 1, b: 1 },
+                          material: {
+                            baseColor: { r: 1, g: 1, b: 1 },
+                            texture: { value: "uploaded-texture" },
+                            filter: SamplingFilter.NEAREST,
+                            address: SamplingAddress.CLAMP,
+                            unlit: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -216,13 +297,21 @@ test("presented selection wire contract rejects stale/deleted frames without wri
     const stats = await resourceStats();
     expect(stats.payload.case).toBe("resourceStats");
     if (stats.payload.case === "resourceStats") {
-      expect(stats.payload.value.cpuUsedBytes).toBe(0n);
+      expect(stats.payload.value.cpuUsedBytes).toBe(BigInt(rgba.length));
       expect(stats.payload.value.gpuUsedBytes).toBe(48n * 1024n * 1024n);
       expect(stats.payload.value.stagingUsedBytes).toBe(0n);
       expect(stats.payload.value.totalUsedBytes).toBe(
-        stats.payload.value.gpuUsedBytes,
+        stats.payload.value.gpuUsedBytes + BigInt(rgba.length),
       );
     }
+    const pixels = PNG.sync.read(
+      await page.locator("#pick-test-canvas").screenshot(),
+    );
+    const center = (32 * pixels.width + 32) * 4;
+    expect(pixels.data[center + 1]).toBeGreaterThan(pixels.data[center] + 100);
+    expect(pixels.data[center + 1]).toBeGreaterThan(
+      pixels.data[center + 2] + 100,
+    );
     const before = await capabilities();
     const hit = await query(frame.frameSequence);
     expect(hit.payload.case).toBe("selection");

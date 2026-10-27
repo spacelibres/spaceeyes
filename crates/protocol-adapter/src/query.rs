@@ -152,6 +152,26 @@ impl ProtocolAdapter {
             ));
         }
         let payload = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::query_envelope::Payload::Upload(q) => {
+                crate::uploads::validate_upload_id(&q.upload_id)?;
+                match dispatcher
+                    .engine()
+                    .upload_status(principal_scope, &q.upload_id)
+                {
+                    Ok(upload) => p::response_envelope::Payload::Upload(
+                        crate::uploads::encode_status(&upload),
+                    ),
+                    Err(error) => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            dispatch_error_code(&spaceeyes_engine::DispatchError::Resource(
+                                error.clone(),
+                            )),
+                            format!("{error:?}"),
+                        ))
+                    }
+                }
+            }
             p::query_envelope::Payload::ResourceStats(_) => {
                 let usage = dispatcher.engine().resource_usage();
                 let limits = dispatcher.engine().resource_limits();
@@ -277,6 +297,9 @@ impl ProtocolAdapter {
                             .engine()
                             .resource_limits()
                             .staging_bytes,
+                        max_upload_bytes: spaceeyes_resources::MAX_UPLOAD_BYTES,
+                        max_upload_chunk_bytes: spaceeyes_resources::MAX_UPLOAD_CHUNK_BYTES as u32,
+                        max_active_uploads: spaceeyes_resources::MAX_UPLOAD_SESSIONS as u32,
                         command_history_capacity: dispatcher.command_history_capacity() as u64,
                         command_history_remaining: dispatcher.command_history_remaining() as u64,
                     }),

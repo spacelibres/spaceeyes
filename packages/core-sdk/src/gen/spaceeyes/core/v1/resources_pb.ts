@@ -5,11 +5,11 @@
 // @generated from file spaceeyes/core/v1/resources.proto (package spaceeyes.core.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
 import type { ResourceId } from "./common_pb.js";
 import { file_spaceeyes_core_v1_common } from "./common_pb.js";
-import type { TextureData, TriangleMesh } from "./rendering_pb.js";
+import type { TextureColorSpace, TextureData, TriangleMesh } from "./rendering_pb.js";
 import { file_spaceeyes_core_v1_rendering } from "./rendering_pb.js";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/resources.proto.
  */
 export const file_spaceeyes_core_v1_resources: GenFile = /*@__PURE__*/
-  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZXNvdXJjZXMucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxInkKFFJlZ2lzdGVyTWVzaFJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBItCgRtZXNoGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuVHJpYW5nbGVNZXNoIn4KF1JlZ2lzdGVyVGV4dHVyZVJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBIvCgd0ZXh0dXJlGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZURhdGEipQEKD1Jlc291cmNlQ29tbWFuZBJACg1yZWdpc3Rlcl9tZXNoGAEgASgLMicuc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJNZXNoUmVzb3VyY2VIABJGChByZWdpc3Rlcl90ZXh0dXJlGAIgASgLMiouc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJUZXh0dXJlUmVzb3VyY2VIAEIICgZhY3Rpb24iYQoQUmVzb3VyY2VSZXNwb25zZRIyCgtyZXNvdXJjZV9pZBgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSGQoRcmVzb3VyY2VfcmV2aXNpb24YAiABKAQi+gEKDVJlc291cmNlU3RhdHMSGAoQdG90YWxfdXNlZF9ieXRlcxgBIAEoBBIWCg5jcHVfdXNlZF9ieXRlcxgCIAEoBBIWCg5ncHVfdXNlZF9ieXRlcxgDIAEoBBIaChJzdGFnaW5nX3VzZWRfYnl0ZXMYBCABKAQSGQoRdG90YWxfbGltaXRfYnl0ZXMYBSABKAQSFwoPY3B1X2xpbWl0X2J5dGVzGAYgASgEEhcKD2dwdV9saW1pdF9ieXRlcxgHIAEoBBIbChNzdGFnaW5nX2xpbWl0X2J5dGVzGAggASgEEhkKEXJlc291cmNlX3JldmlzaW9uGAkgASgEIhQKElJlc291cmNlU3RhdHNRdWVyeWIGcHJvdG8z", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_rendering]);
+  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZXNvdXJjZXMucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxInkKFFJlZ2lzdGVyTWVzaFJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBItCgRtZXNoGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuVHJpYW5nbGVNZXNoIn4KF1JlZ2lzdGVyVGV4dHVyZVJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBIvCgd0ZXh0dXJlGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZURhdGEiqwMKD1Jlc291cmNlQ29tbWFuZBJACg1yZWdpc3Rlcl9tZXNoGAEgASgLMicuc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJNZXNoUmVzb3VyY2VIABJGChByZWdpc3Rlcl90ZXh0dXJlGAIgASgLMiouc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJUZXh0dXJlUmVzb3VyY2VIABI+CgxiZWdpbl91cGxvYWQYAyABKAsyJi5zcGFjZWV5ZXMuY29yZS52MS5CZWdpblJlc291cmNlVXBsb2FkSAASQAoNYXBwZW5kX3VwbG9hZBgEIAEoCzInLnNwYWNlZXllcy5jb3JlLnYxLkFwcGVuZFJlc291cmNlVXBsb2FkSAASQAoNZmluaXNoX3VwbG9hZBgFIAEoCzInLnNwYWNlZXllcy5jb3JlLnYxLkZpbmlzaFJlc291cmNlVXBsb2FkSAASQAoNY2FuY2VsX3VwbG9hZBgGIAEoCzInLnNwYWNlZXllcy5jb3JlLnYxLkNhbmNlbFJlc291cmNlVXBsb2FkSABCCAoGYWN0aW9uImEKEFJlc291cmNlUmVzcG9uc2USMgoLcmVzb3VyY2VfaWQYASABKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5SZXNvdXJjZUlkEhkKEXJlc291cmNlX3JldmlzaW9uGAIgASgEIvoBCg1SZXNvdXJjZVN0YXRzEhgKEHRvdGFsX3VzZWRfYnl0ZXMYASABKAQSFgoOY3B1X3VzZWRfYnl0ZXMYAiABKAQSFgoOZ3B1X3VzZWRfYnl0ZXMYAyABKAQSGgoSc3RhZ2luZ191c2VkX2J5dGVzGAQgASgEEhkKEXRvdGFsX2xpbWl0X2J5dGVzGAUgASgEEhcKD2NwdV9saW1pdF9ieXRlcxgGIAEoBBIXCg9ncHVfbGltaXRfYnl0ZXMYByABKAQSGwoTc3RhZ2luZ19saW1pdF9ieXRlcxgIIAEoBBIZChFyZXNvdXJjZV9yZXZpc2lvbhgJIAEoBCIUChJSZXNvdXJjZVN0YXRzUXVlcnkiSwoOUmVzb3VyY2VTb3VyY2USEQoJc291cmNlX2lkGAEgASgJEhYKDnNvdXJjZV92ZXJzaW9uGAIgASgJEg4KBnNoYTI1NhgDIAEoDCKkAgoTQmVnaW5SZXNvdXJjZVVwbG9hZBIyCgtyZXNvdXJjZV9pZBgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSEwoLdG90YWxfYnl0ZXMYAiABKAQSMQoGc291cmNlGAMgASgLMiEuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VTb3VyY2USNwoGZm9ybWF0GAQgASgOMicuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VVcGxvYWRGb3JtYXQSDQoFd2lkdGgYBSABKA0SDgoGaGVpZ2h0GAYgASgNEjkKC2NvbG9yX3NwYWNlGAcgASgOMiQuc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZUNvbG9yU3BhY2UiRwoUQXBwZW5kUmVzb3VyY2VVcGxvYWQSEQoJdXBsb2FkX2lkGAEgASgJEg4KBm9mZnNldBgCIAEoBBIMCgRkYXRhGAMgASgMIikKFEZpbmlzaFJlc291cmNlVXBsb2FkEhEKCXVwbG9hZF9pZBgBIAEoCSIpChRDYW5jZWxSZXNvdXJjZVVwbG9hZBIRCgl1cGxvYWRfaWQYASABKAkiKAoTUmVzb3VyY2VVcGxvYWRRdWVyeRIRCgl1cGxvYWRfaWQYASABKAki0AIKFFJlc291cmNlVXBsb2FkU3RhdHVzEhEKCXVwbG9hZF9pZBgBIAEoCRIyCgtyZXNvdXJjZV9pZBgCIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSFgoOcmVjZWl2ZWRfYnl0ZXMYAyABKAQSEwoLdG90YWxfYnl0ZXMYBCABKAQSMQoGc291cmNlGAUgASgLMiEuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VTb3VyY2USNwoGZm9ybWF0GAYgASgOMicuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VVcGxvYWRGb3JtYXQSDQoFd2lkdGgYByABKA0SDgoGaGVpZ2h0GAggASgNEjkKC2NvbG9yX3NwYWNlGAkgASgOMiQuc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZUNvbG9yU3BhY2UqggEKFFJlc291cmNlVXBsb2FkRm9ybWF0EiYKIlJFU09VUkNFX1VQTE9BRF9GT1JNQVRfVU5TUEVDSUZJRUQQABIgChxSRVNPVVJDRV9VUExPQURfRk9STUFUX0JZVEVTEAESIAocUkVTT1VSQ0VfVVBMT0FEX0ZPUk1BVF9SR0JBOBACYgZwcm90bzM", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_rendering]);
 
 /**
  * @generated from message spaceeyes.core.v1.RegisterMeshResource
@@ -82,6 +82,30 @@ export type ResourceCommand = Message<"spaceeyes.core.v1.ResourceCommand"> & {
      */
     value: RegisterTextureResource;
     case: "registerTexture";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.BeginResourceUpload begin_upload = 3;
+     */
+    value: BeginResourceUpload;
+    case: "beginUpload";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.AppendResourceUpload append_upload = 4;
+     */
+    value: AppendResourceUpload;
+    case: "appendUpload";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.FinishResourceUpload finish_upload = 5;
+     */
+    value: FinishResourceUpload;
+    case: "finishUpload";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.CancelResourceUpload cancel_upload = 6;
+     */
+    value: CancelResourceUpload;
+    case: "cancelUpload";
   } | { case: undefined; value?: undefined };
 };
 
@@ -185,3 +209,240 @@ export type ResourceStatsQuery = Message<"spaceeyes.core.v1.ResourceStatsQuery">
  */
 export const ResourceStatsQuerySchema: GenMessage<ResourceStatsQuery> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_resources, 5);
+
+/**
+ * SHA-256 verifies bytes, not the scientific authority of source labels.
+ *
+ * @generated from message spaceeyes.core.v1.ResourceSource
+ */
+export type ResourceSource = Message<"spaceeyes.core.v1.ResourceSource"> & {
+  /**
+   * @generated from field: string source_id = 1;
+   */
+  sourceId: string;
+
+  /**
+   * @generated from field: string source_version = 2;
+   */
+  sourceVersion: string;
+
+  /**
+   * @generated from field: bytes sha256 = 3;
+   */
+  sha256: Uint8Array;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.ResourceSource.
+ * Use `create(ResourceSourceSchema)` to create a new message.
+ */
+export const ResourceSourceSchema: GenMessage<ResourceSource> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 6);
+
+/**
+ * @generated from message spaceeyes.core.v1.BeginResourceUpload
+ */
+export type BeginResourceUpload = Message<"spaceeyes.core.v1.BeginResourceUpload"> & {
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceId resource_id = 1;
+   */
+  resourceId?: ResourceId | undefined;
+
+  /**
+   * @generated from field: uint64 total_bytes = 2;
+   */
+  totalBytes: bigint;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceSource source = 3;
+   */
+  source?: ResourceSource | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceUploadFormat format = 4;
+   */
+  format: ResourceUploadFormat;
+
+  /**
+   * @generated from field: uint32 width = 5;
+   */
+  width: number;
+
+  /**
+   * @generated from field: uint32 height = 6;
+   */
+  height: number;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TextureColorSpace color_space = 7;
+   */
+  colorSpace: TextureColorSpace;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.BeginResourceUpload.
+ * Use `create(BeginResourceUploadSchema)` to create a new message.
+ */
+export const BeginResourceUploadSchema: GenMessage<BeginResourceUpload> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 7);
+
+/**
+ * @generated from message spaceeyes.core.v1.AppendResourceUpload
+ */
+export type AppendResourceUpload = Message<"spaceeyes.core.v1.AppendResourceUpload"> & {
+  /**
+   * @generated from field: string upload_id = 1;
+   */
+  uploadId: string;
+
+  /**
+   * @generated from field: uint64 offset = 2;
+   */
+  offset: bigint;
+
+  /**
+   * @generated from field: bytes data = 3;
+   */
+  data: Uint8Array;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.AppendResourceUpload.
+ * Use `create(AppendResourceUploadSchema)` to create a new message.
+ */
+export const AppendResourceUploadSchema: GenMessage<AppendResourceUpload> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 8);
+
+/**
+ * @generated from message spaceeyes.core.v1.FinishResourceUpload
+ */
+export type FinishResourceUpload = Message<"spaceeyes.core.v1.FinishResourceUpload"> & {
+  /**
+   * @generated from field: string upload_id = 1;
+   */
+  uploadId: string;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.FinishResourceUpload.
+ * Use `create(FinishResourceUploadSchema)` to create a new message.
+ */
+export const FinishResourceUploadSchema: GenMessage<FinishResourceUpload> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 9);
+
+/**
+ * @generated from message spaceeyes.core.v1.CancelResourceUpload
+ */
+export type CancelResourceUpload = Message<"spaceeyes.core.v1.CancelResourceUpload"> & {
+  /**
+   * @generated from field: string upload_id = 1;
+   */
+  uploadId: string;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.CancelResourceUpload.
+ * Use `create(CancelResourceUploadSchema)` to create a new message.
+ */
+export const CancelResourceUploadSchema: GenMessage<CancelResourceUpload> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 10);
+
+/**
+ * @generated from message spaceeyes.core.v1.ResourceUploadQuery
+ */
+export type ResourceUploadQuery = Message<"spaceeyes.core.v1.ResourceUploadQuery"> & {
+  /**
+   * @generated from field: string upload_id = 1;
+   */
+  uploadId: string;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.ResourceUploadQuery.
+ * Use `create(ResourceUploadQuerySchema)` to create a new message.
+ */
+export const ResourceUploadQuerySchema: GenMessage<ResourceUploadQuery> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 11);
+
+/**
+ * @generated from message spaceeyes.core.v1.ResourceUploadStatus
+ */
+export type ResourceUploadStatus = Message<"spaceeyes.core.v1.ResourceUploadStatus"> & {
+  /**
+   * @generated from field: string upload_id = 1;
+   */
+  uploadId: string;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceId resource_id = 2;
+   */
+  resourceId?: ResourceId | undefined;
+
+  /**
+   * @generated from field: uint64 received_bytes = 3;
+   */
+  receivedBytes: bigint;
+
+  /**
+   * @generated from field: uint64 total_bytes = 4;
+   */
+  totalBytes: bigint;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceSource source = 5;
+   */
+  source?: ResourceSource | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceUploadFormat format = 6;
+   */
+  format: ResourceUploadFormat;
+
+  /**
+   * @generated from field: uint32 width = 7;
+   */
+  width: number;
+
+  /**
+   * @generated from field: uint32 height = 8;
+   */
+  height: number;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TextureColorSpace color_space = 9;
+   */
+  colorSpace: TextureColorSpace;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.ResourceUploadStatus.
+ * Use `create(ResourceUploadStatusSchema)` to create a new message.
+ */
+export const ResourceUploadStatusSchema: GenMessage<ResourceUploadStatus> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 12);
+
+/**
+ * @generated from enum spaceeyes.core.v1.ResourceUploadFormat
+ */
+export enum ResourceUploadFormat {
+  /**
+   * @generated from enum value: RESOURCE_UPLOAD_FORMAT_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RESOURCE_UPLOAD_FORMAT_BYTES = 1;
+   */
+  BYTES = 1,
+
+  /**
+   * @generated from enum value: RESOURCE_UPLOAD_FORMAT_RGBA8 = 2;
+   */
+  RGBA8 = 2,
+}
+
+/**
+ * Describes the enum spaceeyes.core.v1.ResourceUploadFormat.
+ */
+export const ResourceUploadFormatSchema: GenEnum<ResourceUploadFormat> = /*@__PURE__*/
+  enumDesc(file_spaceeyes_core_v1_resources, 0);

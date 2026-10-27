@@ -149,6 +149,34 @@ impl ProtocolAdapter {
             }
             p::command_envelope::Payload::Resource(command) => {
                 match command.action.ok_or(ProtocolError::MissingField)? {
+                    p::resource_command::Action::BeginUpload(c) => Command::BeginUpload {
+                        descriptor: crate::uploads::decode_descriptor(c)?,
+                    },
+                    p::resource_command::Action::AppendUpload(c) => {
+                        crate::uploads::validate_upload_id(&c.upload_id)?;
+                        if c.data.is_empty()
+                            || c.data.len() > spaceeyes_resources::MAX_UPLOAD_CHUNK_BYTES
+                        {
+                            return Err(ProtocolError::InvalidContext);
+                        }
+                        Command::AppendUpload {
+                            upload_id: c.upload_id,
+                            offset: c.offset,
+                            data: c.data,
+                        }
+                    }
+                    p::resource_command::Action::FinishUpload(c) => {
+                        crate::uploads::validate_upload_id(&c.upload_id)?;
+                        Command::FinishUpload {
+                            upload_id: c.upload_id,
+                        }
+                    }
+                    p::resource_command::Action::CancelUpload(c) => {
+                        crate::uploads::validate_upload_id(&c.upload_id)?;
+                        Command::CancelUpload {
+                            upload_id: c.upload_id,
+                        }
+                    }
                     p::resource_command::Action::RegisterMesh(command) => Command::RegisterMesh {
                         id: decode_resource_id(
                             command.resource_id.ok_or(ProtocolError::MissingField)?,
@@ -233,7 +261,16 @@ impl ProtocolAdapter {
                 response.command_sequence = receipt.command_sequence;
                 response.committed_scene_revision = receipt.scene_revision.0;
                 response.frame_sequence = receipt.frame_sequence;
-                response.payload = Some(if spatial {
+                response.payload = Some(if let Some(upload) = &receipt.upload {
+                    p::response_envelope::Payload::Upload(crate::uploads::encode_status(upload))
+                } else if let Some(id) = &receipt.upload_resource {
+                    p::response_envelope::Payload::Resource(p::ResourceResponse {
+                        resource_id: Some(p::ResourceId {
+                            value: id.as_str().into(),
+                        }),
+                        resource_revision: receipt.resource_revision,
+                    })
+                } else if spatial {
                     p::response_envelope::Payload::Spatial(p::SpatialResponse {
                         frame_graph_revision: receipt.frame_graph_revision.0,
                     })
@@ -610,6 +647,12 @@ pub(crate) fn validate_wire_context(context: &p::RequestContext) -> Result<(), P
 }
 pub(crate) fn dispatch_error_code(error: &DispatchError) -> p::ErrorCode {
     match error {
+        DispatchError::Resource(spaceeyes_resources::ResourceError::PermissionDenied) => {
+            p::ErrorCode::PermissionDenied
+        }
+        DispatchError::Resource(spaceeyes_resources::ResourceError::EngineUnavailable) => {
+            p::ErrorCode::EngineUnavailable
+        }
         DispatchError::IdempotencyConflict => p::ErrorCode::IdempotencyConflict,
         DispatchError::StaleGeneration => p::ErrorCode::StaleGeneration,
         DispatchError::Domain(CoreError::RevisionConflict) => p::ErrorCode::RevisionConflict,

@@ -1,10 +1,10 @@
 # SPACEEYES
 
-版本：0.0.1（Rust核心工程初始化）
+版本：0.0.1（原型持续开发）
 
 开源许可：[MIT License](LICENSE)。项目自有源码、Proto定义、脚本及文档采用MIT；依赖和外部资产保留各自许可。
 
-SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust是唯一核心源码，未来编译为WASM与Native；Web界面由独立宿主提供。NASA DYN是未来独立插件，不进入核心。
+SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust是唯一核心源码，已编译为WASM与Native；Web界面由独立宿主提供。NASA DYN是未来独立插件，不进入核心。
 
 ## 当前代码范围
 已实现Scene/Time/Spatial/Simulation/Resources基础状态与事务、共享FrameSnapshot、内部项目状态恢复、Proto同步命令与幂等入口、wgpu球体/通用三角网格、纹理/基础材质与深度遮挡原型、Native示例及WASM字节适配。完整范围、未完成项及依赖见[开发进度与验收](docs/开发进度与验收.md)。已有浏览器最小宿主，仍不是完整太阳系应用，尚无NASA数据插件。
@@ -53,12 +53,12 @@ Native可追加第4个参数：`cargo run -p spaceeyes-native --features gpu --l
 
 ### 公开会话与参考系（M1-1）
 新会话可以经`submit_bytes`创建根参考系、显式时刻的子参考系采样、相机与球体，再Start；`query_bytes`读取会话状态或当前时刻的参考系变换。WASM分别暴露`submit`/`query`，宿主仍须认证和授权。图写入要求expected_revision，查询不消耗命令幂等历史；生命周期重试返回原提交状态，当前状态须查询。Stop终止会话并回收资源，不能重新Start；Paused是播放模式。采样仅在指定时间有效，Seek越出覆盖返回TIME_NOT_COVERED，不伪造位置。命令与查询使用互斥的payload标签，误用入口会拒绝。
-该增量为TS SDK和浏览器画布解除前置阻塞；M1双语言互通与最小能力协商已由M1-2完成，M2-1基础浏览器链路已完成，完整探索交互仍待实现，下一步按[全局交付路线](docs/开发进度与验收.md)推进。
+该增量为TS SDK和浏览器画布解除前置阻塞；M1双语言互通与最小能力协商已由M1-2完成，M2-1基础浏览器链路已完成，M2基本交互已验收，科学探索体验仍待实现，下一步按[全局交付路线](docs/开发进度与验收.md)推进。
 
 ### TS SDK与能力发现（M1-2）
 需要Node >=22（本轮24.19.0，见.node-version）。首次执行`bash tools/setup-sdk.sh`安装锁定npm依赖和与Cargo.lock匹配的wasm-bindgen-cli；完整云安装脚本也包含此步骤。`bash tools/check-sdk.sh`验证同源生成、严格TS类型/格式、Native与真实WASM互通；已纳入`bash tools/check.sh --gpu`。
-SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。宿主创建`CoreClient(wasmTransport(engine, authenticatedPrincipal), sessionId)`后调用`await client.connect(requiredOperations)`；能力发现返回当前27项实际支持操作与限制，不授予权限。使用生成的oneof载荷发送`command`/`query`，写入由调用方提供requestId及修订/代次，64位整数使用bigint。SDK不隐式重试、不持有第二套场景，实例由宿主负责Stop/free。
-运行`bash tools/generate-ts.sh`同步Proto生成文件，`--check`检查漂移；不要手改生成类型。M2-1已接通真实浏览器画布/基础交互；后续按全局规划完善拾取/相机/时间，不把Node互通替代浏览器测试。
+SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。宿主创建`CoreClient(wasmTransport(engine, authenticatedPrincipal), sessionId)`后调用`await client.connect(requiredOperations)`；能力发现返回当前实际支持操作与限制，不授予权限。使用生成的oneof载荷发送`command`/`query`，写入由调用方提供requestId及修订/代次，64位整数使用bigint。SDK不隐式重试、不持有第二套场景，实例由宿主负责Stop/free。
+运行`bash tools/generate-ts.sh`同步Proto生成文件，`--check`检查漂移；不要手改生成类型。M2-1已接通真实浏览器画布/基础交互；M2拾取/相机/时间基本交互已接通；后续按全局规划实现数据与项目，不把Node互通替代浏览器测试。
 
 ### 浏览器宿主（M2-1）
 首次执行`bash tools/setup-web.sh`准备浏览器测试依赖；`bash tools/build-web.sh`生成browser-feature WASM/web绑定并构建Next.js生产宿主，`npm run start --workspace @spaceeyes/web`启动。验证使用`bash tools/check-web.sh`，已加入完整检查。详见[宿主说明](apps/web/README.md)。
@@ -72,3 +72,6 @@ SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。
 
 ### 精确时间控制（M2-4）
 支持正反向倍速、暂停时±1秒步进和精确到纳秒的显式历元相对秒跳转。输入通过BigInt映射核心时间，支持负小数及超JS安全整数的秒值；错误输入不改变时钟或中断会话。M2基本交互出口已验收，下一步按M3推进有界资源与项目恢复；科学时间轴及UTC换算仍未实现。
+
+### 全设计核对与M3资源入口
+设计要求尚未全部实现，逐项状态、代码/测试依据、剩余工作和集中验收顺序见[全设计要求实现与集中验收台账](docs/全设计要求实现与集中验收台账.md)。已验收M3-1a总额/CPU/GPU/Staging逻辑预算；M3-1b追加有界Bytes/RGBA8上传、来源SHA-256与取消，不扩大1MiB消息边界。每个新增候选以自身SHA的本地完整检查与GitHub CI为准。完整项目文件、宿主执行器、受限插件、科学数据、市场与模型闭环继续按M3—M7分批实施。

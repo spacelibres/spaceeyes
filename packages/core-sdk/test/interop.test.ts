@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   spawn,
   spawnSync,
@@ -24,6 +25,7 @@ import {
   EngineLifecycle,
   ObjectLifecycle,
   TextureColorSpace,
+  ResourceUploadFormat,
   SamplingFilter,
   SamplingAddress,
   TimeScale,
@@ -216,7 +218,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 28);
+    assert.equal(caps.operations.length, 33);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));
@@ -1073,4 +1075,200 @@ test("synthetic u64/i64 boundaries roundtrip from generated TS through Rust and 
     ),
     encoded,
   );
+});
+
+test("bounded uploads move a texture larger than one message through Native and WASM with the same semantics", async () => {
+  const outcomes: unknown[] = [];
+  const rgba = new Uint8Array(1024 * 512 * 4).fill(255);
+  const sha256 = new Uint8Array(createHash("sha256").update(rgba).digest());
+  for (const backend of ["native", "wasm"] as const) {
+    const h = host(backend);
+    try {
+      const client = new CoreClient(h.transport, session);
+      const caps = await client.connect([
+        "resources.begin_upload",
+        "resources.append_upload",
+        "resources.finish_upload",
+        "resources.cancel_upload",
+        "query.upload",
+      ]);
+      assert.equal(caps.limits!.maxMessageBytes, 1048576);
+      assert.equal(caps.limits!.maxUploadBytes, 16n * 1024n * 1024n);
+      assert.equal(caps.limits!.maxUploadChunkBytes, 262144);
+      assert.equal(caps.limits!.maxActiveUploads, 4);
+      const beginPayload: CommandPayload = {
+        case: "resource",
+        value: {
+          action: {
+            case: "beginUpload",
+            value: {
+              resourceId: { value: "large-texture" },
+              totalBytes: BigInt(rgba.length),
+              source: {
+                sourceId: "self-generated:opaque-white",
+                sourceVersion: "v1",
+                sha256,
+              },
+              format: ResourceUploadFormat.RGBA8,
+              width: 1024,
+              height: 512,
+              colorSpace: TextureColorSpace.SRGB,
+            },
+          },
+        },
+      };
+      const begun = await client.command(beginPayload, {
+        requestId: "begin-large",
+      });
+      assert.deepEqual(
+        await client.command(beginPayload, { requestId: "begin-large" }),
+        begun,
+      );
+      assert.equal(begun.payload.case, "upload");
+      if (begun.payload.case !== "upload") throw new Error("expected upload");
+      const uploadId = begun.payload.value.uploadId;
+      const stats = async () => {
+        const r = await client.query(
+          { case: "resourceStats", value: {} },
+          { requestId: "stats" },
+        );
+        if (r.payload.case !== "resourceStats")
+          throw new Error("expected stats");
+        return r.payload.value;
+      };
+      let usage = await stats();
+      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length));
+      assert.equal(usage.stagingUsedBytes, BigInt(rgba.length));
+      for (let offset = 0; offset < rgba.length; offset += 262144) {
+        const payload: CommandPayload = {
+          case: "resource",
+          value: {
+            action: {
+              case: "appendUpload",
+              value: {
+                uploadId,
+                offset: BigInt(offset),
+                data: rgba.slice(offset, offset + 262144),
+              },
+            },
+          },
+        };
+        const r = await client.command(payload, {
+          requestId: `chunk:${offset}`,
+        });
+        assert.deepEqual(
+          await client.command(payload, { requestId: `chunk:${offset}` }),
+          r,
+        );
+        assert.equal(r.payload.case, "upload");
+        if (r.payload.case === "upload")
+          assert.equal(r.payload.value.receivedBytes, BigInt(offset + 262144));
+      }
+      const status = await client.query(
+        { case: "upload", value: { uploadId } },
+        { requestId: "progress" },
+      );
+      if (status.payload.case !== "upload") throw new Error("expected upload");
+      assert.equal(status.payload.value.receivedBytes, BigInt(rgba.length));
+      const finish: CommandPayload = {
+        case: "resource",
+        value: { action: { case: "finishUpload", value: { uploadId } } },
+      };
+      const done = await client.command(finish, { requestId: "finish" });
+      assert.deepEqual(
+        await client.command(finish, { requestId: "finish" }),
+        done,
+      );
+      usage = await stats();
+      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length));
+      assert.equal(usage.stagingUsedBytes, 0n);
+      assert.equal(usage.totalUsedBytes, BigInt(rgba.length));
+      await assert.rejects(
+        client.query(
+          { case: "upload", value: { uploadId } },
+          { requestId: "late" },
+        ),
+        CoreRemoteError,
+      );
+      const again = await client.command(
+        {
+          case: "resource",
+          value: {
+            action: {
+              case: "beginUpload",
+              value: {
+                resourceId: { value: "stop-inflight" },
+                totalBytes: BigInt(rgba.length),
+                source: {
+                  sourceId: "self-generated:opaque-white",
+                  sourceVersion: "v1",
+                  sha256,
+                },
+                format: ResourceUploadFormat.RGBA8,
+                width: 1024,
+                height: 512,
+                colorSpace: TextureColorSpace.SRGB,
+              },
+            },
+          },
+        },
+        { requestId: "begin-stop" },
+      );
+      assert.equal(again.payload.case, "upload");
+      if (again.payload.case !== "upload") throw new Error("expected upload");
+      const cancelPayload: CommandPayload = {
+        case: "resource",
+        value: {
+          action: {
+            case: "cancelUpload",
+            value: { uploadId: again.payload.value.uploadId },
+          },
+        },
+      };
+      const cancelled = await client.command(cancelPayload, {
+        requestId: "cancel",
+      });
+      assert.deepEqual(
+        await client.command(cancelPayload, { requestId: "cancel" }),
+        cancelled,
+      );
+      usage = await stats();
+      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length));
+      assert.equal(usage.stagingUsedBytes, 0n);
+      await client.command(
+        {
+          case: "resource",
+          value: {
+            action: {
+              case: "beginUpload",
+              value: {
+                resourceId: { value: "stop-final" },
+                totalBytes: BigInt(rgba.length),
+                source: {
+                  sourceId: "self-generated:opaque-white",
+                  sourceVersion: "v1",
+                  sha256,
+                },
+                format: ResourceUploadFormat.RGBA8,
+                width: 1024,
+                height: 512,
+                colorSpace: TextureColorSpace.SRGB,
+              },
+            },
+          },
+        },
+        { requestId: "stop-final-begin" },
+      );
+      await client.command(
+        { case: "lifecycle", value: { action: { case: "stop", value: {} } } },
+        { requestId: "stop" },
+      );
+      usage = await stats();
+      assert.equal(usage.totalUsedBytes, 0n);
+      outcomes.push({ completed: done.payload, afterStop: usage });
+    } finally {
+      await h.close();
+    }
+  }
+  assert.deepEqual(outcomes[0], outcomes[1]);
 });

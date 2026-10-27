@@ -6,6 +6,7 @@ mod dispatch;
 pub mod limits;
 mod presentation;
 mod query;
+mod uploads;
 pub use dispatch::*;
 pub use presentation::{decode_host_frame, HostFrameRequest};
 pub mod generated {

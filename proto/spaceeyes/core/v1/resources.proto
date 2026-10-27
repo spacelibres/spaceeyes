@@ -6,8 +6,18 @@ import "spaceeyes/core/v1/common.proto";
 import "spaceeyes/core/v1/rendering.proto";
 message RegisterMeshResource { ResourceId resource_id=1; TriangleMesh mesh=2; }
 message RegisterTextureResource { ResourceId resource_id=1; TextureData texture=2; }
-message ResourceCommand { oneof action { RegisterMeshResource register_mesh=1; RegisterTextureResource register_texture=2; } }
+message ResourceCommand { oneof action { RegisterMeshResource register_mesh=1; RegisterTextureResource register_texture=2; BeginResourceUpload begin_upload=3; AppendResourceUpload append_upload=4; FinishResourceUpload finish_upload=5; CancelResourceUpload cancel_upload=6; } }
 message ResourceResponse { ResourceId resource_id=1; uint64 resource_revision=2; }
 // Logical reservations, not RSS/VRAM measurements; all byte values use uint64.
 message ResourceStats { uint64 total_used_bytes=1; uint64 cpu_used_bytes=2; uint64 gpu_used_bytes=3; uint64 staging_used_bytes=4; uint64 total_limit_bytes=5; uint64 cpu_limit_bytes=6; uint64 gpu_limit_bytes=7; uint64 staging_limit_bytes=8; uint64 resource_revision=9; }
 message ResourceStatsQuery {}
+
+// SHA-256 verifies bytes, not the scientific authority of source labels.
+message ResourceSource { string source_id=1; string source_version=2; bytes sha256=3; }
+enum ResourceUploadFormat { RESOURCE_UPLOAD_FORMAT_UNSPECIFIED=0; RESOURCE_UPLOAD_FORMAT_BYTES=1; RESOURCE_UPLOAD_FORMAT_RGBA8=2; }
+message BeginResourceUpload { ResourceId resource_id=1; uint64 total_bytes=2; ResourceSource source=3; ResourceUploadFormat format=4; uint32 width=5; uint32 height=6; TextureColorSpace color_space=7; }
+message AppendResourceUpload { string upload_id=1; uint64 offset=2; bytes data=3; }
+message FinishResourceUpload { string upload_id=1; }
+message CancelResourceUpload { string upload_id=1; }
+message ResourceUploadQuery { string upload_id=1; }
+message ResourceUploadStatus { string upload_id=1; ResourceId resource_id=2; uint64 received_bytes=3; uint64 total_bytes=4; ResourceSource source=5; ResourceUploadFormat format=6; uint32 width=7; uint32 height=8; TextureColorSpace color_space=9; }

@@ -7,3 +7,4 @@ repository.workspace = true
 [dependencies]
 spaceeyes-geometry = { path = "../geometry" }
 spaceeyes-foundation = { path = "../foundation" }
+sha2 = "=0.11.0"
