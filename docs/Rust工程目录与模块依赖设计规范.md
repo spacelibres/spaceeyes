@@ -125,3 +125,7 @@ foundation中的FrameSnapshot只读值类型与engine发布行为的具体拆分
 
 ## 16. 后续阶段
 第12阶段设计核心生命周期、对象状态快照与恢复规则；保持第08至11阶段的对象、协议、命令及目录定义一致。当前只提交Markdown设计文档。
+
+
+## 17. 第13阶段快照与依赖归属澄清
+SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独立无环snapshot-types，Engine负责构造及原子发布FrameSnapshot，Renderer只消费其只读接口。ProjectSnapshot属于协议与项目持久化设计，不作为foundation中的GPU资源对象。协议适配层依赖Engine公开Facade，不能反向成为Engine的编译依赖。项目恢复由Engine协调，WASM/Native只提供平台I/O与资源重建适配。
