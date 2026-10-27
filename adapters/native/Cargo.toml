@@ -1,0 +1,20 @@
+[package]
+name = "spaceeyes-native"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+spaceeyes-engine = { path = "../../crates/engine" }
+spaceeyes-foundation = { path = "../../crates/foundation" }
+spaceeyes-scene = { path = "../../crates/scene" }
+spaceeyes-spatial = { path = "../../crates/spatial" }
+spaceeyes-time = { path = "../../crates/time" }
+spaceeyes-rendering = { path = "../../crates/rendering", features = ["gpu"], optional = true }
+pollster = { version = "0.4", optional = true }
+
+[features]
+default = []
+gpu = ["dep:spaceeyes-rendering", "dep:pollster", "spaceeyes-engine/gpu"]
+[[bin]]
+name = "spaceeyes-native"
+path = "src/main.rs"
+required-features = ["gpu"]

@@ -1,0 +1,9 @@
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/spatial.proto";
+message PerspectiveProjection { double vertical_fov_radians=1; double near_m=2; double far_m=3; }
+message Projection { oneof kind { PerspectiveProjection perspective=1; } }
+// The owning SceneObject supplies the camera identity and FrameId.
+message CameraState { Vector3d position_m=4; Quaterniond orientation=5; Projection projection=6; }
+message ColorRgb { float r=1; float g=2; float b=3; }
+message SpherePrimitive { double radius_m=1; ColorRgb base_color=2; }

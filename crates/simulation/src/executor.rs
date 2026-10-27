@@ -1,6 +1,6 @@
 //! Platform-neutral task execution contract and bounded dispatch policy.
 //! Native and WASM hosts may execute issued tasks differently.
-use crate::{SimulationScheduler, TaskError, TaskRequest, TaskStatus};
+use crate::{SimulationScheduler, TaskError, TaskRequest};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TaskBudget {
@@ -12,7 +12,10 @@ impl TaskBudget {
         if max_in_flight == 0 || max_queued == 0 {
             return Err(TaskError::InvalidBudget);
         }
-        Ok(Self { max_in_flight, max_queued })
+        Ok(Self {
+            max_in_flight,
+            max_queued,
+        })
     }
 }
 
@@ -21,7 +24,9 @@ impl TaskBudget {
 pub trait TaskExecutor {
     fn dispatch(&mut self, task: TaskRequest) -> Result<(), TaskError>;
     /// Best-effort host notification; the scheduler rejects late results regardless.
-    fn request_cancel(&mut self, _task_id: &str) -> Result<(), TaskError> { Ok(()) }
+    fn request_cancel(&mut self, _task_id: &str) -> Result<(), TaskError> {
+        Ok(())
+    }
 }
 
 /// Issues ready tasks in stable order up to available in-flight slots.
@@ -35,7 +40,10 @@ pub fn dispatch_ready(
     let slots = budget.max_in_flight.saturating_sub(active);
     let mut dispatched = Vec::new();
     for id in scheduler.ready_tasks().into_iter().take(slots) {
-        let request = scheduler.request(&id).ok_or(TaskError::UnknownTask)?.clone();
+        let request = scheduler
+            .request(&id)
+            .ok_or(TaskError::UnknownTask)?
+            .clone();
         scheduler.start(&id)?;
         if let Err(error) = executor.dispatch(request) {
             scheduler.fail(&id)?;
@@ -60,6 +68,7 @@ pub fn enqueue_bounded(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::TaskStatus;
     use spaceeyes_time::{TimeGeneration, TimeInstant};
 
     #[derive(Default)]
@@ -84,10 +93,19 @@ mod tests {
         let budget = TaskBudget::new(1, 2).unwrap();
         enqueue_bounded(&mut scheduler, budget, task("b")).unwrap();
         enqueue_bounded(&mut scheduler, budget, task("a")).unwrap();
-        assert_eq!(enqueue_bounded(&mut scheduler, budget, task("c")), Err(TaskError::QueueFull));
+        assert_eq!(
+            enqueue_bounded(&mut scheduler, budget, task("c")),
+            Err(TaskError::QueueFull)
+        );
         let mut executor = Recorder::default();
-        assert_eq!(dispatch_ready(&mut scheduler, budget, &mut executor).unwrap(), vec!["a"]);
-        assert_eq!(dispatch_ready(&mut scheduler, budget, &mut executor).unwrap(), Vec::<String>::new());
+        assert_eq!(
+            dispatch_ready(&mut scheduler, budget, &mut executor).unwrap(),
+            vec!["a"]
+        );
+        assert_eq!(
+            dispatch_ready(&mut scheduler, budget, &mut executor).unwrap(),
+            Vec::<String>::new()
+        );
         assert_eq!(scheduler.status("a"), Some(TaskStatus::Running));
     }
 }

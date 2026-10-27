@@ -104,3 +104,6 @@ Engine为Simulation任务持有逻辑资源租约，在取消、过期、失败�
 
 ## 0.0.1租约身份强化
 ResourceManager新增不透明LeaseId，包含内部资源代次与唯一租约序列。每次注册同一ResourceId时递增代次，重复释放、旧租约释放及共享租约误释放均拒绝。Engine持有任务对应LeaseId而非裸ResourceId，保持Resources唯一所有权。租约目前仅进程内有效，不属于公开Proto凭证。
+
+## 0.0.1受控CPU加载与对象租约
+新增Declared/Loading/Ready/Failed/Cancelled状态及不透明LoadToken。声明时预留字节预算；宿主负责读取字节，完成时校验资源代次、加载序列及实际字节数，失败/取消后的迟到结果不得发布Ready。仅Registered（兼容逻辑登记）和Ready允许租约。CPU字节由Resources保存，消费者通过租约读取不可变数据。Scene对象删除/变更引用由Engine释放对应租约，共享资源不被自动注销。GPU、磁盘缓存、网络加载由后续适配实现，不把逻辑登记视为完成加载。

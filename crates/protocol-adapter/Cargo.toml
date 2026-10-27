@@ -3,6 +3,8 @@ name = "spaceeyes-protocol-adapter"
 version.workspace = true
 edition.workspace = true
 [dependencies]
+spaceeyes-engine = { path = "../engine" }
+spaceeyes-scene = { path = "../scene" }
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-time = { path = "../time" }
 prost = "0.13"

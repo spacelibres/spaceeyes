@@ -97,7 +97,7 @@ NASA Dynamo作为未来首个独立数据插件，其下载、缓存、DYN解析
 AI未来通过版本化SKILL.md与SDK开发插件，不能直接依赖crate私有模块。
 
 ## 12. 工程配置与版本规划
-未来Cargo workspace统一管理依赖版本、工具链、features和编译目标。禁止不同crate自行引入冲突版本或复制公共领域类型。项目VERSION、Cargo包版本、文档版本及CHANGELOG在受控发布时统一，当前全部规划为0.0.0。100进1规则为0.0.99→0.1.0。此处不创建Cargo.toml或CI配置。
+未来Cargo workspace统一管理依赖版本、工具链、features和编译目标。禁止不同crate自行引入冲突版本或复制公共领域类型。项目VERSION、Cargo包版本、文档版本及CHANGELOG在受控发布时统一，工程创建前的历史规划基线为0.0.0，当前实现统一版本为0.0.1。100进1规则为0.0.99→0.1.0。此处不创建Cargo.toml或CI配置。
 
 ## 13. 禁止的依赖关系
 - foundation不得依赖engine、scene、rendering或宿主。

@@ -1,0 +1,4 @@
+syntax = "proto3";
+package spaceeyes.core.v1;
+message Vector3d { double x=1; double y=2; double z=3; }
+message Quaterniond { double w=1; double x=2; double y=3; double z=4; }

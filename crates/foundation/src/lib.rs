@@ -17,6 +17,9 @@ pub enum CoreError {
     HasChildren,
     RevisionConflict,
     UnknownObject,
+    UnknownFrame,
+    InvalidHandle,
+    ResourceUnavailable,
     InvalidState,
     AlreadyStopped,
 }
@@ -37,7 +40,9 @@ macro_rules! id_type {
                 }
                 Ok(Self(value))
             }
-            pub fn as_str(&self) -> &str { &self.0 }
+            pub fn as_str(&self) -> &str {
+                &self.0
+            }
         }
     };
 }

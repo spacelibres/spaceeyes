@@ -1,0 +1,18 @@
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+import "spaceeyes/core/v1/time.proto";
+import "spaceeyes/core/v1/rendering.proto";
+enum ObjectLifecycle { OBJECT_LIFECYCLE_UNSPECIFIED=0; OBJECT_LIFECYCLE_ACTIVE=1; }
+message SceneObject { ObjectId object_id=1; optional ObjectId parent_id=2; optional FrameId frame_id=3; bool visible=4; ObjectLifecycle lifecycle=5; repeated ResourceId resources=6; bool unresolved=7; optional CameraState camera=8; optional SpherePrimitive sphere=9; }
+message CreateObject { SceneObject object=1; }
+message RemoveObject { ObjectId object_id=1; }
+message SetParent { ObjectId object_id=1; optional ObjectId parent_id=2; }
+message SetVisibility { ObjectId object_id=1; bool visible=2; }
+message SetFrame { ObjectId object_id=1; optional FrameId frame_id=2; }
+message SetResources { ObjectId object_id=1; repeated ResourceId resources=2; }
+message SetCameraState { ObjectId object_id=1; optional CameraState camera=2; }
+message SetSphere { ObjectId object_id=1; optional SpherePrimitive sphere=2; }
+message SceneCommand { oneof action { CreateObject create=1; RemoveObject remove=2; SetParent set_parent=3; SetVisibility set_visibility=4; SetCameraState set_camera=6; SetFrame set_frame=7; SetResources set_resources=8; SetSphere set_sphere=9; } }
+message SceneTransaction { repeated SceneCommand commands=1; optional uint64 expected_revision=2; }
+message SceneSnapshot { uint64 scene_revision=1; repeated SceneObject objects=2; TimeInstant time=3; }

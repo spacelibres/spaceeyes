@@ -5,6 +5,9 @@ on:
       - 'development/**'
   pull_request:
 
+env:
+  CARGO_BUILD_JOBS: 4
+
 jobs:
   core:
     runs-on: ubuntu-latest
@@ -13,11 +16,32 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+      - name: Version and dependency policy
+        run: python3 tools/check-policy.py
       - name: Format
         run: cargo fmt --all -- --check
       - name: Check workspace
-        run: cargo check --workspace --all-targets
+        run: cargo check --workspace --all-targets --locked
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
       - name: Test workspace
-        run: cargo test --workspace
+        run: cargo test --workspace --locked
+      - name: Build WASM core transport
+        run: cargo build -p spaceeyes-wasm --target wasm32-unknown-unknown --locked
+
+  gpu-prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install software Vulkan
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mesa-vulkan-drivers libvulkan1
+          driver=$(find /usr/share/vulkan/icd.d -name '*lvp*.json' -print -quit)
+          test -n "$driver"
+          echo "VK_DRIVER_FILES=$driver" >> "$GITHUB_ENV"
+          echo "XDG_RUNTIME_DIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Draw and read back pixels
+        run: cargo test --workspace --all-features --locked -- --nocapture

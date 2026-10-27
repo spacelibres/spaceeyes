@@ -1,6 +1,6 @@
 # NASA Dynamo → SpaceEyes Rust/Proto 迁移与验证规范
 
-版本：0.0.0｜状态：待审
+版本：0.0.1｜状态：待审
 
 ## 事实来源
 参考实现：spacelibres/solarsystem/main/src/lib/dynamo/{reader,parse,math,orbit,loader}.ts；更完整的科学求值见src/solar/domain/ephemeris.ts，运行时见src/solar/runtime/explorer-runtime.ts；参考docs/solar-system/ephemeris.md、ephemeris-failures.md与tests/dynamo.test.ts。迁移时须固定具体commit SHA和黄金样本SHA。
@@ -19,3 +19,5 @@ DYN v1/v2小端格式；点类型orb(72B)、pos(56B)、lin(32B)、ori(64B)、qua
 
 ## 验收
 所有五种类型、内联与分段、重复边界、损坏文件、跨语言Proto往返、缺失数据和版本不兼容均有可重现测试。未完成验证的类别不得声称完全支持。
+
+> 2026-10-27版本核查：当前文档版本同步至统一开发版本0.0.1；历史规划/审计内容与许可待核实状态保持不变，不构成新的设计批准或资产授权。

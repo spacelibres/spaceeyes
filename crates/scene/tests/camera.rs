@@ -1,0 +1,54 @@
+use spaceeyes_foundation::{ObjectId, Revision};
+use spaceeyes_scene::{CameraState, Scene, SceneCommand, SceneObject};
+fn camera() -> CameraState {
+    CameraState::new([1.0, 2.0, 3.0], [2.0, 0.0, 0.0, 0.0], 1.0, 0.1, 100.0).unwrap()
+}
+#[test]
+fn camera_is_normalized_and_rejects_invalid_pose_or_projection() {
+    assert_eq!(camera().orientation_wxyz(), [1.0, 0.0, 0.0, 0.0]);
+    for (p, q, fov, near, far) in [
+        ([f64::NAN, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], 1.0, 0.1, 10.0),
+        ([0.0; 3], [0.0; 4], 1.0, 0.1, 10.0),
+        ([0.0; 3], [f64::INFINITY, 0.0, 0.0, 0.0], 1.0, 0.1, 10.0),
+        (
+            [0.0; 3],
+            [1.0, 0.0, 0.0, 0.0],
+            std::f64::consts::PI,
+            0.1,
+            10.0,
+        ),
+        ([0.0; 3], [1.0, 0.0, 0.0, 0.0], 1.0, 0.0, 10.0),
+        ([0.0; 3], [1.0, 0.0, 0.0, 0.0], 1.0, 10.0, 1.0),
+    ] {
+        assert!(CameraState::new(p, q, fov, near, far).is_err());
+    }
+}
+#[test]
+fn camera_component_is_snapshotted_and_removable() {
+    let id = ObjectId::new("camera").unwrap();
+    let mut scene = Scene::new();
+    scene
+        .apply_transaction(
+            Revision(0),
+            &[
+                SceneCommand::Create(SceneObject::new(id.clone())),
+                SceneCommand::SetCamera {
+                    object: id.clone(),
+                    camera: Some(camera()),
+                },
+            ],
+        )
+        .unwrap();
+    let before = scene.snapshot();
+    scene
+        .apply_transaction(
+            Revision(1),
+            &[SceneCommand::SetCamera {
+                object: id.clone(),
+                camera: None,
+            }],
+        )
+        .unwrap();
+    assert!(scene.get(&id).unwrap().camera().is_none());
+    assert_eq!(before.objects[0].camera(), Some(&camera()));
+}

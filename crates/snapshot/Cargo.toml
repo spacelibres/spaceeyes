@@ -1,0 +1,9 @@
+[package]
+name = "spaceeyes-snapshot"
+version.workspace = true
+edition.workspace = true
+[dependencies]
+spaceeyes-foundation = { path = "../foundation" }
+spaceeyes-scene = { path = "../scene" }
+spaceeyes-time = { path = "../time" }
+spaceeyes-spatial = { path = "../spatial" }

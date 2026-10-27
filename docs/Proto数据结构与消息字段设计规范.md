@@ -155,3 +155,12 @@ ProjectSnapshot保存稳定ObjectId、FrameId、ResourceId、Scene状态、Camer
 
 ## 17. 0.0.1首批Proto实现边界（2026-10-27）
 首次建立`proto/spaceeyes/core/v1/common.proto`与`time.proto`，使用prost-build和vendored protoc生成Rust类型；ProtocolAdapter负责显式时间尺度/历元校验及ObjectId、FrameId、ResourceId映射。Schema字段号在当前开发分支作为初始实现使用，**尚未宣布对外冻结**。包名v1是协议命名空间，与项目版本0.0.1不同。未实现Scene、Spatial、Simulation、Rendering、Resources和Core Envelope完整Schema，也未实现TypeScript生成、gRPC服务或NASA DYN插件。旧文中的“仅设计，不创建.proto”属于规划阶段历史说明，当前已进入代码开发。编译与往返测试代码尚待VPS执行。
+
+## 0.0.1同步Scene/Time信封实现
+新增scene.proto与core.proto，延用SceneObject字段1–7及既定SceneCommand基础字段1–4；7为set_frame、8为set_resources扩展，未实现的相机/科学空间消息不以默认值伪装成功。CommandEnvelope字段2沿用单SceneCommand，新增字段7为scene_transaction；Time仍为字段3。适配器校验协议major=1、minor=0、schema_id=spaceeyes.core.v1，拒绝未知版本、缺失前置修订和超大输入。响应status只在真实同步提交后为COMPLETED。Host principal由函数参数提供，不能从Proto自报权限。所有字段仍属于0.0.1开发契约，未正式冻结。
+
+## 0.0.1相机命令切片
+新增spatial.proto数学值类型和rendering.proto的透视Projection、CameraState；CameraState沿用建议的字段4 position_m、5 orientation、6 projection。相机ID及FrameId由包含组件的SceneObject唯一提供，暂不新增重复身份/时刻字段。SceneObject字段8为可选camera；SceneCommand字段6实现set_camera，包含object_id和可选camera，缺省camera表示移除组件。未知/缺少投影拒绝，不静默替换为默认视图。未实现follow_target及正交投影不作为受支持能力。
+
+## 0.0.1球体显示契约
+rendering.proto新增ColorRgb及SpherePrimitive（1 radius_m、2 base_color），均为显示参数。SceneObject字段9保存sphere，SceneCommand字段9为set_sphere（object_id和可选sphere）；缺省sphere表示移除组件。radius/color缺失、非有限或越界均拒绝。兼容既有字段号，不复用SceneCommand字段5。此开发切片不宣布完整RenderPrimitive/材质/纹理Schema冻结。

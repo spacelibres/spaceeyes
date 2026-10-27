@@ -3,9 +3,18 @@ name = "spaceeyes-engine"
 version.workspace = true
 edition.workspace = true
 [dependencies]
+spaceeyes-rendering = { path = "../rendering" }
+spaceeyes-snapshot = { path = "../snapshot" }
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-scene = { path = "../scene" }
 spaceeyes-time = { path = "../time" }
 spaceeyes-spatial = { path = "../spatial" }
 spaceeyes-simulation = { path = "../simulation" }
 spaceeyes-resources = { path = "../resources" }
+
+[features]
+default = []
+gpu = ["spaceeyes-rendering/gpu"]
+
+[dev-dependencies]
+pollster = "0.4"

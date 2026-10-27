@@ -1,5 +1,7 @@
 //! Protobuf is the external exchange boundary; domain types remain authoritative.
 //! This initial slice supports common IDs and explicit time values only.
+mod dispatch;
+pub use dispatch::*;
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));
 }
@@ -12,9 +14,15 @@ pub enum ProtocolError {
     UnsupportedTimeScale,
     InvalidTime,
     InvalidIdentifier,
+    UnsupportedCommand,
+    InvalidContext,
+    MessageTooLarge,
+    UnsupportedVersion,
 }
 impl From<CoreError> for ProtocolError {
-    fn from(_: CoreError) -> Self { Self::InvalidIdentifier }
+    fn from(_: CoreError) -> Self {
+        Self::InvalidIdentifier
+    }
 }
 
 pub fn decode_instant(value: generated::TimeInstant) -> Result<TimeInstant, ProtocolError> {
@@ -65,16 +73,24 @@ mod tests {
     #[test]
     fn unknown_scale_and_missing_epoch_are_rejected() {
         let mut value = generated::TimeInstant {
-            time_scale: 0, epoch_id: "epoch".into(), seconds: 0, nanos: 0,
+            time_scale: 0,
+            epoch_id: "epoch".into(),
+            seconds: 0,
+            nanos: 0,
         };
-        assert_eq!(decode_instant(value.clone()), Err(ProtocolError::UnsupportedTimeScale));
+        assert_eq!(
+            decode_instant(value.clone()),
+            Err(ProtocolError::UnsupportedTimeScale)
+        );
         value.time_scale = generated::TimeScale::Tt as i32;
         value.epoch_id.clear();
         assert_eq!(decode_instant(value), Err(ProtocolError::InvalidTime));
     }
     #[test]
     fn empty_identity_is_rejected() {
-        assert_eq!(decode_object_id(generated::ObjectId { value: " ".into() }),
-            Err(ProtocolError::InvalidIdentifier));
+        assert_eq!(
+            decode_object_id(generated::ObjectId { value: " ".into() }),
+            Err(ProtocolError::InvalidIdentifier)
+        );
     }
 }

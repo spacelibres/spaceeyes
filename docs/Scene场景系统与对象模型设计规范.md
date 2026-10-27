@@ -98,3 +98,12 @@ Engine生命周期与SceneObject生命周期分别定义；Paused只属于Time�
 
 
 > 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
+
+## 0.0.1基础模块补齐
+对象内部句柄绑定Scene注册表身份、ObjectId和创建代次；删除后重建同ID不复用旧句柄，句柄不持久化。新增SetResources声明逻辑资源引用；Engine在Scene事务副本验证后统一分配/释放对象租约，失败不改变Scene或Resources。绑定新的FrameId必须存在；移除后对象仍保留，帧发布标记unresolved。Scene组织父子关系不参与Spatial变换计算。
+
+## 0.0.1相机基础迭代
+相机作为SceneObject的可选CameraState组件，由SceneCommand::SetCamera经Engine事务修改或移除。组件保存相对该对象FrameId的米制位置、WXYZ单位四元数和透视投影参数；构造时拒绝非有限值、退化四元数及非法FOV/裁剪面，内部字段只读。场景父级不改变相机物理姿态。ProjectState与SceneSnapshot保留组件，内部句柄仍不持久化。本轮不实现跟随、聚焦、多视口或正交投影。
+
+## 0.0.1球体显示组件
+SceneObject可选Sphere组件通过SetSphere命令新增、更新或移除；参数构造时校验正有限半径及[0,1]有限线性RGB。组件保持只读，随SceneSnapshot与ProjectState保存。一个对象本轮不能同时作为相机和球体；事务最终校验，失败全量回滚。Engine要求新设球体引用显式FrameId，参考系撤销后仍按原规则unresolved。没有Sphere的普通对象保留原有标记显示。

@@ -1,0 +1,11 @@
+[package]
+name = "spaceeyes-wasm"
+version.workspace = true
+edition.workspace = true
+[lib]
+crate-type = ["cdylib", "rlib"]
+[dependencies]
+spaceeyes-engine = { path = "../../crates/engine" }
+spaceeyes-time = { path = "../../crates/time" }
+spaceeyes-protocol-adapter = { path = "../../crates/protocol-adapter" }
+wasm-bindgen = "0.2"

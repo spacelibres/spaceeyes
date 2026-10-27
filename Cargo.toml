@@ -9,7 +9,10 @@ members = [
   "crates/resources",
   "crates/rendering",
   "crates/engine",
+  "crates/snapshot",
   "crates/protocol-adapter",
+  "adapters/native",
+  "adapters/wasm",
 ]
 
 [workspace.package]
