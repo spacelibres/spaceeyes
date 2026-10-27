@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 本轮Simulation：新增平台中立TaskExecutor接口、TaskBudget有界并发/排队策略、确定性ready任务分发与QueueFull/InvalidBudget错误。Engine接入有界任务登记和宿主执行器分发接口。
+- 修复潜在时间一致性缺口：TaskResult进入ResultReady后，Engine在最终Scene提交前再次校验TimeGeneration与目标时刻，避免连续步进后同代次旧结果提交。
+- 新增预算/分发/时间变化阻止提交的单元测试源码，并同步Simulation设计规范。当前只提供执行适配接口，尚未实现真实异步运行器、CPU时间预算或Resources字节预算。Cargo/CI仍未取得通过证据，版本保持0.0.1。
+
+
+
 - Simulation继续实现：任务依赖登记与前置条件检查、稳定顺序就绪队列、Running/ResultReady/Completed状态分离、取消与失败处理、Seek后的旧代次任务失效、终止时取消未完成任务。
 - Engine接入SimulationScheduler，并通过唯一Scene事务入口协调TaskResult提交；场景事务失败不会误标任务Completed。新增依赖顺序、取消、过期结果、Seek失效及事务冲突单元测试源码。
 - 已同步Simulation规范。当前尚无异步执行器、任务预算、来源覆盖/参考系修订完整校验及Proto协议实现；Cargo/CI未取得通过证据，版本保持0.0.1。
