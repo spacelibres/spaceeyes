@@ -37,7 +37,7 @@
 不推荐用任意字符串+opaque bytes承载所有命令；首期优先使用明确的oneof类型化消息，便于生成SDK、权限审查和AI技能书。保留受控扩展点但不能绕过版本兼容。
 
 ## 5. Scene协议
-公开ObjectId稳定、内部ObjectHandle含代次；SceneCommand候选：CreateObject、DeleteObject、SetParent、SetVisibility、SetSpatialState。ParentId仅是组织关系，FrameId是物理参考系。SceneSnapshot包含scene_revision、time_reference、对象通用状态与资源引用。删除父对象默认拒绝和显式级联是既有待审建议，尚未批准。
+公开ObjectId稳定、内部ObjectHandle含代次；SceneCommand候选：CreateObject、DeleteObject、SetParent、SetVisibility、SetSpatialState。ParentId仅是组织关系，FrameId是物理参考系。SceneSnapshot包含scene_revision、time_reference、对象通用状态与资源引用。删除父对象默认拒绝和显式级联遵循已批准的Scene事务设计约束。
 
 ## 6. Time协议
 TimeInstant必须包含时间尺度和明确零点/历元；候选使用整数秒与亚秒部分，禁止JS Date毫秒作为唯一权威表示。TT/TDB/UTC转换、闰秒和J2000/DYN约定未验证前不冻结字段含义。TimeCommand候选：Play、Pause、Seek、SetRate、Live、Step。TimeGeneration用于拒绝跳转后过期结果，不能简单与每一渲染帧号等同。
@@ -98,3 +98,7 @@ Rendering协议表达相机、绘制原语、材质参数、拾取和显示能�
 
 ## 16. 交叉审查整改对齐（待审）
 FrameSnapshot候选字段：session_id、simulation_instant、time_generation、scene_revision、frame_graph_revision、resource_epoch、frame_sequence。所有写命令经Engine入口。TimeInstant候选time_scale、epoch_id、seconds、subsecond_nanos；科学时间语义及字段号未冻结。ObjectId、FrameId、ResourceId为独立公开身份，内部代次槽位不得暴露为跨进程句柄。
+
+
+## 17. 第13阶段协议边界统一
+公开协议必须区分SceneSnapshot、Engine FrameSnapshot、ProjectSnapshot。FrameSnapshot包含一致的时间、Scene、Spatial及资源修订，ProjectSnapshot只保存可恢复的稳定逻辑状态和来源引用。CommandEnvelope仅进入Engine统一入口；Response的Accepted不等于Completed；Project恢复须有显式命令与生命周期事件。字段设计统一由第09阶段规范维护，禁止建立平行Schema。
