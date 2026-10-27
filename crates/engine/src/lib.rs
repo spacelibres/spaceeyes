@@ -1,4 +1,5 @@
 //! Engine owns session lifecycle, scene command entry, and consistent read snapshots.
+use std::collections::BTreeMap;
 use spaceeyes_foundation::{CoreError, Revision};
 use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
@@ -32,6 +33,7 @@ pub struct Engine {
     simulation: SimulationScheduler,
     task_budget: TaskBudget,
     resources: ResourceManager,
+    task_leases: BTreeMap<String, Vec<ResourceId>>,
     frame_sequence: u64,
 }
 impl Engine {
@@ -44,6 +46,7 @@ impl Engine {
             simulation: SimulationScheduler::new(),
             task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
             resources: ResourceManager::new(ResourceBudget { max_bytes: 256 * 1024 * 1024 }),
+            task_leases: BTreeMap::new(),
             frame_sequence: 0,
         }
     }
@@ -84,6 +87,7 @@ impl Engine {
         if self.state == EngineState::Stopped { return Err(CoreError::AlreadyStopped); }
         self.clock.seek(instant)?;
         self.simulation.invalidate_generation(self.clock.generation());
+        self.release_terminal_task_leases();
         self.frame_sequence += 1;
         Ok(())
     }
@@ -137,14 +141,49 @@ impl Engine {
     /// A host-provided executor handles actual work; Engine only issues ready tasks.
     pub fn dispatch_tasks(&mut self, executor: &mut impl TaskExecutor) -> Result<Vec<String>, TaskError> {
         if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
-        dispatch_ready(&mut self.simulation, self.task_budget, executor)
+        let result = dispatch_ready(&mut self.simulation, self.task_budget, executor);
+        self.release_terminal_task_leases();
+        result
     }
     pub fn start_task(&mut self, id: &str) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
         self.simulation.start(id)
     }
     pub fn cancel_task(&mut self, id: &str) -> Result<(), TaskError> {
-        self.simulation.cancel(id)
+        self.simulation.cancel(id)?;
+        self.release_task_leases(id);
+        Ok(())
+    }
+    pub fn fail_task(&mut self, id: &str) -> Result<(), TaskError> {
+        self.simulation.fail(id)?;
+        self.release_task_leases(id);
+        Ok(())
+    }
+    /// Attach a logical resource lease to an existing nonterminal task.
+    /// The task's lease is owned by Engine, not by the executor or Scene.
+    pub fn attach_task_resource(&mut self, task_id: &str, id: &ResourceId) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped { return Err(ResourceError::EngineUnavailable); }
+        match self.simulation.status(task_id) {
+            Some(TaskStatus::Queued | TaskStatus::Running | TaskStatus::ResultReady) => {},
+            _ => return Err(ResourceError::InvalidLease),
+        }
+        self.resources.lease(id)?;
+        self.task_leases.entry(task_id.to_owned()).or_default().push(id.clone());
+        Ok(())
+    }
+    fn release_task_leases(&mut self, task_id: &str) {
+        if let Some(resources) = self.task_leases.remove(task_id) {
+            for id in resources {
+                // Engine is the only owner of these specific acquired leases.
+                self.resources.release_lease(&id).expect("task lease invariant");
+            }
+        }
+    }
+    fn release_terminal_task_leases(&mut self) {
+        let ids: Vec<String> = self.task_leases.keys()
+            .filter(|id| matches!(self.simulation.status(id), Some(TaskStatus::Completed | TaskStatus::Cancelled | TaskStatus::Failed | TaskStatus::Stale)))
+            .cloned().collect();
+        for id in ids { self.release_task_leases(&id); }
     }
     /// Result acceptance does not mutate Scene or claim a completed transaction.
     pub fn accept_task_result(&mut self, result: &TaskResult) -> Result<(), TaskError> {
@@ -161,6 +200,7 @@ impl Engine {
             .map_err(CommitTaskError::Task)?;
         let revision = self.submit_scene(expected_revision, commands).map_err(CommitTaskError::Scene)?;
         self.simulation.complete(task_id).map_err(CommitTaskError::Task)?;
+        self.release_task_leases(task_id);
         Ok(revision)
     }
     /// All spatial graph writes pass through Engine, never through plugins.
@@ -201,6 +241,7 @@ impl Engine {
     }
     pub fn shutdown(&mut self) {
         self.simulation.cancel_all();
+        self.release_terminal_task_leases();
         self.state = EngineState::Stopped;
     }
 }
@@ -213,6 +254,30 @@ mod tests {
 
     fn instant() -> TimeInstant {
         TimeInstant::new("TT", "UNSPECIFIED_EPOCH", 0, 0).unwrap()
+    }
+    #[test]
+    fn task_leases_release_on_cancel_seek_and_commit() {
+        let mut engine = Engine::new(instant());
+        let resource = ResourceId::new("data:sample").unwrap();
+        engine.register_resource(resource.clone(), 10).unwrap();
+        for task_id in ["cancel", "seek", "commit"] {
+            engine.enqueue_task(TaskRequest {
+                task_id: task_id.into(), generation: engine.clock().generation(),
+                requested_instant: engine.clock().instant().clone(), dependencies: vec![],
+            }).unwrap();
+            engine.attach_task_resource(task_id, &resource).unwrap();
+        }
+        assert_eq!(engine.unregister_resource(&resource), Err(ResourceError::StillLeased));
+        engine.cancel_task("cancel").unwrap();
+        engine.start_task("commit").unwrap();
+        engine.accept_task_result(&TaskResult {
+            task_id: "commit".into(), generation: engine.clock().generation(),
+            requested_instant: engine.clock().instant().clone(),
+        }).unwrap();
+        engine.commit_task_scene("commit", Revision(0), &[]).unwrap();
+        assert_eq!(engine.unregister_resource(&resource), Err(ResourceError::StillLeased));
+        engine.seek(instant()).unwrap();
+        engine.unregister_resource(&resource).unwrap();
     }
     #[test]
     fn stepping_time_blocks_result_commit_even_without_generation_change() {
