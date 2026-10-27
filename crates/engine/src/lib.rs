@@ -22,6 +22,15 @@ pub struct EngineSnapshot {
     pub resource_revision: u64,
 }
 
+/// A host executor reports a terminal outcome or a computed result.
+/// This is not a Scene write; successful results still require commit_task_scene.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ExecutorFeedback {
+    Result(TaskResult),
+    Failed { task_id: String },
+    Cancelled { task_id: String },
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CommitTaskError { EngineStopped, Task(TaskError), Scene(CoreError) }
 
@@ -200,6 +209,21 @@ impl Engine {
         self.release_terminal_task_leases();
         outcome
     }
+    /// Accept host feedback through the same task state machine.
+    /// Late results and terminal-state changes are rejected by Simulation.
+    pub fn receive_executor_feedback(
+        &mut self,
+        feedback: ExecutorFeedback,
+    ) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped {
+            return Err(TaskError::InvalidState);
+        }
+        match feedback {
+            ExecutorFeedback::Result(result) => self.accept_task_result(&result),
+            ExecutorFeedback::Failed { task_id } => self.fail_task(&task_id),
+            ExecutorFeedback::Cancelled { task_id } => self.cancel_task(&task_id),
+        }
+    }
     /// Commit a validated result through the sole Scene transaction path.
     /// A failed Scene transaction leaves the task ResultReady for explicit retry/cancel.
     pub fn commit_task_scene(
@@ -264,6 +288,49 @@ mod tests {
 
     fn instant() -> TimeInstant {
         TimeInstant::new("TT", "UNSPECIFIED_EPOCH", 0, 0).unwrap()
+    }
+    #[test]
+    fn executor_feedback_rejects_late_results_after_cancel() {
+        let mut engine = Engine::new(instant());
+        let request = TaskRequest {
+            task_id: "feedback-task".into(),
+            generation: TimeGeneration(0),
+            requested_instant: instant(),
+            dependencies: vec![],
+        };
+        engine.enqueue_task(request).unwrap();
+        engine.start_task("feedback-task").unwrap();
+        engine.receive_executor_feedback(ExecutorFeedback::Cancelled {
+            task_id: "feedback-task".into(),
+        }).unwrap();
+        assert_eq!(
+            engine.receive_executor_feedback(ExecutorFeedback::Result(TaskResult {
+                task_id: "feedback-task".into(),
+                generation: TimeGeneration(0),
+                requested_instant: instant(),
+            })),
+            Err(TaskError::InvalidState)
+        );
+        assert_eq!(engine.task_status("feedback-task"), Some(TaskStatus::Cancelled));
+    }
+    #[test]
+    fn executor_feedback_result_requires_scene_commit() {
+        let mut engine = Engine::new(instant());
+        engine.enqueue_task(TaskRequest {
+            task_id: "feedback-success".into(),
+            generation: TimeGeneration(0),
+            requested_instant: instant(),
+            dependencies: vec![],
+        }).unwrap();
+        engine.start_task("feedback-success").unwrap();
+        engine.receive_executor_feedback(ExecutorFeedback::Result(TaskResult {
+            task_id: "feedback-success".into(),
+            generation: TimeGeneration(0),
+            requested_instant: instant(),
+        })).unwrap();
+        assert_eq!(engine.task_status("feedback-success"), Some(TaskStatus::ResultReady));
+        engine.commit_task_scene("feedback-success", Revision(0), &[]).unwrap();
+        assert_eq!(engine.task_status("feedback-success"), Some(TaskStatus::Completed));
     }
     #[test]
     fn task_leases_release_on_cancel_seek_and_commit() {
