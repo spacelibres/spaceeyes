@@ -1152,6 +1152,7 @@ test("bounded uploads move a texture larger than one message through Native and 
       assert.equal(caps.limits!.maxUploadBytes, 16n * 1024n * 1024n);
       assert.equal(caps.limits!.maxUploadChunkBytes, 262144);
       assert.equal(caps.limits!.maxActiveUploads, 4);
+      assert.equal(caps.limits!.maxEncodedImageBytes, 8n * 1024n * 1024n);
       const beginPayload: CommandPayload = {
         case: "resource",
         value: {
@@ -1246,6 +1247,71 @@ test("bounded uploads move a texture larger than one message through Native and 
         ),
         CoreRemoteError,
       );
+      // Encoded images are decoded by the core and charged as decoded RGBA bytes.
+      const png = Uint8Array.from([
+        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0,
+        2, 0, 0, 0, 1, 8, 6, 0, 0, 0, 244, 34, 127, 138, 0, 0, 0, 17, 73, 68,
+        65, 84, 120, 218, 99, 224, 18, 145, 251, 175, 97, 100, 243, 31, 0, 9,
+        65, 2, 209, 105, 103, 96, 84, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96,
+        130,
+      ]);
+      const imageBegin: CommandPayload = {
+        case: "resource",
+        value: {
+          action: {
+            case: "beginUpload",
+            value: {
+              resourceId: { value: "encoded-png" },
+              totalBytes: BigInt(png.length),
+              source: {
+                sourceId: "self-generated:png",
+                sourceVersion: "v1",
+                sha256: new Uint8Array(
+                  createHash("sha256").update(png).digest(),
+                ),
+              },
+              format: ResourceUploadFormat.PNG,
+              colorSpace: TextureColorSpace.SRGB,
+            },
+          },
+        },
+      };
+      const image = await client.command(imageBegin, {
+        requestId: "begin-png",
+      });
+      if (image.payload.case !== "upload") throw new Error("expected upload");
+      await client.command(
+        {
+          case: "resource",
+          value: {
+            action: {
+              case: "appendUpload",
+              value: {
+                uploadId: image.payload.value.uploadId,
+                offset: 0n,
+                data: png,
+              },
+            },
+          },
+        },
+        { requestId: "png-chunk" },
+      );
+      await client.command(
+        {
+          case: "resource",
+          value: {
+            action: {
+              case: "finishUpload",
+              value: { uploadId: image.payload.value.uploadId },
+            },
+          },
+        },
+        { requestId: "png-finish" },
+      );
+      usage = await stats();
+      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length + 8));
+      assert.equal(usage.stagingUsedBytes, 0n);
+      assert.equal(usage.totalUsedBytes, BigInt(rgba.length + 8));
       const again = await client.command(
         {
           case: "resource",
@@ -1289,7 +1355,7 @@ test("bounded uploads move a texture larger than one message through Native and 
         cancelled,
       );
       usage = await stats();
-      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length));
+      assert.equal(usage.cpuUsedBytes, BigInt(rgba.length + 8));
       assert.equal(usage.stagingUsedBytes, 0n);
       await client.command(
         {
