@@ -116,6 +116,39 @@ pub struct CommitEvent {
     pub request_id: String,
     pub receipt: CommandReceipt,
 }
+/// Public event taxonomy. Lifecycle changes remain separate Engine events.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EventKind {
+    SceneChanged,
+    ClockChanged,
+    FrameInvalidated,
+    TaskStatusChanged,
+    ResourceStateChanged,
+    FramePublished,
+}
+/// One replayable event. `command_sequence` is 0 for host-published frames.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct CoreEvent {
+    pub sequence: u64,
+    pub session: String,
+    pub kind: EventKind,
+    pub command_sequence: u64,
+    pub request_id: String,
+    pub scene_revision: Revision,
+    pub frame_graph_revision: Revision,
+    pub resource_revision: u64,
+    pub frame_sequence: u64,
+    pub time_generation: TimeGeneration,
+}
+/// Cursor page. `replay_from` is the oldest retained sequence; a client whose
+/// cursor is below it has lost events and must resynchronize from state.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EventPage {
+    pub events: Vec<CoreEvent>,
+    pub next_sequence: u64,
+    pub replay_from: u64,
+}
+const MAX_EVENT_PAGE: usize = 128;
 #[derive(Clone)]
 enum RecordedCommand {
     AppendUpload {
@@ -182,19 +215,27 @@ pub struct CommandDispatcher {
     surface: Option<(spaceeyes_rendering::gpu::BrowserSurface, crate::LeaseId)>,
     session: String,
     capacity: usize,
+    event_capacity: usize,
     sequence: u64,
     history: BTreeMap<(String, String), Record>,
     // Once normal history fills, only successful cleanup can consume these fixed slots.
     cleanup_history: BTreeMap<(String, String), Record>,
     events: VecDeque<CommitEvent>,
+    core_events: VecDeque<CoreEvent>,
+    event_sequence: u64,
 }
 impl CommandDispatcher {
-    pub fn new(
+    pub fn new(engine: Engine, session: String, capacity: usize) -> Result<Self, DispatchError> {
+        Self::with_event_capacity(engine, session, capacity, capacity)
+    }
+    /// Event history is bounded independently from command idempotency history.
+    pub fn with_event_capacity(
         mut engine: Engine,
         session: String,
         capacity: usize,
+        event_capacity: usize,
     ) -> Result<Self, DispatchError> {
-        if session.trim().is_empty() || capacity == 0 {
+        if session.trim().is_empty() || capacity == 0 || event_capacity == 0 {
             return Err(DispatchError::InvalidContext);
         }
         // A snapshot captured for another session must never be treated as current.
@@ -208,10 +249,13 @@ impl CommandDispatcher {
             surface: None,
             session,
             capacity,
+            event_capacity,
             sequence: 0,
             history: BTreeMap::new(),
             cleanup_history: BTreeMap::new(),
             events: VecDeque::new(),
+            core_events: VecDeque::new(),
+            event_sequence: 0,
         })
     }
     pub fn engine(&self) -> &Engine {
@@ -251,6 +295,68 @@ impl CommandDispatcher {
     }
     pub fn events(&self) -> impl Iterator<Item = &CommitEvent> {
         self.events.iter()
+    }
+    /// Highest assigned event sequence; 0 before the first event.
+    pub fn event_sequence(&self) -> u64 {
+        self.event_sequence
+    }
+    /// Replay buffered events strictly after `after_sequence`.
+    /// A cursor above the current sequence can only come from another session or a
+    /// lost history and is rejected instead of silently returning nothing.
+    pub fn events_after(
+        &self,
+        after_sequence: u64,
+        max_events: usize,
+    ) -> Result<EventPage, DispatchError> {
+        if max_events == 0 || max_events > MAX_EVENT_PAGE {
+            return Err(DispatchError::InvalidContext);
+        }
+        if after_sequence > self.event_sequence {
+            return Err(DispatchError::StaleGeneration);
+        }
+        let events: Vec<CoreEvent> = self
+            .core_events
+            .iter()
+            .filter(|event| event.sequence > after_sequence)
+            .take(max_events)
+            .cloned()
+            .collect();
+        let next_sequence = events.last().map_or(after_sequence, |event| event.sequence);
+        Ok(EventPage {
+            events,
+            next_sequence,
+            replay_from: self
+                .core_events
+                .front()
+                .map_or(self.event_sequence.saturating_add(1), |event| {
+                    event.sequence
+                }),
+        })
+    }
+    fn record_event(
+        &mut self,
+        kind: EventKind,
+        command_sequence: u64,
+        request_id: &str,
+        frame_sequence: u64,
+    ) {
+        self.event_sequence = self.event_sequence.saturating_add(1);
+        let event = CoreEvent {
+            sequence: self.event_sequence,
+            session: self.session.clone(),
+            kind,
+            command_sequence,
+            request_id: request_id.to_owned(),
+            scene_revision: self.engine.scene().revision(),
+            frame_graph_revision: self.engine.spatial().revision(),
+            resource_revision: self.engine.resources.revision(),
+            frame_sequence,
+            time_generation: self.engine.clock().generation(),
+        };
+        if self.core_events.len() == self.event_capacity {
+            self.core_events.pop_front();
+        }
+        self.core_events.push_back(event);
     }
     /// Host identity is already authenticated; this checks session/shape only.
     pub fn validate_context(
@@ -517,6 +623,9 @@ impl CommandDispatcher {
                 request_id: request_id.to_owned(),
                 receipt: receipt.clone(),
             });
+            if let Some(kind) = event_kind(&command) {
+                self.record_event(kind, sequence, request_id, receipt.frame_sequence);
+            }
         }
         // Failed cleanup must not prevent valid owners from releasing existing uploads.
         if !cleanup_only || result.is_ok() {
@@ -621,7 +730,30 @@ impl CommandDispatcher {
             prepared,
             state.clone(),
         ));
+        self.record_event(EventKind::FramePublished, 0, "", snapshot.sequence);
         Ok((state, unresolved))
+    }
+}
+
+fn event_kind(command: &Command) -> Option<EventKind> {
+    match command {
+        Command::Scene { .. } | Command::FocusCamera { .. } => Some(EventKind::SceneChanged),
+        Command::RegisterRootFrame { .. }
+        | Command::RegisterChildFrame { .. }
+        | Command::RegisterProviderFrame { .. }
+        | Command::UpdateProviderFrameSample { .. } => Some(EventKind::FrameInvalidated),
+        Command::BeginUpload { .. }
+        | Command::AppendUpload { .. }
+        | Command::FinishUpload { .. }
+        | Command::CancelUpload { .. }
+        | Command::RegisterTexture { .. }
+        | Command::RegisterMesh { .. } => Some(EventKind::ResourceStateChanged),
+        Command::Play
+        | Command::Pause
+        | Command::SetRate(_)
+        | Command::Seek(_)
+        | Command::Step(_) => Some(EventKind::ClockChanged),
+        Command::Start | Command::Stop => None,
     }
 }
 

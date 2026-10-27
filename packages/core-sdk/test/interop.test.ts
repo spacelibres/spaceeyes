@@ -22,6 +22,7 @@ import {
   ResponseEnvelopeSchema,
   ResponseStatus,
   ErrorCode,
+  CoreEventKind,
   EngineLifecycle,
   ObjectLifecycle,
   TextureColorSpace,
@@ -218,7 +219,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 37);
+    assert.equal(caps.operations.length, 38);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));
@@ -244,6 +245,21 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       },
       "root",
     );
+    const events = record(
+      await client.query(
+        { case: "events", value: { afterSequence: 0n, maxEvents: 16 } },
+        { requestId: "events" },
+      ),
+    );
+    assert.equal(events.payload.case, "events");
+    if (events.payload.case !== "events") throw new Error("events payload");
+    assert.equal(events.payload.value.events.length, 1);
+    assert.equal(events.payload.value.events[0]?.sessionId, session);
+    assert.equal(
+      events.payload.value.events[0]?.kind,
+      CoreEventKind.FRAME_INVALIDATED,
+    );
+    assert.equal(events.payload.value.nextSequence, 1n);
     await command(
       {
         case: "spatial",

@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 有界事件流与游标重放（C12 切片）
+- Proto 新增只读 `query.events`（`EventsQuery`/`EventPage`/`CoreEvent`/`CoreEventKind`），能力总数增至 38，SDK 响应映射同步。
+- 事件序列单调递增，默认/最大页 128；高于当前序列的游标返回 `STALE_GENERATION`，溢出时以 `replay_from` 暴露丢失窗口。事件缓冲与命令幂等历史分开配置。
+- 成功命令按类型产生 Scene/Clock/Frame/Resource 事件，宿主呈现帧产生 `FRAME_PUBLISHED`；失败、幂等重试与纯查询不产生事件。
+- 验证：engine 4 项事件测试、protocol-adapter 19 项 session、SDK Native/WASM 互通 10 项通过。
+
+
 ### 原生工作池与严格来源策略（C06 切片）
 - `crates/simulation` 新增原生 `WorkerPool`：有界队列、`TaskPriority` 派发顺序、单任务墙钟截止、协作取消、`WorkerOutcome` 回报与 `close` 清理；Engine 新增 `enqueue_task_with_priority` 与 `WorkerOutcome → ExecutorFeedback` 映射，结果仍经 token/代次/时刻校验。
 - 新增 `SourcePolicy`（open/strict），在绑定与提交两处校验 provider 版本与覆盖范围；`Engine::set_source_policy` 由宿主配置。

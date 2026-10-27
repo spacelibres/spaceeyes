@@ -6,6 +6,7 @@ pub const MAX_IDENTIFIER_BYTES: usize = 256;
 pub const MAX_SCENE_COMMANDS: usize = 1024;
 pub const MAX_OBJECT_RESOURCES: usize = 256;
 pub const MAX_OBJECT_PAGE_SIZE: u32 = 256;
+pub const MAX_EVENT_PAGE: u32 = 128;
 pub const PROTOCOL_MAJOR: u32 = 1;
 pub const PROTOCOL_MINOR: u32 = 0;
 pub const SCHEMA_ID: &str = "spaceeyes.core.v1";
@@ -41,6 +42,7 @@ pub const OPERATIONS: &[&str] = &[
     "query.camera_state",
     "query.project_export",
     "query.list_objects",
+    "query.events",
     "query.resource_stats",
     "resources.begin_upload",
     "resources.append_upload",

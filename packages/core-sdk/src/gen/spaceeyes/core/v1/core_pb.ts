@@ -27,7 +27,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/core.proto.
  */
 export const file_spaceeyes_core_v1_core: GenFile = /*@__PURE__*/
-  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS9jb3JlLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSLoAwoPQ29tbWFuZEVudmVsb3BlEjIKB2NvbnRleHQYASABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5SZXF1ZXN0Q29udGV4dBIwCgVzY2VuZRgCIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNjZW5lQ29tbWFuZEgAEi4KBHRpbWUYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lQ29tbWFuZEgAEjYKCHJlc291cmNlGAQgASgLMiIuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VDb21tYW5kSAASQAoRc2NlbmVfdHJhbnNhY3Rpb24YByABKAsyIy5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZVRyYW5zYWN0aW9uSAASNAoHc3BhdGlhbBgIIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlNwYXRpYWxDb21tYW5kSAASOAoJbGlmZWN5Y2xlGAkgASgLMiMuc3BhY2VleWVzLmNvcmUudjEuTGlmZWN5Y2xlQ29tbWFuZEgAEjIKBmNhbWVyYRgKIAEoCzIgLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYUNvbW1hbmRIAEIJCgdwYXlsb2FkSgQIFBAVSgQIFRAWSgQIFhAXSgQIHhAfIjwKDFRpbWVSZXNwb25zZRIsCgVjbG9jaxgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLkNsb2NrU3RhdGUiIQoNU2NlbmVSZXNwb25zZRIQCghyZXZpc2lvbhgBIAEoBCLfBwoQUmVzcG9uc2VFbnZlbG9wZRISCgpyZXF1ZXN0X2lkGAEgASgJEjEKBnN0YXR1cxgCIAEoDjIhLnNwYWNlZXllcy5jb3JlLnYxLlJlc3BvbnNlU3RhdHVzEjEKBXNjZW5lGAMgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuU2NlbmVSZXNwb25zZUgAEi8KBHRpbWUYBCABKAsyHy5zcGFjZWV5ZXMuY29yZS52MS5UaW1lUmVzcG9uc2VIABI3CghyZXNvdXJjZRgFIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlUmVzcG9uc2VIABIpCgVlcnJvchgGIAEoCzIYLnNwYWNlZXllcy5jb3JlLnYxLkVycm9ySAASNQoHc3BhdGlhbBgKIAEoCzIiLnNwYWNlZXllcy5jb3JlLnYxLlNwYXRpYWxSZXNwb25zZUgAEjMKB3Nlc3Npb24YCyABKAsyIC5zcGFjZWV5ZXMuY29yZS52MS5TZXNzaW9uU3RhdHVzSAASMwoFZnJhbWUYDCABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZVJlc29sdXRpb25IABI3CgxjYXBhYmlsaXRpZXMYDSABKAsyHy5zcGFjZWV5ZXMuY29yZS52MS5DYXBhYmlsaXRpZXNIABI2CglwcmVzZW50ZWQYDiABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZVByZXNlbnRlZEgAEjoKCXNlbGVjdGlvbhgPIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlByZXNlbnRlZFNlbGVjdGlvbkgAEi8KBmNhbWVyYRgQIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYUluZm9IABI6Cg5yZXNvdXJjZV9zdGF0cxgRIAEoCzIgLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlU3RhdHNIABI5CgZ1cGxvYWQYEiABKAsyJy5zcGFjZWV5ZXMuY29yZS52MS5SZXNvdXJjZVVwbG9hZFN0YXR1c0gAEjUKB3Byb2plY3QYEyABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5Qcm9qZWN0U25hcHNob3RIABIwCgdvYmplY3RzGBQgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0UGFnZUgAEhgKEGNvbW1hbmRfc2VxdWVuY2UYByABKAQSIAoYY29tbWl0dGVkX3NjZW5lX3JldmlzaW9uGAggASgEEhYKDmZyYW1lX3NlcXVlbmNlGAkgASgEQgkKB3BheWxvYWQiDQoLU3RhcnRFbmdpbmUiDAoKU3RvcEVuZ2luZSJ8ChBMaWZlY3ljbGVDb21tYW5kEi8KBXN0YXJ0GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU3RhcnRFbmdpbmVIABItCgRzdG9wGAIgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuU3RvcEVuZ2luZUgAQggKBmFjdGlvbiKkAgoNU2Vzc2lvblN0YXR1cxI1CglsaWZlY3ljbGUYASABKA4yIi5zcGFjZWV5ZXMuY29yZS52MS5FbmdpbmVMaWZlY3ljbGUSLAoFY2xvY2sYAiABKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5DbG9ja1N0YXRlEhYKDnNjZW5lX3JldmlzaW9uGAMgASgEEhwKFGZyYW1lX2dyYXBoX3JldmlzaW9uGAQgASgEEhkKEXJlc291cmNlX3JldmlzaW9uGAUgASgEEhYKDmZyYW1lX3NlcXVlbmNlGAYgASgEEhQKDG9iamVjdF9jb3VudBgHIAEoBBIbChNyZXNvdXJjZV91c2VkX2J5dGVzGAggASgEEhIKCnNlc3Npb25faWQYCSABKAkiFAoSU2Vzc2lvblN0YXR1c1F1ZXJ5Ik0KEExpc3RPYmplY3RzUXVlcnkSFwoKcGFnZV90b2tlbhgBIAEoCUgAiAEBEhEKCXBhZ2Vfc2l6ZRgCIAEoDUINCgtfcGFnZV90b2tlbiJuCgpPYmplY3RQYWdlEi8KB29iamVjdHMYASADKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZU9iamVjdBIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkSFgoOc2NlbmVfcmV2aXNpb24YAyABKAQijwUKDVF1ZXJ5RW52ZWxvcGUSMgoHY29udGV4dBgBIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlJlcXVlc3RDb250ZXh0Ej8KDnNlc3Npb25fc3RhdHVzGBQgASgLMiUuc3BhY2VleWVzLmNvcmUudjEuU2Vzc2lvblN0YXR1c1F1ZXJ5SAASPQoNcmVzb2x2ZV9mcmFtZRgVIAEoCzIkLnNwYWNlZXllcy5jb3JlLnYxLlJlc29sdmVGcmFtZVF1ZXJ5SAASPAoMY2FwYWJpbGl0aWVzGBYgASgLMiQuc3BhY2VleWVzLmNvcmUudjEuQ2FwYWJpbGl0aWVzUXVlcnlIABI/Cg5waWNrX3ByZXNlbnRlZBgXIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlBpY2tQcmVzZW50ZWRRdWVyeUgAEjsKDGNhbWVyYV9zdGF0ZRgYIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVN0YXRlUXVlcnlIABI/Cg5yZXNvdXJjZV9zdGF0cxgZIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlU3RhdHNRdWVyeUgAEjgKBnVwbG9hZBgaIAEoCzImLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlVXBsb2FkUXVlcnlIABI/Cg5wcm9qZWN0X2V4cG9ydBgbIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlByb2plY3RFeHBvcnRRdWVyeUgAEjsKDGxpc3Rfb2JqZWN0cxgcIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLkxpc3RPYmplY3RzUXVlcnlIAEIJCgdwYXlsb2FkSgQIAhAKSgQIHhAfIosBCgtGb2N1c0NhbWVyYRIrCgZjYW1lcmEYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIrCgZ0YXJnZXQYAiABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBISCgpkaXN0YW5jZV9tGAMgASgBEg4KBmZvbGxvdxgEIAEoCCJKCg1DYW1lcmFDb21tYW5kEi8KBWZvY3VzGAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuRm9jdXNDYW1lcmFIAEIICgZhY3Rpb24iPwoQQ2FtZXJhU3RhdGVRdWVyeRIrCgZjYW1lcmEYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZCKXAQoKQ2FtZXJhSW5mbxIrCgZjYW1lcmEYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBItCglyZWZlcmVuY2UYAiABKAsyGi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZUlkEi0KBXN0YXRlGAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuQ2FtZXJhU3RhdGUiQgoSUGlja1ByZXNlbnRlZFF1ZXJ5EhYKDmZyYW1lX3NlcXVlbmNlGAEgASgEEgkKAXgYAiABKAISCQoBeRgDIAEoAiJ0ChJQcmVzZW50ZWRTZWxlY3Rpb24SFgoOZnJhbWVfc2VxdWVuY2UYASABKAQSFgoOc2NlbmVfcmV2aXNpb24YAiABKAQSLgoGb2JqZWN0GAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU2NlbmVPYmplY3QiEwoRQ2FwYWJpbGl0aWVzUXVlcnkirAEKDENhcGFiaWxpdGllcxI8ChBwcm90b2NvbF92ZXJzaW9uGAEgASgLMiIuc3BhY2VleWVzLmNvcmUudjEuUHJvdG9jb2xWZXJzaW9uEhIKCm9wZXJhdGlvbnMYAiADKAkSMQoGbGltaXRzGAMgASgLMiEuc3BhY2VleWVzLmNvcmUudjEuUHJvdG9jb2xMaW1pdHMSFwoPYnJvd3Nlcl9zdXJmYWNlGAQgASgIIrcECg5Qcm90b2NvbExpbWl0cxIZChFtYXhfbWVzc2FnZV9ieXRlcxgBIAEoDRIcChRtYXhfaWRlbnRpZmllcl9ieXRlcxgCIAEoDRIaChJtYXhfc2NlbmVfY29tbWFuZHMYAyABKA0SHAoUbWF4X29iamVjdF9yZXNvdXJjZXMYBCABKA0SHQoVbWF4X3RleHR1cmVfZGltZW5zaW9uGAUgASgNEhkKEW1heF9tZXNoX3ZlcnRpY2VzGAYgASgNEhgKEG1heF9tZXNoX2luZGljZXMYByABKA0SIAoYY29tbWFuZF9oaXN0b3J5X2NhcGFjaXR5GAggASgEEiEKGWNvbW1hbmRfaGlzdG9yeV9yZW1haW5pbmcYCSABKAQSHAoUbWF4X2NhbnZhc19kaW1lbnNpb24YCiABKA0SHwoXbWF4X2ZyYW1lX2VsYXBzZWRfbmFub3MYCyABKAQSIAoYbWF4X3Jlc291cmNlX3RvdGFsX2J5dGVzGAwgASgEEh4KFm1heF9yZXNvdXJjZV9jcHVfYnl0ZXMYDSABKAQSHgoWbWF4X3Jlc291cmNlX2dwdV9ieXRlcxgOIAEoBBIiChptYXhfcmVzb3VyY2Vfc3RhZ2luZ19ieXRlcxgPIAEoBBIYChBtYXhfdXBsb2FkX2J5dGVzGBAgASgEEh4KFm1heF91cGxvYWRfY2h1bmtfYnl0ZXMYESABKA0SGgoSbWF4X2FjdGl2ZV91cGxvYWRzGBIgASgNInQKEUhvc3RGcmFtZUVudmVsb3BlEjIKB2NvbnRleHQYASABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5SZXF1ZXN0Q29udGV4dBIrCgVmcmFtZRgeIAEoCzIcLnNwYWNlZXllcy5jb3JlLnYxLkhvc3RGcmFtZSKdAQoJSG9zdEZyYW1lEi0KCXJlZmVyZW5jZRgBIAEoCzIaLnNwYWNlZXllcy5jb3JlLnYxLkZyYW1lSWQSKwoGY2FtZXJhGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQSDQoFd2lkdGgYAyABKA0SDgoGaGVpZ2h0GAQgASgNEhUKDWVsYXBzZWRfbmFub3MYBSABKAQifgoORnJhbWVQcmVzZW50ZWQSMQoHc2Vzc2lvbhgBIAEoCzIgLnNwYWNlZXllcy5jb3JlLnYxLlNlc3Npb25TdGF0dXMSDQoFd2lkdGgYAiABKA0SDgoGaGVpZ2h0GAMgASgNEhoKEnVucmVzb2x2ZWRfb2JqZWN0cxgEIAEoBCrHAQoOUmVzcG9uc2VTdGF0dXMSHwobUkVTUE9OU0VfU1RBVFVTX1VOU1BFQ0lGSUVEEAASHAoYUkVTUE9OU0VfU1RBVFVTX0FDQ0VQVEVEEAESHQoZUkVTUE9OU0VfU1RBVFVTX0NPTVBMRVRFRBACEhwKGFJFU1BPTlNFX1NUQVRVU19SRUpFQ1RFRBADEh0KGVJFU1BPTlNFX1NUQVRVU19DQU5DRUxMRUQQBBIaChZSRVNQT05TRV9TVEFUVVNfRkFJTEVEEAUqiwEKD0VuZ2luZUxpZmVjeWNsZRIgChxFTkdJTkVfTElGRUNZQ0xFX1VOU1BFQ0lGSUVEEAASGgoWRU5HSU5FX0xJRkVDWUNMRV9SRUFEWRABEhwKGEVOR0lORV9MSUZFQ1lDTEVfUlVOTklORxACEhwKGEVOR0lORV9MSUZFQ1lDTEVfU1RPUFBFRBADYgZwcm90bzM", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_time, file_spaceeyes_core_v1_scene, file_spaceeyes_core_v1_resources, file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_rendering, file_spaceeyes_core_v1_project]);
+  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS9jb3JlLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSLoAwoPQ29tbWFuZEVudmVsb3BlEjIKB2NvbnRleHQYASABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5SZXF1ZXN0Q29udGV4dBIwCgVzY2VuZRgCIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNjZW5lQ29tbWFuZEgAEi4KBHRpbWUYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lQ29tbWFuZEgAEjYKCHJlc291cmNlGAQgASgLMiIuc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VDb21tYW5kSAASQAoRc2NlbmVfdHJhbnNhY3Rpb24YByABKAsyIy5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZVRyYW5zYWN0aW9uSAASNAoHc3BhdGlhbBgIIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlNwYXRpYWxDb21tYW5kSAASOAoJbGlmZWN5Y2xlGAkgASgLMiMuc3BhY2VleWVzLmNvcmUudjEuTGlmZWN5Y2xlQ29tbWFuZEgAEjIKBmNhbWVyYRgKIAEoCzIgLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYUNvbW1hbmRIAEIJCgdwYXlsb2FkSgQIFBAVSgQIFRAWSgQIFhAXSgQIHhAfIjwKDFRpbWVSZXNwb25zZRIsCgVjbG9jaxgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLkNsb2NrU3RhdGUiIQoNU2NlbmVSZXNwb25zZRIQCghyZXZpc2lvbhgBIAEoBCKPCAoQUmVzcG9uc2VFbnZlbG9wZRISCgpyZXF1ZXN0X2lkGAEgASgJEjEKBnN0YXR1cxgCIAEoDjIhLnNwYWNlZXllcy5jb3JlLnYxLlJlc3BvbnNlU3RhdHVzEjEKBXNjZW5lGAMgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuU2NlbmVSZXNwb25zZUgAEi8KBHRpbWUYBCABKAsyHy5zcGFjZWV5ZXMuY29yZS52MS5UaW1lUmVzcG9uc2VIABI3CghyZXNvdXJjZRgFIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlUmVzcG9uc2VIABIpCgVlcnJvchgGIAEoCzIYLnNwYWNlZXllcy5jb3JlLnYxLkVycm9ySAASNQoHc3BhdGlhbBgKIAEoCzIiLnNwYWNlZXllcy5jb3JlLnYxLlNwYXRpYWxSZXNwb25zZUgAEjMKB3Nlc3Npb24YCyABKAsyIC5zcGFjZWV5ZXMuY29yZS52MS5TZXNzaW9uU3RhdHVzSAASMwoFZnJhbWUYDCABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZVJlc29sdXRpb25IABI3CgxjYXBhYmlsaXRpZXMYDSABKAsyHy5zcGFjZWV5ZXMuY29yZS52MS5DYXBhYmlsaXRpZXNIABI2CglwcmVzZW50ZWQYDiABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZVByZXNlbnRlZEgAEjoKCXNlbGVjdGlvbhgPIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlByZXNlbnRlZFNlbGVjdGlvbkgAEi8KBmNhbWVyYRgQIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYUluZm9IABI6Cg5yZXNvdXJjZV9zdGF0cxgRIAEoCzIgLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlU3RhdHNIABI5CgZ1cGxvYWQYEiABKAsyJy5zcGFjZWV5ZXMuY29yZS52MS5SZXNvdXJjZVVwbG9hZFN0YXR1c0gAEjUKB3Byb2plY3QYEyABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5Qcm9qZWN0U25hcHNob3RIABIwCgdvYmplY3RzGBQgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0UGFnZUgAEi4KBmV2ZW50cxgVIAEoCzIcLnNwYWNlZXllcy5jb3JlLnYxLkV2ZW50UGFnZUgAEhgKEGNvbW1hbmRfc2VxdWVuY2UYByABKAQSIAoYY29tbWl0dGVkX3NjZW5lX3JldmlzaW9uGAggASgEEhYKDmZyYW1lX3NlcXVlbmNlGAkgASgEQgkKB3BheWxvYWQiDQoLU3RhcnRFbmdpbmUiDAoKU3RvcEVuZ2luZSJ8ChBMaWZlY3ljbGVDb21tYW5kEi8KBXN0YXJ0GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU3RhcnRFbmdpbmVIABItCgRzdG9wGAIgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuU3RvcEVuZ2luZUgAQggKBmFjdGlvbiKkAgoNU2Vzc2lvblN0YXR1cxI1CglsaWZlY3ljbGUYASABKA4yIi5zcGFjZWV5ZXMuY29yZS52MS5FbmdpbmVMaWZlY3ljbGUSLAoFY2xvY2sYAiABKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5DbG9ja1N0YXRlEhYKDnNjZW5lX3JldmlzaW9uGAMgASgEEhwKFGZyYW1lX2dyYXBoX3JldmlzaW9uGAQgASgEEhkKEXJlc291cmNlX3JldmlzaW9uGAUgASgEEhYKDmZyYW1lX3NlcXVlbmNlGAYgASgEEhQKDG9iamVjdF9jb3VudBgHIAEoBBIbChNyZXNvdXJjZV91c2VkX2J5dGVzGAggASgEEhIKCnNlc3Npb25faWQYCSABKAkiFAoSU2Vzc2lvblN0YXR1c1F1ZXJ5IjkKC0V2ZW50c1F1ZXJ5EhYKDmFmdGVyX3NlcXVlbmNlGAEgASgEEhIKCm1heF9ldmVudHMYAiABKA0iZQoJRXZlbnRQYWdlEiwKBmV2ZW50cxgBIAMoCzIcLnNwYWNlZXllcy5jb3JlLnYxLkNvcmVFdmVudBIVCg1uZXh0X3NlcXVlbmNlGAIgASgEEhMKC3JlcGxheV9mcm9tGAMgASgEIpECCglDb3JlRXZlbnQSEAoIc2VxdWVuY2UYASABKAQSEgoKc2Vzc2lvbl9pZBgCIAEoCRIuCgRraW5kGAMgASgOMiAuc3BhY2VleWVzLmNvcmUudjEuQ29yZUV2ZW50S2luZBIYChBjb21tYW5kX3NlcXVlbmNlGAQgASgEEhIKCnJlcXVlc3RfaWQYBSABKAkSFgoOc2NlbmVfcmV2aXNpb24YBiABKAQSHAoUZnJhbWVfZ3JhcGhfcmV2aXNpb24YByABKAQSGQoRcmVzb3VyY2VfcmV2aXNpb24YCCABKAQSFgoOZnJhbWVfc2VxdWVuY2UYCSABKAQSFwoPdGltZV9nZW5lcmF0aW9uGAogASgEIk0KEExpc3RPYmplY3RzUXVlcnkSFwoKcGFnZV90b2tlbhgBIAEoCUgAiAEBEhEKCXBhZ2Vfc2l6ZRgCIAEoDUINCgtfcGFnZV90b2tlbiJuCgpPYmplY3RQYWdlEi8KB29iamVjdHMYASADKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZU9iamVjdBIXCg9uZXh0X3BhZ2VfdG9rZW4YAiABKAkSFgoOc2NlbmVfcmV2aXNpb24YAyABKAQiwQUKDVF1ZXJ5RW52ZWxvcGUSMgoHY29udGV4dBgBIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlJlcXVlc3RDb250ZXh0Ej8KDnNlc3Npb25fc3RhdHVzGBQgASgLMiUuc3BhY2VleWVzLmNvcmUudjEuU2Vzc2lvblN0YXR1c1F1ZXJ5SAASPQoNcmVzb2x2ZV9mcmFtZRgVIAEoCzIkLnNwYWNlZXllcy5jb3JlLnYxLlJlc29sdmVGcmFtZVF1ZXJ5SAASPAoMY2FwYWJpbGl0aWVzGBYgASgLMiQuc3BhY2VleWVzLmNvcmUudjEuQ2FwYWJpbGl0aWVzUXVlcnlIABI/Cg5waWNrX3ByZXNlbnRlZBgXIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlBpY2tQcmVzZW50ZWRRdWVyeUgAEjsKDGNhbWVyYV9zdGF0ZRgYIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVN0YXRlUXVlcnlIABI/Cg5yZXNvdXJjZV9zdGF0cxgZIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlU3RhdHNRdWVyeUgAEjgKBnVwbG9hZBgaIAEoCzImLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlVXBsb2FkUXVlcnlIABI/Cg5wcm9qZWN0X2V4cG9ydBgbIAEoCzIlLnNwYWNlZXllcy5jb3JlLnYxLlByb2plY3RFeHBvcnRRdWVyeUgAEjsKDGxpc3Rfb2JqZWN0cxgcIAEoCzIjLnNwYWNlZXllcy5jb3JlLnYxLkxpc3RPYmplY3RzUXVlcnlIABIwCgZldmVudHMYHSABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5FdmVudHNRdWVyeUgAQgkKB3BheWxvYWRKBAgCEApKBAgeEB8iiwEKC0ZvY3VzQ2FtZXJhEisKBmNhbWVyYRgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEisKBnRhcmdldBgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEhIKCmRpc3RhbmNlX20YAyABKAESDgoGZm9sbG93GAQgASgIIkoKDUNhbWVyYUNvbW1hbmQSLwoFZm9jdXMYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5Gb2N1c0NhbWVyYUgAQggKBmFjdGlvbiI/ChBDYW1lcmFTdGF0ZVF1ZXJ5EisKBmNhbWVyYRgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkIpcBCgpDYW1lcmFJbmZvEisKBmNhbWVyYRgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEi0KCXJlZmVyZW5jZRgCIAEoCzIaLnNwYWNlZXllcy5jb3JlLnYxLkZyYW1lSWQSLQoFc3RhdGUYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5DYW1lcmFTdGF0ZSJCChJQaWNrUHJlc2VudGVkUXVlcnkSFgoOZnJhbWVfc2VxdWVuY2UYASABKAQSCQoBeBgCIAEoAhIJCgF5GAMgASgCInQKElByZXNlbnRlZFNlbGVjdGlvbhIWCg5mcmFtZV9zZXF1ZW5jZRgBIAEoBBIWCg5zY2VuZV9yZXZpc2lvbhgCIAEoBBIuCgZvYmplY3QYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZU9iamVjdCITChFDYXBhYmlsaXRpZXNRdWVyeSKsAQoMQ2FwYWJpbGl0aWVzEjwKEHByb3RvY29sX3ZlcnNpb24YASABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5Qcm90b2NvbFZlcnNpb24SEgoKb3BlcmF0aW9ucxgCIAMoCRIxCgZsaW1pdHMYAyABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5Qcm90b2NvbExpbWl0cxIXCg9icm93c2VyX3N1cmZhY2UYBCABKAgitwQKDlByb3RvY29sTGltaXRzEhkKEW1heF9tZXNzYWdlX2J5dGVzGAEgASgNEhwKFG1heF9pZGVudGlmaWVyX2J5dGVzGAIgASgNEhoKEm1heF9zY2VuZV9jb21tYW5kcxgDIAEoDRIcChRtYXhfb2JqZWN0X3Jlc291cmNlcxgEIAEoDRIdChVtYXhfdGV4dHVyZV9kaW1lbnNpb24YBSABKA0SGQoRbWF4X21lc2hfdmVydGljZXMYBiABKA0SGAoQbWF4X21lc2hfaW5kaWNlcxgHIAEoDRIgChhjb21tYW5kX2hpc3RvcnlfY2FwYWNpdHkYCCABKAQSIQoZY29tbWFuZF9oaXN0b3J5X3JlbWFpbmluZxgJIAEoBBIcChRtYXhfY2FudmFzX2RpbWVuc2lvbhgKIAEoDRIfChdtYXhfZnJhbWVfZWxhcHNlZF9uYW5vcxgLIAEoBBIgChhtYXhfcmVzb3VyY2VfdG90YWxfYnl0ZXMYDCABKAQSHgoWbWF4X3Jlc291cmNlX2NwdV9ieXRlcxgNIAEoBBIeChZtYXhfcmVzb3VyY2VfZ3B1X2J5dGVzGA4gASgEEiIKGm1heF9yZXNvdXJjZV9zdGFnaW5nX2J5dGVzGA8gASgEEhgKEG1heF91cGxvYWRfYnl0ZXMYECABKAQSHgoWbWF4X3VwbG9hZF9jaHVua19ieXRlcxgRIAEoDRIaChJtYXhfYWN0aXZlX3VwbG9hZHMYEiABKA0idAoRSG9zdEZyYW1lRW52ZWxvcGUSMgoHY29udGV4dBgBIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlJlcXVlc3RDb250ZXh0EisKBWZyYW1lGB4gASgLMhwuc3BhY2VleWVzLmNvcmUudjEuSG9zdEZyYW1lIp0BCglIb3N0RnJhbWUSLQoJcmVmZXJlbmNlGAEgASgLMhouc3BhY2VleWVzLmNvcmUudjEuRnJhbWVJZBIrCgZjYW1lcmEYAiABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBINCgV3aWR0aBgDIAEoDRIOCgZoZWlnaHQYBCABKA0SFQoNZWxhcHNlZF9uYW5vcxgFIAEoBCJ+Cg5GcmFtZVByZXNlbnRlZBIxCgdzZXNzaW9uGAEgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuU2Vzc2lvblN0YXR1cxINCgV3aWR0aBgCIAEoDRIOCgZoZWlnaHQYAyABKA0SGgoSdW5yZXNvbHZlZF9vYmplY3RzGAQgASgEKscBCg5SZXNwb25zZVN0YXR1cxIfChtSRVNQT05TRV9TVEFUVVNfVU5TUEVDSUZJRUQQABIcChhSRVNQT05TRV9TVEFUVVNfQUNDRVBURUQQARIdChlSRVNQT05TRV9TVEFUVVNfQ09NUExFVEVEEAISHAoYUkVTUE9OU0VfU1RBVFVTX1JFSkVDVEVEEAMSHQoZUkVTUE9OU0VfU1RBVFVTX0NBTkNFTExFRBAEEhoKFlJFU1BPTlNFX1NUQVRVU19GQUlMRUQQBSqLAQoPRW5naW5lTGlmZWN5Y2xlEiAKHEVOR0lORV9MSUZFQ1lDTEVfVU5TUEVDSUZJRUQQABIaChZFTkdJTkVfTElGRUNZQ0xFX1JFQURZEAESHAoYRU5HSU5FX0xJRkVDWUNMRV9SVU5OSU5HEAISHAoYRU5HSU5FX0xJRkVDWUNMRV9TVE9QUEVEEAMqtwEKDUNvcmVFdmVudEtpbmQSHwobQ09SRV9FVkVOVF9LSU5EX1VOU1BFQ0lGSUVEEAASEQoNU0NFTkVfQ0hBTkdFRBABEhEKDUNMT0NLX0NIQU5HRUQQAhIVChFGUkFNRV9JTlZBTElEQVRFRBADEhcKE1RBU0tfU1RBVFVTX0NIQU5HRUQQBBIaChZSRVNPVVJDRV9TVEFURV9DSEFOR0VEEAUSEwoPRlJBTUVfUFVCTElTSEVEEAZiBnByb3RvMw", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_time, file_spaceeyes_core_v1_scene, file_spaceeyes_core_v1_resources, file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_rendering, file_spaceeyes_core_v1_project]);
 
 /**
  * @generated from message spaceeyes.core.v1.CommandEnvelope
@@ -234,6 +234,12 @@ export type ResponseEnvelope = Message<"spaceeyes.core.v1.ResponseEnvelope"> & {
      */
     value: ObjectPage;
     case: "objects";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.EventPage events = 21;
+     */
+    value: EventPage;
+    case: "events";
   } | { case: undefined; value?: undefined };
 
   /**
@@ -385,6 +391,119 @@ export const SessionStatusQuerySchema: GenMessage<SessionStatusQuery> = /*@__PUR
   messageDesc(file_spaceeyes_core_v1_core, 8);
 
 /**
+ * Replay buffered events strictly after the cursor; 0 max means the default page.
+ *
+ * @generated from message spaceeyes.core.v1.EventsQuery
+ */
+export type EventsQuery = Message<"spaceeyes.core.v1.EventsQuery"> & {
+  /**
+   * @generated from field: uint64 after_sequence = 1;
+   */
+  afterSequence: bigint;
+
+  /**
+   * @generated from field: uint32 max_events = 2;
+   */
+  maxEvents: number;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.EventsQuery.
+ * Use `create(EventsQuerySchema)` to create a new message.
+ */
+export const EventsQuerySchema: GenMessage<EventsQuery> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_core, 9);
+
+/**
+ * @generated from message spaceeyes.core.v1.EventPage
+ */
+export type EventPage = Message<"spaceeyes.core.v1.EventPage"> & {
+  /**
+   * @generated from field: repeated spaceeyes.core.v1.CoreEvent events = 1;
+   */
+  events: CoreEvent[];
+
+  /**
+   * @generated from field: uint64 next_sequence = 2;
+   */
+  nextSequence: bigint;
+
+  /**
+   * @generated from field: uint64 replay_from = 3;
+   */
+  replayFrom: bigint;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.EventPage.
+ * Use `create(EventPageSchema)` to create a new message.
+ */
+export const EventPageSchema: GenMessage<EventPage> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_core, 10);
+
+/**
+ * @generated from message spaceeyes.core.v1.CoreEvent
+ */
+export type CoreEvent = Message<"spaceeyes.core.v1.CoreEvent"> & {
+  /**
+   * @generated from field: uint64 sequence = 1;
+   */
+  sequence: bigint;
+
+  /**
+   * @generated from field: string session_id = 2;
+   */
+  sessionId: string;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.CoreEventKind kind = 3;
+   */
+  kind: CoreEventKind;
+
+  /**
+   * @generated from field: uint64 command_sequence = 4;
+   */
+  commandSequence: bigint;
+
+  /**
+   * @generated from field: string request_id = 5;
+   */
+  requestId: string;
+
+  /**
+   * @generated from field: uint64 scene_revision = 6;
+   */
+  sceneRevision: bigint;
+
+  /**
+   * @generated from field: uint64 frame_graph_revision = 7;
+   */
+  frameGraphRevision: bigint;
+
+  /**
+   * @generated from field: uint64 resource_revision = 8;
+   */
+  resourceRevision: bigint;
+
+  /**
+   * @generated from field: uint64 frame_sequence = 9;
+   */
+  frameSequence: bigint;
+
+  /**
+   * @generated from field: uint64 time_generation = 10;
+   */
+  timeGeneration: bigint;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.CoreEvent.
+ * Use `create(CoreEventSchema)` to create a new message.
+ */
+export const CoreEventSchema: GenMessage<CoreEvent> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_core, 11);
+
+/**
  * Stable ObjectId ordering; the opaque token is the last returned id.
  *
  * @generated from message spaceeyes.core.v1.ListObjectsQuery
@@ -406,7 +525,7 @@ export type ListObjectsQuery = Message<"spaceeyes.core.v1.ListObjectsQuery"> & {
  * Use `create(ListObjectsQuerySchema)` to create a new message.
  */
 export const ListObjectsQuerySchema: GenMessage<ListObjectsQuery> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 9);
+  messageDesc(file_spaceeyes_core_v1_core, 12);
 
 /**
  * @generated from message spaceeyes.core.v1.ObjectPage
@@ -433,7 +552,7 @@ export type ObjectPage = Message<"spaceeyes.core.v1.ObjectPage"> & {
  * Use `create(ObjectPageSchema)` to create a new message.
  */
 export const ObjectPageSchema: GenMessage<ObjectPage> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 10);
+  messageDesc(file_spaceeyes_core_v1_core, 13);
 
 /**
  * Read-only: IDs do not participate in command idempotency history.
@@ -503,6 +622,12 @@ export type QueryEnvelope = Message<"spaceeyes.core.v1.QueryEnvelope"> & {
      */
     value: ListObjectsQuery;
     case: "listObjects";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.EventsQuery events = 29;
+     */
+    value: EventsQuery;
+    case: "events";
   } | { case: undefined; value?: undefined };
 };
 
@@ -511,7 +636,7 @@ export type QueryEnvelope = Message<"spaceeyes.core.v1.QueryEnvelope"> & {
  * Use `create(QueryEnvelopeSchema)` to create a new message.
  */
 export const QueryEnvelopeSchema: GenMessage<QueryEnvelope> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 11);
+  messageDesc(file_spaceeyes_core_v1_core, 14);
 
 /**
  * @generated from message spaceeyes.core.v1.FocusCamera
@@ -543,7 +668,7 @@ export type FocusCamera = Message<"spaceeyes.core.v1.FocusCamera"> & {
  * Use `create(FocusCameraSchema)` to create a new message.
  */
 export const FocusCameraSchema: GenMessage<FocusCamera> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 12);
+  messageDesc(file_spaceeyes_core_v1_core, 15);
 
 /**
  * @generated from message spaceeyes.core.v1.CameraCommand
@@ -566,7 +691,7 @@ export type CameraCommand = Message<"spaceeyes.core.v1.CameraCommand"> & {
  * Use `create(CameraCommandSchema)` to create a new message.
  */
 export const CameraCommandSchema: GenMessage<CameraCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 13);
+  messageDesc(file_spaceeyes_core_v1_core, 16);
 
 /**
  * @generated from message spaceeyes.core.v1.CameraStateQuery
@@ -583,7 +708,7 @@ export type CameraStateQuery = Message<"spaceeyes.core.v1.CameraStateQuery"> & {
  * Use `create(CameraStateQuerySchema)` to create a new message.
  */
 export const CameraStateQuerySchema: GenMessage<CameraStateQuery> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 14);
+  messageDesc(file_spaceeyes_core_v1_core, 17);
 
 /**
  * @generated from message spaceeyes.core.v1.CameraInfo
@@ -610,7 +735,7 @@ export type CameraInfo = Message<"spaceeyes.core.v1.CameraInfo"> & {
  * Use `create(CameraInfoSchema)` to create a new message.
  */
 export const CameraInfoSchema: GenMessage<CameraInfo> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 15);
+  messageDesc(file_spaceeyes_core_v1_core, 18);
 
 /**
  * Exact most recently presented sequence, finite NDC [-1,1]; never a new frame.
@@ -639,7 +764,7 @@ export type PickPresentedQuery = Message<"spaceeyes.core.v1.PickPresentedQuery">
  * Use `create(PickPresentedQuerySchema)` to create a new message.
  */
 export const PickPresentedQuerySchema: GenMessage<PickPresentedQuery> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 16);
+  messageDesc(file_spaceeyes_core_v1_core, 19);
 
 /**
  * Missing object is a successful miss. Summary belongs to this frame, not a new query.
@@ -668,7 +793,7 @@ export type PresentedSelection = Message<"spaceeyes.core.v1.PresentedSelection">
  * Use `create(PresentedSelectionSchema)` to create a new message.
  */
 export const PresentedSelectionSchema: GenMessage<PresentedSelection> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 17);
+  messageDesc(file_spaceeyes_core_v1_core, 20);
 
 /**
  * @generated from message spaceeyes.core.v1.CapabilitiesQuery
@@ -681,7 +806,7 @@ export type CapabilitiesQuery = Message<"spaceeyes.core.v1.CapabilitiesQuery"> &
  * Use `create(CapabilitiesQuerySchema)` to create a new message.
  */
 export const CapabilitiesQuerySchema: GenMessage<CapabilitiesQuery> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 18);
+  messageDesc(file_spaceeyes_core_v1_core, 21);
 
 /**
  * Support is not authorization or current lifecycle availability.
@@ -715,7 +840,7 @@ export type Capabilities = Message<"spaceeyes.core.v1.Capabilities"> & {
  * Use `create(CapabilitiesSchema)` to create a new message.
  */
 export const CapabilitiesSchema: GenMessage<Capabilities> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 19);
+  messageDesc(file_spaceeyes_core_v1_core, 22);
 
 /**
  * @generated from message spaceeyes.core.v1.ProtocolLimits
@@ -817,7 +942,7 @@ export type ProtocolLimits = Message<"spaceeyes.core.v1.ProtocolLimits"> & {
  * Use `create(ProtocolLimitsSchema)` to create a new message.
  */
 export const ProtocolLimitsSchema: GenMessage<ProtocolLimits> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 20);
+  messageDesc(file_spaceeyes_core_v1_core, 23);
 
 /**
  * Trusted host infrastructure route. Not a plugin command or retryable history entry.
@@ -841,7 +966,7 @@ export type HostFrameEnvelope = Message<"spaceeyes.core.v1.HostFrameEnvelope"> &
  * Use `create(HostFrameEnvelopeSchema)` to create a new message.
  */
 export const HostFrameEnvelopeSchema: GenMessage<HostFrameEnvelope> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 21);
+  messageDesc(file_spaceeyes_core_v1_core, 24);
 
 /**
  * @generated from message spaceeyes.core.v1.HostFrame
@@ -878,7 +1003,7 @@ export type HostFrame = Message<"spaceeyes.core.v1.HostFrame"> & {
  * Use `create(HostFrameSchema)` to create a new message.
  */
 export const HostFrameSchema: GenMessage<HostFrame> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 22);
+  messageDesc(file_spaceeyes_core_v1_core, 25);
 
 /**
  * @generated from message spaceeyes.core.v1.FramePresented
@@ -910,7 +1035,7 @@ export type FramePresented = Message<"spaceeyes.core.v1.FramePresented"> & {
  * Use `create(FramePresentedSchema)` to create a new message.
  */
 export const FramePresentedSchema: GenMessage<FramePresented> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_core, 23);
+  messageDesc(file_spaceeyes_core_v1_core, 26);
 
 /**
  * @generated from enum spaceeyes.core.v1.ResponseStatus
@@ -983,3 +1108,49 @@ export enum EngineLifecycle {
  */
 export const EngineLifecycleSchema: GenEnum<EngineLifecycle> = /*@__PURE__*/
   enumDesc(file_spaceeyes_core_v1_core, 1);
+
+/**
+ * @generated from enum spaceeyes.core.v1.CoreEventKind
+ */
+export enum CoreEventKind {
+  /**
+   * @generated from enum value: CORE_EVENT_KIND_UNSPECIFIED = 0;
+   */
+  CORE_EVENT_KIND_UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: SCENE_CHANGED = 1;
+   */
+  SCENE_CHANGED = 1,
+
+  /**
+   * @generated from enum value: CLOCK_CHANGED = 2;
+   */
+  CLOCK_CHANGED = 2,
+
+  /**
+   * @generated from enum value: FRAME_INVALIDATED = 3;
+   */
+  FRAME_INVALIDATED = 3,
+
+  /**
+   * @generated from enum value: TASK_STATUS_CHANGED = 4;
+   */
+  TASK_STATUS_CHANGED = 4,
+
+  /**
+   * @generated from enum value: RESOURCE_STATE_CHANGED = 5;
+   */
+  RESOURCE_STATE_CHANGED = 5,
+
+  /**
+   * @generated from enum value: FRAME_PUBLISHED = 6;
+   */
+  FRAME_PUBLISHED = 6,
+}
+
+/**
+ * Describes the enum spaceeyes.core.v1.CoreEventKind.
+ */
+export const CoreEventKindSchema: GenEnum<CoreEventKind> = /*@__PURE__*/
+  enumDesc(file_spaceeyes_core_v1_core, 2);

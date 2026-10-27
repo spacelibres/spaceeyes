@@ -4,7 +4,7 @@
 use crate::dispatch::{dispatch_error_code, validate_wire_context};
 use crate::{decode_frame_id, encode_instant, generated as p, ProtocolAdapter, ProtocolError};
 use prost::Message;
-use spaceeyes_engine::{EngineState, SessionStatus};
+use spaceeyes_engine::{CoreEvent, EngineState, EventKind, EventPage, SessionStatus};
 use spaceeyes_spatial::{Quatd, RigidTransform, Vec3d};
 
 pub(crate) fn decode_transform(value: p::RigidTransform) -> Result<RigidTransform, ProtocolError> {
@@ -38,6 +38,34 @@ pub(crate) fn encode_transform(value: RigidTransform) -> p::RigidTransform {
             y: value.rotation.y,
             z: value.rotation.z,
         }),
+    }
+}
+fn encode_event_page(page: &EventPage) -> p::EventPage {
+    p::EventPage {
+        events: page.events.iter().map(encode_event).collect(),
+        next_sequence: page.next_sequence,
+        replay_from: page.replay_from,
+    }
+}
+fn encode_event(event: &CoreEvent) -> p::CoreEvent {
+    p::CoreEvent {
+        sequence: event.sequence,
+        session_id: event.session.clone(),
+        kind: match event.kind {
+            EventKind::SceneChanged => p::CoreEventKind::SceneChanged,
+            EventKind::ClockChanged => p::CoreEventKind::ClockChanged,
+            EventKind::FrameInvalidated => p::CoreEventKind::FrameInvalidated,
+            EventKind::TaskStatusChanged => p::CoreEventKind::TaskStatusChanged,
+            EventKind::ResourceStateChanged => p::CoreEventKind::ResourceStateChanged,
+            EventKind::FramePublished => p::CoreEventKind::FramePublished,
+        } as i32,
+        command_sequence: event.command_sequence,
+        request_id: event.request_id.clone(),
+        scene_revision: event.scene_revision.0,
+        frame_graph_revision: event.frame_graph_revision.0,
+        resource_revision: event.resource_revision,
+        frame_sequence: event.frame_sequence,
+        time_generation: event.time_generation.0,
     }
 }
 pub(crate) fn encode_status(s: &SessionStatus) -> Result<p::SessionStatus, ProtocolError> {
@@ -373,6 +401,23 @@ impl ProtocolAdapter {
                         command_history_remaining: dispatcher.command_history_remaining() as u64,
                     }),
                 })
+            }
+            p::query_envelope::Payload::Events(query) => {
+                let max = if query.max_events == 0 {
+                    crate::limits::MAX_EVENT_PAGE as usize
+                } else {
+                    query.max_events as usize
+                };
+                match dispatcher.events_after(query.after_sequence, max) {
+                    Ok(page) => p::response_envelope::Payload::Events(encode_event_page(&page)),
+                    Err(error) => {
+                        return Ok(rejection(
+                            &context.request_id,
+                            dispatch_error_code(&error),
+                            format!("{error:?}"),
+                        ))
+                    }
+                }
             }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)

@@ -229,3 +229,6 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 
 ## 会话身份字段（C10切片）
 `SessionStatus`追加`session_id=9`，返回引擎绑定的宿主会话标识；旧客户端缺省为空字符串。该字段用于区分恢复前后或不同宿主会话的快照与回执，不替代`RequestContext.session_id`的准入校验：请求会话不匹配仍在适配器层拒绝。快照值的会话身份位于Rust `FrameSnapshot.session`，当前尚未新增对外FrameSnapshot消息；`FramePublished`事件只在Rust引擎内部提供，事件订阅与重放仍属C12。
+
+## 事件页与事件类型（C12切片）
+`QueryEnvelope`追加`events=29`，`ResponseEnvelope`追加`events=21`；`EventsQuery{after_sequence,max_events}`按事件序列严格大于游标返回，`max_events=0`使用默认128，超过128拒绝。`EventPage`返回`events/next_sequence/replay_from`：`replay_from`为仍可重放的最旧序列，游标低于它表示事件已丢失，需以状态查询重新同步。`CoreEvent`携带会话、类型、命令序列、请求ID、三类修订、帧序列与时间代次；`command_sequence=0`表示宿主呈现帧产生的`FRAME_PUBLISHED`。事件是只读通知，不构成命令入口或写授权。

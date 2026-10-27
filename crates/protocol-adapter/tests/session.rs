@@ -310,6 +310,15 @@ fn status_query() -> p::QueryEnvelope {
         )),
     }
 }
+fn events_query(after_sequence: u64, max_events: u32) -> p::QueryEnvelope {
+    p::QueryEnvelope {
+        context: Some(context("events")),
+        payload: Some(p::query_envelope::Payload::Events(p::EventsQuery {
+            after_sequence,
+            max_events,
+        })),
+    }
+}
 fn resolve(source: &str, target: &str) -> p::QueryEnvelope {
     p::QueryEnvelope {
         context: Some(context("resolve")),
@@ -326,6 +335,45 @@ fn status(a: &ProtocolAdapter) -> p::SessionStatus {
         p::response_envelope::Payload::Session(s) => s,
         other => panic!("{other:?}"),
     }
+}
+#[test]
+fn events_query_replays_typed_events_and_rejects_foreign_cursors() {
+    let mut a = adapter(4);
+    completed(send(&mut a, root("root", 0)));
+    let page = match completed(query(&a, events_query(0, 16))).payload.unwrap() {
+        p::response_envelope::Payload::Events(page) => page,
+        other => panic!("{other:?}"),
+    };
+    assert_eq!((page.next_sequence, page.replay_from), (1, 1));
+    assert_eq!(page.events.len(), 1);
+    let event = &page.events[0];
+    assert_eq!(event.sequence, 1);
+    assert_eq!(event.session_id, "session");
+    assert_eq!(event.kind, p::CoreEventKind::FrameInvalidated as i32);
+    assert_eq!(event.command_sequence, 1);
+    assert_eq!(event.frame_graph_revision, 1);
+    assert_eq!(event.time_generation, 0);
+
+    let page = match completed(query(&a, events_query(1, 16))).payload.unwrap() {
+        p::response_envelope::Payload::Events(page) => page,
+        other => panic!("{other:?}"),
+    };
+    assert!(page.events.is_empty());
+    assert_eq!(page.next_sequence, 1);
+    assert_eq!(
+        error(query(&a, events_query(9, 16))),
+        p::ErrorCode::StaleGeneration
+    );
+    // Zero selects the default page size; an oversized page is rejected.
+    let page = match completed(query(&a, events_query(0, 0))).payload.unwrap() {
+        p::response_envelope::Payload::Events(page) => page,
+        other => panic!("{other:?}"),
+    };
+    assert_eq!(page.events.len(), 1);
+    assert_eq!(
+        error(query(&a, events_query(0, 200))),
+        p::ErrorCode::InvalidArgument
+    );
 }
 fn completed(r: p::ResponseEnvelope) -> p::ResponseEnvelope {
     assert_eq!(r.status, p::ResponseStatus::Completed as i32, "{r:?}");
@@ -910,7 +958,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 37);
+    assert_eq!(names.len(), 38);
     assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()
