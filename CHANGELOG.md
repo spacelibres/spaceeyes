@@ -4,6 +4,13 @@
 
 ## [0.0.1] — 2026-10-27
 
+### P04 NASA DYN插件核心与分段加载
+- 新增`packages/nasa-dynamo`（`@spaceeyes/nasa-dynamo` 0.0.1）：按架构§15作为独立TS数据源，不进入Rust Core，不直接联网，不持有场景/时钟权威。
+- 解析：v1/v2头、五类点、内联/索引/分段、小端f64、W在前四元数、严格字节数与分段表校验；求值：pos三次Hermite、lin线性、quat/ori SLERP、ori端点投影、orb椭圆/双曲线投影与重心质量比，明确越界/非法样本/非支持轨道。
+- 加载：宿主注入transport，只取覆盖请求时刻的分段；索引与窗口有界LRU、覆盖段选择、AbortSignal检查及结构化加载错误，不隐式重试。
+- 来源：按固定提交4a8a83b复用自研TS行为并保留署名；`eyes/`恢复源码与NASA夹具未复制、未入库、未进测试。
+- 验证：包内24项合成字节测试、严格TS构建、prettier与policy通过；按用户新指令不作逐次全量，整体回归留待批量完成后统一执行，未声称全量或真实科学样本通过。
+
 ### P04参考DYN来源核验与合成黄金样本规范
 - 固定参考仓库`spacelibres/solarsystem`提交`4a8a83be2ff8298d7fe26fc5c9bbfe47f2fee7db`（0.2.73），逐文件记录SHA-256并分类：自研TS可按包级MIT复用并署名，`eyes/`恢复的NASA源码、真实DYN夹具、Starlink数据与模型不得复制。仓库根无`LICENSE`，仅`package.json`声明MIT，该缺失记为风险，不把仓库整体视为MIT。
 - 规范记录五类点、v1/v2头、内联/索引/分段、WXYZ四元数顺序、求值区间与错误语义，并定义orb/pos/lin/ori/quat五类合成样本及容差；合成样本只验证机制，不证明科学精度，真实样本仅限贡献者本地差分，不入库、不进CI或插件包。

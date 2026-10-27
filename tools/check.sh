@@ -13,6 +13,8 @@ cargo clippy --workspace --all-targets --all-features --locked -j 4 -- -D warnin
 cargo test --workspace --locked -j 4
 cargo build -p spaceeyes-wasm --target wasm32-unknown-unknown --locked -j 4
 bash tools/check-sdk.sh
+npm exec -- prettier --check packages/nasa-dynamo/package.json packages/nasa-dynamo/tsconfig.json 'packages/nasa-dynamo/src/*.ts' 'packages/nasa-dynamo/test/*.ts'
+npm test --workspace @spaceeyes/nasa-dynamo
 bash tools/check-web.sh
 if [[ "${1:-}" == --gpu ]]; then
   cargo test --workspace --all-features --locked -j 4

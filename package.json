@@ -6,6 +6,7 @@
   "type": "module",
   "workspaces": [
     "packages/core-sdk",
+    "packages/nasa-dynamo",
     "apps/web"
   ],
   "engines": {
