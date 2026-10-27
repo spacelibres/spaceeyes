@@ -53,3 +53,5 @@
 - 2026-10-27：新增第10阶段《命令、查询、事件与错误处理设计规范》v0.0.0，定义命令生命周期、事务、幂等、查询一致性、事件顺序、结构化错误、权限及异步取消语义。仅Markdown设计，未实现代码或测试，版本保持0.0.0。
 
 - 2026-10-27：新增第11阶段《Rust工程目录与模块依赖设计规范》v0.0.0，设计Cargo workspace目标目录、九项核心crate职责、无环依赖、封装规则、WASM/Native与Web宿主边界及ADR对应。仅Markdown设计，未创建工程或执行编译测试，版本保持0.0.0。
+
+- 2026-10-27：新增第12阶段《核心生命周期与状态快照设计规范》v0.0.0，明确Engine、SceneObject、Simulation、Resources生命周期、SceneSnapshot/FrameSnapshot/ProjectSnapshot区别、初始化/停机顺序、项目恢复与Proto边界。仅Markdown设计，未编写代码或验证文件，版本保持0.0.0。
