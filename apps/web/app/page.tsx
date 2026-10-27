@@ -9,6 +9,7 @@ export default function Page() {
   const generation = useRef(0);
   const [enabled, setEnabled] = useState(true);
   const [status, setStatus] = useState<ViewStatus>(initialStatus);
+  const [seekInput, setSeekInput] = useState("0");
   useEffect(() => {
     if (!enabled || !mount.current) return;
     const id = ++generation.current;
@@ -91,6 +92,70 @@ export default function Page() {
               视角 +15°
             </button>
           </div>
+          <section className="time-controls" aria-label="时间控制">
+            <label>
+              播放倍速
+              <select
+                aria-label="播放倍速"
+                disabled={!ready}
+                value={status.playbackRate}
+                onChange={(event) => {
+                  void host.current
+                    ?.setPlaybackRate(Number(event.target.value))
+                    .catch(() => {});
+                }}
+              >
+                {[-16, -4, -1, -0.25, 0.25, 1, 4, 16].map((rate) => (
+                  <option key={rate} value={String(rate)}>
+                    {rate}×
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="controls">
+              <button
+                disabled={!ready || status.playing}
+                onClick={() => {
+                  void host.current?.stepSecond(-1).catch(() => {});
+                }}
+              >
+                步退1秒
+              </button>
+              <button
+                disabled={!ready || status.playing}
+                onClick={() => {
+                  void host.current?.stepSecond(1).catch(() => {});
+                }}
+              >
+                步进1秒
+              </button>
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void host.current?.seekSeconds(seekInput).catch(() => {});
+              }}
+            >
+              <label htmlFor="seek-time">目标时间 / 历元相对秒</label>
+              <div className="seek-row">
+                <input
+                  id="seek-time"
+                  type="text"
+                  inputMode="decimal"
+                  maxLength={64}
+                  disabled={!ready || status.playing}
+                  value={seekInput}
+                  onChange={(event) => setSeekInput(event.target.value)}
+                />
+                <button type="submit" disabled={!ready || status.playing}>
+                  跳转
+                </button>
+              </div>
+            </form>
+            <p className="hint">
+              暂停后可步进或跳转，小数最多9位；相对当前显式历元，不是UTC日期。
+            </p>
+          </section>
           <dl>
             <div>
               <dt>相机模式</dt>

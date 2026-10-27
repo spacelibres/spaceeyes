@@ -461,3 +461,76 @@ test("selected mesh focus and follow use core camera state and reset restores th
     fullPage: true,
   });
 });
+
+test("time controls preserve nanoseconds, signed playback and nonfatal input errors", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  const input = page.getByLabel("目标时间 / 历元相对秒");
+  const jump = page.getByRole("button", { name: "跳转", exact: true });
+  await input.fill("-0.5");
+  await jump.click();
+  await expect(page.getByTestId("clock")).toHaveText("-0.500000000");
+  await expect(page.getByTestId("clock")).toHaveAttribute(
+    "data-nanos",
+    "-500000000",
+  );
+  await page.getByRole("button", { name: "步退1秒", exact: true }).click();
+  await expect(page.getByTestId("clock")).toHaveText("-1.500000000");
+  await page.getByRole("button", { name: "步进1秒", exact: true }).click();
+  await expect(page.getByTestId("clock")).toHaveText("-0.500000000");
+  await input.fill("9007199254740993.000000001");
+  await jump.click();
+  await expect(page.getByTestId("clock")).toHaveAttribute(
+    "data-nanos",
+    "9007199254740993000000001",
+  );
+  await input.fill("1e3");
+  await jump.click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "时间操作未完成" }),
+  ).toContainText("十进制秒");
+  await expect(page.getByTestId("clock")).toHaveAttribute(
+    "data-nanos",
+    "9007199254740993000000001",
+  );
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  await input.fill("0");
+  await jump.click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "时间操作未完成" }),
+  ).toHaveCount(0);
+  await expect(page.getByTestId("clock")).toHaveAttribute("data-nanos", "0");
+  await page.getByLabel("播放倍速").selectOption("-0.25");
+  await expect(page.getByLabel("播放倍速")).toHaveValue("-0.25");
+  await page.getByRole("button", { name: "播放", exact: true }).click();
+  await expect(jump).toBeDisabled();
+  await expect(
+    page.getByRole("button", { name: "步进1秒", exact: true }),
+  ).toBeDisabled();
+  await expect
+    .poll(async () =>
+      BigInt((await page.getByTestId("clock").getAttribute("data-nanos"))!),
+    )
+    .toBeLessThan(0n);
+  await page.getByRole("button", { name: "暂停", exact: true }).click();
+  await expect(jump).toBeEnabled();
+  const stopped = await page.getByTestId("clock").getAttribute("data-nanos");
+  const frames = Number(await page.getByTestId("frames").textContent());
+  await expect
+    .poll(async () => Number(await page.getByTestId("frames").textContent()))
+    .toBeGreaterThan(frames + 3);
+  expect(await page.getByTestId("clock").getAttribute("data-nanos")).toBe(
+    stopped,
+  );
+  await page.screenshot({
+    path: "test-results/spaceeyes-time-controls.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "卸载画布", exact: true }).click();
+  await page.getByRole("button", { name: "重新挂载", exact: true }).click();
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  await expect(page.getByTestId("clock")).toHaveAttribute("data-nanos", "0");
+  await expect(page.getByLabel("播放倍速")).toHaveValue("1");
+});

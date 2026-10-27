@@ -1,6 +1,6 @@
 # SPACEEYES Core SDK 使用技能书
 
-版本：0.0.1｜状态：M2-3聚焦/跟随及逻辑相机查询；不代表完整插件运行时
+版本：0.0.1｜状态：M2基本交互公开契约；不代表完整插件运行时
 
 项目自有SDK与文档使用根MIT许可证。依据：唯一proto目录、批准ADR、全局开发路线。生成文件禁止手改；运行`bash tools/generate-ts.sh`后用`--check`验证。锁文件安装：`bash tools/setup-sdk.sh`；完整互通验证：`bash tools/check-sdk.sh`。
 
@@ -51,3 +51,8 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 使用camera.focus前须协商camera.focus和query.camera_state；命令必须携带expectedSceneRevision及timeGeneration。目标须是当前存在且具有参考系的非相机对象，不能把旧拾取摘要直接当成当前对象状态。距离须有限且处于已有相机near/far内。跟随是目标参考系相对视角，不是惯性稳定、物理航行或相机平滑动画。
 
 允许通过query.camera_state读取逻辑相机与tracking；禁止把其基础position当成跟随后的实时世界位置，禁止在TS逐帧积分目标运动。SetCamera不提供tracking会清除跟随；可在同一Scene事务中清除跟随后删除目标。被跟随目标直接删除、同ID替换或变为相机时整批拒绝。遇到TIME_NOT_COVERED、缺失资源等应展示明确错误，不伪造中心或绕过Engine写入。
+
+## M2-4 浏览器时间交互（0.0.1开发增量）
+浏览器经既有time.set_rate/step/seek提交命令，不维护第二套时钟。倍速修改不自动播放；步进和跳转仅在暂停时启用，并在串行处理时重查Rust模式。十进制秒输入相对当前显式历元，最多64字符/9位小数，用BigInt无损映射sint64秒与[0,1e9)纳秒，拒绝科学计数法及溢出；沿用Rust当前timeScale/epochId，不做UTC猜测。显示负小数时按总纳秒符号格式化，不把floor秒直接拼接纳秒。操作完成须重新查询核心；非法输入或预期拒绝不得停止会话或伪造成功。步进/跳转清除旧选择；Seek代次变化由核心保持唯一权威。本增量不是科学时间轴或Live功能。
+
+暂停前置条件是当前浏览器步进/跳转工作流的限制，不改变既有核心time.seek/step在其它宿主中的协议语义。输入控件的文本是未提交目标，不能作为权威时钟；以命令完成后的Rust查询为准。

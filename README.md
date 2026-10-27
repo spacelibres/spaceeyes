@@ -18,7 +18,7 @@ bash tools/setup-web.sh
 cargo build --workspace --locked
 bash tools/check.sh
 ```
-检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。M2-3本机Windows/Rust 1.96.0验收为119项默认Rust测试、130项含GPU Rust测试、9项TS互通及8项浏览器测试；历史Linux证据与当前边界见开发进度。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
+检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。M2-4本机Windows/Rust 1.96.0验收为119项默认Rust测试、130项含GPU Rust测试、9项TS互通、3项时间适配单测及9项浏览器测试；历史Linux证据与当前边界见开发进度。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
 
 ### GPU原型与Native运行
 需要Vulkan驱动（硬件或Mesa软件驱动）；已配置云环境可直接执行：
@@ -69,3 +69,6 @@ SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。
 
 ### 相机聚焦与跟随（M2-3）
 选择对象后可聚焦、跟随或恢复演示视角。Rust按当前时刻计算目标显示中心，跟随视图随目标参考系旋转；query.camera_state返回逻辑状态，宿主不计算目标轨迹。相机引用通过Scene事务校验，被跟随目标不可直接删除或同ID替换。
+
+### 精确时间控制（M2-4）
+支持正反向倍速、暂停时±1秒步进和精确到纳秒的显式历元相对秒跳转。输入通过BigInt映射核心时间，支持负小数及超JS安全整数的秒值；错误输入不改变时钟或中断会话。M2基本交互出口已验收，下一步按M3推进有界资源与项目恢复；科学时间轴及UTC换算仍未实现。

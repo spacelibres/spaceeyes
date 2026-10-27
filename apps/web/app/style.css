@@ -87,6 +87,57 @@ main::before {
 canvas {
   cursor: crosshair;
 }
+.time-controls {
+  margin-top: 24px;
+}
+.time-controls label {
+  display: block;
+  font-size: 12px;
+  color: var(--line);
+  margin-bottom: 12px;
+}
+.time-controls select,
+.time-controls input {
+  font:
+    13px Consolas,
+    monospace;
+  color: var(--surface);
+  background: var(--deep);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  min-width: 0;
+}
+.time-controls select {
+  margin-left: 12px;
+}
+.time-controls form {
+  margin-top: 16px;
+}
+.seek-row {
+  display: flex;
+  gap: 8px;
+}
+.seek-row input {
+  width: 100%;
+}
+.seek-row button {
+  flex: 0 0 auto;
+}
+input:disabled,
+select:disabled {
+  opacity: 0.5;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+dd {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
 header {
   display: flex;
   justify-content: space-between;

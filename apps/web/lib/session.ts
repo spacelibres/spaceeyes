@@ -21,6 +21,7 @@ import {
   type CameraState,
 } from "@spaceeyes/core-sdk";
 import type { WasmEngine } from "../public/wasm/spaceeyes_wasm.js";
+import { formatSimulationTime, parseSimulationSeconds } from "./time";
 export type ViewStatus = {
   phase: "初始化" | "运行中" | "已停止" | "错误";
   frameCount: number;
@@ -32,6 +33,7 @@ export type ViewStatus = {
   height: number;
   selectionText: string;
   cameraMode: string;
+  playbackRate: string;
   cameraTarget?: string;
   actionError?: string;
   selected?: { id: string; kind: string; reference: string; sequence: string };
@@ -48,6 +50,7 @@ export const initialStatus: ViewStatus = {
   height: 0,
   selectionText: "点击画面选择对象",
   cameraMode: "自由视角",
+  playbackRate: "1",
 };
 const sessionId = "browser-session";
 const principal = "trusted-browser-host";
@@ -189,6 +192,9 @@ export class BrowserSession {
       "query.pick_presented",
       "camera.focus",
       "query.camera_state",
+      "time.set_rate",
+      "time.step",
+      "time.seek",
     ]);
     if (!capabilities.browserSurface)
       throw new Error("当前核心未提供浏览器画布能力。");
@@ -363,7 +369,11 @@ export class BrowserSession {
       phase,
       frameCount: this.frames,
       clockNs: (seconds * 1000000000n + BigInt(nanos)).toString(),
-      clockText: `${seconds}.${String(nanos).padStart(9, "0")}`,
+      clockText: formatSimulationTime(seconds, nanos),
+      playbackRate: String(
+        (this.state?.clock?.rateNumerator ?? 1) /
+          (this.state?.clock?.rateDenominator || 1),
+      ),
       playing: this.state?.clock?.mode === PlaybackMode.PLAYING,
       resourceBytes: (this.state?.resourceUsedBytes ?? 0n).toString(),
       width: this.width,
@@ -488,14 +498,21 @@ export class BrowserSession {
       throw error;
     });
   }
-  private cameraAction(operation: () => Promise<void>): Promise<void> {
+  private performAction(
+    label: string,
+    operation: () => Promise<void>,
+  ): Promise<void> {
     return this.enqueue(async () => {
       this.actionError = undefined;
       try {
         await operation();
       } catch (error) {
-        if (!(error instanceof CoreRemoteError)) throw error;
-        this.actionError = `相机操作未完成：${error.message}`;
+        if (
+          !(error instanceof CoreRemoteError) &&
+          !(error instanceof RangeError)
+        )
+          throw error;
+        this.actionError = `${label}操作未完成：${error.message}`;
       }
       await this.refresh();
       if (!this.disposed) this.notify(this.summary("运行中"));
@@ -505,7 +522,7 @@ export class BrowserSession {
     });
   }
   focusSelected(follow: boolean): Promise<void> {
-    return this.cameraAction(async () => {
+    return this.performAction("相机", async () => {
       if (!this.selected) return;
       await this.refresh();
       if (this.selectionRevision !== this.state!.sceneRevision) {
@@ -533,7 +550,7 @@ export class BrowserSession {
     });
   }
   resetCamera(): Promise<void> {
-    return this.cameraAction(async () => {
+    return this.performAction("相机", async () => {
       await this.command({
         case: "scene",
         value: {
@@ -550,6 +567,63 @@ export class BrowserSession {
       this.selected = undefined;
       this.selectionRevision = undefined;
       this.selectionText = "视角已恢复，请选择对象";
+    });
+  }
+  setPlaybackRate(rate: number): Promise<void> {
+    return this.performAction("时间", async () => {
+      if (!Number.isFinite(rate)) throw new RangeError("无效播放倍速。");
+      await this.command({
+        case: "time",
+        value: { action: { case: "setRate", value: { rate } } },
+      });
+    });
+  }
+  private async requirePaused(): Promise<void> {
+    await this.refresh();
+    if (this.state?.clock?.mode !== PlaybackMode.PAUSED)
+      throw new RangeError("请先暂停，再步进或跳转时间。");
+  }
+  private clearTimeSelection(): void {
+    this.selected = undefined;
+    this.selectionRevision = undefined;
+    this.selectionText = "时间已更新，请选择对象";
+  }
+  stepSecond(direction: -1 | 1): Promise<void> {
+    return this.performAction("时间", async () => {
+      await this.requirePaused();
+      await this.command({
+        case: "time",
+        value: {
+          action: {
+            case: "step",
+            value: { deltaNanos: BigInt(direction) * 1000000000n },
+          },
+        },
+      });
+      this.clearTimeSelection();
+    });
+  }
+  seekSeconds(text: string): Promise<void> {
+    return this.performAction("时间", async () => {
+      const parsed = parseSimulationSeconds(text);
+      await this.requirePaused();
+      const current = this.state!.clock!.instant!;
+      await this.command({
+        case: "time",
+        value: {
+          action: {
+            case: "seek",
+            value: {
+              instant: {
+                timeScale: current.timeScale,
+                epochId: current.epochId,
+                ...parsed,
+              },
+            },
+          },
+        },
+      });
+      this.clearTimeSelection();
     });
   }
   private fail(error: unknown): void {
