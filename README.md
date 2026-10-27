@@ -15,7 +15,7 @@ SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust�
 cargo build --workspace --locked
 bash tools/check.sh
 ```
-检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认92项测试通过；GPU功能开启时102项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
+检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认98项测试通过；GPU功能开启时109项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
 
 ### GPU原型与Native运行
 需要Vulkan驱动（硬件或Mesa软件驱动）；已配置云环境可直接执行：
@@ -27,7 +27,7 @@ cargo run -p spaceeyes-native --features gpu --locked -- /tmp/spaceeyes-frame.pp
 示例从Scene持久相机生成视图，输出三个球体与一个通用网格四面体的PPM图片，带程序生成的棋盘纹理、基础明暗及深度遮挡。可在输出路径后传入相机偏航角（度）和局部X位置（米），例如`... /tmp/spaceeyes-camera.ppm 20 2`。GPU检查真实回读像素，不在缺少适配器时跳过。云环境首次安装可使用`bash tools/setup-cloud.sh`，在工作区准备Rust与Debian 13 Mesa软件驱动，不修改系统目录。
 
 ### 纹理与材质
-支持Resources登记的原始不透明RGBA8纹理、明确Linear/SRGB色彩空间、网格/球体UV、Nearest/Linear采样及Clamp/Repeat寻址。材质为线性基色乘纹理，可选择Lit或Unlit；GPU实际采样并以线性RGBA8回读验证。当前不包含PNG/JPEG文件解码、透明、mipmap或PBR。Scene只持有资源引用，纹理/网格由同一ResourceManager登记，GPU临时分配帧后回收。
+支持Resources登记的原始不透明RGBA8纹理、明确Linear/SRGB色彩空间、网格/球体UV、Nearest/Linear采样及Clamp/Repeat寻址。材质为线性基色乘纹理，可选择Lit或Unlit；GPU实际采样并以线性RGBA8回读验证。现支持独立image-import模块解码PNG/JPEG并经同一Resources登记；不包含透明、mipmap或PBR。Scene只持有资源引用，纹理/网格由同一ResourceManager登记，GPU临时分配帧后回收。
 
 ### 时间与协议
 `Engine::advance_nanos`由宿主提供非负单调经过时间，暂停时不变；`PlaybackRate`支持显式有理正负倍速，连续推进保留纳秒余数，不读取系统时钟。FixedStepper单独提供有界补步配置，不持有权威时间。
@@ -44,3 +44,6 @@ Host授权后通过ProtocolAdapter发送Proto Scene/Time命令；身份不从载
 SPACEEYES项目自有内容统一采用[MIT License](LICENSE)，包括Resources资源管理模块。所有Cargo包继承同一MIT声明，源文件使用`SPDX-License-Identifier: MIT`标识。使用、修改及再分发时保留版权与许可声明。
 
 第三方依赖及外部数据不因本项目选择MIT而被重新许可。NASA数据、图像、模型和恢复源码的处理仍遵循[来源与许可台账](docs/第三方来源与许可台账.md)。MIT是开源使用许可；Resources中的资源所有者/租约是运行时设计，继续由Engine的唯一ResourceManager管理。
+
+### PNG/JPEG文件导入
+Native可追加第4个参数：`cargo run -p spaceeyes-native --features gpu --locked -- /tmp/import.ppm 0 0 /path/to/texture.png`（也支持JPEG，按内容识别）。输入最多8MiB，尺寸最多2048×2048；拒绝透明、16位PNG、动画PNG和损坏/截断图像，JPEG应用EXIF方向。宿主明确使用SRGB；库调用者可选择Linear或SRGB，不做ICC色彩转换。输入失败不登记纹理、不覆盖输出。压缩图像Proto接口仍待实现；输出仍为线性RGBA8的离屏PPM。

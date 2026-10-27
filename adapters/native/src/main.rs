@@ -8,7 +8,7 @@ use spaceeyes_rendering::{gpu::GpuRenderer, prepare_camera};
 use spaceeyes_scene::{CameraState, Material, MeshInstance, SceneCommand, SceneObject, Sphere};
 use spaceeyes_spatial::{FrameSample, Quatd, RigidTransform, Vec3d};
 use spaceeyes_time::TimeInstant;
-use std::io::Write;
+use std::io::{Read, Write};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     run().map_err(std::io::Error::other)?;
     Ok(())
@@ -24,22 +24,47 @@ fn run() -> Result<(), String> {
         .register_root_frame(root.clone())
         .map_err(|e| format!("{e:?}"))?;
     let texture = ResourceId::new("demo:checker-texture").unwrap();
-    let pixels = (0..8)
-        .flat_map(|y| {
-            (0..8).flat_map(move |x| {
-                if (x + y) % 2 == 0 {
-                    [235, 160, 40, 255]
-                } else {
-                    [40, 90, 210, 255]
-                }
+    let texture_data = if let Some(input) = std::env::args().nth(4) {
+        let source = std::fs::canonicalize(&input).map_err(|e| e.to_string())?;
+        let destination = match std::fs::canonicalize(&path) {
+            Ok(existing) => existing,
+            Err(_) => {
+                let output = std::path::Path::new(&path);
+                let parent = output
+                    .parent()
+                    .filter(|p| !p.as_os_str().is_empty())
+                    .unwrap_or_else(|| std::path::Path::new("."));
+                std::fs::canonicalize(parent)
+                    .map_err(|e| e.to_string())?
+                    .join(output.file_name().ok_or("missing output filename")?)
+            }
+        };
+        if source == destination {
+            return Err("texture input and render output must differ".into());
+        }
+        let mut bytes = Vec::new();
+        std::fs::File::open(source)
+            .map_err(|e| e.to_string())?
+            .take(spaceeyes_image_import::MAX_ENCODED_BYTES as u64 + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|e| e.to_string())?;
+        spaceeyes_image_import::decode(&bytes, ColorSpace::Srgb).map_err(|e| e.to_string())?
+    } else {
+        let pixels = (0..8)
+            .flat_map(|y| {
+                (0..8).flat_map(move |x| {
+                    if (x + y) % 2 == 0 {
+                        [235, 160, 40, 255]
+                    } else {
+                        [40, 90, 210, 255]
+                    }
+                })
             })
-        })
-        .collect();
+            .collect();
+        TextureData::new(8, 8, pixels, ColorSpace::Linear).map_err(|e| format!("{e:?}"))?
+    };
     engine
-        .register_texture_resource(
-            texture.clone(),
-            TextureData::new(8, 8, pixels, ColorSpace::Linear).map_err(|e| format!("{e:?}"))?,
-        )
+        .register_texture_resource(texture.clone(), texture_data)
         .map_err(|e| format!("{e:?}"))?;
     let objects = [
         ([-0.7, 0.0, -6.0], 1.35, [1.0, 0.35, 0.06]),

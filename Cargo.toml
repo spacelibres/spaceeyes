@@ -3,6 +3,7 @@ resolver = "2"
 members = [
   "crates/foundation",
   "crates/geometry",
+  "crates/image-import",
   "crates/time",
   "crates/spatial",
   "crates/scene",

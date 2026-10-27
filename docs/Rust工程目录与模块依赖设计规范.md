@@ -135,3 +135,6 @@ SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独�
 
 ## 0.0.1 geometry实现切片
 新增geometry crate仅依赖foundation，提供通过构造器验证的不可变TriangleMesh/Vertex领域值。Resources拥有网格，snapshot共享只读值，Rendering只消费它们，Engine统一协调。geometry不依赖Proto、渲染器、宿主或NASA数据；Protobuf适配仍留在外层，正常crate依赖保持无环。
+
+## 图像文件导入增量（0.0.1）
+外层image-import模块接受最多8MiB的PNG/JPEG字节，解码尺寸最多2048×2048，仅支持8位不透明图像。调用方显式选择Linear/SRGB，不做ICC色彩转换；JPEG采用严格解码并应用EXIF方向。解码失败不得登记Resources。Native宿主负责有界文件读取，成功后通过现有Engine接口登记TextureData，核心不依赖文件或编解码器。本轮先交付库与Native文件导入；Proto压缩图像命令后续扩展。输入不可信时解码库的内部内存限制不能等同于进程级隔离。

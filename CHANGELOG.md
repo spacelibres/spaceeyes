@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+### PNG/JPEG纹理文件导入
+- 范围：外层独立导入模块与Native有界文件读取；Resources仍唯一保存验证后的TextureData，核心不引入编解码依赖。保持0.0.1与MIT，第三方保留自身许可。
+- 约束：8MiB输入、2048×2048、8位不透明；显式色彩空间，无ICC转换；严格JPEG与EXIF方向、PNG校验，失败不登记。Proto压缩导入后续实现。
+- 验证：98项默认/109项含GPU测试、严格Clippy、格式/全目标/全feature编译、wasm32与Native真实绘制；新增6项解码与1项宿主GPU集成测试，零失败/忽略。软件GPU不代表硬件性能或远端CI。
+- 提交关联：父基线16b4ff3；本记录随development/core-0.0.1实现提交，测试结果见开发进度。
+
 ### 纹理采样与基础材质
 - 原因/范围：在通用网格之后实现Resources统一管理的不透明RGBA8纹理和球体/网格基础材质，维持0.0.1开发迭代与统一MIT，不发布新版本或标签。
 - 领域/所有权：TextureData校验宽高、精确字节数、opaque alpha和显式Linear/SRGB；Material保存线性基色、纹理ID、Nearest/Linear、Clamp/Repeat及Lit/Unlit。Scene只引用，纹理自动参与去重租约，类型错误/未就绪引用整批回滚；快照与内部项目恢复保留只读资产。
