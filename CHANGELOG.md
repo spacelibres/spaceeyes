@@ -57,3 +57,5 @@
 - 2026-10-27：新增第12阶段《核心生命周期与状态快照设计规范》v0.0.0，明确Engine、SceneObject、Simulation、Resources生命周期、SceneSnapshot/FrameSnapshot/ProjectSnapshot区别、初始化/停机顺序、项目恢复与Proto边界。仅Markdown设计，未编写代码或验证文件，版本保持0.0.0。
 
 - 2026-10-27：执行第13阶段Markdown文档一致性审查，直接修订Rust核心总规范、Scene、Rendering、Core Protocol、第09阶段Proto、第10阶段命令、第11阶段目录及第12阶段生命周期等八份原文档；统一FrameSnapshot/ProjectSnapshot职责、相机唯一命令入口、事务原子性、恢复代次、资源缺失状态和已批准ADR语义。未创建验证报告或代码，版本保持0.0.0。
+
+- 2026-10-27：完成第14阶段核心架构设计基线整理，新增《Rust核心架构设计基线》v0.0.0，集中索引七大核心模块、第08至12阶段专项设计、已批准ADR、快照职责、Proto边界、未定设计事项及文档优先级。仅Markdown导航与状态整理，不创建代码或验证文档，版本保持0.0.0。
