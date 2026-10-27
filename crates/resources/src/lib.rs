@@ -6,7 +6,7 @@ use spaceeyes_foundation::ResourceId;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ResourceError {
     Duplicate, Unknown, InvalidSize, BudgetExceeded, InvalidLease,
-    Overflow, StillLeased,
+    Overflow, StillLeased, EngineUnavailable,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ResourceBudget { pub max_bytes: u64 }
