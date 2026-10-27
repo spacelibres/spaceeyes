@@ -9,7 +9,13 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 static NEXT_SCHEDULER: AtomicU64 = AtomicU64::new(1);
 mod executor;
-pub use executor::{dispatch_ready, enqueue_bounded, TaskBudget, TaskExecutor};
+pub use executor::{
+    dispatch_ready, enqueue_bounded, enqueue_bounded_with_priority, TaskBudget, TaskExecutor,
+};
+#[cfg(not(target_arch = "wasm32"))]
+mod worker;
+#[cfg(not(target_arch = "wasm32"))]
+pub use worker::{ExecutionControl, TaskWork, WorkerLimits, WorkerOutcome, WorkerPool};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TaskError {
@@ -36,6 +42,9 @@ pub enum TaskError {
     TargetLimit,
     UndeclaredTarget,
     CreateNotAllowed,
+    Timeout,
+    Cancelled,
+    SourceNotAllowed,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskRequest {
@@ -105,6 +114,68 @@ impl TaskProvenance {
         Ok(())
     }
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+/// Dispatch order only; priority cannot bypass dependencies, budgets, or validation.
+pub enum TaskPriority {
+    Prefetch,
+    Normal,
+    Interactive,
+}
+/// Strict provider-source policy. An empty allowlist with `require_provenance`
+/// disabled is open; a configured policy never accepts unknown providers.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SourcePolicy {
+    allowed: BTreeMap<String, BTreeSet<String>>,
+    require_provenance: bool,
+}
+impl SourcePolicy {
+    pub fn open() -> Self {
+        Self {
+            allowed: BTreeMap::new(),
+            require_provenance: false,
+        }
+    }
+    /// Every task must declare provenance from one of the listed provider/version pairs.
+    pub fn strict(
+        providers: impl IntoIterator<Item = (String, String)>,
+    ) -> Result<Self, TaskError> {
+        let mut allowed: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+        for (id, version) in providers {
+            if id.trim().is_empty() || version.trim().is_empty() {
+                return Err(TaskError::InvalidProvenance);
+            }
+            allowed.entry(id).or_default().insert(version);
+        }
+        if allowed.is_empty() {
+            return Err(TaskError::InvalidProvenance);
+        }
+        Ok(Self {
+            allowed,
+            require_provenance: true,
+        })
+    }
+    pub fn authorize(
+        &self,
+        provenance: Option<&TaskProvenance>,
+        instant: &TimeInstant,
+    ) -> Result<(), TaskError> {
+        let Some(provenance) = provenance else {
+            return if self.require_provenance {
+                Err(TaskError::InvalidProvenance)
+            } else {
+                Ok(())
+            };
+        };
+        provenance.validate(instant)?;
+        if self.allowed.is_empty() {
+            return Ok(());
+        }
+        match self.allowed.get(&provenance.provider_id) {
+            Some(versions) if versions.contains(&provenance.provider_version) => Ok(()),
+            _ => Err(TaskError::SourceNotAllowed),
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TaskStatus {
     Queued,
@@ -128,6 +199,7 @@ struct TaskEntry {
     request: TaskRequest,
     token: TaskExecutionToken,
     status: TaskStatus,
+    priority: TaskPriority,
     provenance: Option<TaskProvenance>,
 }
 pub struct SimulationScheduler {
@@ -154,6 +226,13 @@ impl SimulationScheduler {
         Self::default()
     }
     pub fn enqueue(&mut self, request: TaskRequest) -> Result<(), TaskError> {
+        self.enqueue_with_priority(request, TaskPriority::Normal)
+    }
+    pub fn enqueue_with_priority(
+        &mut self,
+        request: TaskRequest,
+        priority: TaskPriority,
+    ) -> Result<(), TaskError> {
         if request.task_id.trim().is_empty() {
             return Err(TaskError::EmptyTaskId);
         }
@@ -187,6 +266,7 @@ impl SimulationScheduler {
                 request,
                 token,
                 status: TaskStatus::Queued,
+                priority,
                 provenance: None,
             },
         );
@@ -224,6 +304,11 @@ impl SimulationScheduler {
     }
     pub fn request(&self, id: &str) -> Option<&TaskRequest> {
         self.tasks.get(id).map(|entry| &entry.request)
+    }
+    pub fn provenance(&self, id: &str) -> Option<&TaskProvenance> {
+        self.tasks
+            .get(id)
+            .and_then(|entry| entry.provenance.as_ref())
     }
     pub fn issued_task(&self, id: &str) -> Option<IssuedTask> {
         self.tasks.get(id).map(|entry| IssuedTask {
@@ -282,25 +367,28 @@ impl SimulationScheduler {
         self.tasks.get(id).map(|entry| entry.status)
     }
     /// Stable lexical order, independent of HashMap iteration or executor completion.
+    /// Higher priority runs first; equal priority keeps lexical order.
     pub fn ready_tasks(&self) -> Vec<String> {
-        self.tasks
-            .iter()
-            .filter_map(|(id, entry)| {
-                if entry.status != TaskStatus::Queued {
-                    return None;
-                }
-                let all_done = entry
-                    .request
-                    .dependencies
-                    .iter()
-                    .all(|dependency| self.status(dependency) == Some(TaskStatus::Completed));
-                if all_done {
-                    Some(id.clone())
-                } else {
-                    None
-                }
-            })
-            .collect()
+        let mut ready: Vec<(TaskPriority, String)> =
+            self.tasks
+                .iter()
+                .filter_map(|(id, entry)| {
+                    if entry.status != TaskStatus::Queued {
+                        return None;
+                    }
+                    let all_done =
+                        entry.request.dependencies.iter().all(|dependency| {
+                            self.status(dependency) == Some(TaskStatus::Completed)
+                        });
+                    if all_done {
+                        Some((entry.priority, id.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+        ready.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.cmp(&b.1)));
+        ready.into_iter().map(|(_, id)| id).collect()
     }
     pub fn start(&mut self, id: &str) -> Result<(), TaskError> {
         let entry = self.tasks.get(id).ok_or(TaskError::UnknownTask)?;
@@ -583,6 +671,51 @@ mod tests {
         s.cancel("a").unwrap();
         assert_eq!(s.status("b"), Some(TaskStatus::Failed));
         assert_eq!(s.start("b"), Err(TaskError::InvalidState));
+    }
+
+    #[test]
+    fn interactive_priority_precedes_lexical_order() {
+        let mut s = SimulationScheduler::new();
+        s.enqueue_with_priority(task("a", &[]), TaskPriority::Prefetch)
+            .unwrap();
+        s.enqueue_with_priority(task("z", &[]), TaskPriority::Interactive)
+            .unwrap();
+        s.enqueue(task("m", &[])).unwrap();
+        assert_eq!(s.ready_tasks(), ["z", "m", "a"]);
+    }
+
+    #[test]
+    fn strict_source_policy_requires_known_provider_version_and_coverage() {
+        let policy = SourcePolicy::strict([("provider".into(), "1".into())]).unwrap();
+        let provenance = |version: &str, end: i64| TaskProvenance {
+            scene_revision: Revision(0),
+            frame_graph_revision: Revision(0),
+            provider_id: "provider".into(),
+            provider_version: version.into(),
+            coverage_start: instant(0),
+            coverage_end: instant(end),
+        };
+        assert_eq!(
+            policy.authorize(Some(&provenance("1", 1)), &instant(0)),
+            Ok(())
+        );
+        assert_eq!(
+            policy.authorize(Some(&provenance("2", 1)), &instant(0)),
+            Err(TaskError::SourceNotAllowed)
+        );
+        assert_eq!(
+            policy.authorize(Some(&provenance("1", 0)), &instant(1)),
+            Err(TaskError::CoverageMismatch)
+        );
+        assert_eq!(
+            policy.authorize(None, &instant(0)),
+            Err(TaskError::InvalidProvenance)
+        );
+        assert_eq!(SourcePolicy::open().authorize(None, &instant(0)), Ok(()));
+        assert_eq!(
+            SourcePolicy::strict([(" ".into(), "1".into())]),
+            Err(TaskError::InvalidProvenance)
+        );
     }
 }
 

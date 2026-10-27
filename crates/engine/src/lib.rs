@@ -8,9 +8,12 @@ use spaceeyes_resources::{
     LeaseId, ResourceClass, ResourceError, ResourceLimits, ResourceManager, ResourceUsage,
 };
 use spaceeyes_scene::{ObjectHandle, Scene, SceneCommand, SceneObject, SceneSnapshot};
+#[cfg(not(target_arch = "wasm32"))]
+use spaceeyes_simulation::WorkerOutcome;
 use spaceeyes_simulation::{
-    dispatch_ready, enqueue_bounded, IssuedTask, SimulationScheduler, TaskBudget, TaskError,
-    TaskExecutionToken, TaskExecutor, TaskProvenance, TaskRequest, TaskResult, TaskStatus,
+    dispatch_ready, enqueue_bounded_with_priority, IssuedTask, SimulationScheduler, SourcePolicy,
+    TaskBudget, TaskError, TaskExecutionToken, TaskExecutor, TaskPriority, TaskProvenance,
+    TaskRequest, TaskResult, TaskStatus,
 };
 use spaceeyes_snapshot::{FrameAvailability, FramePublished, FrameSnapshot};
 use spaceeyes_spatial::{
@@ -56,6 +59,24 @@ pub enum ExecutorFeedback {
         task_id: String,
         token: TaskExecutionToken,
     },
+}
+#[cfg(not(target_arch = "wasm32"))]
+impl From<WorkerOutcome> for ExecutorFeedback {
+    fn from(outcome: WorkerOutcome) -> Self {
+        let task = outcome.task().clone();
+        match outcome {
+            WorkerOutcome::Completed(_) => Self::Result(TaskResult::from(&task)),
+            // A timeout or work error is terminal failure; late results cannot commit.
+            WorkerOutcome::Failed { .. } | WorkerOutcome::TimedOut(_) => Self::Failed {
+                task_id: task.request.task_id,
+                token: task.token,
+            },
+            WorkerOutcome::Cancelled(_) => Self::Cancelled {
+                task_id: task.request.task_id,
+                token: task.token,
+            },
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -108,6 +129,7 @@ pub struct Engine {
     spatial: ReferenceFrameGraph,
     simulation: SimulationScheduler,
     task_budget: TaskBudget,
+    source_policy: SourcePolicy,
     resources: ResourceManager,
     task_leases: BTreeMap<String, Vec<LeaseId>>,
     task_contexts: BTreeMap<String, TaskContext>,
@@ -133,6 +155,7 @@ impl Engine {
             spatial: ReferenceFrameGraph::new(),
             simulation: SimulationScheduler::new(),
             task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
+            source_policy: SourcePolicy::open(),
             resources: ResourceManager::with_limits(limits),
             task_leases: BTreeMap::new(),
             task_contexts: BTreeMap::new(),
@@ -763,13 +786,25 @@ impl Engine {
     }
     /// Register a task for the current authoritative time generation.
     pub fn enqueue_task(&mut self, request: TaskRequest) -> Result<(), TaskError> {
+        self.enqueue_task_with_priority(request, TaskPriority::Normal)
+    }
+    /// Priority changes dispatch order only; validation, dependencies and budgets still apply.
+    pub fn enqueue_task_with_priority(
+        &mut self,
+        request: TaskRequest,
+        priority: TaskPriority,
+    ) -> Result<(), TaskError> {
         if self.state == EngineState::Stopped {
             return Err(TaskError::InvalidState);
         }
         if request.generation != self.clock.generation() {
             return Err(TaskError::StaleGeneration);
         }
-        self.enqueue_task_with_targets(request, TaskTargets::SceneRevision(self.scene.revision()))
+        self.enqueue_task_with_targets(
+            request,
+            TaskTargets::SceneRevision(self.scene.revision()),
+            priority,
+        )
     }
     /// Bind existing objects by registry, generation and immutable input value.
     /// Changes to unrelated objects may still proceed.
@@ -803,15 +838,16 @@ impl Engine {
             handles.insert(id.clone(), BoundObject { handle, snapshot });
         }
         self.validate_object_dependencies(&handles)?;
-        self.enqueue_task_with_targets(request, TaskTargets::Objects(handles))
+        self.enqueue_task_with_targets(request, TaskTargets::Objects(handles), TaskPriority::Normal)
     }
     fn enqueue_task_with_targets(
         &mut self,
         request: TaskRequest,
         targets: TaskTargets,
+        priority: TaskPriority,
     ) -> Result<(), TaskError> {
         let id = request.task_id.clone();
-        enqueue_bounded(&mut self.simulation, self.task_budget, request)?;
+        enqueue_bounded_with_priority(&mut self.simulation, self.task_budget, request, priority)?;
         let token = self
             .simulation
             .issued_task(&id)
@@ -936,7 +972,21 @@ impl Engine {
         {
             return Err(TaskError::RevisionMismatch);
         }
+        let instant = self
+            .simulation
+            .request(id)
+            .ok_or(TaskError::UnknownTask)?
+            .requested_instant
+            .clone();
+        self.source_policy.authorize(Some(&provenance), &instant)?;
         self.simulation.bind_provenance(id, provenance)
+    }
+    pub fn source_policy(&self) -> &SourcePolicy {
+        &self.source_policy
+    }
+    /// Host-only configuration; a strict policy rejects tasks without authorized provenance.
+    pub fn set_source_policy(&mut self, policy: SourcePolicy) {
+        self.source_policy = policy;
     }
     pub fn ready_tasks(&self) -> Vec<String> {
         self.simulation.ready_tasks()
@@ -1119,6 +1169,17 @@ impl Engine {
             self.scene.revision(),
             self.spatial.revision(),
         ) {
+            self.simulation
+                .mark_stale(task_id, token)
+                .map_err(CommitTaskError::Task)?;
+            self.release_terminal_task_leases();
+            return Err(CommitTaskError::Task(error));
+        }
+        let denied = self
+            .source_policy
+            .authorize(self.simulation.provenance(task_id), self.clock.instant())
+            .err();
+        if let Some(error) = denied {
             self.simulation
                 .mark_stale(task_id, token)
                 .map_err(CommitTaskError::Task)?;

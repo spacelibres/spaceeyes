@@ -2,7 +2,7 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Platform-neutral task execution contract and bounded dispatch policy.
 //! Native and WASM hosts may execute issued tasks differently.
-use crate::{IssuedTask, SimulationScheduler, TaskError, TaskRequest};
+use crate::{IssuedTask, SimulationScheduler, TaskError, TaskPriority, TaskRequest};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TaskBudget {
@@ -58,10 +58,19 @@ pub fn enqueue_bounded(
     budget: TaskBudget,
     request: TaskRequest,
 ) -> Result<(), TaskError> {
+    enqueue_bounded_with_priority(scheduler, budget, request, TaskPriority::Normal)
+}
+
+pub fn enqueue_bounded_with_priority(
+    scheduler: &mut SimulationScheduler,
+    budget: TaskBudget,
+    request: TaskRequest,
+    priority: TaskPriority,
+) -> Result<(), TaskError> {
     if scheduler.queued_count() >= budget.max_queued {
         return Err(TaskError::QueueFull);
     }
-    scheduler.enqueue(request)
+    scheduler.enqueue_with_priority(request, priority)
 }
 
 #[cfg(test)]

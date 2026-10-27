@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 原生工作池与严格来源策略（C06 切片）
+- `crates/simulation` 新增原生 `WorkerPool`：有界队列、`TaskPriority` 派发顺序、单任务墙钟截止、协作取消、`WorkerOutcome` 回报与 `close` 清理；Engine 新增 `enqueue_task_with_priority` 与 `WorkerOutcome → ExecutorFeedback` 映射，结果仍经 token/代次/时刻校验。
+- 新增 `SourcePolicy`（open/strict），在绑定与提交两处校验 provider 版本与覆盖范围；`Engine::set_source_policy` 由宿主配置。
+- 超时只报告 TimedOut 并拒收迟到结果，不声称抢占阻塞线程；WASM 目标不编译线程池。
+- 验证：simulation 5 项 worker + 2 项策略单测、engine 3 项集成；WASM 编译通过。
+
+
 ### 已发布快照、会话身份与 Stale 语义（C10 切片）
 - `FrameAvailability` 新增 `Stale`（仅用于保留旧帧的视觉回退）；`FrameSnapshot` 携带 `session`，`SessionStatus` 携带会话并在 Proto 追加 `session_id=9`。
 - `Engine` 一次性绑定宿主会话；`commit_frame` 原子替换已发布记录与保留帧并追加有界 `FramePublished` 事件；抓取失败保留最后一致帧并置 Stale，后续状态推进与 Stop 同样使旧帧变 Stale。

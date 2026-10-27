@@ -105,3 +105,8 @@ SimulationScheduler每次入队签发不透明TaskExecutionToken（调度器实�
 普通enqueue_task保守绑定入队SceneRevision及FrameGraphRevision，调用者提供最新修订不能绕过旧上下文。enqueue_task_for_objects(request, targets)为既存对象捕获ObjectHandle及当时SceneObject值，输入最多1024项且非空；所有写目标、父对象和相机跟随依赖必须声明。此模式允许无关对象变更，但禁止Create（创建用普通修订绑定任务）；在接受结果和提交时复核句柄代次/注册表、目标及声明依赖对象原始值、图修订。上下文失效标Stale、传播依赖失败并清租约；未声明写入/Scene事务错误维持ResultReady可显式修复重试。终态、遗忘、Seek及Stop清理任务上下文，恢复使用新实例。
 
 此为内部Rust宿主契约，不是插件绕过Proto的任务接口。可选TaskProvenance仅提供上下文校验，严格provider版本/coverage来源策略、确定并行结果提交队列、真实异步Worker/网络执行器及完整任务Proto仍按后续计划实现。
+
+## C06 原生工作池与严格来源策略（0.0.1增量）
+`crates/simulation`新增原生`WorkerPool`（`cfg(not(wasm32))`）：固定工作线程、有界队列、`TaskPriority`（Interactive/Normal/Prefetch，只在派发顺序生效）、每任务墙钟截止时间与协作式取消；结果以`WorkerOutcome`回报，Engine经既有状态机与执行token校验后才可提交。Rust线程无法安全抢占任意阻塞代码，因此超时只报告`TimedOut`并拒绝迟到结果，不声称已杀死工作；`close`拒收新任务、取消在途与排队任务并等待线程退出。WASM目标不编译该模块，宿主须用自身事件循环执行同一契约。
+`SourcePolicy`提供open与strict两种：strict要求任务声明经允许的provider_id/provider_version，并在绑定与提交时校验覆盖范围与显式时刻；未知来源返回`SourceNotAllowed`，缺失来源返回`InvalidProvenance`，提交阶段失败把任务标为Stale。`Engine::set_source_policy`为宿主配置，优先级不能绕过依赖、预算或校验。
+仍未实现：真实网络I/O适配器（现行契约允许`TaskWork`执行受控网络，但未提供网络实现与主机白名单）、CPU时间计量（仅墙钟截止）、工作线程抢占、跨进程/Worker隔离。该切片不宣称C06全部完成。
