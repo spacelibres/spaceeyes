@@ -270,6 +270,62 @@ impl ProtocolAdapter {
                     }),
                 })
             }
+            p::query_envelope::Payload::ListObjects(query) => {
+                if state.lifecycle == EngineState::Stopped {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::EngineUnavailable,
+                        "engine stopped".into(),
+                    ));
+                }
+                if query.page_size > crate::limits::MAX_OBJECT_PAGE_SIZE {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::InvalidArgument,
+                        "page size exceeds limit".into(),
+                    ));
+                }
+                let limit = if query.page_size == 0 {
+                    crate::limits::MAX_OBJECT_PAGE_SIZE as usize
+                } else {
+                    query.page_size as usize
+                };
+                let token = query.page_token.unwrap_or_default();
+                if !token.is_empty()
+                    && crate::decode_object_id(p::ObjectId {
+                        value: token.clone(),
+                    })
+                    .is_err()
+                {
+                    return Ok(rejection(
+                        &context.request_id,
+                        p::ErrorCode::InvalidArgument,
+                        "invalid page token".into(),
+                    ));
+                }
+                let snapshot = dispatcher.engine().scene().snapshot();
+                let mut objects: Vec<_> = snapshot
+                    .objects
+                    .into_iter()
+                    .filter(|object| token.is_empty() || object.id().as_str() > token.as_str())
+                    .collect();
+                objects.sort_by(|left, right| left.id().as_str().cmp(right.id().as_str()));
+                let next_page_token = if objects.len() > limit {
+                    let next = objects[limit - 1].id().as_str().to_owned();
+                    objects.truncate(limit);
+                    next
+                } else {
+                    String::new()
+                };
+                p::response_envelope::Payload::Objects(p::ObjectPage {
+                    objects: objects
+                        .iter()
+                        .map(crate::project::encode_scene_object)
+                        .collect::<Result<_, _>>()?,
+                    next_page_token,
+                    scene_revision: snapshot.revision.0,
+                })
+            }
             p::query_envelope::Payload::ProjectExport(_) => {
                 if state.lifecycle == EngineState::Stopped {
                     return Ok(rejection(

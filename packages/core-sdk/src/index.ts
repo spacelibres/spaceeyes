@@ -291,7 +291,9 @@ export class CoreClient {
                   ? "resourceStats"
                   : payload.case === "projectExport"
                     ? "project"
-                    : "capabilities";
+                    : payload.case === "listObjects"
+                      ? "objects"
+                      : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

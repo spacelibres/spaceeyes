@@ -223,3 +223,6 @@ SpatialCommand新增ProviderIdentity、RegisterProviderFrame与UpdateProviderFra
 ## 项目快照导出与恢复（C11切片）
 新增`project.proto`：ProjectSnapshot（schema_version=1）、ProjectClock、ProjectFrameRecord、ProjectResourceRecord与ProjectExportQuery；QueryEnvelope追加project_export=27，ResponseEnvelope追加project=19，命令保留位不变。时钟包含instant/mode/倍速/generation/revision；参考系记录保留父关系、单时刻样本与provider标签；资源记录保留class/来源/摘要/字节/网格/纹理。不保存GPU句柄、任务、上传会话、内部ObjectHandle或执行栈。
 query.project_export只读、不推进时钟/代次、不消耗命令历史，Stopped拒绝。导出是结构化Proto，不包含文件封装/签名/压缩。恢复不是会话命令：宿主用同一字节创建新WASM引擎/新会话，场景修订、帧序列与任务代次重新建立；provider样本不持久化，恢复为占位等待重新采样。未知schema、非法时钟/标识、非32字节摘要、资源长度不符拒绝，不静默丢字段。能力新增query.project_export，总数36。
+
+## 对象分页查询（C12切片）
+QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObjectsQuery.page_size=0表示默认256，最大256；page_token为上一页最后一个ObjectId，按ObjectId字典序继续，空next表示结束。ObjectPage返回objects/next_page_token/scene_revision。查询实时读取，场景可在页间变化；调用方用scene_revision判断重读。超页大小/超长令牌返回INVALID_ARGUMENT，Stopped返回ENGINE_UNAVAILABLE；查询不推进时钟、不写事件/历史，不授予写权限。能力新增query.list_objects，总数37。

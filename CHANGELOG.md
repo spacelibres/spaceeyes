@@ -4,6 +4,11 @@
 
 ## [0.0.1] — 2026-10-27
 
+### 对象分页查询（C12切片）
+- Proto新增ListObjectsQuery/ObjectPage，QueryEnvelope 28与ResponseEnvelope 20；按ObjectId字典序返回场景对象，支持0-256页大小与不透明page_token，返回next_page_token与scene_revision。
+- ProtocolAdapter校验页大小/令牌长度，Stopped拒绝；查询只读、不推进时钟、不消耗命令历史。能力总数增至37。
+- 验证：protocol-adapter 18项session（含分页稳定性/越界/删除令牌续读）、Native/WASM互通10项、生成类型无漂移；未逐次全量。
+
 ### 太阳系九大天体显示
 - 太阳系模式扩展为太阳、水星、金星、地球、月球、火星、木星、土星、天王星、海王星；每个天体使用同一DYN提供者帧与显示轨道管，月球的轨道挂在地球参考系。
 - 合成Chromium路径要求至少20个场景对象并验证水星/土星/海王星请求；不引入NASA夹具。

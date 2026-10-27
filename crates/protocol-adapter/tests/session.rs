@@ -338,6 +338,19 @@ fn error(r: p::ResponseEnvelope) -> p::ErrorCode {
         other => panic!("{other:?}"),
     }
 }
+
+fn object_page(token: Option<&str>, size: u32) -> p::QueryEnvelope {
+    p::QueryEnvelope {
+        context: Some(context("objects")),
+        payload: Some(p::query_envelope::Payload::ListObjects(
+            p::ListObjectsQuery {
+                page_token: token.map(str::to_owned),
+                page_size: size,
+            },
+        )),
+    }
+}
+
 fn setup_scene(a: &mut ProtocolAdapter) {
     completed(send(a, root("root", 0)));
     completed(send(a, child("body-frame", "root", 1)));
@@ -896,7 +909,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 36);
+    assert_eq!(names.len(), 37);
     assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()
@@ -1090,4 +1103,46 @@ fn project_export_is_structured_and_restores_a_fresh_engine() {
     );
     completed(send(&mut a, lifecycle("stop", false)));
     assert_eq!(error(read(&a)), p::ErrorCode::EngineUnavailable);
+}
+
+#[test]
+fn object_pagination_is_stable_ordered_and_bounded() {
+    let mut a = adapter(8);
+    setup_scene(&mut a);
+    let first = completed(query(&a, object_page(None, 1)));
+    let p::response_envelope::Payload::Objects(page) = first.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(page.objects.len(), 1);
+    assert_eq!(page.objects[0].object_id.as_ref().unwrap().value, "body");
+    assert_eq!(page.next_page_token, "body");
+    assert_eq!(page.scene_revision, 1);
+
+    let second = completed(query(&a, object_page(Some("body"), 1)));
+    let p::response_envelope::Payload::Objects(page) = second.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(page.objects[0].object_id.as_ref().unwrap().value, "camera");
+    assert_eq!(page.next_page_token, "");
+
+    let between = completed(query(&a, object_page(Some("bodz"), 1)));
+    let p::response_envelope::Payload::Objects(page) = between.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(page.objects[0].object_id.as_ref().unwrap().value, "camera");
+
+    assert_eq!(
+        error(query(&a, object_page(None, 257))),
+        p::ErrorCode::InvalidArgument
+    );
+    let long = "x".repeat(257);
+    assert_eq!(
+        error(query(&a, object_page(Some(&long), 1))),
+        p::ErrorCode::InvalidArgument
+    );
+    completed(send(&mut a, lifecycle("stop", false)));
+    assert_eq!(
+        error(query(&a, object_page(None, 1))),
+        p::ErrorCode::EngineUnavailable
+    );
 }

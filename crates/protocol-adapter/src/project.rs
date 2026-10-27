@@ -22,7 +22,7 @@ pub fn encode_project(state: &ProjectState) -> Result<p::ProjectSnapshot, Protoc
             .scene
             .objects
             .iter()
-            .map(encode_object)
+            .map(encode_scene_object)
             .collect::<Result<_, _>>()?,
         frames: state
             .frames
@@ -88,7 +88,7 @@ fn encode_clock(clock: &ClockSnapshot) -> Result<p::ProjectClock, ProtocolError>
     })
 }
 
-fn encode_object(object: &SceneObject) -> Result<p::SceneObject, ProtocolError> {
+pub(crate) fn encode_scene_object(object: &SceneObject) -> Result<p::SceneObject, ProtocolError> {
     Ok(p::SceneObject {
         object_id: Some(p::ObjectId {
             value: object.id().as_str().into(),
