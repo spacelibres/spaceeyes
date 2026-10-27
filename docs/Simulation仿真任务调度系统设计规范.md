@@ -82,3 +82,7 @@ Simulation负责计算任务与结果有效性校验，不直接写Scene。Engin
 
 
 > 版本同步记录（2026-10-27）：本受控文档随首次Rust核心开发启动统一升级至0.0.1；历史规划说明及原始批准日期保留为历史记录。实际实现范围以CHANGELOG.md为准。
+
+
+## 14. 0.0.1实现进度（2026-10-27）
+已实现基础SimulationScheduler任务登记、依赖检查、确定性ready顺序、任务开始、取消、失败、ResultReady与Completed分离；Engine负责根据TimeGeneration失效旧任务，并通过唯一Scene事务入口提交已验证任务结果。Scene提交失败时任务保留ResultReady供显式处理。当前任务依赖要求先注册前置任务，避免形成循环；尚未实现异步执行器、CPU预算、超时、跨提供者数据覆盖、SceneRevision/FrameGraphRevision完整校验或Proto消息。已编写单元测试但尚无CI通过记录。此节为0.0.1范围说明，未变更已批准ADR。
