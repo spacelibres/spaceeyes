@@ -170,7 +170,7 @@ impl WorkerPool {
         if self
             .shared
             .queued
-            .fetch_update(AtomicOrdering::AcqRel, AtomicOrdering::Acquire, |count| {
+            .try_update(AtomicOrdering::AcqRel, AtomicOrdering::Acquire, |count| {
                 (count < self.limits.max_queue).then_some(count + 1)
             })
             .is_err()
