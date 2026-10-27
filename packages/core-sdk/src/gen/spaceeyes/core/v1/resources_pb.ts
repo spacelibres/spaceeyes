@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/resources.proto.
  */
 export const file_spaceeyes_core_v1_resources: GenFile = /*@__PURE__*/
-  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZXNvdXJjZXMucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxInkKFFJlZ2lzdGVyTWVzaFJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBItCgRtZXNoGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuVHJpYW5nbGVNZXNoIn4KF1JlZ2lzdGVyVGV4dHVyZVJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBIvCgd0ZXh0dXJlGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZURhdGEipQEKD1Jlc291cmNlQ29tbWFuZBJACg1yZWdpc3Rlcl9tZXNoGAEgASgLMicuc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJNZXNoUmVzb3VyY2VIABJGChByZWdpc3Rlcl90ZXh0dXJlGAIgASgLMiouc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJUZXh0dXJlUmVzb3VyY2VIAEIICgZhY3Rpb24iYQoQUmVzb3VyY2VSZXNwb25zZRIyCgtyZXNvdXJjZV9pZBgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSGQoRcmVzb3VyY2VfcmV2aXNpb24YAiABKARiBnByb3RvMw", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_rendering]);
+  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZXNvdXJjZXMucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxInkKFFJlZ2lzdGVyTWVzaFJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBItCgRtZXNoGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuVHJpYW5nbGVNZXNoIn4KF1JlZ2lzdGVyVGV4dHVyZVJlc291cmNlEjIKC3Jlc291cmNlX2lkGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBIvCgd0ZXh0dXJlGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGV4dHVyZURhdGEipQEKD1Jlc291cmNlQ29tbWFuZBJACg1yZWdpc3Rlcl9tZXNoGAEgASgLMicuc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJNZXNoUmVzb3VyY2VIABJGChByZWdpc3Rlcl90ZXh0dXJlGAIgASgLMiouc3BhY2VleWVzLmNvcmUudjEuUmVnaXN0ZXJUZXh0dXJlUmVzb3VyY2VIAEIICgZhY3Rpb24iYQoQUmVzb3VyY2VSZXNwb25zZRIyCgtyZXNvdXJjZV9pZBgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSGQoRcmVzb3VyY2VfcmV2aXNpb24YAiABKAQi+gEKDVJlc291cmNlU3RhdHMSGAoQdG90YWxfdXNlZF9ieXRlcxgBIAEoBBIWCg5jcHVfdXNlZF9ieXRlcxgCIAEoBBIWCg5ncHVfdXNlZF9ieXRlcxgDIAEoBBIaChJzdGFnaW5nX3VzZWRfYnl0ZXMYBCABKAQSGQoRdG90YWxfbGltaXRfYnl0ZXMYBSABKAQSFwoPY3B1X2xpbWl0X2J5dGVzGAYgASgEEhcKD2dwdV9saW1pdF9ieXRlcxgHIAEoBBIbChNzdGFnaW5nX2xpbWl0X2J5dGVzGAggASgEEhkKEXJlc291cmNlX3JldmlzaW9uGAkgASgEIhQKElJlc291cmNlU3RhdHNRdWVyeWIGcHJvdG8z", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_rendering]);
 
 /**
  * @generated from message spaceeyes.core.v1.RegisterMeshResource
@@ -113,3 +113,75 @@ export type ResourceResponse = Message<"spaceeyes.core.v1.ResourceResponse"> & {
  */
 export const ResourceResponseSchema: GenMessage<ResourceResponse> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_resources, 3);
+
+/**
+ * Logical reservations, not RSS/VRAM measurements; all byte values use uint64.
+ *
+ * @generated from message spaceeyes.core.v1.ResourceStats
+ */
+export type ResourceStats = Message<"spaceeyes.core.v1.ResourceStats"> & {
+  /**
+   * @generated from field: uint64 total_used_bytes = 1;
+   */
+  totalUsedBytes: bigint;
+
+  /**
+   * @generated from field: uint64 cpu_used_bytes = 2;
+   */
+  cpuUsedBytes: bigint;
+
+  /**
+   * @generated from field: uint64 gpu_used_bytes = 3;
+   */
+  gpuUsedBytes: bigint;
+
+  /**
+   * @generated from field: uint64 staging_used_bytes = 4;
+   */
+  stagingUsedBytes: bigint;
+
+  /**
+   * @generated from field: uint64 total_limit_bytes = 5;
+   */
+  totalLimitBytes: bigint;
+
+  /**
+   * @generated from field: uint64 cpu_limit_bytes = 6;
+   */
+  cpuLimitBytes: bigint;
+
+  /**
+   * @generated from field: uint64 gpu_limit_bytes = 7;
+   */
+  gpuLimitBytes: bigint;
+
+  /**
+   * @generated from field: uint64 staging_limit_bytes = 8;
+   */
+  stagingLimitBytes: bigint;
+
+  /**
+   * @generated from field: uint64 resource_revision = 9;
+   */
+  resourceRevision: bigint;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.ResourceStats.
+ * Use `create(ResourceStatsSchema)` to create a new message.
+ */
+export const ResourceStatsSchema: GenMessage<ResourceStats> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 4);
+
+/**
+ * @generated from message spaceeyes.core.v1.ResourceStatsQuery
+ */
+export type ResourceStatsQuery = Message<"spaceeyes.core.v1.ResourceStatsQuery"> & {
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.ResourceStatsQuery.
+ * Use `create(ResourceStatsQuerySchema)` to create a new message.
+ */
+export const ResourceStatsQuerySchema: GenMessage<ResourceStatsQuery> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_resources, 5);

@@ -104,7 +104,7 @@ impl GpuRenderer {
             adapter_name: String::new(),
         }
     }
-    fn frame_budget(&self, frame: &PreparedFrame) -> Result<(u32, u64), RenderError> {
+    fn frame_budget(&self, frame: &PreparedFrame) -> Result<(u32, u64, u64), RenderError> {
         let marker_vertices = u32::try_from(frame.markers.len())
             .ok()
             .and_then(|n| n.checked_mul(3))
@@ -125,8 +125,6 @@ impl GpuRenderer {
             .and_then(|n| n.checked_add(mesh_vertices))
             .ok_or(RenderError::Budget)?;
         let vertex_bytes = u64::from(vertices.max(1)) * 52;
-        #[cfg(target_arch = "wasm32")]
-        let vertex_bytes = vertex_bytes.checked_mul(2).ok_or(RenderError::Budget)?;
         if vertex_bytes > self.device.limits().max_buffer_size {
             return Err(RenderError::Budget);
         }
@@ -137,12 +135,15 @@ impl GpuRenderer {
             .iter()
             .try_fold(4u64, |n, t| n.checked_add(t.byte_len()))
             .ok_or(RenderError::Budget)?;
-        Ok((
-            vertices,
-            vertex_bytes
-                .checked_add(texture_bytes)
-                .ok_or(RenderError::Budget)?,
-        ))
+        let gpu_bytes = vertex_bytes
+            .checked_add(texture_bytes)
+            .ok_or(RenderError::Budget)?;
+        let staging_bytes = gpu_bytes;
+        #[cfg(target_arch = "wasm32")]
+        let staging_bytes = staging_bytes
+            .checked_add(vertex_bytes)
+            .ok_or(RenderError::Budget)?;
+        Ok((vertices, gpu_bytes, staging_bytes))
     }
     fn upload_frame(&self, frame: &PreparedFrame, vertices: u32) -> Result<GpuFrame, RenderError> {
         let mut data = Vec::with_capacity(vertices as usize * 52);
@@ -310,17 +311,24 @@ impl GpuRenderer {
         }
         let row = (width * 4).div_ceil(256) * 256;
         let bytes = u64::from(row) * u64::from(height);
-        let (vertices, geometry_bytes) = self.frame_budget(frame)?;
+        let (vertices, geometry_bytes, frame_staging) = self.frame_budget(frame)?;
         let reserve = bytes
             .checked_add(u64::from(width) * u64::from(height) * 8)
             .and_then(|n| n.checked_add(geometry_bytes))
             .ok_or(RenderError::Budget)?;
         let id = ResourceId::new("spaceeyes:gpu:offscreen-scratch").expect("static ID");
-        resources
-            .register(id.clone(), reserve)
+        let staging = frame_staging
+            .checked_add(bytes)
+            .and_then(|n| n.checked_add(u64::from(width) * u64::from(height) * 4))
+            .ok_or(RenderError::Budget)?;
+        let staging_id = ResourceId::new("spaceeyes:staging:offscreen-frame").expect("static ID");
+        let reservation = resources
+            .reserve_frame(id, reserve, staging_id, staging)
             .map_err(|_| RenderError::Budget)?;
         let outcome = self.render_inner(frame, width, height, row, bytes, vertices);
-        resources.unregister(&id).map_err(|_| RenderError::Budget)?;
+        resources
+            .release_frame(&reservation)
+            .map_err(|_| RenderError::Budget)?;
         outcome
     }
     #[cfg(not(target_arch = "wasm32"))]

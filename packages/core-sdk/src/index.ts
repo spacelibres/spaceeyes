@@ -281,7 +281,9 @@ export class CoreClient {
             ? "selection"
             : payload.case === "cameraState"
               ? "camera"
-              : "capabilities";
+              : payload.case === "resourceStats"
+                ? "resourceStats"
+                : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

@@ -350,7 +350,7 @@ impl CommandDispatcher {
         let id = spaceeyes_foundation::ResourceId::new("spaceeyes:gpu:canvas-capacity")
             .expect("static ID");
         self.engine
-            .register_resource(id.clone(), spaceeyes_rendering::SURFACE_CAPACITY_BYTES)
+            .register_gpu_resource(id.clone(), spaceeyes_rendering::SURFACE_CAPACITY_BYTES)
             .map_err(DispatchError::Resource)?;
         let lease = match self.engine.lease_resource(&id) {
             Ok(l) => l,

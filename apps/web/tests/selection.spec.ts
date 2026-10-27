@@ -95,6 +95,17 @@ test("presented selection wire contract rejects stale/deleted frames without wri
         }),
       ),
     );
+  const resourceStats = () =>
+    exchange(
+      "query",
+      toBinary(
+        QueryEnvelopeSchema,
+        create(QueryEnvelopeSchema, {
+          context: { ...context, requestId: "stats" },
+          payload: { case: "resourceStats", value: {} },
+        }),
+      ),
+    );
   const present = () =>
     exchange(
       "present",
@@ -202,6 +213,16 @@ test("presented selection wire contract rejects stale/deleted frames without wri
     ).toBe(ResponseStatus.COMPLETED);
     const frame = await present();
     expect(frame.status).toBe(ResponseStatus.COMPLETED);
+    const stats = await resourceStats();
+    expect(stats.payload.case).toBe("resourceStats");
+    if (stats.payload.case === "resourceStats") {
+      expect(stats.payload.value.cpuUsedBytes).toBe(0n);
+      expect(stats.payload.value.gpuUsedBytes).toBe(48n * 1024n * 1024n);
+      expect(stats.payload.value.stagingUsedBytes).toBe(0n);
+      expect(stats.payload.value.totalUsedBytes).toBe(
+        stats.payload.value.gpuUsedBytes,
+      );
+    }
     const before = await capabilities();
     const hit = await query(frame.frameSequence);
     expect(hit.payload.case).toBe("selection");
@@ -263,6 +284,14 @@ test("presented selection wire contract rejects stale/deleted frames without wri
     expect(errorCode(await query(next.frameSequence))).toBe(
       ErrorCode.ENGINE_UNAVAILABLE,
     );
+    const released = await resourceStats();
+    expect(released.payload.case).toBe("resourceStats");
+    if (released.payload.case === "resourceStats") {
+      expect(released.payload.value.totalUsedBytes).toBe(0n);
+      expect(released.payload.value.cpuUsedBytes).toBe(0n);
+      expect(released.payload.value.gpuUsedBytes).toBe(0n);
+      expect(released.payload.value.stagingUsedBytes).toBe(0n);
+    }
   } finally {
     await page.evaluate(() => {
       const target = window as Window & { pickTestEngine?: WasmEngine };

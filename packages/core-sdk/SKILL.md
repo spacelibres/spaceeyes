@@ -56,3 +56,8 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 浏览器经既有time.set_rate/step/seek提交命令，不维护第二套时钟。倍速修改不自动播放；步进和跳转仅在暂停时启用，并在串行处理时重查Rust模式。十进制秒输入相对当前显式历元，最多64字符/9位小数，用BigInt无损映射sint64秒与[0,1e9)纳秒，拒绝科学计数法及溢出；沿用Rust当前timeScale/epochId，不做UTC猜测。显示负小数时按总纳秒符号格式化，不把floor秒直接拼接纳秒。操作完成须重新查询核心；非法输入或预期拒绝不得停止会话或伪造成功。步进/跳转清除旧选择；Seek代次变化由核心保持唯一权威。本增量不是科学时间轴或Live功能。
 
 暂停前置条件是当前浏览器步进/跳转工作流的限制，不改变既有核心time.seek/step在其它宿主中的协议语义。输入控件的文本是未提交目标，不能作为权威时钟；以命令完成后的Rust查询为准。
+
+## M3-1a 分层资源预算契约（0.0.1开发增量）
+ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。
+
+调用前协商`query.resource_stats`，使用`client.query({ case: "resourceStats", value: {} }, { requestId: "resources:stats" })`读取；字节数和修订号为bigint，不能转换成可能失真的number。以核心响应为准，不在TS维护权威计数；能力发现不替代授权。CPU/GPU/Staging注册与帧租约仅限Rust内部，插件不得调用。

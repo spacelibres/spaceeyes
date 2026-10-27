@@ -76,10 +76,11 @@ impl BrowserSurface {
         {
             return Err(RenderError::Device(error));
         }
-        let (vertices, bytes) = self.renderer.frame_budget(frame)?;
+        let (vertices, gpu_bytes, staging_bytes) = self.renderer.frame_budget(frame)?;
         let id = ResourceId::new("spaceeyes:gpu:surface-frame").expect("static ID");
-        resources
-            .register(id.clone(), bytes)
+        let staging_id = ResourceId::new("spaceeyes:staging:surface-frame").expect("static ID");
+        let reservation = resources
+            .reserve_frame(id, gpu_bytes, staging_id, staging_bytes)
             .map_err(|_| RenderError::Budget)?;
         let validation = self
             .renderer
@@ -92,7 +93,9 @@ impl BrowserSurface {
         let result = self.render_inner(frame, width, height, vertices).await;
         let allocation_error = allocation.pop().await;
         let validation_error = validation.pop().await;
-        resources.unregister(&id).map_err(|_| RenderError::Budget)?;
+        resources
+            .release_frame(&reservation)
+            .map_err(|_| RenderError::Budget)?;
         if let Some(error) = allocation_error.or(validation_error) {
             return Err(RenderError::Device(error.to_string()));
         }

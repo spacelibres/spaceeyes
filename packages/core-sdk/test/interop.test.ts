@@ -216,7 +216,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 27);
+    assert.equal(caps.operations.length, 28);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));
@@ -387,6 +387,27 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "scene",
     );
     assert.equal((await status()).resourceUsedBytes, 188n);
+    const stats = record(
+      await client.query(
+        { case: "resourceStats", value: {} },
+        { requestId: "resource-stats" },
+      ),
+    );
+    assert.equal(stats.payload.case, "resourceStats");
+    if (stats.payload.case === "resourceStats") {
+      assert.equal(stats.payload.value.totalUsedBytes, 188n);
+      assert.equal(stats.payload.value.cpuUsedBytes, 188n);
+      assert.equal(stats.payload.value.gpuUsedBytes, 0n);
+      assert.equal(stats.payload.value.stagingUsedBytes, 0n);
+      assert.equal(stats.payload.value.totalLimitBytes, 256n * 1024n * 1024n);
+      assert.equal(stats.payload.value.cpuLimitBytes, 128n * 1024n * 1024n);
+      assert.equal(stats.payload.value.gpuLimitBytes, 128n * 1024n * 1024n);
+      assert.equal(stats.payload.value.stagingLimitBytes, 32n * 1024n * 1024n);
+      assert.equal(
+        caps.limits!.maxResourceCpuBytes,
+        stats.payload.value.cpuLimitBytes,
+      );
+    }
     const focusPayload = {
       case: "camera" as const,
       value: {

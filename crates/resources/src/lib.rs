@@ -7,6 +7,8 @@ use spaceeyes_geometry::{TextureData, TriangleMesh};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
+mod budget;
+pub use budget::{FrameReservation, ResourceClass, ResourceLimits, ResourceUsage};
 static NEXT_MANAGER: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -57,6 +59,7 @@ pub struct LoadToken {
 }
 #[derive(Clone, Debug)]
 struct Entry {
+    class: ResourceClass,
     state: ResourceState,
     load_sequence: u64,
     data: Option<Arc<[u8]>>,
@@ -69,6 +72,7 @@ struct Entry {
 /// Portable CPU contents or a declaration, without lease or load identities.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ResourceRecord {
+    pub class: ResourceClass,
     pub id: ResourceId,
     pub bytes: u64,
     pub data: Option<Vec<u8>>,
@@ -83,12 +87,16 @@ pub struct ResourceManager {
     active: HashMap<u64, LeaseId>,
     generations: HashMap<ResourceId, u64>,
     next_lease: u64,
-    budget: ResourceBudget,
+    limits: ResourceLimits,
+    by_class: [u64; 3],
     used: u64,
     revision: u64,
 }
 impl ResourceManager {
     pub fn new(budget: ResourceBudget) -> Self {
+        Self::with_limits(budget.into())
+    }
+    pub fn with_limits(limits: ResourceLimits) -> Self {
         Self {
             identity: NEXT_MANAGER
                 .try_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
@@ -97,7 +105,8 @@ impl ResourceManager {
             active: HashMap::new(),
             generations: HashMap::new(),
             next_lease: 0,
-            budget,
+            limits,
+            by_class: [0; 3],
             used: 0,
             revision: 0,
         }
@@ -106,7 +115,9 @@ impl ResourceManager {
         let mut records: Vec<_> = self
             .entries
             .iter()
+            .filter(|(_, e)| e.class == ResourceClass::Cpu)
             .map(|(id, e)| ResourceRecord {
+                class: e.class,
                 id: id.clone(),
                 bytes: e.bytes,
                 data: e.data.as_ref().map(|d| d.to_vec()),
@@ -122,8 +133,17 @@ impl ResourceManager {
         budget: ResourceBudget,
         records: &[ResourceRecord],
     ) -> Result<Self, ResourceError> {
-        let mut result = Self::new(budget);
+        Self::restore_with_limits(budget.into(), records)
+    }
+    pub fn restore_with_limits(
+        limits: ResourceLimits,
+        records: &[ResourceRecord],
+    ) -> Result<Self, ResourceError> {
+        let mut result = Self::with_limits(limits);
         for record in records {
+            if record.class != ResourceClass::Cpu {
+                return Err(ResourceError::InvalidState);
+            }
             if usize::from(record.data.is_some())
                 + usize::from(record.mesh.is_some())
                 + usize::from(record.texture.is_some())
@@ -220,6 +240,14 @@ impl ResourceManager {
         self.entries.get(id).map(|e| e.state)
     }
     pub fn register(&mut self, id: ResourceId, bytes: u64) -> Result<(), ResourceError> {
+        self.register_class(id, bytes, ResourceClass::Cpu)
+    }
+    fn register_class(
+        &mut self,
+        id: ResourceId,
+        bytes: u64,
+        class: ResourceClass,
+    ) -> Result<(), ResourceError> {
         if self.entries.contains_key(&id) {
             return Err(ResourceError::Duplicate);
         }
@@ -230,7 +258,10 @@ impl ResourceManager {
             .used
             .checked_add(bytes)
             .ok_or(ResourceError::Overflow)?;
-        if used > self.budget.max_bytes {
+        let class_used = self.by_class[class.index()]
+            .checked_add(bytes)
+            .ok_or(ResourceError::Overflow)?;
+        if used > self.limits.total_bytes || class_used > self.limits.for_class(class) {
             return Err(ResourceError::BudgetExceeded);
         }
         let revision = self
@@ -248,6 +279,7 @@ impl ResourceManager {
         self.entries.insert(
             id,
             Entry {
+                class,
                 state: ResourceState::Registered,
                 load_sequence: 0,
                 data: None,
@@ -259,6 +291,7 @@ impl ResourceManager {
             },
         );
         self.used = used;
+        self.by_class[class.index()] = class_used;
         self.revision = revision;
         Ok(())
     }
@@ -359,6 +392,7 @@ impl ResourceManager {
         self.entries.clear();
         self.active.clear();
         self.used = 0;
+        self.by_class = [0; 3];
         self.revision = self.revision.saturating_add(1);
     }
     pub fn lease(&mut self, id: &ResourceId) -> Result<LeaseId, ResourceError> {
@@ -418,8 +452,10 @@ impl ResourceManager {
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
         let bytes = entry.bytes;
+        let class = entry.class;
         self.entries.remove(id);
         self.used -= bytes;
+        self.by_class[class.index()] -= bytes;
         self.revision = revision;
         Ok(())
     }

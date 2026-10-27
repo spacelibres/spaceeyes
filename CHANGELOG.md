@@ -4,6 +4,12 @@
 
 ## [0.0.1] — 2026-10-27
 
+### M3-1a分层资源预算与只读统计
+- ResourceManager增加总额及CPU/GPU/Staging独立逻辑额度；帧GPU/暂存成对原子预留与释放，保持租约代次保护。Engine原型额度256/128/128/32MiB，宿主可配置；Surface保守48MiB归GPU。
+- Scene只引用CPU资产；项目记录排除运行时资源，恢复采用目标宿主额度。Proto追加query.resource_stats及实际额度发现，生成TS并同步SDK技能书；查询不推进时间、不占历史，Stop归零。
+- 验证关联：覆盖分类/总额耗尽、原子失败、额外租约、旧令牌、恢复限制、只读协议、Native GPU拒绝及Browser Surface统计。完整本地和远端结果按本候选完整SHA核验，不以计划冒充通过。父基线aeba739，维持0.0.1开发版本。
+- 边界：逻辑预留不代表RSS/VRAM测量。后续M3实现有界分块上传、摘要来源/取消及项目Proto文件，本次不标记完整M3。
+
 ### GitHub CLI严格交付门槛与CI可移植性修复
 - 原因：用户要求每次交付必须同时通过本地与GitHub CLI远端严格验证。实际gh日志确认此前core作业在Proto生成处因runner缺少rg失败，不能把本机通过视为CI通过。
 - 修复：Proto文件枚举使用既有Python依赖；SDK检查主动屏蔽rg，持续验证无需ripgrep也可生成一致类型。不减少任何原有检查。

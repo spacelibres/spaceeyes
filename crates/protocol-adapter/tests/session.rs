@@ -19,6 +19,98 @@ fn adapter(capacity: usize) -> ProtocolAdapter {
 }
 
 #[test]
+fn resource_stats_and_capabilities_report_actual_limits_without_mutation() {
+    use spaceeyes_foundation::ResourceId;
+    use spaceeyes_resources::ResourceLimits;
+    let limits = ResourceLimits {
+        total_bytes: 100,
+        cpu_bytes: 60,
+        gpu_bytes: 50,
+        staging_bytes: 20,
+    };
+    let mut engine =
+        Engine::with_resource_limits(TimeInstant::new("TT", "prototype", 0, 0).unwrap(), limits);
+    engine
+        .register_resource(ResourceId::new("asset").unwrap(), 40)
+        .unwrap();
+    engine
+        .register_gpu_resource(ResourceId::new("surface").unwrap(), 30)
+        .unwrap();
+    let mut a = ProtocolAdapter::new(CommandDispatcher::new(engine, "session".into(), 16).unwrap())
+        .unwrap();
+    let request = p::QueryEnvelope {
+        context: Some(context("stats")),
+        payload: Some(p::query_envelope::Payload::ResourceStats(
+            p::ResourceStatsQuery {},
+        )),
+    };
+    let before = status(&a);
+    let response = completed(query(&a, request.clone()));
+    let p::response_envelope::Payload::ResourceStats(s) = response.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        (
+            s.total_used_bytes,
+            s.cpu_used_bytes,
+            s.gpu_used_bytes,
+            s.staging_used_bytes
+        ),
+        (70, 40, 30, 0)
+    );
+    assert_eq!(
+        (
+            s.total_limit_bytes,
+            s.cpu_limit_bytes,
+            s.gpu_limit_bytes,
+            s.staging_limit_bytes
+        ),
+        (100, 60, 50, 20)
+    );
+    assert_eq!(s.resource_revision, before.resource_revision);
+    let caps = completed(query(
+        &a,
+        p::QueryEnvelope {
+            context: Some(context("caps")),
+            payload: Some(p::query_envelope::Payload::Capabilities(
+                p::CapabilitiesQuery {},
+            )),
+        },
+    ));
+    let p::response_envelope::Payload::Capabilities(caps) = caps.payload.unwrap() else {
+        panic!()
+    };
+    let cap = caps.limits.unwrap();
+    assert_eq!(
+        (
+            cap.max_resource_total_bytes,
+            cap.max_resource_cpu_bytes,
+            cap.max_resource_gpu_bytes,
+            cap.max_resource_staging_bytes
+        ),
+        (100, 60, 50, 20)
+    );
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().command_history_remaining(), 16);
+    assert_eq!(a.dispatcher().events().count(), 0);
+    completed(send(&mut a, lifecycle("stop", false)));
+    let stopped = completed(query(&a, request));
+    let p::response_envelope::Payload::ResourceStats(stopped) = stopped.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(
+        (
+            stopped.total_used_bytes,
+            stopped.cpu_used_bytes,
+            stopped.gpu_used_bytes,
+            stopped.staging_used_bytes
+        ),
+        (0, 0, 0, 0)
+    );
+    assert_eq!(stopped.cpu_limit_bytes, 60);
+}
+
+#[test]
 fn pick_queries_reject_missing_frames_invalid_coordinates_and_stopped_sessions_without_writes() {
     let mut a = adapter(16);
     let before = status(&a);
@@ -743,7 +835,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 27);
+    assert_eq!(names.len(), 28);
     assert!(!names
         .iter()
         .any(|s| s.contains("live") || s.contains("canvas") || s.contains("project")));

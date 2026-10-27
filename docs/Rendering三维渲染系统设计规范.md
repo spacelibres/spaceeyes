@@ -108,3 +108,6 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 
 ## M2-3 相机聚焦与跟随契约（0.0.1开发增量）
 Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follow），要求expectedSceneRevision及当前TimeGeneration；在当前时刻解析Spatial并经唯一Scene事务提交。聚焦沿目标参考系+Z放置、沿-Z观察；球体/标记取参考系原点，网格取引用顶点AABB中心。距离必须在当前相机near/far内，不自动修改投影。跟随保存在CameraState.tracking(targetId,distanceM)，每帧从同一FrameSnapshot求值目标位置及旋转，不累计运动、不写Scene。基础CameraState.position/orientation属于拥有相机的FrameId；tracking生效时派生视图使用目标参考系，基础位姿作为显式逻辑状态保留，不冒充当前世界位置。禁止自引用、相机目标与跟随链；被跟随对象删除/改成相机时事务拒绝，可先清除跟随再删除。参考系/时间覆盖缺失明确失败；Renderer不回退到原点。query.camera_state只读逻辑状态；旧SetCamera未提供tracking即清除跟随，旧wire字段编号不变。宿主不持有第二套权威相机，不基于Scene ParentId算坐标。
+
+## M3-1a 分层资源预算契约（0.0.1开发增量）
+ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。

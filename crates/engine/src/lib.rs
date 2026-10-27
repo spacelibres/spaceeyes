@@ -4,7 +4,9 @@
 use spaceeyes_foundation::FrameId;
 use spaceeyes_foundation::{CoreError, Revision};
 use spaceeyes_foundation::{ObjectId, ResourceId};
-use spaceeyes_resources::{LeaseId, ResourceBudget, ResourceError, ResourceManager};
+use spaceeyes_resources::{
+    LeaseId, ResourceClass, ResourceError, ResourceLimits, ResourceManager, ResourceUsage,
+};
 use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
 use spaceeyes_simulation::{
     dispatch_ready, enqueue_bounded, SimulationScheduler, TaskBudget, TaskError, TaskExecutor,
@@ -85,6 +87,9 @@ pub struct Engine {
 }
 impl Engine {
     pub fn new(instant: TimeInstant) -> Self {
+        Self::with_resource_limits(instant, ResourceLimits::PROTOTYPE)
+    }
+    pub fn with_resource_limits(instant: TimeInstant, limits: ResourceLimits) -> Self {
         Self {
             state: EngineState::Ready,
             scene: Scene::new(),
@@ -92,9 +97,7 @@ impl Engine {
             spatial: ReferenceFrameGraph::new(),
             simulation: SimulationScheduler::new(),
             task_budget: TaskBudget::new(4, 1024).expect("valid built-in task budget"),
-            resources: ResourceManager::new(ResourceBudget {
-                max_bytes: 256 * 1024 * 1024,
-            }),
+            resources: ResourceManager::with_limits(limits),
             task_leases: BTreeMap::new(),
             object_leases: HashMap::new(),
             frame_sequence: 0,
@@ -113,20 +116,22 @@ impl Engine {
         project: &ProjectState,
         providers: &[ProviderRef],
     ) -> Result<Self, RestoreError> {
+        Self::restore_project_with_limits(project, providers, ResourceLimits::PROTOTYPE)
+    }
+    pub fn restore_project_with_limits(
+        project: &ProjectState,
+        providers: &[ProviderRef],
+        limits: ResourceLimits,
+    ) -> Result<Self, RestoreError> {
         if project.schema_version != 1 {
             return Err(RestoreError::UnsupportedVersion);
         }
-        let mut engine = Self::new(project.clock.instant.clone());
+        let mut engine = Self::with_resource_limits(project.clock.instant.clone(), limits);
         engine.clock = SimulationClock::restore(&project.clock).map_err(RestoreError::Scene)?;
         engine.spatial = ReferenceFrameGraph::restore(&project.frames, providers)
             .map_err(RestoreError::Spatial)?;
-        engine.resources = ResourceManager::restore(
-            ResourceBudget {
-                max_bytes: 256 * 1024 * 1024,
-            },
-            &project.resources,
-        )
-        .map_err(RestoreError::Resource)?;
+        engine.resources = ResourceManager::restore_with_limits(limits, &project.resources)
+            .map_err(RestoreError::Resource)?;
         let commands: Vec<_> = project
             .scene
             .objects
@@ -170,6 +175,12 @@ impl Engine {
     }
     pub fn resource_used_bytes(&self) -> u64 {
         self.resources.used_bytes()
+    }
+    pub fn resource_usage(&self) -> ResourceUsage {
+        self.resources.usage()
+    }
+    pub fn resource_limits(&self) -> ResourceLimits {
+        self.resources.limits()
     }
     pub fn task_status(&self, id: &str) -> Option<TaskStatus> {
         self.simulation.status(id)
@@ -431,6 +442,9 @@ impl Engine {
         for object in scene.snapshot().objects {
             let mut leases = Vec::new();
             for id in object.resource_refs() {
+                if resources.class(id) != Some(ResourceClass::Cpu) {
+                    return Err(CoreError::ResourceUnavailable);
+                }
                 let lease = match resources.lease(id) {
                     Ok(lease) => lease,
                     Err(ResourceError::NotReady)
@@ -593,6 +607,23 @@ impl Engine {
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
         self.resources.register(id, bytes)?;
+        self.frame_sequence = sequence;
+        Ok(())
+    }
+    /// Trusted host infrastructure only; this is not a plugin asset command.
+    pub fn register_gpu_resource(
+        &mut self,
+        id: ResourceId,
+        bytes: u64,
+    ) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped {
+            return Err(ResourceError::EngineUnavailable);
+        }
+        let sequence = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
+        self.resources.register_gpu(id, bytes)?;
         self.frame_sequence = sequence;
         Ok(())
     }

@@ -152,6 +152,21 @@ impl ProtocolAdapter {
             ));
         }
         let payload = match envelope.payload.ok_or(ProtocolError::MissingField)? {
+            p::query_envelope::Payload::ResourceStats(_) => {
+                let usage = dispatcher.engine().resource_usage();
+                let limits = dispatcher.engine().resource_limits();
+                p::response_envelope::Payload::ResourceStats(p::ResourceStats {
+                    total_used_bytes: usage.total_bytes,
+                    cpu_used_bytes: usage.cpu_bytes,
+                    gpu_used_bytes: usage.gpu_bytes,
+                    staging_used_bytes: usage.staging_bytes,
+                    total_limit_bytes: limits.total_bytes,
+                    cpu_limit_bytes: limits.cpu_bytes,
+                    gpu_limit_bytes: limits.gpu_bytes,
+                    staging_limit_bytes: limits.staging_bytes,
+                    resource_revision: state.resource_revision,
+                })
+            }
             p::query_envelope::Payload::CameraState(query) => {
                 if state.lifecycle == EngineState::Stopped {
                     return Ok(rejection(
@@ -255,6 +270,13 @@ impl ProtocolAdapter {
                         max_mesh_indices: spaceeyes_geometry::MAX_INDICES as u32,
                         max_canvas_dimension: spaceeyes_rendering::MAX_CANVAS_DIMENSION,
                         max_frame_elapsed_nanos: spaceeyes_rendering::MAX_FRAME_ELAPSED_NANOS,
+                        max_resource_total_bytes: dispatcher.engine().resource_limits().total_bytes,
+                        max_resource_cpu_bytes: dispatcher.engine().resource_limits().cpu_bytes,
+                        max_resource_gpu_bytes: dispatcher.engine().resource_limits().gpu_bytes,
+                        max_resource_staging_bytes: dispatcher
+                            .engine()
+                            .resource_limits()
+                            .staging_bytes,
                         command_history_capacity: dispatcher.command_history_capacity() as u64,
                         command_history_remaining: dispatcher.command_history_remaining() as u64,
                     }),
