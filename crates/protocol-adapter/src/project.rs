@@ -230,10 +230,7 @@ fn decode_frame(record: &p::ProjectFrameRecord) -> Result<FrameRecord, ProtocolE
                     sample.instant.clone().ok_or(ProtocolError::MissingField)?,
                 )?,
                 to_parent: crate::query::decode_transform(
-                    sample
-                        .to_parent
-                        .clone()
-                        .ok_or(ProtocolError::MissingField)?,
+                    sample.to_parent.ok_or(ProtocolError::MissingField)?,
                 )?,
             })
         })
