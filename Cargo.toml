@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/foundation",
+  "crates/time",
+  "crates/spatial",
+  "crates/scene",
+  "crates/simulation",
+  "crates/resources",
+  "crates/rendering",
+  "crates/engine",
+  "crates/protocol-adapter",
+]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
