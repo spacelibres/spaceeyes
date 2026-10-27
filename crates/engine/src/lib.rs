@@ -7,7 +7,7 @@ use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
 use spaceeyes_resources::{ResourceManager, ResourceBudget, ResourceError, LeaseId};
 use spaceeyes_foundation::ResourceId;
-use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError, TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
+use spaceeyes_simulation::{SimulationScheduler, TaskRequest, TaskResult, TaskStatus, TaskError, TaskProvenance, TaskBudget, TaskExecutor, dispatch_ready, enqueue_bounded};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EngineState { Ready, Running, Stopped }
@@ -146,6 +146,14 @@ impl Engine {
         if request.generation != self.clock.generation() { return Err(TaskError::StaleGeneration); }
         enqueue_bounded(&mut self.simulation, self.task_budget, request)
     }
+    pub fn bind_task_provenance(&mut self, id: &str, provenance: TaskProvenance) -> Result<(), TaskError> {
+        if self.state == EngineState::Stopped { return Err(TaskError::InvalidState); }
+        if provenance.scene_revision != self.scene.revision()
+            || provenance.frame_graph_revision != self.spatial.revision() {
+            return Err(TaskError::RevisionMismatch);
+        }
+        self.simulation.bind_provenance(id, provenance)
+    }
     pub fn ready_tasks(&self) -> Vec<String> { self.simulation.ready_tasks() }
     /// A host-provided executor handles actual work; Engine only issues ready tasks.
     pub fn dispatch_tasks(&mut self, executor: &mut impl TaskExecutor) -> Result<Vec<String>, TaskError> {
@@ -231,6 +239,8 @@ impl Engine {
     ) -> Result<Revision, CommitTaskError> {
         if self.state == EngineState::Stopped { return Err(CommitTaskError::EngineStopped); }
         self.simulation.validate_commit(task_id, self.clock.generation(), self.clock.instant())
+            .map_err(CommitTaskError::Task)?;
+        self.simulation.validate_provenance(task_id, self.scene.revision(), self.spatial.revision())
             .map_err(CommitTaskError::Task)?;
         let revision = self.submit_scene(expected_revision, commands).map_err(CommitTaskError::Scene)?;
         self.simulation.complete(task_id).map_err(CommitTaskError::Task)?;
