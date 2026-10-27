@@ -1,6 +1,6 @@
 # Core Protocol统一核心协议设计规范
 
-版本：0.0.0｜状态：待审定设计草案｜日期：2026-10-27
+版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27
 设计阶段：07｜归属：SpaceEyes Rust Core公开边界｜仅设计，不创建可运行代码
 依据：Rust核心与Scene、Spatial、Time、Simulation、Rendering、Resources六项专项设计规范。
 
@@ -102,3 +102,6 @@ FrameSnapshot候选字段：session_id、simulation_instant、time_generation、
 
 ## 17. 第13阶段协议边界统一
 公开协议必须区分SceneSnapshot、Engine FrameSnapshot、ProjectSnapshot。FrameSnapshot包含一致的时间、Scene、Spatial及资源修订，ProjectSnapshot只保存可恢复的稳定逻辑状态和来源引用。CommandEnvelope仅进入Engine统一入口；Response的Accepted不等于Completed；Project恢复须有显式命令与生命周期事件。字段设计统一由第09阶段规范维护，禁止建立平行Schema。
+
+
+> 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
