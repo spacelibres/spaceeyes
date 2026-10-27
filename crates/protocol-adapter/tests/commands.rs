@@ -191,6 +191,14 @@ fn camera_proto_roundtrip_and_wire_update_are_validated_and_idempotent() {
         decode_camera(p::CameraState::decode(wire.as_slice()).unwrap()).unwrap(),
         camera
     );
+    let orthographic =
+        CameraState::new_orthographic([0.0, 0.0, 5.0], [1.0, 0.0, 0.0, 0.0], 2.0, 0.1, 100.0)
+            .unwrap();
+    let wire = encode_camera(&orthographic).encode_to_vec();
+    assert_eq!(
+        decode_camera(p::CameraState::decode(wire.as_slice()).unwrap()).unwrap(),
+        orthographic
+    );
     let mut r = request("camera-create");
     if let Some(p::command_envelope::Payload::Scene(c)) = &mut r.payload {
         if let Some(p::scene_command::Action::Create(c)) = &mut c.action {

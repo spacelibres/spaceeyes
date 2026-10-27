@@ -31,26 +31,33 @@ pub enum RenderError {
 }
 /// Ephemeral prototype view. Persistent camera state belongs to Scene commands.
 #[derive(Clone, Copy, Debug)]
+pub enum ViewProjection {
+    Perspective { vertical_fov_radians: f64 },
+    Orthographic { half_height_m: f64 },
+}
+#[derive(Clone, Copy, Debug)]
 pub struct View {
     pub origin_m: [f64; 3],
-    pub vertical_fov_radians: f64,
+    pub projection: ViewProjection,
     pub aspect: f64,
     pub near_m: f64,
     pub far_m: f64,
 }
 impl View {
     pub fn validate(&self) -> Result<(), RenderError> {
+        let projection_valid = match self.projection {
+            ViewProjection::Perspective {
+                vertical_fov_radians,
+            } => vertical_fov_radians > 0.0 && vertical_fov_radians < std::f64::consts::PI,
+            ViewProjection::Orthographic { half_height_m } => {
+                half_height_m.is_finite() && half_height_m > 0.0
+            }
+        };
         if !self.origin_m.iter().all(|v| v.is_finite())
-            || ![
-                self.vertical_fov_radians,
-                self.aspect,
-                self.near_m,
-                self.far_m,
-            ]
-            .iter()
-            .all(|v| v.is_finite())
-            || self.vertical_fov_radians <= 0.0
-            || self.vertical_fov_radians >= std::f64::consts::PI
+            || !projection_valid
+            || !self.aspect.is_finite()
+            || !self.near_m.is_finite()
+            || !self.far_m.is_finite()
             || self.aspect <= 0.0
             || self.near_m <= 0.0
             || self.far_m <= self.near_m
@@ -146,6 +153,16 @@ pub fn prepare_camera(
     let rotation = RigidTransform::new(Vec3d::ZERO, combined.rotation)
         .map_err(|_| RenderError::InvalidCamera)?
         .inverse();
+    let projection = match camera.projection() {
+        spaceeyes_snapshot::CameraProjection::Perspective {
+            vertical_fov_radians,
+        } => ViewProjection::Perspective {
+            vertical_fov_radians,
+        },
+        spaceeyes_snapshot::CameraProjection::Orthographic { half_height_m } => {
+            ViewProjection::Orthographic { half_height_m }
+        }
+    };
     prepare_oriented(
         frame,
         View {
@@ -154,7 +171,7 @@ pub fn prepare_camera(
                 combined.translation_m.y,
                 combined.translation_m.z,
             ],
-            vertical_fov_radians: camera.vertical_fov_radians(),
+            projection,
             near_m: camera.near_m(),
             far_m: camera.far_m(),
             aspect,
@@ -313,9 +330,7 @@ fn prepare_oriented(
         if z < view.near_m || z > view.far_m {
             continue;
         }
-        let half = (view.vertical_fov_radians * 0.5).tan();
-        let x = relative.x / (z * half * view.aspect);
-        let y = relative.y / (z * half);
+        let [x, y] = projection.ndc(relative.x, relative.y, z);
         if ![x, y, z].iter().all(|v| v.is_finite()) {
             return Err(RenderError::InvalidFrame);
         }

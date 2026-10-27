@@ -466,14 +466,24 @@ pub fn decode_camera(value: p::CameraState) -> Result<CameraState, ProtocolError
         .ok_or(ProtocolError::MissingField)?
         .kind
         .ok_or(ProtocolError::MissingField)?;
-    let p::projection::Kind::Perspective(projection) = projection;
-    CameraState::new(
-        [position.x, position.y, position.z],
-        [rotation.w, rotation.x, rotation.y, rotation.z],
-        projection.vertical_fov_radians,
-        projection.near_m,
-        projection.far_m,
-    )
+    let position = [position.x, position.y, position.z];
+    let rotation = [rotation.w, rotation.x, rotation.y, rotation.z];
+    match projection {
+        p::projection::Kind::Perspective(projection) => CameraState::new(
+            position,
+            rotation,
+            projection.vertical_fov_radians,
+            projection.near_m,
+            projection.far_m,
+        ),
+        p::projection::Kind::Orthographic(projection) => CameraState::new_orthographic(
+            position,
+            rotation,
+            projection.half_height_m,
+            projection.near_m,
+            projection.far_m,
+        ),
+    }
     .and_then(|camera| camera.with_tracking(tracking))
     .map_err(|_| ProtocolError::InvalidContext)
 }
@@ -495,11 +505,22 @@ pub fn encode_camera(camera: &CameraState) -> p::CameraState {
             z: qz,
         }),
         projection: Some(p::Projection {
-            kind: Some(p::projection::Kind::Perspective(p::PerspectiveProjection {
-                vertical_fov_radians: camera.vertical_fov_radians(),
-                near_m: camera.near_m(),
-                far_m: camera.far_m(),
-            })),
+            kind: Some(match camera.projection() {
+                spaceeyes_scene::CameraProjection::Perspective {
+                    vertical_fov_radians,
+                } => p::projection::Kind::Perspective(p::PerspectiveProjection {
+                    vertical_fov_radians,
+                    near_m: camera.near_m(),
+                    far_m: camera.far_m(),
+                }),
+                spaceeyes_scene::CameraProjection::Orthographic { half_height_m } => {
+                    p::projection::Kind::Orthographic(p::OrthographicProjection {
+                        half_height_m,
+                        near_m: camera.near_m(),
+                        far_m: camera.far_m(),
+                    })
+                }
+            }),
         }),
     }
 }

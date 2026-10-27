@@ -2,7 +2,7 @@
 // Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
 use spaceeyes_geometry::{TriangleMesh, Vertex};
-use spaceeyes_rendering::{prepare, View};
+use spaceeyes_rendering::{prepare, View, ViewProjection};
 use spaceeyes_scene::{MeshInstance, Scene, SceneCommand, SceneObject, Sphere};
 use spaceeyes_snapshot::{FrameAvailability, FrameSnapshot, MeshAsset, ObjectPose};
 use spaceeyes_spatial::{Quatd, RigidTransform, Vec3d};
@@ -28,7 +28,9 @@ fn geometry() -> Arc<TriangleMesh> {
 fn view() -> View {
     View {
         origin_m: [0.0; 3],
-        vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        projection: ViewProjection::Perspective {
+            vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        },
         aspect: 1.0,
         near_m: 0.1,
         far_m: 100.0,

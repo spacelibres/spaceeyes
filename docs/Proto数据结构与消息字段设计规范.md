@@ -235,3 +235,6 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 
 ## 参考系覆盖查询（C04切片）
 `QueryEnvelope`追加`frame_coverage=31`，`ResponseEnvelope`追加`frame_coverage=22`；`FrameCoverageQuery{FrameId}`、`FrameCoverage{FrameId,covered,optional start,end,provider_id,provider_version}`。`covered=false`表示该帧未声明有效区间，读取不得推断为无限覆盖；未知帧返回UNKNOWN_FRAME。能力总数39，SDK响应映射为`frameCoverage`。
+
+## 正交投影相机（C13切片）
+`Projection.kind`新增`orthographic=2`（`OrthographicProjection{half_height_m=1,near_m=2,far_m=3}`），`perspective=1`保持不变；旧客户端缺省只发送perspective。两类投影共用position/orientation/tracking字段，half_height必须有限且为正，near/far校验一致。该字段只改变视图投影，不改变参考系、时间或科学状态。

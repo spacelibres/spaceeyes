@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::{FrameId, ObjectId};
-use spaceeyes_rendering::{prepare, View};
+use spaceeyes_rendering::{prepare, View, ViewProjection};
 use spaceeyes_scene::{Scene, SceneCommand, SceneObject};
 use spaceeyes_snapshot::{FrameAvailability, FrameSnapshot, ObjectPose};
 use spaceeyes_spatial::{Quatd, RigidTransform, Vec3d};
@@ -39,7 +39,9 @@ fn frame() -> FrameSnapshot {
 fn view() -> View {
     View {
         origin_m: [1e12, 0.0, 0.0],
-        vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        projection: ViewProjection::Perspective {
+            vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        },
         aspect: 1.0,
         near_m: 0.1,
         far_m: 100.0,

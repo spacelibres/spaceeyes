@@ -6,7 +6,7 @@ use spaceeyes_foundation::{CoreError, FrameId, ObjectId, ResourceId, Revision};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 mod camera;
-pub use camera::{CameraState, CameraTracking};
+pub use camera::{CameraProjection, CameraState, CameraTracking};
 mod sphere;
 pub use sphere::Sphere;
 mod mesh;

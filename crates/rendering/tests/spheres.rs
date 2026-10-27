@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 use spaceeyes_foundation::{FrameId, ObjectId};
-use spaceeyes_rendering::{mesh, prepare, View};
+use spaceeyes_rendering::{mesh, prepare, View, ViewProjection};
 use spaceeyes_scene::{Scene, SceneCommand, SceneObject, Sphere};
 use spaceeyes_snapshot::{FrameAvailability, FrameSnapshot, ObjectPose};
 use spaceeyes_spatial::{FrameSample, Quatd, ReferenceFrameGraph, RigidTransform, Vec3d};
@@ -9,7 +9,9 @@ use spaceeyes_time::{SimulationClock, TimeInstant};
 fn view() -> View {
     View {
         origin_m: [0.0; 3],
-        vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        projection: ViewProjection::Perspective {
+            vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        },
         aspect: 1.0,
         near_m: 0.1,
         far_m: 100.0,
@@ -185,4 +187,23 @@ fn gpu_clips_triangles_across_near_plane_instead_of_dropping_sphere() {
     let center = (64 * 128 + 64) * 4;
     assert!(pixels[center + 1] > 20);
     assert_eq!(resources.used_bytes(), 0);
+}
+
+#[test]
+fn orthographic_projection_keeps_screen_size_independent_of_depth() {
+    let far = frame(&[("body", [1.5, 0.0, -10.0], 1.0, [1.0, 0.0, 0.0])]);
+    let near = frame(&[("body", [1.5, 0.0, -5.0], 1.0, [1.0, 0.0, 0.0])]);
+    let view = View {
+        origin_m: [0.0; 3],
+        projection: ViewProjection::Orthographic { half_height_m: 2.0 },
+        aspect: 1.0,
+        near_m: 0.1,
+        far_m: 100.0,
+    };
+    let far_frame = prepare(&far, view).unwrap();
+    let near_frame = prepare(&near, view).unwrap();
+    assert_eq!(far_frame.pick(0.75, 0.0).unwrap().object.as_str(), "body");
+    assert_eq!(near_frame.pick(0.75, 0.0).unwrap().object.as_str(), "body");
+    // Outside the projected disc (half-height 2, radius 1 at x=1.5).
+    assert!(far_frame.pick(0.0, 0.0).is_none());
 }

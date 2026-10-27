@@ -3,6 +3,7 @@
 //! Immutable frame values shared by Engine and Renderer; no mutable module ownership.
 use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
 use spaceeyes_geometry::{TextureData, TriangleMesh};
+pub use spaceeyes_scene::CameraProjection;
 use spaceeyes_scene::SceneSnapshot;
 use spaceeyes_spatial::RigidTransform;
 use spaceeyes_time::{ClockSnapshot, TimeGeneration};

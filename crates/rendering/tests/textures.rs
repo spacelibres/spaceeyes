@@ -4,7 +4,7 @@ use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
 use spaceeyes_geometry::{ColorSpace, Sampling, TextureData, TriangleMesh, Vertex};
 #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
 use spaceeyes_geometry::{TextureAddress, TextureFilter};
-use spaceeyes_rendering::{prepare, View};
+use spaceeyes_rendering::{prepare, View, ViewProjection};
 #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
 use spaceeyes_scene::Sphere;
 use spaceeyes_scene::{Material, MeshInstance, Scene, SceneCommand, SceneObject};
@@ -32,7 +32,9 @@ fn quad(scale: f64, uv: Option<[f32; 2]>) -> Arc<TriangleMesh> {
 fn view() -> View {
     View {
         origin_m: [0.0; 3],
-        vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        projection: ViewProjection::Perspective {
+            vertical_fov_radians: std::f64::consts::FRAC_PI_2,
+        },
         aspect: 1.0,
         near_m: 0.1,
         far_m: 100.0,

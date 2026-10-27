@@ -5,7 +5,8 @@ package spaceeyes.core.v1;
 import "spaceeyes/core/v1/spatial.proto";
 import "spaceeyes/core/v1/common.proto";
 message PerspectiveProjection { double vertical_fov_radians=1; double near_m=2; double far_m=3; }
-message Projection { oneof kind { PerspectiveProjection perspective=1; } }
+message OrthographicProjection { double half_height_m=1; double near_m=2; double far_m=3; }
+message Projection { oneof kind { PerspectiveProjection perspective=1; OrthographicProjection orthographic=2; } }
 // The owning SceneObject supplies the camera identity and FrameId.
 message CameraState { Vector3d position_m=4; Quaterniond orientation=5; Projection projection=6; CameraTracking tracking=7; }
 // Target-reference-relative +Z offset; derived each frame, not integrated by the host.

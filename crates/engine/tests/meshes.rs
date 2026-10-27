@@ -81,7 +81,9 @@ fn mesh_scene_reference_is_leased_transactionally_and_old_frames_stay_valid() {
         &frame,
         spaceeyes_rendering::View {
             origin_m: [0.0; 3],
-            vertical_fov_radians: 1.0,
+            projection: spaceeyes_rendering::ViewProjection::Perspective {
+                vertical_fov_radians: 1.0,
+            },
             aspect: 1.0,
             near_m: 0.1,
             far_m: 100.0,

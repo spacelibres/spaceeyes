@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 正交投影相机（C13 切片）
+- `CameraState` 新增 `CameraProjection`（透视/正交），正交使用米制 `half_height_m`；`focus_camera` 保留原投影；Proto `Projection` 新增 `orthographic` kind=2。
+- 渲染统一 `ViewProjection`：NDC、深度、clip 与拾取射线按投影分支，正交屏幕尺寸与距离无关。
+- 验证：scene 正交校验、rendering CPU 拾取与 GPU clip 单测、相机 Proto 往返、SDK 互通 10 项通过。
+
+
 ### 参考系覆盖区间查询（C04 切片）
 - `TransformProvider::coverage` 与 `ReferenceFrameGraph::coverage`：只返回动态提供者声明的同标度/历元区间；静态/提供者样本为 `None`，非法区间拒绝。
 - Proto 新增只读 `query.frame_coverage`（31/22），`covered=false` 不推断覆盖，未知帧 `UNKNOWN_FRAME`；能力总数 39。

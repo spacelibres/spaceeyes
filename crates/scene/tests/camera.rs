@@ -45,6 +45,26 @@ fn camera_is_normalized_and_rejects_invalid_pose_or_projection() {
     }
 }
 #[test]
+fn orthographic_cameras_require_a_positive_half_height() {
+    use spaceeyes_scene::CameraProjection;
+    let camera =
+        CameraState::new_orthographic([0.0; 3], [1.0, 0.0, 0.0, 0.0], 2.0, 0.1, 100.0).unwrap();
+    assert_eq!(
+        camera.projection(),
+        CameraProjection::Orthographic { half_height_m: 2.0 }
+    );
+    for half_height in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+        assert!(CameraState::new_orthographic(
+            [0.0; 3],
+            [1.0, 0.0, 0.0, 0.0],
+            half_height,
+            0.1,
+            100.0,
+        )
+        .is_err());
+    }
+}
+#[test]
 fn camera_component_is_snapshotted_and_removable() {
     let id = ObjectId::new("camera").unwrap();
     let mut scene = Scene::new();

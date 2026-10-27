@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Prepared sphere draws and picking against exactly the tessellation used for rendering.
-use crate::{mesh, DrawMaterial, RenderError, View};
+use crate::{mesh, DrawMaterial, RenderError, View, ViewProjection};
 use spaceeyes_foundation::ObjectId;
 use spaceeyes_spatial::{RigidTransform, Vec3d};
 #[derive(Clone, Debug)]
@@ -13,8 +13,13 @@ pub struct SphereDraw {
     pub rotation_to_camera: RigidTransform,
 }
 #[derive(Clone, Copy, Debug)]
+enum Kind {
+    Perspective { half: f64 },
+    Orthographic { half_height: f64 },
+}
+#[derive(Clone, Copy, Debug)]
 pub struct Perspective {
-    half: f64,
+    kind: Kind,
     aspect: f64,
     near: f64,
     far: f64,
@@ -22,18 +27,28 @@ pub struct Perspective {
 impl Perspective {
     pub(crate) fn from_view(view: View) -> Result<Self, RenderError> {
         view.validate()?;
+        let kind = match view.projection {
+            ViewProjection::Perspective {
+                vertical_fov_radians,
+            } => Kind::Perspective {
+                half: (vertical_fov_radians * 0.5).tan(),
+            },
+            ViewProjection::Orthographic { half_height_m } => Kind::Orthographic {
+                half_height: half_height_m,
+            },
+        };
         let result = Self {
-            half: (view.vertical_fov_radians * 0.5).tan(),
+            kind,
             aspect: view.aspect,
             near: view.near_m,
             far: view.far_m,
         };
         let a = result.far / (result.far - result.near);
-        if ![result.half, a, a * result.near]
-            .iter()
-            .all(|x| x.is_finite())
-            || result.half <= 0.0
-        {
+        let scale_valid = match result.kind {
+            Kind::Perspective { half } => half.is_finite() && half > 0.0,
+            Kind::Orthographic { half_height } => half_height.is_finite() && half_height > 0.0,
+        };
+        if ![a, a * result.near].iter().all(|x| x.is_finite()) || !scale_valid {
             return Err(RenderError::InvalidCamera);
         }
         Ok(result)
@@ -42,12 +57,20 @@ impl Perspective {
     pub(crate) fn clip(self, p: [f64; 3]) -> Result<[f32; 4], RenderError> {
         let d = -p[2];
         let a = self.far / (self.far - self.near);
-        let clip = [
-            p[0] / (self.half * self.aspect),
-            p[1] / self.half,
-            a * (d - self.near),
-            d,
-        ];
+        let clip = match self.kind {
+            Kind::Perspective { half } => [
+                p[0] / (half * self.aspect),
+                p[1] / half,
+                a * (d - self.near),
+                d,
+            ],
+            Kind::Orthographic { half_height } => [
+                p[0] / (half_height * self.aspect),
+                p[1] / half_height,
+                self.depth(d),
+                1.0,
+            ],
+        };
         if !clip
             .iter()
             .all(|v| v.is_finite() && v.abs() <= f64::from(f32::MAX))
@@ -65,8 +88,29 @@ impl Perspective {
     pub(crate) fn far(self) -> f64 {
         self.far
     }
+    /// Normalized device coordinates for a camera-space point.
+    pub(crate) fn ndc(self, x: f64, y: f64, z: f64) -> [f64; 2] {
+        match self.kind {
+            Kind::Perspective { half } => [x / (z * half * self.aspect), y / (z * half)],
+            Kind::Orthographic { half_height } => {
+                [x / (half_height * self.aspect), y / half_height]
+            }
+        }
+    }
+    /// Picking ray origin; orthographic rays start on the camera plane.
+    pub(crate) fn ray_origin(self, x: f64, y: f64) -> [f64; 3] {
+        match self.kind {
+            Kind::Perspective { .. } => [0.0, 0.0, 0.0],
+            Kind::Orthographic { half_height } => {
+                [x * half_height * self.aspect, y * half_height, 0.0]
+            }
+        }
+    }
     pub(crate) fn ray(self, x: f64, y: f64) -> [f64; 3] {
-        [x * self.half * self.aspect, y * self.half, -1.0]
+        match self.kind {
+            Kind::Perspective { half } => [x * half * self.aspect, y * half, -1.0],
+            Kind::Orthographic { .. } => [0.0, 0.0, -1.0],
+        }
     }
     pub(crate) fn pick_depth(
         self,
@@ -75,7 +119,8 @@ impl Perspective {
         y: f64,
         mesh: &mesh::SphereMesh,
     ) -> Option<f64> {
-        let ray = [x * self.half * self.aspect, y * self.half, -1.0];
+        let origin = self.ray_origin(x, y);
+        let direction = self.ray(x, y);
         let mut closest = f64::INFINITY;
         for triangle in mesh.indices.as_chunks::<3>().0 {
             let vertex = |i: u32| {
@@ -86,12 +131,16 @@ impl Perspective {
                     z: f64::from(z),
                 });
                 let p = [p.x, p.y, p.z];
-                std::array::from_fn(|axis| sphere.center_camera[axis] + p[axis] * sphere.radius_m)
+                let world: [f64; 3] = std::array::from_fn(|axis| {
+                    sphere.center_camera[axis] + p[axis] * sphere.radius_m
+                });
+                let offset: [f64; 3] = std::array::from_fn(|axis| world[axis] - origin[axis]);
+                offset
             };
             let a = vertex(triangle[0]);
             let b = vertex(triangle[1]);
             let c = vertex(triangle[2]);
-            if let Some(t) = ray_triangle(ray, a, b, c) {
+            if let Some(t) = ray_triangle(direction, a, b, c) {
                 if t >= self.near && t <= self.far && t < closest {
                     closest = t;
                 }
@@ -134,4 +183,27 @@ pub(crate) fn ray_triangle(ray: [f64; 3], a: [f64; 3], b: [f64; 3], c: [f64; 3])
     }
     let t = dot(e2, q) / det;
     (t.is_finite() && t > 0.0).then_some(t)
+}
+
+#[cfg(all(test, feature = "gpu"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn orthographic_clip_uses_unit_w_and_monotonic_depth() {
+        let view = View {
+            origin_m: [0.0; 3],
+            projection: ViewProjection::Orthographic { half_height_m: 2.0 },
+            aspect: 2.0,
+            near_m: 0.1,
+            far_m: 100.0,
+        };
+        let projection = Perspective::from_view(view).unwrap();
+        let near = projection.clip([1.5, 0.0, -5.0]).unwrap();
+        let far = projection.clip([1.5, 0.0, -10.0]).unwrap();
+        assert_eq!(near[3], 1.0);
+        assert!((near[0] - 1.5 / 4.0).abs() < 1e-6);
+        assert!(near[2] < far[2]);
+        assert_eq!(projection.ndc(1.5, 0.0, 5.0), [0.375, 0.0]);
+    }
 }

@@ -72,10 +72,10 @@ impl Engine {
         } else {
             None
         };
-        let next = CameraState::new(
+        let next = CameraState::new_with_projection(
             [position.x, position.y, position.z],
             [rotation.w, rotation.x, rotation.y, rotation.z],
-            state.vertical_fov_radians(),
+            state.projection(),
             state.near_m(),
             state.far_m(),
         )

@@ -25,11 +25,20 @@ impl CameraTracking {
     }
 }
 
+/// Explicit projection kind. Perspective uses a vertical field of view;
+/// orthographic uses a fixed half-height in metres, independent of distance.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum CameraProjection {
+    Perspective { vertical_fov_radians: f64 },
+    Orthographic { half_height_m: f64 },
+}
+impl Eq for CameraProjection {}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct CameraState {
     position_m: [f64; 3],
     orientation_wxyz: [f64; 4],
-    vertical_fov_radians: f64,
+    projection: CameraProjection,
     near_m: f64,
     far_m: f64,
     tracking: Option<CameraTracking>,
@@ -44,13 +53,51 @@ impl CameraState {
         near_m: f64,
         far_m: f64,
     ) -> Result<Self, CoreError> {
+        Self::new_with_projection(
+            position_m,
+            orientation_wxyz,
+            CameraProjection::Perspective {
+                vertical_fov_radians,
+            },
+            near_m,
+            far_m,
+        )
+    }
+    pub fn new_orthographic(
+        position_m: [f64; 3],
+        orientation_wxyz: [f64; 4],
+        half_height_m: f64,
+        near_m: f64,
+        far_m: f64,
+    ) -> Result<Self, CoreError> {
+        Self::new_with_projection(
+            position_m,
+            orientation_wxyz,
+            CameraProjection::Orthographic { half_height_m },
+            near_m,
+            far_m,
+        )
+    }
+    pub fn new_with_projection(
+        position_m: [f64; 3],
+        orientation_wxyz: [f64; 4],
+        projection: CameraProjection,
+        near_m: f64,
+        far_m: f64,
+    ) -> Result<Self, CoreError> {
+        let projection_valid = match projection {
+            CameraProjection::Perspective {
+                vertical_fov_radians,
+            } => vertical_fov_radians > 0.0 && vertical_fov_radians < std::f64::consts::PI,
+            CameraProjection::Orthographic { half_height_m } => {
+                half_height_m.is_finite() && half_height_m > 0.0
+            }
+        };
         if !position_m
             .iter()
             .chain(orientation_wxyz.iter())
-            .chain([vertical_fov_radians, near_m, far_m].iter())
             .all(|x| x.is_finite())
-            || vertical_fov_radians <= 0.0
-            || vertical_fov_radians >= std::f64::consts::PI
+            || !projection_valid
             || near_m <= 0.0
             || far_m <= near_m
         {
@@ -63,7 +110,7 @@ impl CameraState {
         Ok(Self {
             position_m,
             orientation_wxyz: orientation_wxyz.map(|v| v / norm),
-            vertical_fov_radians,
+            projection,
             near_m,
             far_m,
             tracking: None,
@@ -88,8 +135,8 @@ impl CameraState {
     pub fn orientation_wxyz(&self) -> [f64; 4] {
         self.orientation_wxyz
     }
-    pub fn vertical_fov_radians(&self) -> f64 {
-        self.vertical_fov_radians
+    pub fn projection(&self) -> CameraProjection {
+        self.projection
     }
     pub fn near_m(&self) -> f64 {
         self.near_m

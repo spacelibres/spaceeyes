@@ -111,3 +111,7 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 
 ## M3-1a 分层资源预算契约（0.0.1开发增量）
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。
+
+## C13 正交投影相机（0.0.1增量）
+`CameraState`新增`CameraProjection`（Perspective/Orthographic）：正交相机使用米制`half_height_m`，与距离无关，near/far仍显式校验；`new_orthographic`与`new_with_projection`为唯一构造入口，`focus_camera`保留原投影类型。Proto `Projection`新增`OrthographicProjection{half_height_m,near_m,far_m}`（kind=2），旧perspective编码不变。
+渲染侧`ViewProjection`驱动NDC、深度与拾取：正交投影的clip使用w=1且z等于同一深度函数，标记NDC按固定半高计算，拾取射线从相机平面偏移出发、方向沿-Z并复用同一三角形求交，因此屏幕尺寸与遮挡顺序不受距离影响。验证覆盖场景校验、CPU拾取、GPU clip公式与Proto往返。尚未实现线图元、多视口、PBR/透明/mipmap与科学传播轨道。

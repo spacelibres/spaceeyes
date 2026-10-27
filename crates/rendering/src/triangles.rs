@@ -21,9 +21,11 @@ impl MeshDraw {
     }
     pub(crate) fn pick_depth(&self, projection: Perspective, x: f64, y: f64) -> Option<f64> {
         let ray = projection.ray(x, y);
+        let origin = projection.ray_origin(x, y);
+        let offset = |p: [f64; 3]| std::array::from_fn(|axis| p[axis] - origin[axis]);
         let mut closest = f64::INFINITY;
         for triangle in self.geometry.indices().as_chunks::<3>().0 {
-            let [a, b, c] = triangle.map(|i| self.point(i));
+            let [a, b, c] = triangle.map(|i| offset(self.point(i)));
             if let Some(t) = ray_triangle(ray, a, b, c) {
                 if t >= projection.near() && t <= projection.far() && t < closest {
                     closest = t;
