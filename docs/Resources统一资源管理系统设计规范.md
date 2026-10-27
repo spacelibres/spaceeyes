@@ -100,3 +100,7 @@ Resources是ResourceId、租约、CPU/GPU字节配额和最终释放的唯一权
 
 ## 0.0.1任务租约生命周期对齐
 Engine为Simulation任务持有逻辑资源租约，在取消、过期、失败、提交成功与关闭时清理；ResourceManager仍控制资源注册和最终释放。当前租约基于计数，不是不可伪造的独立LeaseId；未来需进一步强化身份与代次，禁止将其当成最终安全模型。
+
+
+## 0.0.1租约身份强化
+ResourceManager新增不透明LeaseId，包含内部资源代次与唯一租约序列。每次注册同一ResourceId时递增代次，重复释放、旧租约释放及共享租约误释放均拒绝。Engine持有任务对应LeaseId而非裸ResourceId，保持Resources唯一所有权。租约目前仅进程内有效，不属于公开Proto凭证。
