@@ -93,14 +93,14 @@ impl Engine {
     }
     /// All spatial graph writes pass through Engine, never through plugins.
     pub fn register_root_frame(&mut self, id: FrameId) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped { return Err(SpatialError::InvalidTransform); }
+        if self.state == EngineState::Stopped { return Err(SpatialError::EngineUnavailable); }
         let next_sequence = self.frame_sequence.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
         let revision = self.spatial.register_root(id)?;
         self.frame_sequence = next_sequence;
         Ok(revision)
     }
     pub fn register_child_frame(&mut self, id: FrameId, parent: FrameId, sample: FrameSample) -> Result<Revision, SpatialError> {
-        if self.state == EngineState::Stopped { return Err(SpatialError::InvalidTransform); }
+        if self.state == EngineState::Stopped { return Err(SpatialError::EngineUnavailable); }
         let next_sequence = self.frame_sequence.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
         let revision = self.spatial.register_child(id, parent, sample)?;
         self.frame_sequence = next_sequence;
