@@ -1,7 +1,7 @@
 //! Engine owns session lifecycle, scene command entry, and consistent read snapshots.
 use spaceeyes_foundation::{CoreError, Revision};
 use spaceeyes_scene::{Scene, SceneCommand, SceneSnapshot};
-use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform};
+use spaceeyes_spatial::{ReferenceFrameGraph, SpatialError, FrameSample, RigidTransform, ProviderRef};
 use spaceeyes_foundation::FrameId;
 use spaceeyes_time::{SimulationClock, TimeGeneration, TimeInstant};
 
@@ -104,6 +104,24 @@ impl Engine {
         let next_sequence = self.frame_sequence.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
         let revision = self.spatial.register_child(id, parent, sample)?;
         self.frame_sequence = next_sequence;
+        Ok(revision)
+    }
+    pub fn register_dynamic_frame(
+        &mut self, id: FrameId, parent: FrameId, provider: ProviderRef,
+    ) -> Result<Revision, SpatialError> {
+        if self.state == EngineState::Stopped { return Err(SpatialError::EngineUnavailable); }
+        let next = self.frame_sequence.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
+        let revision = self.spatial.register_dynamic_child(id, parent, provider)?;
+        self.frame_sequence = next;
+        Ok(revision)
+    }
+    pub fn replace_frame_provider(
+        &mut self, id: &FrameId, provider: ProviderRef,
+    ) -> Result<Revision, SpatialError> {
+        if self.state == EngineState::Stopped { return Err(SpatialError::EngineUnavailable); }
+        let next = self.frame_sequence.checked_add(1).ok_or(SpatialError::RevisionOverflow)?;
+        let revision = self.spatial.replace_provider(id, provider)?;
+        self.frame_sequence = next;
         Ok(revision)
     }
     pub fn resolve_frame(&self, source: &FrameId, target: &FrameId, instant: &TimeInstant) -> Result<RigidTransform, SpatialError> {
