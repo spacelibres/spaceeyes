@@ -4,6 +4,9 @@
 
 ## [0.0.1] — 2026-10-27
 
+- 2026-10-27：Resources新增代次化LeaseId与单次释放校验；Engine任务租约改用独立令牌。TaskExecutor新增尽力取消通知，Engine先标记取消再通知宿主。同步专项规范。真实异步执行、完整结果元数据和Proto仍待实现；构建测试未确认；版本保持0.0.1。
+
+
 - 按规划实现Engine层任务与Resources逻辑租约关联：attach_task_resource、任务取消/失败、Seek旧代次失效、ResultReady提交成功、Engine关闭时回收任务租约；保持Simulation不直接拥有资源注册表。
 - 增加任务租约生命周期单元测试源码，并同步Simulation与Resources规范。当前仍为内存级计数租约，未实现独立LeaseId/句柄代次、执行器强制取消或真实异步执行；Cargo/CI未取得通过证据。版本保持0.0.1。
 
