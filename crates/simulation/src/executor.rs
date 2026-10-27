@@ -20,6 +20,8 @@ impl TaskBudget {
 /// perform work or mutate Scene. A future async adapter can use the same contract.
 pub trait TaskExecutor {
     fn dispatch(&mut self, task: TaskRequest) -> Result<(), TaskError>;
+    /// Best-effort host notification; the scheduler rejects late results regardless.
+    fn request_cancel(&mut self, _task_id: &str) -> Result<(), TaskError> { Ok(()) }
 }
 
 /// Issues ready tasks in stable order up to available in-flight slots.
