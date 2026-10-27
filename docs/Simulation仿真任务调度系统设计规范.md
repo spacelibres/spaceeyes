@@ -90,3 +90,7 @@ Simulation负责计算任务与结果有效性校验，不直接写Scene。Engin
 
 ## 15. 0.0.1任务执行适配与预算推进（2026-10-27）
 新增平台中立的`TaskExecutor`分发接口、`TaskBudget`（最大同时执行数及最大排队数）、确定性有界分发、队列超限错误。Engine以默认预算协调任务，真实执行由Native/WASM宿主提供；当前未实现线程池、异步Future驱动或CPU时间测量，故不将接口分发称为异步执行器已完成。为避免连续播放同代次的旧结果提交，Engine在Scene事务前再次核验Task的generation和requested_instant。资源字节预算仍归Resources。新增测试源码尚待Cargo执行；版本保持0.0.1。
+
+
+## 16. 0.0.1任务资源租约协调
+Engine建立task_id与受控ResourceId租约的关联，任务取消、失败、过时代次、提交完成或Engine关闭时释放任务租约。Simulation不直接拥有ResourceManager；Resources仍是唯一资源所有权与配额权威。当前关联仅为Engine内存级逻辑租约，尚无跨会话持久化、执行器强制取消、租约身份令牌或GPU资源恢复。
