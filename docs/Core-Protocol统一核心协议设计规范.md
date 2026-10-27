@@ -95,3 +95,6 @@ Rendering协议表达相机、绘制原语、材质参数、拾取和显示能�
 
 ## 15. 阶段出口
 完成六个模块协议映射表、字段语义和ADR审定后，进入七大核心模块的交叉架构审查；不得仅因本文件创建就宣布Schema冻结或开始实现。首期仍以NASA Eyes体验为优先，最终AI通过公开SDK及版本化SKILL.md开发插件的目标保持不变。
+
+## 16. 交叉审查整改对齐（待审）
+FrameSnapshot候选字段：session_id、simulation_instant、time_generation、scene_revision、frame_graph_revision、resource_epoch、frame_sequence。所有写命令经Engine入口。TimeInstant候选time_scale、epoch_id、seconds、subsecond_nanos；科学时间语义及字段号未冻结。ObjectId、FrameId、ResourceId为独立公开身份，内部代次槽位不得暴露为跨进程句柄。
