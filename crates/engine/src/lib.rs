@@ -154,6 +154,14 @@ impl Engine {
         self.release_task_leases(id);
         Ok(())
     }
+    /// Mark cancellation first, then notify host; a failed notification cannot
+    /// re-enable a cancelled task or permit its late result to commit.
+    pub fn cancel_task_with_executor(
+        &mut self, id: &str, executor: &mut impl TaskExecutor,
+    ) -> Result<(), TaskError> {
+        self.cancel_task(id)?;
+        executor.request_cancel(id)
+    }
     pub fn fail_task(&mut self, id: &str) -> Result<(), TaskError> {
         self.simulation.fail(id)?;
         self.release_task_leases(id);
