@@ -92,3 +92,7 @@ FrameGraph修订参与一致FrameSnapshot；Spatial不拥有Scene或Time可变�
 
 ## 13. 0.0.1 实现范围说明（2026-10-27）
 已开始实现Rust Spatial基础：ReferenceFrameGraph、FrameId注册/删除、单父参考系关系、修订号、显式TimeInstant的刚体变换、四元数归一化、逆变换与链式组合、缺失时间样本拒绝，以及Engine受控参考系注册入口。当前仅支持**精确历元静态样本**，尚未实现TransformProvider、时间插值、速度/角速度导数、缓存和多尺度GPU精度策略。Scene ParentId与Spatial FrameId保持分离。新增测试源码不代表测试已通过；统一项目版本0.0.1。
+
+
+## 14. 动态参考系提供者开发进展（0.0.1）
+已增加Rust `TransformProvider` trait与`ProviderRef`，支持按显式`TimeInstant`查询动态参考系的刚体变换，并允许通过Engine受控注册或替换提供者；替换时FrameGraph修订递增。提供者身份与版本必须非空，返回的刚体变换重新校验。Simulation新增最小任务登记与generation、目标时刻双重有效性检查。当前没有时间区间插值、速度导数、异步调度执行、Proto实现或NASA DYN插件。上述是开发范围记录，不代表运行验收。
