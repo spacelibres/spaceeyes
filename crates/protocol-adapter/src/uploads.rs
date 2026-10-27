@@ -3,7 +3,7 @@
 //! Bounded upload wire mapping; ResourceManager owns bytes and integrity.
 use crate::{generated as p, ProtocolError};
 use spaceeyes_geometry::ColorSpace;
-use spaceeyes_resources::{UploadDescriptor, UploadFormat, UploadSource, UploadStatus};
+use spaceeyes_resources::{ImageCodec, UploadDescriptor, UploadFormat, UploadSource, UploadStatus};
 pub(crate) fn validate_upload_id(id: &str) -> Result<(), ProtocolError> {
     if id.trim().is_empty() || id.len() > crate::limits::MAX_IDENTIFIER_BYTES {
         return Err(ProtocolError::InvalidIdentifier);
@@ -29,6 +29,24 @@ pub(crate) fn decode_descriptor(
                 _ => return Err(ProtocolError::InvalidContext),
             },
         },
+        Ok(p::ResourceUploadFormat::Png | p::ResourceUploadFormat::Jpeg)
+            if value.width == 0 && value.height == 0 =>
+        {
+            UploadFormat::EncodedImage {
+                codec: if p::ResourceUploadFormat::try_from(value.format)
+                    == Ok(p::ResourceUploadFormat::Png)
+                {
+                    ImageCodec::Png
+                } else {
+                    ImageCodec::Jpeg
+                },
+                color_space: match p::TextureColorSpace::try_from(value.color_space) {
+                    Ok(p::TextureColorSpace::Linear) => ColorSpace::Linear,
+                    Ok(p::TextureColorSpace::Srgb) => ColorSpace::Srgb,
+                    _ => return Err(ProtocolError::InvalidContext),
+                },
+            }
+        }
         _ => return Err(ProtocolError::InvalidContext),
     };
     Ok(UploadDescriptor {
@@ -58,6 +76,18 @@ pub(crate) fn encode_status(value: &UploadStatus) -> p::ResourceUploadStatus {
             p::ResourceUploadFormat::Rgba8,
             width,
             height,
+            match color_space {
+                ColorSpace::Linear => p::TextureColorSpace::Linear as i32,
+                ColorSpace::Srgb => p::TextureColorSpace::Srgb as i32,
+            },
+        ),
+        UploadFormat::EncodedImage { codec, color_space } => (
+            match codec {
+                ImageCodec::Png => p::ResourceUploadFormat::Png,
+                ImageCodec::Jpeg => p::ResourceUploadFormat::Jpeg,
+            },
+            0,
+            0,
             match color_space {
                 ColorSpace::Linear => p::TextureColorSpace::Linear as i32,
                 ColorSpace::Srgb => p::TextureColorSpace::Srgb as i32,

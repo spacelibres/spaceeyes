@@ -29,6 +29,7 @@ pub enum ResourceError {
     PermissionDenied,
     InvalidUpload,
     DigestMismatch,
+    InvalidFormat,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ResourceBudget {

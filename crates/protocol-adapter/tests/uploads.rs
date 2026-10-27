@@ -162,3 +162,124 @@ fn upload_wire_retries_authorization_cancellation_and_readonly_queries() {
         p::ErrorCode::InvalidArgument
     );
 }
+
+/// 2x1 opaque RGBA PNG generated once for the wire test.
+const PNG: [u8; 74] = [
+    137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 2, 0, 0, 0, 1, 8, 6, 0,
+    0, 0, 244, 34, 127, 138, 0, 0, 0, 17, 73, 68, 65, 84, 120, 218, 99, 224, 18, 145, 251, 175, 97,
+    100, 243, 31, 0, 9, 65, 2, 209, 105, 103, 96, 84, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+];
+
+fn image_begin(format: p::ResourceUploadFormat) -> p::resource_command::Action {
+    use sha2::{Digest, Sha256};
+    p::resource_command::Action::BeginUpload(p::BeginResourceUpload {
+        resource_id: Some(p::ResourceId {
+            value: "image".into(),
+        }),
+        total_bytes: PNG.len() as u64,
+        source: Some(p::ResourceSource {
+            source_id: "fixture".into(),
+            source_version: "v1".into(),
+            sha256: Sha256::digest(PNG).to_vec(),
+        }),
+        format: format as i32,
+        color_space: p::TextureColorSpace::Srgb as i32,
+        ..Default::default()
+    })
+}
+
+#[test]
+fn encoded_png_upload_is_decoded_and_accounted_by_the_core() {
+    let mut a = ProtocolAdapter::new(
+        CommandDispatcher::new(
+            Engine::new(TimeInstant::new("TT", "test", 0, 0).unwrap()),
+            "uploads".into(),
+            64,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let begun = send(
+        &mut a,
+        "owner",
+        "begin",
+        image_begin(p::ResourceUploadFormat::Png),
+    );
+    assert_eq!(
+        begun.status,
+        p::ResponseStatus::Completed as i32,
+        "{begun:?}"
+    );
+    let p::response_envelope::Payload::Upload(status) = begun.payload.unwrap() else {
+        panic!()
+    };
+    let appended = send(
+        &mut a,
+        "owner",
+        "chunk",
+        p::resource_command::Action::AppendUpload(p::AppendResourceUpload {
+            upload_id: status.upload_id.clone(),
+            offset: 0,
+            data: PNG.to_vec(),
+        }),
+    );
+    assert_eq!(appended.status, p::ResponseStatus::Completed as i32);
+    let finished = send(
+        &mut a,
+        "owner",
+        "finish",
+        p::resource_command::Action::FinishUpload(p::FinishResourceUpload {
+            upload_id: status.upload_id,
+        }),
+    );
+    assert_eq!(
+        finished.status,
+        p::ResponseStatus::Completed as i32,
+        "{finished:?}"
+    );
+    // Two pixels are reserved as decoded RGBA bytes, not as the encoded stream.
+    assert_eq!(a.dispatcher().engine().resource_usage().cpu_bytes, 8);
+    assert_eq!(a.dispatcher().engine().resource_usage().staging_bytes, 0);
+}
+
+#[test]
+fn encoded_upload_codec_must_match_the_stream() {
+    let mut a = ProtocolAdapter::new(
+        CommandDispatcher::new(
+            Engine::new(TimeInstant::new("TT", "test", 0, 0).unwrap()),
+            "uploads".into(),
+            64,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let begun = send(
+        &mut a,
+        "owner",
+        "begin",
+        image_begin(p::ResourceUploadFormat::Jpeg),
+    );
+    let p::response_envelope::Payload::Upload(status) = begun.payload.unwrap() else {
+        panic!()
+    };
+    send(
+        &mut a,
+        "owner",
+        "chunk",
+        p::resource_command::Action::AppendUpload(p::AppendResourceUpload {
+            upload_id: status.upload_id.clone(),
+            offset: 0,
+            data: PNG.to_vec(),
+        }),
+    );
+    let finished = send(
+        &mut a,
+        "owner",
+        "finish",
+        p::resource_command::Action::FinishUpload(p::FinishResourceUpload {
+            upload_id: status.upload_id,
+        }),
+    );
+    assert_eq!(code(finished), p::ErrorCode::InvalidArgument);
+    assert_eq!(a.dispatcher().engine().resource_usage().total_bytes, 0);
+}

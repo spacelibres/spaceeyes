@@ -397,6 +397,8 @@ impl ProtocolAdapter {
                         max_upload_bytes: spaceeyes_resources::MAX_UPLOAD_BYTES,
                         max_upload_chunk_bytes: spaceeyes_resources::MAX_UPLOAD_CHUNK_BYTES as u32,
                         max_active_uploads: spaceeyes_resources::MAX_UPLOAD_SESSIONS as u32,
+                        max_encoded_image_bytes: spaceeyes_resources::MAX_ENCODED_IMAGE_BYTES
+                            as u64,
                         command_history_capacity: dispatcher.command_history_capacity() as u64,
                         command_history_remaining: dispatcher.command_history_remaining() as u64,
                     }),

@@ -12,6 +12,8 @@ pub const MAX_UPLOAD_CHUNK_BYTES: usize = 256 * 1024;
 pub const MAX_UPLOAD_SESSIONS: usize = 4;
 pub const MAX_SOURCE_ID_BYTES: usize = 256;
 pub const MAX_SOURCE_VERSION_BYTES: usize = 128;
+/// Encoded PNG/JPEG streams are bounded more tightly than raw uploads.
+pub const MAX_ENCODED_IMAGE_BYTES: usize = spaceeyes_image_import::MAX_ENCODED_BYTES;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UploadSource {
@@ -32,12 +34,22 @@ impl UploadSource {
         Ok(())
     }
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ImageCodec {
+    Png,
+    Jpeg,
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum UploadFormat {
     Blob,
     Rgba8 {
         width: u32,
         height: u32,
+        color_space: ColorSpace,
+    },
+    /// Bounded PNG/JPEG stream decoded by the core; dimensions are checked after decode.
+    EncodedImage {
+        codec: ImageCodec,
         color_space: ColorSpace,
     },
 }
@@ -92,6 +104,11 @@ impl ResourceManager {
             {
                 return Err(ResourceError::InvalidSize);
             }
+        }
+        if matches!(descriptor.format, UploadFormat::EncodedImage { .. })
+            && bytes > MAX_ENCODED_IMAGE_BYTES as u64
+        {
+            return Err(ResourceError::InvalidSize);
         }
         if self.entries.contains_key(&descriptor.resource_id) {
             return Err(ResourceError::Duplicate);
@@ -266,6 +283,36 @@ impl ResourceManager {
             self.cancel_upload(owner, upload_id)?;
             return Err(error);
         }
+        let decoded = match &session.status.descriptor.format {
+            UploadFormat::EncodedImage { codec, color_space } => {
+                match decode_encoded_image(&session.bytes, *codec, *color_space) {
+                    Ok(texture) => Some(texture),
+                    Err(error) => {
+                        self.cancel_upload(owner, upload_id)?;
+                        return Err(error);
+                    }
+                }
+            }
+            _ => None,
+        };
+        let encoded = session.status.descriptor.total_bytes;
+        let decoded_bytes = decoded
+            .as_ref()
+            .map_or(encoded, |texture| texture.rgba8().len() as u64);
+        let replaced_used = self
+            .used
+            .checked_sub(encoded)
+            .and_then(|value| value.checked_sub(encoded))
+            .and_then(|value| value.checked_add(decoded_bytes));
+        let replaced_cpu = self.by_class[0]
+            .checked_sub(encoded)
+            .and_then(|value| value.checked_add(decoded_bytes));
+        if replaced_used.is_none_or(|used| used > self.limits.total_bytes)
+            || replaced_cpu.is_none_or(|cpu| cpu > self.limits.cpu_bytes)
+        {
+            self.cancel_upload(owner, upload_id)?;
+            return Err(ResourceError::BudgetExceeded);
+        }
         let session = self.uploads.remove(upload_id).expect("validated upload");
         let d = session.status.descriptor;
         let bytes = Arc::unwrap_or_clone(session.bytes);
@@ -284,15 +331,39 @@ impl ResourceManager {
                     TextureData::new(width, height, bytes, color_space).expect("validated texture"),
                 ))
             }
+            UploadFormat::EncodedImage { .. } => {
+                entry.texture = Some(Arc::new(decoded.expect("decoded above")))
+            }
         }
         entry.source = Some(d.source);
         entry.uploading = false;
         entry.state = ResourceState::Ready;
-        self.used -= d.total_bytes;
-        self.by_class[2] -= d.total_bytes;
+        self.used = self.used - encoded - encoded + decoded_bytes;
+        self.by_class[0] = self.by_class[0] - encoded + decoded_bytes;
+        self.by_class[2] -= encoded;
         self.revision += 1;
         Ok(d.resource_id)
     }
+}
+
+fn decode_encoded_image(
+    bytes: &[u8],
+    codec: ImageCodec,
+    color_space: ColorSpace,
+) -> Result<TextureData, ResourceError> {
+    let matches_magic = match codec {
+        ImageCodec::Png => bytes.starts_with(b"\x89PNG\r\n\x1a\n"),
+        ImageCodec::Jpeg => bytes.starts_with(&[0xff, 0xd8]),
+    };
+    if !matches_magic {
+        return Err(ResourceError::InvalidFormat);
+    }
+    let texture = spaceeyes_image_import::decode(bytes, color_space)
+        .map_err(|_| ResourceError::InvalidFormat)?;
+    if texture.width() > MAX_TEXTURE_DIMENSION || texture.height() > MAX_TEXTURE_DIMENSION {
+        return Err(ResourceError::InvalidSize);
+    }
+    Ok(texture)
 }
 
 #[cfg(test)]
@@ -357,5 +428,111 @@ mod tests {
         assert_eq!(r.upload_status("alice", &s.upload_id).unwrap(), s);
         assert_eq!(r.used_bytes(), 2);
         assert!(r.records().is_empty());
+    }
+}
+
+#[cfg(test)]
+mod encoded_image_tests {
+    use super::*;
+    use crate::ResourceBudget;
+    use png::{BitDepth, ColorType, Encoder};
+    use std::io::Cursor;
+
+    fn png(width: u32, height: u32, rgba: [u8; 4]) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        {
+            let mut encoder = Encoder::new(Cursor::new(&mut bytes), width, height);
+            encoder.set_color(ColorType::Rgba);
+            encoder.set_depth(BitDepth::Eight);
+            let mut writer = encoder.write_header().unwrap();
+            let pixels: Vec<u8> = rgba
+                .iter()
+                .copied()
+                .cycle()
+                .take((width * height * 4) as usize)
+                .collect();
+            writer.write_image_data(&pixels).unwrap();
+        }
+        bytes
+    }
+
+    fn descriptor(bytes: &[u8], codec: ImageCodec) -> UploadDescriptor {
+        UploadDescriptor {
+            resource_id: ResourceId::new("image").unwrap(),
+            total_bytes: bytes.len() as u64,
+            source: UploadSource {
+                source_id: "fixture".into(),
+                source_version: "1".into(),
+                sha256: upload_digest(bytes),
+            },
+            format: UploadFormat::EncodedImage {
+                codec,
+                color_space: ColorSpace::Srgb,
+            },
+        }
+    }
+
+    fn upload(r: &mut ResourceManager, bytes: &[u8], codec: ImageCodec) -> UploadStatus {
+        let status = r.begin_upload("alice", descriptor(bytes, codec)).unwrap();
+        r.append_upload("alice", &status.upload_id, 0, bytes)
+            .unwrap()
+    }
+
+    #[test]
+    fn png_upload_decodes_to_an_opaque_texture_with_core_authority() {
+        let bytes = png(2, 1, [10, 20, 30, 255]);
+        let mut r = ResourceManager::new(ResourceBudget { max_bytes: 4096 });
+        let status = upload(&mut r, &bytes, ImageCodec::Png);
+        let id = r.finish_upload("alice", &status.upload_id).unwrap();
+        assert_eq!(r.state(&id), Some(ResourceState::Ready));
+        assert_eq!(r.used_bytes(), 8, "decoded bytes replace staging");
+        let lease = r.lease(&id).unwrap();
+        let texture = r.read_texture(&lease).unwrap();
+        assert_eq!((texture.width(), texture.height()), (2, 1));
+        assert_eq!(texture.rgba8(), &[10, 20, 30, 255, 10, 20, 30, 255]);
+        assert_eq!(texture.color_space(), ColorSpace::Srgb);
+    }
+
+    #[test]
+    fn declared_codec_must_match_the_actual_stream() {
+        let bytes = png(1, 1, [1, 2, 3, 255]);
+        let mut r = ResourceManager::new(ResourceBudget { max_bytes: 4096 });
+        let status = upload(&mut r, &bytes, ImageCodec::Jpeg);
+        assert_eq!(
+            r.finish_upload("alice", &status.upload_id),
+            Err(ResourceError::InvalidFormat)
+        );
+        assert_eq!(
+            r.upload_status("alice", &status.upload_id),
+            Err(ResourceError::InvalidUpload)
+        );
+        assert_eq!(r.used_bytes(), 0, "failed decode releases the reservation");
+    }
+
+    #[test]
+    fn decoded_size_must_fit_the_budget_not_only_the_encoded_size() {
+        let bytes = png(500, 500, [9, 9, 9, 255]);
+        let budget = bytes.len() as u64 + 4096;
+        let mut r = ResourceManager::new(ResourceBudget { max_bytes: budget });
+        let status = upload(&mut r, &bytes, ImageCodec::Png);
+        assert_eq!(
+            r.finish_upload("alice", &status.upload_id),
+            Err(ResourceError::BudgetExceeded)
+        );
+        assert_eq!(r.used_bytes(), 0);
+    }
+
+    #[test]
+    fn encoded_uploads_are_bounded_by_the_encoded_limit() {
+        let bytes = png(1, 1, [0, 0, 0, 255]);
+        let mut descriptor = descriptor(&bytes, ImageCodec::Png);
+        descriptor.total_bytes = MAX_ENCODED_IMAGE_BYTES as u64 + 1;
+        let mut r = ResourceManager::new(ResourceBudget {
+            max_bytes: MAX_ENCODED_IMAGE_BYTES as u64 * 2,
+        });
+        assert_eq!(
+            r.begin_upload("alice", descriptor),
+            Err(ResourceError::InvalidSize)
+        );
     }
 }

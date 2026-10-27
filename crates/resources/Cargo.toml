@@ -6,5 +6,9 @@ license.workspace = true
 repository.workspace = true
 [dependencies]
 spaceeyes-geometry = { path = "../geometry" }
+spaceeyes-image-import = { path = "../image-import" }
 spaceeyes-foundation = { path = "../foundation" }
 sha2 = "=0.11.0"
+
+[dev-dependencies]
+png = "0.18.1"

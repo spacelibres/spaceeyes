@@ -143,3 +143,6 @@ M3-1b幂等清理约束：上传块历史只保留会话/偏移/长度/SHA-256�
 ## C09受控缓存与LRU淘汰切片（0.0.1增量）
 ResourceManager记录每次租用的单调访问序，`evict_lru(target_bytes)`按最久未用顺序淘汰满足条件的资源：仅Cpu类别、Ready、非上传中、无租约。淘汰只移除管理器记录并更新字节/修订；旧FrameSnapshot或调用方持有的Arc数据仍可继续读取，但新租用失败。声明、加载中、GPU/Staging与上传会话不参与淘汰。Engine提供`evict_resource_cache`，Stopped拒绝，Scene对象租约使资源保持不可淘汰。
 本切片不自动在预算压力下触发淘汰，也不提供Proto命令；宿主/后续策略需显式调用。网络/磁盘I/O、墙钟超时、持有者链与重建信息、淘汰事件仍属C09后续。
+
+## C09 受控PNG/JPEG上传解码（0.0.1增量）
+上传格式新增`EncodedImage{codec,color_space}`与Proto值`RESOURCE_UPLOAD_FORMAT_PNG=3`、`JPEG=4`；编码流上限8MiB（`max_encoded_image_bytes`），尺寸、解码与不透明校验由核心`spaceeyes-image-import`执行，声明编解码器必须与实际魔数一致，否则`InvalidFormat`并取消上传。解码成功后按**解码后**RGBA字节计费：CPU占用替换上传暂存预留，若解码尺寸仍超出总额/CPU预算则取消并返回`BudgetExceeded`，不接受只按压缩体积计费。仍然只支持8位不透明PNG/JPEG；ICC转换、动画、16位、透明与网络/磁盘I/O仍未实现，宿主须继续提供来源与摘要。

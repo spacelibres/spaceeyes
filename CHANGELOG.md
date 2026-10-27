@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 受控 PNG/JPEG 上传解码（C09 切片）
+- 上传格式新增 `EncodedImage`（Proto PNG=3/JPEG=4）与 8 MiB 上限及 `max_encoded_image_bytes` 能力。
+- 核心用 `image-import` 解码，声明 codec 必须匹配实际魔数，失败返回 `InvalidFormat` 并释放预留。
+- 完成上传按解码后 RGBA 字节重新计费；超出 CPU/总额预算则取消并返回 `BudgetExceeded`，不只按压缩体积计费。
+- 验证：resources 4 项编码上传测试、protocol-adapter 2 项 wire 上传通过。
+
+
 ### 项目文件容器与完整性校验（C11 切片）
 - 新增 v1 项目文件格式：魔数、格式版本、载荷长度、SHA-256 摘要与 `ProjectSnapshot` 载荷，上限 16 MiB；截断、尾随字节、篡改与未知版本分别拒绝。
 - 原始 protobuf 不再作为可信文件；`WasmEngine.from_project` 先校验容器，新增 `encodeProjectFile` 供浏览器保存封装。

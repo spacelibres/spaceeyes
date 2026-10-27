@@ -14,7 +14,7 @@ message ResourceStatsQuery {}
 
 // SHA-256 verifies bytes, not the scientific authority of source labels.
 message ResourceSource { string source_id=1; string source_version=2; bytes sha256=3; }
-enum ResourceUploadFormat { RESOURCE_UPLOAD_FORMAT_UNSPECIFIED=0; RESOURCE_UPLOAD_FORMAT_BYTES=1; RESOURCE_UPLOAD_FORMAT_RGBA8=2; }
+enum ResourceUploadFormat { RESOURCE_UPLOAD_FORMAT_UNSPECIFIED=0; RESOURCE_UPLOAD_FORMAT_BYTES=1; RESOURCE_UPLOAD_FORMAT_RGBA8=2; RESOURCE_UPLOAD_FORMAT_PNG=3; RESOURCE_UPLOAD_FORMAT_JPEG=4; }
 message BeginResourceUpload { ResourceId resource_id=1; uint64 total_bytes=2; ResourceSource source=3; ResourceUploadFormat format=4; uint32 width=5; uint32 height=6; TextureColorSpace color_space=7; }
 message AppendResourceUpload { string upload_id=1; uint64 offset=2; bytes data=3; }
 message FinishResourceUpload { string upload_id=1; }

@@ -45,7 +45,7 @@ message PresentedSelection { uint64 frame_sequence=1; uint64 scene_revision=2; S
 message CapabilitiesQuery {}
 // Support is not authorization or current lifecycle availability.
 message Capabilities { ProtocolVersion protocol_version=1; repeated string operations=2; ProtocolLimits limits=3; bool browser_surface=4; }
-message ProtocolLimits { uint32 max_message_bytes=1; uint32 max_identifier_bytes=2; uint32 max_scene_commands=3; uint32 max_object_resources=4; uint32 max_texture_dimension=5; uint32 max_mesh_vertices=6; uint32 max_mesh_indices=7; uint64 command_history_capacity=8; uint64 command_history_remaining=9; uint32 max_canvas_dimension=10; uint64 max_frame_elapsed_nanos=11; uint64 max_resource_total_bytes=12; uint64 max_resource_cpu_bytes=13; uint64 max_resource_gpu_bytes=14; uint64 max_resource_staging_bytes=15; uint64 max_upload_bytes=16; uint32 max_upload_chunk_bytes=17; uint32 max_active_uploads=18; }
+message ProtocolLimits { uint32 max_message_bytes=1; uint32 max_identifier_bytes=2; uint32 max_scene_commands=3; uint32 max_object_resources=4; uint32 max_texture_dimension=5; uint32 max_mesh_vertices=6; uint32 max_mesh_indices=7; uint64 command_history_capacity=8; uint64 command_history_remaining=9; uint32 max_canvas_dimension=10; uint64 max_frame_elapsed_nanos=11; uint64 max_resource_total_bytes=12; uint64 max_resource_cpu_bytes=13; uint64 max_resource_gpu_bytes=14; uint64 max_resource_staging_bytes=15; uint64 max_upload_bytes=16; uint32 max_upload_chunk_bytes=17; uint32 max_active_uploads=18; uint64 max_encoded_image_bytes=20; }
 
 // Trusted host infrastructure route. Not a plugin command or retryable history entry.
 message HostFrameEnvelope { RequestContext context=1; HostFrame frame=30; }

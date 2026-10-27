@@ -1290,9 +1290,11 @@ dependencies = [
 name = "spaceeyes-resources"
 version = "0.0.1"
 dependencies = [
+ "png",
  "sha2",
  "spaceeyes-foundation",
  "spaceeyes-geometry",
+ "spaceeyes-image-import",
 ]
 
 [[package]]
