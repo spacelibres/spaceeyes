@@ -12,6 +12,10 @@ pub enum Command {
         expected_revision: Revision,
         commands: Vec<SceneCommand>,
     },
+    RegisterMesh {
+        id: spaceeyes_foundation::ResourceId,
+        mesh: spaceeyes_geometry::TriangleMesh,
+    },
     Play,
     Pause,
     SetRate(spaceeyes_time::PlaybackRate),
@@ -27,12 +31,14 @@ pub enum DispatchError {
     Overflow,
     StaleGeneration,
     Domain(CoreError),
+    Resource(crate::ResourceError),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CommandReceipt {
     pub command_sequence: u64,
     pub frame_sequence: u64,
     pub scene_revision: Revision,
+    pub resource_revision: u64,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CommitEvent {
@@ -121,8 +127,13 @@ impl CommandDispatcher {
             .ok_or(DispatchError::Overflow)?;
         let result = if generation.is_some_and(|g| g != self.engine.clock().generation()) {
             Err(DispatchError::StaleGeneration)
+        } else if let Command::RegisterMesh { id, mesh } = &command {
+            self.engine
+                .register_mesh_resource(id.clone(), mesh.clone())
+                .map_err(DispatchError::Resource)
         } else {
             match &command {
+                Command::RegisterMesh { .. } => unreachable!("handled above"),
                 Command::Scene {
                     expected_revision,
                     commands,
@@ -142,6 +153,7 @@ impl CommandDispatcher {
             command_sequence: sequence,
             frame_sequence: self.engine.snapshot().sequence,
             scene_revision: self.engine.scene().revision(),
+            resource_revision: self.engine.snapshot().resource_revision,
         });
         self.sequence = sequence;
         if let Ok(receipt) = &result {

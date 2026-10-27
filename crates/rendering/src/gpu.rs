@@ -108,8 +108,16 @@ impl GpuRenderer {
             .ok()
             .and_then(|n| n.checked_mul(mesh::SPHERE_DRAW_VERTICES))
             .ok_or(RenderError::Budget)?;
+        let mesh_vertices = frame
+            .meshes
+            .iter()
+            .try_fold(0u32, |n, draw| {
+                n.checked_add(u32::try_from(draw.geometry.indices().len()).ok()?)
+            })
+            .ok_or(RenderError::Budget)?;
         let vertices = marker_vertices
             .checked_add(sphere_vertices)
+            .and_then(|n| n.checked_add(mesh_vertices))
             .ok_or(RenderError::Budget)?;
         let vertex_bytes = u64::from(vertices.max(1)) * 40;
         if vertex_bytes > self.device.limits().max_buffer_size {
@@ -179,6 +187,29 @@ impl GpuRenderer {
                         sphere.base_color,
                     );
                 }
+            }
+        }
+        for draw in &frame.meshes {
+            if !draw
+                .base_color
+                .iter()
+                .all(|c| c.is_finite() && (0.0..=1.0).contains(c))
+            {
+                return Err(RenderError::InvalidFrame);
+            }
+            let rotation = spaceeyes_spatial::RigidTransform::new(
+                spaceeyes_spatial::Vec3d::ZERO,
+                draw.object_to_camera.rotation,
+            )
+            .map_err(|_| RenderError::InvalidFrame)?;
+            for &index in draw.geometry.indices() {
+                let [x, y, z] = draw.geometry.vertices()[index as usize].normal();
+                let normal = rotation.apply(spaceeyes_spatial::Vec3d { x, y, z });
+                append(
+                    frame.projection.clip(draw.point(index))?,
+                    [normal.x as f32, normal.y as f32, normal.z as f32],
+                    draw.base_color,
+                );
             }
         }
         if data.is_empty() {

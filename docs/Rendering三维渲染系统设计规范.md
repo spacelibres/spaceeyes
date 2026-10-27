@@ -83,3 +83,6 @@ prepare_camera从同一FrameSnapshot读取相机组件和该对象的时刻相�
 
 ### 资源所有权提交前核查
 Native绘制改为Engine::render_rgba8协调，由Engine内部唯一ResourceManager登记和回收离屏颜色/深度/回读/顶点占用。Renderer只接收核心内部借用，宿主没有可变资源注册表入口；Native不创建第二套资源权威。Engine正常依赖Rendering，Rendering及其测试不反向依赖Engine；可选gpu feature控制设备适配，默认核心/WASM字节桥不要求GPU。新增集成测试确认绘制仅在Running允许、长期资源在帧结束后仍保留、临时占用回收并更新帧修订。
+
+## 0.0.1通用不透明三角网格
+读取FrameSnapshot的只读MeshAsset与对象参考系姿态，先f64相机相对刚体变换，再生成现有透视裁剪顶点。法线只施加旋转，不加平移；本轮不支持缩放/骨骼。网格、球体及标记共用同一不透明深度管线与临时GPU预算；拾取使用同一顶点/索引及变换，比较所有图元最近有效深度。新增Mesh资源Proto入口，不在Scene或Renderer建立第二套资产注册表；纹理、透明、复杂材质和模型文件导入仍不属于本轮。

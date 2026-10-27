@@ -6,6 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     prost_build::Config::new().compile_protos(
         &[
             "../../proto/spaceeyes/core/v1/common.proto",
+            "../../proto/spaceeyes/core/v1/resources.proto",
             "../../proto/spaceeyes/core/v1/spatial.proto",
             "../../proto/spaceeyes/core/v1/rendering.proto",
             "../../proto/spaceeyes/core/v1/scene.proto",

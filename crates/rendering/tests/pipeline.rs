@@ -11,6 +11,7 @@ fn frame() -> FrameSnapshot {
     let id = ObjectId::new("marker").unwrap();
     scene.create(SceneObject::new(id.clone())).unwrap();
     FrameSnapshot {
+        meshes: vec![],
         sequence: 1,
         scene: scene.snapshot(),
         clock: SimulationClock::new(TimeInstant::new("TT", "epoch", 0, 0).unwrap()).snapshot(),

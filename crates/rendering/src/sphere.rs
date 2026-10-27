@@ -36,6 +36,7 @@ impl Perspective {
         }
         Ok(result)
     }
+    #[cfg(all(feature = "gpu", not(target_arch = "wasm32")))]
     pub(crate) fn clip(self, p: [f64; 3]) -> Result<[f32; 4], RenderError> {
         let d = -p[2];
         let a = self.far / (self.far - self.near);
@@ -61,6 +62,9 @@ impl Perspective {
     }
     pub(crate) fn far(self) -> f64 {
         self.far
+    }
+    pub(crate) fn ray(self, x: f64, y: f64) -> [f64; 3] {
+        [x * self.half * self.aspect, y * self.half, -1.0]
     }
     pub(crate) fn pick_depth(
         self,
@@ -103,7 +107,7 @@ fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
         a[0] * b[1] - a[1] * b[0],
     ]
 }
-fn ray_triangle(ray: [f64; 3], a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> Option<f64> {
+pub(crate) fn ray_triangle(ray: [f64; 3], a: [f64; 3], b: [f64; 3], c: [f64; 3]) -> Option<f64> {
     let e1 = sub(b, a);
     let e2 = sub(c, a);
     let p = cross(ray, e2);

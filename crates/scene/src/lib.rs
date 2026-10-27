@@ -9,6 +9,8 @@ mod camera;
 pub use camera::CameraState;
 mod sphere;
 pub use sphere::Sphere;
+mod mesh;
+pub use mesh::MeshInstance;
 static NEXT_REGISTRY: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -27,6 +29,7 @@ pub struct SceneObject {
     resources: Vec<ResourceId>,
     camera: Option<CameraState>,
     sphere: Option<Sphere>,
+    mesh: Option<MeshInstance>,
 }
 impl SceneObject {
     pub fn new(id: ObjectId) -> Self {
@@ -38,6 +41,7 @@ impl SceneObject {
             resources: Vec::new(),
             camera: None,
             sphere: None,
+            mesh: None,
         }
     }
     pub fn id(&self) -> &ObjectId {
@@ -52,6 +56,18 @@ impl SceneObject {
     pub fn resources(&self) -> &[ResourceId] {
         &self.resources
     }
+    pub fn mesh(&self) -> Option<&MeshInstance> {
+        self.mesh.as_ref()
+    }
+    pub fn resource_refs(&self) -> Vec<&ResourceId> {
+        let mut refs: Vec<_> = self.resources.iter().collect();
+        if let Some(mesh) = &self.mesh {
+            if !refs.contains(&mesh.geometry()) {
+                refs.push(mesh.geometry());
+            }
+        }
+        refs
+    }
     pub fn sphere(&self) -> Option<&Sphere> {
         self.sphere.as_ref()
     }
@@ -65,6 +81,10 @@ impl SceneObject {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SceneCommand {
+    SetMesh {
+        object: ObjectId,
+        mesh: Option<MeshInstance>,
+    },
     SetSphere {
         object: ObjectId,
         sphere: Option<Sphere>,
@@ -183,6 +203,12 @@ impl Scene {
         let mut proposed = self.objects.clone();
         for command in commands {
             match command {
+                SceneCommand::SetMesh { object, mesh } => {
+                    proposed
+                        .get_mut(object)
+                        .ok_or(CoreError::UnknownObject)?
+                        .mesh = mesh.clone();
+                }
                 SceneCommand::SetSphere { object, sphere } => {
                     proposed
                         .get_mut(object)
@@ -271,7 +297,11 @@ impl Scene {
         }
         // Create may contain a cloned object's relationships; validate those too.
         for object in proposed.values() {
-            if object.camera.is_some() && object.sphere.is_some() {
+            if usize::from(object.camera.is_some())
+                + usize::from(object.sphere.is_some())
+                + usize::from(object.mesh.is_some())
+                > 1
+            {
                 return Err(CoreError::InvalidState);
             }
             let mut cursor = object.parent.as_ref();

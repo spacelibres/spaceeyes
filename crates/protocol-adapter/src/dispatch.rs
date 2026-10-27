@@ -7,7 +7,7 @@ use crate::{
 use prost::Message;
 use spaceeyes_engine::{Command, CommandDispatcher, DispatchError};
 use spaceeyes_foundation::{CoreError, Revision};
-use spaceeyes_scene::{CameraState, SceneCommand, SceneObject, Sphere};
+use spaceeyes_scene::{CameraState, MeshInstance, SceneCommand, SceneObject, Sphere};
 
 pub struct ProtocolAdapter {
     dispatcher: CommandDispatcher,
@@ -97,6 +97,16 @@ impl ProtocolAdapter {
                     commands: scene_commands(transaction.commands)?,
                 }
             }
+            p::command_envelope::Payload::Resource(command) => {
+                let p::resource_command::Action::RegisterMesh(command) =
+                    command.action.ok_or(ProtocolError::MissingField)?;
+                Command::RegisterMesh {
+                    id: decode_resource_id(
+                        command.resource_id.ok_or(ProtocolError::MissingField)?,
+                    )?,
+                    mesh: decode_mesh_geometry(command.mesh.ok_or(ProtocolError::MissingField)?)?,
+                }
+            }
             p::command_envelope::Payload::Time(command) => {
                 match command.action.ok_or(ProtocolError::MissingField)? {
                     p::time_command::Action::Play(_) => Command::Play,
@@ -130,6 +140,12 @@ impl ProtocolAdapter {
                 }
             }
         };
+        let resource_id = match &command {
+            Command::RegisterMesh { id, .. } => Some(p::ResourceId {
+                value: id.as_str().to_owned(),
+            }),
+            _ => None,
+        };
         // The generation precondition is included in dispatcher history semantics below.
         let result = self.dispatcher.submit_with_generation(
             &context.session_id,
@@ -148,9 +164,16 @@ impl ProtocolAdapter {
                 response.command_sequence = receipt.command_sequence;
                 response.committed_scene_revision = receipt.scene_revision.0;
                 response.frame_sequence = receipt.frame_sequence;
-                response.payload = Some(p::response_envelope::Payload::Scene(p::SceneResponse {
-                    revision: receipt.scene_revision.0,
-                }));
+                response.payload = Some(if let Some(resource_id) = resource_id {
+                    p::response_envelope::Payload::Resource(p::ResourceResponse {
+                        resource_id: Some(resource_id),
+                        resource_revision: receipt.resource_revision,
+                    })
+                } else {
+                    p::response_envelope::Payload::Scene(p::SceneResponse {
+                        revision: receipt.scene_revision.0,
+                    })
+                });
             }
             Err(error) => {
                 response.status = p::ResponseStatus::Rejected as i32;
@@ -162,6 +185,9 @@ impl ProtocolAdapter {
                     }
                     DispatchError::Domain(CoreError::UnknownFrame) => p::ErrorCode::UnknownFrame,
                     DispatchError::Domain(CoreError::UnknownObject) => p::ErrorCode::UnknownObject,
+                    DispatchError::Resource(spaceeyes_resources::ResourceError::BudgetExceeded) => {
+                        p::ErrorCode::ResourceExceeded
+                    }
                     DispatchError::HistoryFull => p::ErrorCode::ResourceExceeded,
                     _ => p::ErrorCode::InvalidArgument,
                 };
@@ -216,6 +242,12 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
                 if object.resources.len() > 256 {
                     return Err(ProtocolError::MessageTooLarge);
                 }
+                if let Some(mesh) = object.mesh {
+                    output.push(SceneCommand::SetMesh {
+                        object: id.clone(),
+                        mesh: Some(decode_mesh_instance(mesh)?),
+                    });
+                }
                 if let Some(sphere) = object.sphere {
                     output.push(SceneCommand::SetSphere {
                         object: id.clone(),
@@ -244,6 +276,10 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
             Action::SetSphere(c) => output.push(SceneCommand::SetSphere {
                 object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
                 sphere: c.sphere.map(decode_sphere).transpose()?,
+            }),
+            Action::SetMesh(c) => output.push(SceneCommand::SetMesh {
+                object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
+                mesh: c.mesh.map(decode_mesh_instance).transpose()?,
             }),
             Action::Remove(c) => output.push(SceneCommand::Delete {
                 object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
@@ -326,6 +362,63 @@ pub fn encode_sphere(sphere: &Sphere) -> p::SpherePrimitive {
     let [r, g, b] = sphere.base_color();
     p::SpherePrimitive {
         radius_m: sphere.radius_m(),
+        base_color: Some(p::ColorRgb { r, g, b }),
+    }
+}
+
+pub fn decode_mesh_geometry(
+    mesh: p::TriangleMesh,
+) -> Result<spaceeyes_geometry::TriangleMesh, ProtocolError> {
+    use spaceeyes_geometry::{TriangleMesh, Vertex, MAX_INDICES, MAX_VERTICES};
+    if mesh.vertices.len() > MAX_VERTICES || mesh.indices.len() > MAX_INDICES {
+        return Err(ProtocolError::MessageTooLarge);
+    }
+    let vertices = mesh
+        .vertices
+        .into_iter()
+        .map(|v| {
+            let p = v.position_m.ok_or(ProtocolError::MissingField)?;
+            let n = v.normal.ok_or(ProtocolError::MissingField)?;
+            Vertex::new([p.x, p.y, p.z], [n.x, n.y, n.z]).map_err(|_| ProtocolError::InvalidContext)
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    TriangleMesh::new(vertices, mesh.indices).map_err(|_| ProtocolError::InvalidContext)
+}
+pub fn encode_mesh_geometry(mesh: &spaceeyes_geometry::TriangleMesh) -> p::TriangleMesh {
+    p::TriangleMesh {
+        vertices: mesh
+            .vertices()
+            .iter()
+            .map(|v| {
+                let [x, y, z] = v.position_m();
+                let [nx, ny, nz] = v.normal();
+                p::MeshVertex {
+                    position_m: Some(p::Vector3d { x, y, z }),
+                    normal: Some(p::Vector3d {
+                        x: nx,
+                        y: ny,
+                        z: nz,
+                    }),
+                }
+            })
+            .collect(),
+        indices: mesh.indices().to_vec(),
+    }
+}
+pub fn decode_mesh_instance(mesh: p::MeshInstance) -> Result<MeshInstance, ProtocolError> {
+    let color = mesh.base_color.ok_or(ProtocolError::MissingField)?;
+    MeshInstance::new(
+        decode_resource_id(mesh.geometry.ok_or(ProtocolError::MissingField)?)?,
+        [color.r, color.g, color.b],
+    )
+    .map_err(|_| ProtocolError::InvalidContext)
+}
+pub fn encode_mesh_instance(mesh: &MeshInstance) -> p::MeshInstance {
+    let [r, g, b] = mesh.base_color();
+    p::MeshInstance {
+        geometry: Some(p::ResourceId {
+            value: mesh.geometry().as_str().to_owned(),
+        }),
         base_color: Some(p::ColorRgb { r, g, b }),
     }
 }

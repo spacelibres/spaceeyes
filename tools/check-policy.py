@@ -45,7 +45,7 @@ def walk(node):
     visited.add(node)
 for node in graph:
     walk(node)
-for name in ['foundation', 'time', 'scene', 'spatial', 'resources', 'rendering', 'snapshot', 'simulation']:
+for name in ['foundation', 'geometry', 'time', 'scene', 'spatial', 'resources', 'rendering', 'snapshot', 'simulation']:
     assert root / 'crates/engine' not in graph[root / f'crates/{name}'], f'{name}: reverse Engine dependency'
 source_files = [p for folder in packages for p in folder.rglob('*.rs')]
 source_files += list((root / 'proto').rglob('*.proto')) + list((root / 'crates/rendering/src').glob('*.wgsl'))

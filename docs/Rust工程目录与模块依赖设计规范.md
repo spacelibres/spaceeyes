@@ -132,3 +132,6 @@ SceneSnapshot和FrameSnapshot的不可变值类型可以放在foundation或独�
 
 
 > 版本同步记录（2026-10-27）：随首次Rust核心开发启动，本受控文档升级至0.0.1。历史规划记录不改写。
+
+## 0.0.1 geometry实现切片
+新增geometry crate仅依赖foundation，提供通过构造器验证的不可变TriangleMesh/Vertex领域值。Resources拥有网格，snapshot共享只读值，Rendering只消费它们，Engine统一协调。geometry不依赖Proto、渲染器、宿主或NASA数据；Protobuf适配仍留在外层，正常crate依赖保持无环。

@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+import "spaceeyes/core/v1/rendering.proto";
+message RegisterMeshResource { ResourceId resource_id=1; TriangleMesh mesh=2; }
+message ResourceCommand { oneof action { RegisterMeshResource register_mesh=1; } }
+message ResourceResponse { ResourceId resource_id=1; uint64 resource_revision=2; }

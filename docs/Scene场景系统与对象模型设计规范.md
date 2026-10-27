@@ -107,3 +107,6 @@ Engine生命周期与SceneObject生命周期分别定义；Paused只属于Time�
 
 ## 0.0.1球体显示组件
 SceneObject可选Sphere组件通过SetSphere命令新增、更新或移除；参数构造时校验正有限半径及[0,1]有限线性RGB。组件保持只读，随SceneSnapshot与ProjectState保存。一个对象本轮不能同时作为相机和球体；事务最终校验，失败全量回滚。Engine要求新设球体引用显式FrameId，参考系撤销后仍按原规则unresolved。没有Sphere的普通对象保留原有标记显示。
+
+## 0.0.1通用网格显示引用
+MeshInstance是可选只读组件，保存geometry ResourceId与有限线性RGB基色，经SetMesh事务更新或移除。Mesh/Sphere/Camera本轮互斥；网格本地坐标经对象FrameId刚体变换，ParentId不参与物理变换。组件引用隐式参与对象资源租约并与显式资源引用去重；新引用必须是已登记的TriangleMesh，不接受裸字节或占位资源。缺少/错误引用使整批事务失败。MeshInstance随SceneSnapshot和内部ProjectState保留。

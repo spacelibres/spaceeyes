@@ -313,3 +313,87 @@ fn sphere_wire_command_roundtrip_and_invalid_geometry_roll_back() {
     })
     .is_err());
 }
+#[test]
+fn mesh_resource_wire_registration_is_validated_and_replays_original_receipt() {
+    use spaceeyes_foundation::{FrameId, ResourceId};
+    use spaceeyes_geometry::{TriangleMesh, Vertex};
+    use spaceeyes_protocol_adapter::{
+        decode_mesh_geometry, encode_mesh_geometry, encode_mesh_instance,
+    };
+    use spaceeyes_scene::MeshInstance;
+    let geometry = TriangleMesh::new(
+        [[-1.0, -1.0, 0.0], [1.0, -1.0, 0.0], [0.0, 1.0, 0.0]]
+            .into_iter()
+            .map(|p| Vertex::new(p, [0.0, 0.0, 1.0]).unwrap())
+            .collect(),
+        vec![0, 1, 2],
+    )
+    .unwrap();
+    assert_eq!(
+        decode_mesh_geometry(encode_mesh_geometry(&geometry)).unwrap(),
+        geometry
+    );
+    let mut engine = Engine::new(TimeInstant::new("TT", "epoch", 0, 0).unwrap());
+    engine
+        .register_root_frame(FrameId::new("root").unwrap())
+        .unwrap();
+    let mut a = ProtocolAdapter::new(CommandDispatcher::new(engine, "session".into(), 20).unwrap())
+        .unwrap();
+    let mut registration = request("geometry");
+    registration.payload = Some(p::command_envelope::Payload::Resource(p::ResourceCommand {
+        action: Some(p::resource_command::Action::RegisterMesh(
+            p::RegisterMeshResource {
+                resource_id: Some(p::ResourceId {
+                    value: "quad".into(),
+                }),
+                mesh: Some(encode_mesh_geometry(&geometry)),
+            },
+        )),
+    }));
+    let first = send(&mut a, registration.clone());
+    assert_eq!(first.status, p::ResponseStatus::Completed as i32);
+    assert!(matches!(
+        first.payload,
+        Some(p::response_envelope::Payload::Resource(_))
+    ));
+    let mut second = registration.clone();
+    second.context.as_mut().unwrap().request_id = "geometry2".into();
+    if let Some(p::command_envelope::Payload::Resource(c)) = &mut second.payload {
+        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap();
+        c.resource_id.as_mut().unwrap().value = "other".into();
+    }
+    assert_eq!(
+        send(&mut a, second).status,
+        p::ResponseStatus::Completed as i32
+    );
+    assert_eq!(send(&mut a, registration.clone()), first);
+    let mut create = request("instance");
+    if let Some(p::command_envelope::Payload::Scene(c)) = &mut create.payload {
+        if let Some(p::scene_command::Action::Create(c)) = &mut c.action {
+            let object = c.object.as_mut().unwrap();
+            object.frame_id = Some(p::FrameId {
+                value: "root".into(),
+            });
+            object.mesh = Some(encode_mesh_instance(
+                &MeshInstance::new(ResourceId::new("quad").unwrap(), [1.0, 0.0, 0.0]).unwrap(),
+            ));
+        }
+    }
+    assert_eq!(
+        send(&mut a, create).status,
+        p::ResponseStatus::Completed as i32
+    );
+    let mut invalid = registration;
+    invalid.context.as_mut().unwrap().request_id = "invalid".into();
+    if let Some(p::command_envelope::Payload::Resource(c)) = &mut invalid.payload {
+        let p::resource_command::Action::RegisterMesh(c) = c.action.as_mut().unwrap();
+        c.resource_id.as_mut().unwrap().value = "bad".into();
+        c.mesh.as_mut().unwrap().indices = vec![0, 1, 99];
+    }
+    let before = a.dispatcher().snapshot();
+    assert_eq!(
+        send(&mut a, invalid).status,
+        p::ResponseStatus::Rejected as i32
+    );
+    assert_eq!(a.dispatcher().snapshot(), before);
+}

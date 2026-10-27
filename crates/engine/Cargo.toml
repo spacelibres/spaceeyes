@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 [dependencies]
+spaceeyes-geometry = { path = "../geometry" }
 spaceeyes-rendering = { path = "../rendering" }
 spaceeyes-snapshot = { path = "../snapshot" }
 spaceeyes-foundation = { path = "../foundation" }

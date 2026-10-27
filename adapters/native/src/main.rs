@@ -2,9 +2,10 @@
 // Copyright (c) 2026 SPACEEYES contributors
 //! Headless prototype host; no second simulation state, no NASA or assumed scientific epoch.
 use spaceeyes_engine::Engine;
-use spaceeyes_foundation::{FrameId, ObjectId, Revision};
+use spaceeyes_foundation::{FrameId, ObjectId, ResourceId, Revision};
+use spaceeyes_geometry::{TriangleMesh, Vertex};
 use spaceeyes_rendering::{gpu::GpuRenderer, prepare_camera};
-use spaceeyes_scene::{CameraState, SceneCommand, SceneObject, Sphere};
+use spaceeyes_scene::{CameraState, MeshInstance, SceneCommand, SceneObject, Sphere};
 use spaceeyes_spatial::{FrameSample, Quatd, RigidTransform, Vec3d};
 use spaceeyes_time::TimeInstant;
 use std::io::Write;
@@ -66,6 +67,46 @@ fn run() -> Result<(), String> {
             )
             .map_err(|e| format!("{e:?}"))?;
     }
+    let geometry = ResourceId::new("demo:pyramid-geometry").unwrap();
+    engine
+        .register_mesh_resource(geometry.clone(), pyramid()?)
+        .map_err(|e| format!("{e:?}"))?;
+    let object = ObjectId::new("demo:pyramid").unwrap();
+    let frame = FrameId::new("demo:pyramid-frame").unwrap();
+    engine
+        .register_child_frame(
+            frame.clone(),
+            root.clone(),
+            FrameSample {
+                instant: instant.clone(),
+                to_parent: RigidTransform::new(
+                    Vec3d {
+                        x: 2.5,
+                        y: 1.6,
+                        z: -6.5,
+                    },
+                    Quatd::IDENTITY,
+                )
+                .unwrap(),
+            },
+        )
+        .map_err(|e| format!("{e:?}"))?;
+    engine
+        .submit_scene(
+            engine.scene().revision(),
+            &[
+                SceneCommand::Create(SceneObject::new(object.clone())),
+                SceneCommand::SetFrame {
+                    object: object.clone(),
+                    frame: Some(frame),
+                },
+                SceneCommand::SetMesh {
+                    object,
+                    mesh: Some(MeshInstance::new(geometry, [0.75, 0.3, 0.95]).unwrap()),
+                },
+            ],
+        )
+        .map_err(|e| format!("{e:?}"))?;
     let yaw_degrees = std::env::args()
         .nth(2)
         .unwrap_or_else(|| "0".into())
@@ -104,13 +145,18 @@ fn run() -> Result<(), String> {
         .map_err(|e| format!("{e:?}"))?;
     engine.start().map_err(|e| format!("{e:?}"))?;
     let snapshot = engine.publish_frame(&root).map_err(|e| format!("{e:?}"))?;
-    assert_eq!(snapshot.scene.revision, Revision(4));
+    assert_eq!(snapshot.scene.revision, Revision(5));
+    let asset_bytes = engine.resource_used_bytes();
     let prepared = prepare_camera(&snapshot, &camera_id, 1.0).map_err(|e| format!("{e:?}"))?;
     let renderer = pollster::block_on(GpuRenderer::new()).map_err(|e| format!("{e:?}"))?;
     let pixels = engine
         .render_rgba8(&renderer, &root, &camera_id, 512, 512)
         .map_err(|e| format!("{e:?}"))?;
     let remaining_bytes = engine.resource_used_bytes();
+    assert_eq!(
+        remaining_bytes, asset_bytes,
+        "drawing must preserve assets and reclaim only GPU scratch"
+    );
     let mut file = std::fs::File::create(&path).map_err(|e| e.to_string())?;
     file.write_all(b"P6\n512 512\n255\n")
         .map_err(|e| e.to_string())?;
@@ -119,11 +165,35 @@ fn run() -> Result<(), String> {
     }
     engine.shutdown();
     println!(
-        "Rendered {} spheres with depth testing on {}; image: {}; temporary resource bytes: {}",
-        prepared.spheres.len(),
+        "Rendered {} spheres and {} mesh with depth testing on {}; image: {}; retained asset bytes: {}; temporary resource bytes: {}",
+        prepared.spheres.len(),prepared.meshes.len(),
         renderer.adapter_name,
         path,
-        remaining_bytes
+        asset_bytes,
+        remaining_bytes-asset_bytes
     );
     Ok(())
+}
+
+fn pyramid() -> Result<TriangleMesh, String> {
+    let points = [
+        [-1.0, -0.8, -0.8],
+        [1.0, -0.8, -0.8],
+        [0.0, -0.8, 1.0],
+        [0.0, 1.0, 0.0],
+    ];
+    let mut vertices = Vec::new();
+    for [a, b, c] in [[0, 1, 2], [0, 3, 1], [1, 3, 2], [2, 3, 0]] {
+        let u: [f64; 3] = std::array::from_fn(|i| points[b][i] - points[a][i]);
+        let v: [f64; 3] = std::array::from_fn(|i| points[c][i] - points[a][i]);
+        let normal = [
+            u[1] * v[2] - u[2] * v[1],
+            u[2] * v[0] - u[0] * v[2],
+            u[0] * v[1] - u[1] * v[0],
+        ];
+        for index in [a, b, c] {
+            vertices.push(Vertex::new(points[index], normal).map_err(|e| format!("{e:?}"))?);
+        }
+    }
+    TriangleMesh::new(vertices, (0..12).collect()).map_err(|e| format!("{e:?}"))
 }

@@ -3,6 +3,7 @@
 //! Authoritative resource registry. Leases are opaque, single-release tokens.
 //! IDs are stable logical references; internal generations reject stale tokens.
 use spaceeyes_foundation::ResourceId;
+use spaceeyes_geometry::TriangleMesh;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
@@ -59,6 +60,7 @@ struct Entry {
     state: ResourceState,
     load_sequence: u64,
     data: Option<Arc<[u8]>>,
+    mesh: Option<Arc<TriangleMesh>>,
     bytes: u64,
     generation: u64,
     leases: u64,
@@ -69,6 +71,7 @@ pub struct ResourceRecord {
     pub id: ResourceId,
     pub bytes: u64,
     pub data: Option<Vec<u8>>,
+    pub mesh: Option<TriangleMesh>,
     pub logical_only: bool,
 }
 #[derive(Clone)]
@@ -105,6 +108,7 @@ impl ResourceManager {
                 id: id.clone(),
                 bytes: e.bytes,
                 data: e.data.as_ref().map(|d| d.to_vec()),
+                mesh: e.mesh.as_deref().cloned(),
                 logical_only: e.state == ResourceState::Registered,
             })
             .collect();
@@ -117,6 +121,13 @@ impl ResourceManager {
     ) -> Result<Self, ResourceError> {
         let mut result = Self::new(budget);
         for record in records {
+            if let Some(mesh) = &record.mesh {
+                if record.logical_only || record.data.is_some() || record.bytes != mesh.byte_len() {
+                    return Err(ResourceError::InvalidSize);
+                }
+                result.register_mesh(record.id.clone(), mesh.clone())?;
+                continue;
+            }
             if record.logical_only {
                 if record.data.is_some() {
                     return Err(ResourceError::InvalidState);
@@ -131,6 +142,31 @@ impl ResourceManager {
             }
         }
         Ok(result)
+    }
+    pub fn register_mesh(
+        &mut self,
+        id: ResourceId,
+        mesh: TriangleMesh,
+    ) -> Result<(), ResourceError> {
+        self.register(id.clone(), mesh.byte_len())?;
+        let entry = self.entries.get_mut(&id).expect("registered");
+        entry.mesh = Some(Arc::new(mesh));
+        entry.state = ResourceState::Ready;
+        Ok(())
+    }
+    pub fn mesh_available(&self, id: &ResourceId) -> bool {
+        self.entries
+            .get(id)
+            .is_some_and(|entry| entry.state == ResourceState::Ready && entry.mesh.is_some())
+    }
+    pub fn read_mesh(&self, token: &LeaseId) -> Result<Arc<TriangleMesh>, ResourceError> {
+        if self.active.get(&token.sequence) != Some(token) {
+            return Err(ResourceError::InvalidLease);
+        }
+        self.entries
+            .get(&token.resource)
+            .and_then(|e| e.mesh.clone())
+            .ok_or(ResourceError::NotReady)
     }
     pub fn used_bytes(&self) -> u64 {
         self.used
@@ -173,6 +209,7 @@ impl ResourceManager {
                 state: ResourceState::Registered,
                 load_sequence: 0,
                 data: None,
+                mesh: None,
                 bytes,
                 generation,
                 leases: 0,

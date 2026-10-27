@@ -5,8 +5,9 @@ package spaceeyes.core.v1;
 import "spaceeyes/core/v1/common.proto";
 import "spaceeyes/core/v1/time.proto";
 import "spaceeyes/core/v1/scene.proto";
-message CommandEnvelope { RequestContext context=1; oneof payload { SceneCommand scene=2; TimeCommand time=3; SceneTransaction scene_transaction=7; } }
+import "spaceeyes/core/v1/resources.proto";
+message CommandEnvelope { RequestContext context=1; oneof payload { SceneCommand scene=2; TimeCommand time=3; ResourceCommand resource=4; SceneTransaction scene_transaction=7; } }
 enum ResponseStatus { RESPONSE_STATUS_UNSPECIFIED=0; RESPONSE_STATUS_ACCEPTED=1; RESPONSE_STATUS_COMPLETED=2; RESPONSE_STATUS_REJECTED=3; RESPONSE_STATUS_CANCELLED=4; RESPONSE_STATUS_FAILED=5; }
 message TimeResponse { ClockState clock=1; }
 message SceneResponse { uint64 revision=1; }
-message ResponseEnvelope { string request_id=1; ResponseStatus status=2; oneof payload { SceneResponse scene=3; TimeResponse time=4; Error error=6; } uint64 command_sequence=7; uint64 committed_scene_revision=8; uint64 frame_sequence=9; }
+message ResponseEnvelope { string request_id=1; ResponseStatus status=2; oneof payload { SceneResponse scene=3; TimeResponse time=4; ResourceResponse resource=5; Error error=6; } uint64 command_sequence=7; uint64 committed_scene_revision=8; uint64 frame_sequence=9; }

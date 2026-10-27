@@ -213,6 +213,7 @@ fn restore_missing_provider_and_loading_resource_stays_explicitly_partial() {
         id: resource.clone(),
         bytes: 4,
         data: None,
+        mesh: None,
         logical_only: false,
     });
     let mut scene = spaceeyes_scene::Scene::new();

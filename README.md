@@ -7,7 +7,7 @@
 SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust是唯一核心源码，未来编译为WASM与Native；Web界面由独立宿主提供。NASA DYN是未来独立插件，不进入核心。
 
 ## 当前代码范围
-已实现Scene/Time/Spatial/Simulation/Resources基础状态与事务、共享FrameSnapshot、内部项目状态恢复、Proto同步命令与幂等入口、wgpu球体网格与深度遮挡原型、Native示例及WASM字节适配。完整范围、未完成项及依赖见[开发进度与验收](docs/开发进度与验收.md)。当前不是完整太阳系应用，没有浏览器界面或NASA数据插件。
+已实现Scene/Time/Spatial/Simulation/Resources基础状态与事务、共享FrameSnapshot、内部项目状态恢复、Proto同步命令与幂等入口、wgpu球体/通用三角网格与深度遮挡原型、Native示例及WASM字节适配。完整范围、未完成项及依赖见[开发进度与验收](docs/开发进度与验收.md)。当前不是完整太阳系应用，没有浏览器界面或NASA数据插件。
 
 ## 构建与测试
 使用stable Rust及rustfmt、Clippy；WASM需要`wasm32-unknown-unknown`目标。仓库根目录执行：
@@ -15,7 +15,7 @@ SPACEEYES太空之眼首期以NASA Eyes类太阳系三维探索为目标。Rust�
 cargo build --workspace --locked
 bash tools/check.sh
 ```
-检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认76项测试通过；GPU功能开启时80项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
+检查脚本执行格式、全目标编译、严格Clippy、默认测试和WASM构建。当前Linux/Rust 1.99.1默认85项测试通过；GPU功能开启时90项测试通过。Cargo.lock固定已验证依赖，Proto生成使用vendored protoc。
 
 ### GPU原型与Native运行
 需要Vulkan驱动（硬件或Mesa软件驱动）；已配置云环境可直接执行：
@@ -24,7 +24,7 @@ source tools/dev-env.sh
 bash tools/check.sh --gpu
 cargo run -p spaceeyes-native --features gpu --locked -- /tmp/spaceeyes-frame.ppm
 ```
-示例从Scene持久相机生成视图，输出三个有基础明暗及深度遮挡的球体PPM图片。可在输出路径后传入相机偏航角（度）和局部X位置（米），例如`... /tmp/spaceeyes-camera.ppm 20 2`。GPU检查真实回读像素，不在缺少适配器时跳过。云环境首次安装可使用`bash tools/setup-cloud.sh`，在工作区准备Rust与Debian 13 Mesa软件驱动，不修改系统目录。
+示例从Scene持久相机生成视图，输出三个球体与一个通用网格四面体的PPM图片，带基础明暗及深度遮挡。可在输出路径后传入相机偏航角（度）和局部X位置（米），例如`... /tmp/spaceeyes-camera.ppm 20 2`。GPU检查真实回读像素，不在缺少适配器时跳过。云环境首次安装可使用`bash tools/setup-cloud.sh`，在工作区准备Rust与Debian 13 Mesa软件驱动，不修改系统目录。
 
 ### 时间与协议
 `Engine::advance_nanos`由宿主提供非负单调经过时间，暂停时不变；`PlaybackRate`支持显式有理正负倍速，连续推进保留纳秒余数，不读取系统时钟。FixedStepper单独提供有界补步配置，不持有权威时间。

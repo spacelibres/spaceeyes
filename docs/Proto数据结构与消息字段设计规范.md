@@ -164,3 +164,6 @@ ProjectSnapshot保存稳定ObjectId、FrameId、ResourceId、Scene状态、Camer
 
 ## 0.0.1球体显示契约
 rendering.proto新增ColorRgb及SpherePrimitive（1 radius_m、2 base_color），均为显示参数。SceneObject字段9保存sphere，SceneCommand字段9为set_sphere（object_id和可选sphere）；缺省sphere表示移除组件。radius/color缺失、非有限或越界均拒绝。兼容既有字段号，不复用SceneCommand字段5。此开发切片不宣布完整RenderPrimitive/材质/纹理Schema冻结。
+
+## 0.0.1网格资源切片
+rendering.proto新增MeshVertex、TriangleMesh、MeshInstance；SceneObject字段10为mesh，SceneCommand字段10为set_mesh。resources.proto新增RegisterMeshResource及ResourceCommand.register_mesh，沿用CommandEnvelope字段4 resource；ResponseEnvelope字段5 resource返回稳定资源ID/提交修订。结构化数据仍由唯一Proto定义，不新增自定义二进制格式。网格消息数量、局部坐标及法线由geometry领域构造器校验，信封仍受1MiB上限限制；大模型文件流式传输以后单独设计。

@@ -110,3 +110,6 @@ ResourceManager新增不透明LeaseId，包含内部资源代次与唯一租约�
 
 ## 0.0.1许可一致性
 Resources属于SPACEEYES自有Rust核心，和Engine、Scene、Rendering等模块统一适用根MIT License及SPDX-License-Identifier: MIT，不存在独立闭源许可。本文“资源所有权”“租约”“最终释放”均指程序运行时生命周期，与开源版权许可不同；Engine继续统一管理资源，许可调整不改变ADR-004职责边界。
+
+## 0.0.1通用三角网格资源
+新增纯领域geometry crate：有限米制局部顶点、归一化法线、三角形索引，构造时校验数量、索引、退化面及本地坐标策略界限。Resources登记只读TriangleMesh并按顶点/索引逻辑字节量计费；Scene只存MeshInstance.geometry ResourceId和基色，不另存权威顶点。对象/任务租约沿用唯一ResourceManager。帧快照可共享不可变Arc网格以保持旧帧有效，这不构成第二套注册表；当前配额统计为登记及GPU临时占用，不声称涵盖用户长期保留的旧快照内存。内部ProjectState保留网格值，恢复时重新登记与校验大小，不持久化租约。

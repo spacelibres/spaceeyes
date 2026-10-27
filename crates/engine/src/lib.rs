@@ -137,7 +137,7 @@ impl Engine {
             .map_err(RestoreError::Scene)?;
         for object in &project.scene.objects {
             let mut leases = Vec::new();
-            for id in object.resources() {
+            for id in object.resource_refs() {
                 leases.push(
                     engine
                         .resources
@@ -197,8 +197,9 @@ impl Engine {
         let clock = self.clock.snapshot();
         let mut poses = Vec::new();
         let mut unresolved = Vec::new();
+        let mut meshes: Vec<spaceeyes_snapshot::MeshAsset> = Vec::new();
         for object in &scene.objects {
-            if object.resources().iter().any(|id| {
+            if object.resource_refs().iter().any(|id| {
                 !matches!(
                     self.resources.state(id),
                     Some(
@@ -209,6 +210,30 @@ impl Engine {
             }) {
                 unresolved.push(object.id().clone());
                 continue;
+            }
+            if let Some(instance) = object.mesh() {
+                let asset = self
+                    .object_leases
+                    .get(object.id())
+                    .and_then(|leases| {
+                        leases
+                            .iter()
+                            .find(|lease| lease.resource() == instance.geometry())
+                    })
+                    .and_then(|lease| self.resources.read_mesh(lease).ok());
+                let Some(geometry) = asset else {
+                    unresolved.push(object.id().clone());
+                    continue;
+                };
+                if !meshes
+                    .iter()
+                    .any(|asset| &asset.resource == instance.geometry())
+                {
+                    meshes.push(spaceeyes_snapshot::MeshAsset {
+                        resource: instance.geometry().clone(),
+                        geometry,
+                    });
+                }
             }
             match object
                 .frame()
@@ -222,6 +247,7 @@ impl Engine {
             }
         }
         Ok(FrameSnapshot {
+            meshes,
             sequence: self.frame_sequence,
             scene,
             clock,
@@ -303,6 +329,10 @@ impl Engine {
                 | SceneCommand::SetSphere {
                     object,
                     sphere: Some(_),
+                }
+                | SceneCommand::SetMesh {
+                    object,
+                    mesh: Some(_),
                 } => Some(
                     scene
                         .get(object)
@@ -321,14 +351,35 @@ impl Engine {
                 SceneCommand::Create(object) => Some(object.id()),
                 SceneCommand::SetFrame { object, .. }
                 | SceneCommand::SetCamera { object, .. }
-                | SceneCommand::SetSphere { object, .. } => Some(object),
+                | SceneCommand::SetSphere { object, .. }
+                | SceneCommand::SetMesh { object, .. } => Some(object),
                 _ => None,
             };
             if let Some(object) = id.and_then(|id| scene.get(id)) {
-                if (object.camera().is_some() || object.sphere().is_some())
+                if (object.camera().is_some()
+                    || object.sphere().is_some()
+                    || object.mesh().is_some())
                     && object.frame().is_none()
                 {
                     return Err(CoreError::UnknownFrame);
+                }
+            }
+        }
+        for command in commands {
+            let object = match command {
+                SceneCommand::Create(object) => Some(object.id()),
+                SceneCommand::SetMesh {
+                    object,
+                    mesh: Some(_),
+                } => Some(object),
+                _ => None,
+            };
+            if let Some(instance) = object
+                .and_then(|id| scene.get(id))
+                .and_then(|object| object.mesh())
+            {
+                if !self.resources.mesh_available(instance.geometry()) {
+                    return Err(CoreError::ResourceUnavailable);
                 }
             }
         }
@@ -343,7 +394,7 @@ impl Engine {
         let mut object_leases = HashMap::new();
         for object in scene.snapshot().objects {
             let mut leases = Vec::new();
-            for id in object.resources() {
+            for id in object.resource_refs() {
                 let lease = match resources.lease(id) {
                     Ok(lease) => lease,
                     Err(ResourceError::NotReady)
@@ -351,7 +402,7 @@ impl Engine {
                             && self
                                 .scene
                                 .get(object.id())
-                                .is_some_and(|previous| previous.resources().contains(id)) =>
+                                .is_some_and(|previous| previous.resource_refs().contains(&id)) =>
                     {
                         resources
                             .lease_reference(id)
@@ -463,6 +514,22 @@ impl Engine {
             .ok_or(CoreError::InvalidState)?;
         self.clock.advance_nanos(elapsed_nanos)?;
         self.frame_sequence = next_sequence;
+        Ok(())
+    }
+    pub fn register_mesh_resource(
+        &mut self,
+        id: ResourceId,
+        mesh: spaceeyes_geometry::TriangleMesh,
+    ) -> Result<(), ResourceError> {
+        if self.state == EngineState::Stopped {
+            return Err(ResourceError::EngineUnavailable);
+        }
+        let sequence = self
+            .frame_sequence
+            .checked_add(1)
+            .ok_or(ResourceError::Overflow)?;
+        self.resources.register_mesh(id, mesh)?;
+        self.frame_sequence = sequence;
         Ok(())
     }
     pub fn register_resource(&mut self, id: ResourceId, bytes: u64) -> Result<(), ResourceError> {

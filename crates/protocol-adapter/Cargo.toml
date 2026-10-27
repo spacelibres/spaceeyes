@@ -5,6 +5,8 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 [dependencies]
+spaceeyes-resources = { path = "../resources" }
+spaceeyes-geometry = { path = "../geometry" }
 spaceeyes-engine = { path = "../engine" }
 spaceeyes-scene = { path = "../scene" }
 spaceeyes-foundation = { path = "../foundation" }

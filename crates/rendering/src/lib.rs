@@ -9,6 +9,8 @@ pub mod gpu;
 pub mod mesh;
 mod sphere;
 pub use sphere::{Perspective, SphereDraw};
+mod triangles;
+pub use triangles::MeshDraw;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RenderError {
@@ -64,6 +66,7 @@ pub struct PreparedFrame {
     pub availability: FrameAvailability,
     pub markers: Vec<Marker>,
     pub spheres: Vec<SphereDraw>,
+    pub meshes: Vec<MeshDraw>,
     pub projection: Perspective,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -146,6 +149,7 @@ fn prepare_oriented(
     let projection = Perspective::from_view(view)?;
     let mut markers = Vec::new();
     let mut spheres = Vec::new();
+    let mut meshes = Vec::new();
     for pose in &frame.poses {
         let object = frame
             .scene
@@ -186,6 +190,28 @@ fn prepare_oriented(
         {
             return Err(RenderError::InvalidFrame);
         }
+        if let Some(instance) = object.mesh() {
+            let asset = frame
+                .meshes
+                .iter()
+                .find(|asset| &asset.resource == instance.geometry())
+                .ok_or(RenderError::InvalidFrame)?;
+            let rotation = reference_to_camera_rotation
+                .after(
+                    RigidTransform::new(Vec3d::ZERO, pose.transform.rotation)
+                        .map_err(|_| RenderError::InvalidFrame)?,
+                )
+                .rotation;
+            let model =
+                RigidTransform::new(relative, rotation).map_err(|_| RenderError::InvalidFrame)?;
+            meshes.push(MeshDraw {
+                object: object.id().clone(),
+                geometry: asset.geometry.clone(),
+                object_to_camera: model,
+                base_color: instance.base_color(),
+            });
+            continue;
+        }
         if let Some(sphere) = object.sphere() {
             if z + sphere.radius_m() >= projection.near()
                 && z - sphere.radius_m() <= projection.far()
@@ -215,7 +241,7 @@ fn prepare_oriented(
             });
         }
     }
-    // Painter order for the marker prototype, far to near; no depth-buffer claims.
+    // Stable marker order defines equal-depth ties; the shared depth attachment resolves occlusion.
     markers.sort_by(|a, b| {
         b.ndc[2]
             .total_cmp(&a.ndc[2])
@@ -227,6 +253,7 @@ fn prepare_oriented(
         availability: frame.availability,
         markers,
         spheres,
+        meshes,
         projection,
     })
 }
@@ -257,6 +284,13 @@ impl PreparedFrame {
                     if best.is_none_or(|(_, d)| depth <= d) {
                         best = Some((&sphere.object, depth));
                     }
+                }
+            }
+        }
+        for mesh in &self.meshes {
+            if let Some(depth) = mesh.pick_depth(self.projection, f64::from(x), f64::from(y)) {
+                if best.is_none_or(|(_, d)| depth <= d) {
+                    best = Some((&mesh.object, depth));
                 }
             }
         }

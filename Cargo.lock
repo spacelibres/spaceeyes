@@ -1009,6 +1009,7 @@ version = "0.0.1"
 dependencies = [
  "pollster",
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
  "spaceeyes-rendering",
  "spaceeyes-resources",
  "spaceeyes-scene",
@@ -1023,12 +1024,20 @@ name = "spaceeyes-foundation"
 version = "0.0.1"
 
 [[package]]
+name = "spaceeyes-geometry"
+version = "0.0.1"
+dependencies = [
+ "spaceeyes-foundation",
+]
+
+[[package]]
 name = "spaceeyes-native"
 version = "0.0.1"
 dependencies = [
  "pollster",
  "spaceeyes-engine",
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
  "spaceeyes-rendering",
  "spaceeyes-scene",
  "spaceeyes-spatial",
@@ -1044,6 +1053,8 @@ dependencies = [
  "protoc-bin-vendored",
  "spaceeyes-engine",
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
+ "spaceeyes-resources",
  "spaceeyes-scene",
  "spaceeyes-time",
 ]
@@ -1054,6 +1065,7 @@ version = "0.0.1"
 dependencies = [
  "pollster",
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
  "spaceeyes-resources",
  "spaceeyes-scene",
  "spaceeyes-snapshot",
@@ -1067,6 +1079,7 @@ name = "spaceeyes-resources"
 version = "0.0.1"
 dependencies = [
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
 ]
 
 [[package]]
@@ -1089,6 +1102,7 @@ name = "spaceeyes-snapshot"
 version = "0.0.1"
 dependencies = [
  "spaceeyes-foundation",
+ "spaceeyes-geometry",
  "spaceeyes-scene",
  "spaceeyes-spatial",
  "spaceeyes-time",
