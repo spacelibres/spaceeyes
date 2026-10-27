@@ -1,8 +1,8 @@
 # Rust核心跨模块决策与整改方案（ADR合集）
 
-版本：0.0.0｜状态：提议待批准｜日期：2026-10-27
+版本：0.0.0｜状态：ADR-001至ADR-009已批准｜日期：2026-10-27
 依据：Rust核心七模块交叉架构审查报告，CR-01至CR-12。
-说明：以下给出可执行的解决方案，但尚未经项目负责人正式批准，不等于实现或测试通过。
+批准记录：详见 docs/ADR-APPROVAL.md。设计决策已获批准，工程验证仍需执行。
 
 ## ADR-001：一致FrameSnapshot与单一提交者（CR-01）
 **提议**：每个会话由Engine协调唯一逻辑提交者。Scene是唯一场景可变状态所有者；Simulation可并行计算但只能提出待验证命令。Engine在提交边界形成不可变FrameSnapshot，包含session_id、simulation_instant、time_generation、scene_revision、frame_graph_revision、resource_epoch、frame_sequence和availability状态。Rendering只读取已发布快照。不能将不同时间和修订的局部快照拼接为同一科学状态。
