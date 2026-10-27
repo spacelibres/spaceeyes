@@ -27,10 +27,12 @@ impl WasmEngine {
             ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         Ok(Self { adapter })
     }
-    /// Restore a new session from structured project bytes. Fresh handles and
-    /// revisions are created; no GPU handles, tasks or uploads are restored.
+    /// Restore a new session from a verified project file. The file digest is
+    /// checked before decoding; raw protobuf is rejected as an unverified file.
+    /// Fresh handles and revisions are created; no GPU handles, tasks or uploads
+    /// are restored.
     pub fn from_project(session: String, bytes: &[u8]) -> Result<WasmEngine, JsValue> {
-        let project = spaceeyes_protocol_adapter::decode_project_bytes(bytes)
+        let project = spaceeyes_protocol_adapter::decode_project_file(bytes)
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         let engine = Engine::restore_project(&project, &[])
             .map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
@@ -39,6 +41,12 @@ impl WasmEngine {
         let adapter =
             ProtocolAdapter::new(dispatcher).map_err(|e| JsValue::from_str(&format!("{e:?}")))?;
         Ok(Self { adapter })
+    }
+    /// Wrap an exported `ProjectSnapshot` payload in the verified file container.
+    #[wasm_bindgen(js_name = "encodeProjectFile")]
+    pub fn encode_project_file(bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
+        spaceeyes_protocol_adapter::wrap_project_bytes(bytes)
+            .map_err(|e| JsValue::from_str(&format!("{e:?}")))
     }
     /// Call from an authenticated host; this transport performs no identity authentication.
     pub fn submit(&mut self, principal_scope: &str, bytes: &[u8]) -> Result<Vec<u8>, JsValue> {

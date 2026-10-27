@@ -6,11 +6,16 @@ mod dispatch;
 pub mod limits;
 mod presentation;
 mod project;
+mod project_file;
 mod query;
 mod uploads;
 pub use dispatch::*;
 pub use presentation::{decode_host_frame, HostFrameRequest};
 pub use project::{decode_project, decode_project_bytes, encode_project};
+pub use project_file::{
+    decode_project_file, encode_project_file, unwrap_project_bytes, wrap_project_bytes,
+    MAX_PROJECT_FILE_BYTES, PROJECT_FILE_HEADER_BYTES, PROJECT_FILE_MAGIC,
+};
 pub mod generated {
     include!(concat!(env!("OUT_DIR"), "/spaceeyes.core.v1.rs"));
 }
@@ -27,6 +32,8 @@ pub enum ProtocolError {
     InvalidContext,
     MessageTooLarge,
     UnsupportedVersion,
+    /// The container digest does not match its payload.
+    IntegrityMismatch,
 }
 impl From<CoreError> for ProtocolError {
     fn from(_: CoreError) -> Self {

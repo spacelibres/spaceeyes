@@ -97,10 +97,25 @@ function loadRuntime(): Promise<BrowserBindings> {
   }
   return runtime;
 }
+/** Project file layout shared with the Rust verifier; the digest is checked there. */
+const PROJECT_FILE_HEADER = 8 + 2 + 4 + 32;
+const PROJECT_FILE_MAGIC = [83, 69, 89, 69, 83, 80, 82, 74]; // "SEYESPRJ"
+function projectPayload(bytes: Uint8Array): Uint8Array {
+  if (
+    bytes.length >= PROJECT_FILE_HEADER &&
+    PROJECT_FILE_MAGIC.every((value, index) => bytes[index] === value)
+  ) {
+    const view = new DataView(bytes.buffer, bytes.byteOffset + 10, 4);
+    const length = view.getUint32(0, true);
+    if (PROJECT_FILE_HEADER + length === bytes.length)
+      return bytes.subarray(PROJECT_FILE_HEADER);
+  }
+  return bytes;
+}
 /** Detect the DYN-backed scene from persisted provider labels. */
 function projectUsesDynamo(bytes: Uint8Array): boolean {
   try {
-    const snapshot = fromBinary(ProjectSnapshotSchema, bytes);
+    const snapshot = fromBinary(ProjectSnapshotSchema, projectPayload(bytes));
     return snapshot.frames.some(
       (frame) => frame.provider?.providerId === "spaceeyes.nasa.dynamo",
     );
@@ -790,7 +805,9 @@ export class BrowserSession {
         { requestId: `web:project:${++this.request}` },
       );
       if (response.payload.case !== "project") throw new Error("缺少项目快照");
-      return toBinary(ProjectSnapshotSchema, response.payload.value);
+      const payload = toBinary(ProjectSnapshotSchema, response.payload.value);
+      const bindings = await loadRuntime();
+      return bindings.WasmEngine.encodeProjectFile(payload);
     });
   }
   async togglePlayback(): Promise<void> {

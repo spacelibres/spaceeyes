@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 项目文件容器与完整性校验（C11 切片）
+- 新增 v1 项目文件格式：魔数、格式版本、载荷长度、SHA-256 摘要与 `ProjectSnapshot` 载荷，上限 16 MiB；截断、尾随字节、篡改与未知版本分别拒绝。
+- 原始 protobuf 不再作为可信文件；`WasmEngine.from_project` 先校验容器，新增 `encodeProjectFile` 供浏览器保存封装。
+- 浏览器保存→打开与 DYN 场景识别适配新容器。
+- 验证：protocol-adapter 3 项容器测试、Web 构建与 10 项 Chromium 通过。
+
+
 ### 参考系导数与解析缓存（C04 切片）
 - 新增 `FrameDerivative`/`FrameState` 与 `TransformProvider::derivative_at`（缺省无导数）；`resolve_state` 沿链合成变换与角速度/线速度，含 ω×r 与逆变换，缺导数返回 `DerivativeUnavailable`。
 - `FrameState::point_velocity` 给出源系固定点在目标系的瞬时速度。
