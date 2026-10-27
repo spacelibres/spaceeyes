@@ -77,4 +77,4 @@ SDK在packages/core-sdk，先读取[SDK技能书](packages/core-sdk/SKILL.md)。
 设计要求尚未全部实现，逐项状态、代码/测试依据、剩余工作和集中验收顺序见[全设计要求实现与集中验收台账](docs/全设计要求实现与集中验收台账.md)。已验收M3-1a总额/CPU/GPU/Staging逻辑预算；M3-1b追加有界Bytes/RGBA8上传、来源SHA-256与取消，不扩大1MiB消息边界。每个新增候选以自身SHA的本地完整检查与GitHub CI为准。完整项目文件、宿主执行器、受限插件、科学数据、市场与模型闭环继续按M3—M7分批实施。
 
 ### 提供者样本帧与NASA DYN插件核心（M4前置）
-新增`spatial.register_provider_frame`/`update_provider_frame_sample`：宿主按当前显式时刻为数据插件帧提交刚体样本，核心不插值、不算轨迹；首次更新前及恢复缺失提供者时明确不可用。`packages/nasa-dynamo`实现v1/v2五类点解析、Hermite/线性/SLERP/二体轨道求值，以及只取覆盖段的有界分段加载；24项合成测试不包含NASA数据。浏览器`?scene=solar`经只读代理显示太阳/地球/月球/火星/木星，位置按显示比例压缩；真实数据、权限沙箱、科学时间轴与项目持久化仍未完成。
+新增`spatial.register_provider_frame`/`update_provider_frame_sample`：宿主按当前显式时刻为数据插件帧提交刚体样本，核心不插值、不算轨迹；首次更新前及恢复缺失提供者时明确不可用。`packages/nasa-dynamo`实现v1/v2五类点解析、Hermite/线性/SLERP/二体轨道求值，以及只取覆盖段的有界分段加载；24项合成测试不包含NASA数据。浏览器`?scene=solar`经只读代理显示太阳/地球/月球/火星/木星，并用邻近`orb`根数生成显示用轨道管；位置按显示比例压缩。真实数据、权限沙箱、科学时间轴与项目持久化仍未完成。

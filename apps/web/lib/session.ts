@@ -24,6 +24,7 @@ import {
 import type { DynamoSegmentLoader } from "@spaceeyes/nasa-dynamo";
 import {
   createSolarLoader,
+  orbitMesh,
   solarPosition,
   solarSeconds,
   SOLAR_BODIES,
@@ -35,6 +36,7 @@ import { formatSimulationTime, parseSimulationSeconds } from "./time";
 export type ViewStatus = {
   phase: "初始化" | "运行中" | "已停止" | "错误";
   frameCount: number;
+  objectCount: number;
   clockNs: string;
   clockText: string;
   playing: boolean;
@@ -52,6 +54,7 @@ export type ViewStatus = {
 export const initialStatus: ViewStatus = {
   phase: "初始化",
   frameCount: 0,
+  objectCount: 0,
   clockNs: "0",
   clockText: "0.000000000",
   playing: false,
@@ -315,6 +318,57 @@ export class BrowserSession {
       address: SamplingAddress.CLAMP,
     };
     await this.refresh();
+    const orbitCommands = [];
+    if (this.solarMode && this.solarLoader) {
+      for (const body of SOLAR_BODIES) {
+        try {
+          const loaded = await this.solarLoader.load(body.path, 0);
+          const mesh = orbitMesh(loaded, 0);
+          if (mesh === null) continue;
+          const resource = `solar:orbit:${body.frame}`;
+          await this.command({
+            case: "resource",
+            value: {
+              action: {
+                case: "registerMesh",
+                value: {
+                  resourceId: { value: resource },
+                  mesh: {
+                    vertices: [...mesh.vertices],
+                    indices: [...mesh.indices],
+                  },
+                },
+              },
+            },
+          });
+          orbitCommands.push({
+            action: {
+              case: "create" as const,
+              value: {
+                object: {
+                  objectId: { value: resource },
+                  frameId: { value: body.parentFrame },
+                  visible: true,
+                  lifecycle: ObjectLifecycle.ACTIVE,
+                  mesh: {
+                    geometry: { value: resource },
+                    material: {
+                      baseColor: body.color,
+                      filter: SamplingFilter.NEAREST,
+                      address: SamplingAddress.CLAMP,
+                      unlit: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        } catch {
+          // Keep the body usable even when its orbit window is unavailable.
+          this.actionError = "轨道线加载失败，星体位置仍可用";
+        }
+      }
+    }
     const solarCommands = this.solarMode
       ? [
           ...SOLAR_BODIES.map((body) => ({
@@ -373,6 +427,7 @@ export class BrowserSession {
               },
             },
           },
+          ...orbitCommands,
         ]
       : [
           {
@@ -486,6 +541,7 @@ export class BrowserSession {
     return {
       phase,
       frameCount: this.frames,
+      objectCount: Number(this.state?.objectCount ?? 0n),
       clockNs: (seconds * 1000000000n + BigInt(nanos)).toString(),
       clockText: formatSimulationTime(seconds, nanos),
       playbackRate: String(

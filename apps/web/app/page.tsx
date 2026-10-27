@@ -204,6 +204,10 @@ export default function Page() {
               <dd data-testid="frames">{status.frameCount}</dd>
             </div>
             <div>
+              <dt>场景对象</dt>
+              <dd data-testid="objects">{status.objectCount}</dd>
+            </div>
+            <div>
               <dt>资源容量预留</dt>
               <dd data-testid="resources" data-bytes={status.resourceBytes}>
                 {(Number(status.resourceBytes) / 1048576).toFixed(2)} MiB

@@ -35,7 +35,7 @@ function syntheticOrb(): Uint8Array {
     f64(time);
     f64(1000);
     f64(0);
-    f64(0);
+    f64(1e-7);
     f64(0);
     f64(1);
     f64(0);
@@ -65,6 +65,9 @@ test("solar scene loads provider samples through the host proxy", async ({
   await expect(page.getByTestId("frames")).not.toHaveText("0", {
     timeout: 60_000,
   });
+  await expect
+    .poll(async () => Number(await page.getByTestId("objects").textContent()))
+    .toBeGreaterThanOrEqual(10);
   await expect(page.getByText("太阳系星历")).toBeVisible();
   expect(
     requested.some((path) => path.endsWith("/earth/sun/orb/def.dyn")),
