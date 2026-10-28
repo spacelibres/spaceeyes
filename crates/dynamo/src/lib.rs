@@ -16,9 +16,11 @@ use std::fmt;
 
 mod eval;
 mod math;
+mod orbit;
 mod parse;
 
 pub use eval::{evaluate, Body, EvaluationKind, EvaluationReason, EvaluationState};
+pub use orbit::{nearest_orb_point, orbit_polyline, orbit_position_at, solve_eccentric_anomaly};
 pub use parse::{parse_dyn, parse_dyn_segment, DynFile, DynHeader, DynInterval, DynSegment};
 
 /// Why DYN bytes or an evaluation request were rejected. No partial value escapes.

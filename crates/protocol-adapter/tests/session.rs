@@ -1023,7 +1023,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 42);
+    assert_eq!(names.len(), 43);
     assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()

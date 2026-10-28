@@ -19,7 +19,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/dynamo.proto.
  */
 export const file_spaceeyes_core_v1_dynamo: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zcGFjZWV5ZXMvY29yZS92MS9keW5hbW8ucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxIv8BChNFdmFsdWF0ZUR5bmFtb1F1ZXJ5EjQKCHBvc2l0aW9uGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZEgAiAEBEjcKC29yaWVudGF0aW9uGAIgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZEgBiAEBEi8KB2luc3RhbnQYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudBIrCgRib2R5GAQgASgOMh0uc3BhY2VleWVzLmNvcmUudjEuRHluYW1vQm9keUILCglfcG9zaXRpb25CDgoMX29yaWVudGF0aW9uIuADCgtEeW5hbW9TdGF0ZRIvCgZzdGF0dXMYASABKA4yHy5zcGFjZWV5ZXMuY29yZS52MS5EeW5hbW9TdGF0dXMSNAoKcG9zaXRpb25fbRgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlZlY3RvcjNkSACIAQESNgoMdmVsb2NpdHlfbXBzGAMgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2RIAYgBARI4CgtvcmllbnRhdGlvbhgEIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlF1YXRlcm5pb25kSAKIAQESQAoWYW5ndWxhcl92ZWxvY2l0eV9yYWRwcxgFIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlZlY3RvcjNkSAOIAQESMwoIY292ZXJhZ2UYBiABKAsyHC5zcGFjZWV5ZXMuY29yZS52MS5UaW1lUmFuZ2VIBIgBARIRCglzb3VyY2VfaWQYByABKAkSFgoOc291cmNlX3ZlcnNpb24YCCABKAlCDQoLX3Bvc2l0aW9uX21CDwoNX3ZlbG9jaXR5X21wc0IOCgxfb3JpZW50YXRpb25CGQoXX2FuZ3VsYXJfdmVsb2NpdHlfcmFkcHNCCwoJX2NvdmVyYWdlKl0KCkR5bmFtb0JvZHkSGwoXRFlOQU1PX0JPRFlfVU5TUEVDSUZJRUQQABIXChNEWU5BTU9fQk9EWV9QUklNQVJZEAESGQoVRFlOQU1PX0JPRFlfU0VDT05EQVJZEAIqrgEKDER5bmFtb1N0YXR1cxIdChlEWU5BTU9fU1RBVFVTX1VOU1BFQ0lGSUVEEAASFwoTRFlOQU1PX1NUQVRVU19SRUFEWRABEh4KGkRZTkFNT19TVEFUVVNfT1VUX09GX1JBTkdFEAISIQodRFlOQU1PX1NUQVRVU19JTlZBTElEX1NBTVBMRVMQAxIjCh9EWU5BTU9fU1RBVFVTX1VOU1VQUE9SVEVEX09SQklUEARiBnByb3RvMw", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_time]);
+  fileDesc("Ch5zcGFjZWV5ZXMvY29yZS92MS9keW5hbW8ucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxIv8BChNFdmFsdWF0ZUR5bmFtb1F1ZXJ5EjQKCHBvc2l0aW9uGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZEgAiAEBEjcKC29yaWVudGF0aW9uGAIgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZEgBiAEBEi8KB2luc3RhbnQYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudBIrCgRib2R5GAQgASgOMh0uc3BhY2VleWVzLmNvcmUudjEuRHluYW1vQm9keUILCglfcG9zaXRpb25CDgoMX29yaWVudGF0aW9uIuADCgtEeW5hbW9TdGF0ZRIvCgZzdGF0dXMYASABKA4yHy5zcGFjZWV5ZXMuY29yZS52MS5EeW5hbW9TdGF0dXMSNAoKcG9zaXRpb25fbRgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlZlY3RvcjNkSACIAQESNgoMdmVsb2NpdHlfbXBzGAMgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2RIAYgBARI4CgtvcmllbnRhdGlvbhgEIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlF1YXRlcm5pb25kSAKIAQESQAoWYW5ndWxhcl92ZWxvY2l0eV9yYWRwcxgFIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlZlY3RvcjNkSAOIAQESMwoIY292ZXJhZ2UYBiABKAsyHC5zcGFjZWV5ZXMuY29yZS52MS5UaW1lUmFuZ2VIBIgBARIRCglzb3VyY2VfaWQYByABKAkSFgoOc291cmNlX3ZlcnNpb24YCCABKAlCDQoLX3Bvc2l0aW9uX21CDwoNX3ZlbG9jaXR5X21wc0IOCgxfb3JpZW50YXRpb25CGQoXX2FuZ3VsYXJfdmVsb2NpdHlfcmFkcHNCCwoJX2NvdmVyYWdlIoUBChBEeW5hbW9PcmJpdFF1ZXJ5Ei8KCHJlc291cmNlGAEgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBIvCgdpbnN0YW50GAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSDwoHc2FtcGxlcxgDIAEoDSKnAQoLRHluYW1vT3JiaXQSLQoIcG9pbnRzX20YASADKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5WZWN0b3IzZBIOCgZjbG9zZWQYAiABKAgSLgoIY292ZXJhZ2UYAyABKAsyHC5zcGFjZWV5ZXMuY29yZS52MS5UaW1lUmFuZ2USEQoJc291cmNlX2lkGAQgASgJEhYKDnNvdXJjZV92ZXJzaW9uGAUgASgJKl0KCkR5bmFtb0JvZHkSGwoXRFlOQU1PX0JPRFlfVU5TUEVDSUZJRUQQABIXChNEWU5BTU9fQk9EWV9QUklNQVJZEAESGQoVRFlOQU1PX0JPRFlfU0VDT05EQVJZEAIqrgEKDER5bmFtb1N0YXR1cxIdChlEWU5BTU9fU1RBVFVTX1VOU1BFQ0lGSUVEEAASFwoTRFlOQU1PX1NUQVRVU19SRUFEWRABEh4KGkRZTkFNT19TVEFUVVNfT1VUX09GX1JBTkdFEAISIQodRFlOQU1PX1NUQVRVU19JTlZBTElEX1NBTVBMRVMQAxIjCh9EWU5BTU9fU1RBVFVTX1VOU1VQUE9SVEVEX09SQklUEARiBnByb3RvMw", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_time]);
 
 /**
  * Read-only evaluation of already-uploaded inline DYN bytes. Index files need a
@@ -107,6 +107,73 @@ export type DynamoState = Message<"spaceeyes.core.v1.DynamoState"> & {
  */
 export const DynamoStateSchema: GenMessage<DynamoState> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_dynamo, 1);
+
+/**
+ * Closed display polyline of the nearest elliptic osculating orbit. This is not
+ * a scientific trajectory: it is generated for rendering only.
+ *
+ * @generated from message spaceeyes.core.v1.DynamoOrbitQuery
+ */
+export type DynamoOrbitQuery = Message<"spaceeyes.core.v1.DynamoOrbitQuery"> & {
+  /**
+   * @generated from field: spaceeyes.core.v1.ResourceId resource = 1;
+   */
+  resource?: ResourceId | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TimeInstant instant = 2;
+   */
+  instant?: TimeInstant | undefined;
+
+  /**
+   * @generated from field: uint32 samples = 3;
+   */
+  samples: number;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.DynamoOrbitQuery.
+ * Use `create(DynamoOrbitQuerySchema)` to create a new message.
+ */
+export const DynamoOrbitQuerySchema: GenMessage<DynamoOrbitQuery> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_dynamo, 2);
+
+/**
+ * @generated from message spaceeyes.core.v1.DynamoOrbit
+ */
+export type DynamoOrbit = Message<"spaceeyes.core.v1.DynamoOrbit"> & {
+  /**
+   * @generated from field: repeated spaceeyes.core.v1.Vector3d points_m = 1;
+   */
+  pointsM: Vector3d[];
+
+  /**
+   * @generated from field: bool closed = 2;
+   */
+  closed: boolean;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TimeRange coverage = 3;
+   */
+  coverage?: TimeRange | undefined;
+
+  /**
+   * @generated from field: string source_id = 4;
+   */
+  sourceId: string;
+
+  /**
+   * @generated from field: string source_version = 5;
+   */
+  sourceVersion: string;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.DynamoOrbit.
+ * Use `create(DynamoOrbitSchema)` to create a new message.
+ */
+export const DynamoOrbitSchema: GenMessage<DynamoOrbit> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_dynamo, 3);
 
 /**
  * Which body of a two-body pair an orb result is expressed for.

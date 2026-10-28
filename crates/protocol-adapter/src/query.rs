@@ -379,6 +379,43 @@ fn evaluate_dynamo(
     })
 }
 
+fn evaluate_dynamo_orbit(
+    engine: &spaceeyes_engine::Engine,
+    query: p::DynamoOrbitQuery,
+) -> Result<p::DynamoOrbit, ProtocolError> {
+    let id = crate::decode_resource_id(query.resource.ok_or(ProtocolError::MissingField)?)?;
+    let instant = crate::decode_instant(query.instant.ok_or(ProtocolError::MissingField)?)?;
+    let time = dyno_time(&instant)?;
+    let samples = if query.samples == 0 {
+        160
+    } else {
+        query.samples
+    };
+    let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
+    if header.point_type != spaceeyes_dynamo::PointType::Orb {
+        return Err(ProtocolError::InvalidContext);
+    }
+    let line = spaceeyes_dynamo::orbit_polyline(&header, &points, interval, time, samples)
+        .map_err(|_| ProtocolError::InvalidContext)?;
+    let (source_id, source_version) = upload
+        .map(|value| (value.source_id, value.source_version))
+        .unwrap_or_default();
+    Ok(p::DynamoOrbit {
+        points_m: line
+            .iter()
+            .map(|point| p::Vector3d {
+                x: point.x * 1000.0,
+                y: point.y * 1000.0,
+                z: point.z * 1000.0,
+            })
+            .collect(),
+        closed: true,
+        coverage: Some(dyno_range(interval)?),
+        source_id,
+        source_version,
+    })
+}
+
 impl ProtocolAdapter {
     /// Host must supply an authenticated, authorized principal; this only validates shape/session.
     pub fn query_bytes(
@@ -737,6 +774,12 @@ impl ProtocolAdapter {
             }
             p::query_envelope::Payload::EvaluateDynamo(query) => {
                 p::response_envelope::Payload::Dynamo(evaluate_dynamo(dispatcher.engine(), query)?)
+            }
+            p::query_envelope::Payload::DynamoOrbit(query) => {
+                p::response_envelope::Payload::DynamoOrbit(evaluate_dynamo_orbit(
+                    dispatcher.engine(),
+                    query,
+                )?)
             }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)

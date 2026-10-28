@@ -97,6 +97,8 @@ const r = await client.query({
 
 索引DYN需宿主先解析分段；本查询拒绝索引文件。资源缺失/未就绪返回`PROVIDER_UNAVAILABLE`，错误尺度/类型/字节返回`INVALID_ARGUMENT`。查询只读、不推进时钟/事件/历史；结果只用于更新提供者帧或显示，不得在TS外推覆盖范围外时刻。
 
+只读`query.dynamo_orbit`返回最近历元椭圆轨道的米制闭合折线（`samples=0`默认160，显式3..=1024）、TDB覆盖与来源。它只用于显示轨道，不能当科学轨迹或位置查询；宿主只能把点组装成管道/线图元，禁止在TS重算开普勒根数或轨道点。
+
 ## M3-1a 分层资源预算契约（0.0.1开发增量）
 
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。

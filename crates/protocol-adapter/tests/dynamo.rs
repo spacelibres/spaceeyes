@@ -373,3 +373,74 @@ fn rejects_wrong_scale_missing_wrong_type_and_index_resources() {
     };
     assert_eq!(code(query(&a, empty)), p::ErrorCode::InvalidArgument);
 }
+
+fn orbit_query(a: &ProtocolAdapter, query: p::DynamoOrbitQuery) -> p::ResponseEnvelope {
+    let envelope = p::QueryEnvelope {
+        context: Some(context("dynamo-orbit")),
+        payload: Some(p::query_envelope::Payload::DynamoOrbit(query)),
+    };
+    p::ResponseEnvelope::decode(
+        a.query_bytes("owner", &envelope.encode_to_vec())
+            .unwrap()
+            .as_slice(),
+    )
+    .unwrap()
+}
+
+#[test]
+fn evaluates_an_uploaded_orbit_polyline() {
+    let mut a = adapter();
+    upload(&mut a, "dyn:orb", &orb_bytes());
+    upload(&mut a, "dyn:ori", &quat_bytes());
+    let response = orbit_query(
+        &a,
+        p::DynamoOrbitQuery {
+            resource: Some(p::ResourceId {
+                value: "dyn:orb".into(),
+            }),
+            instant: Some(instant(0, 0)),
+            samples: 4,
+        },
+    );
+    assert_eq!(
+        response.status,
+        p::ResponseStatus::Completed as i32,
+        "{response:?}"
+    );
+    let p::response_envelope::Payload::DynamoOrbit(orbit) = response.payload.unwrap() else {
+        panic!()
+    };
+    assert_eq!(orbit.points_m.len(), 4);
+    assert!(orbit.closed);
+    assert!((orbit.points_m[0].x - 1000.0).abs() < 1e-9);
+    assert!(orbit.points_m[0].y.abs() < 1e-9);
+    assert!(orbit.points_m[1].x.abs() < 1e-9);
+    assert!((orbit.points_m[1].y - 1000.0).abs() < 1e-9);
+    assert_eq!(orbit.coverage.unwrap().start.unwrap().seconds, 0);
+    assert_eq!(orbit.source_id, "synthetic");
+    assert_eq!(orbit.source_version, "v1");
+
+    let too_few = orbit_query(
+        &a,
+        p::DynamoOrbitQuery {
+            resource: Some(p::ResourceId {
+                value: "dyn:orb".into(),
+            }),
+            instant: Some(instant(0, 0)),
+            samples: 2,
+        },
+    );
+    assert_eq!(code(too_few), p::ErrorCode::InvalidArgument);
+
+    let wrong_type = orbit_query(
+        &a,
+        p::DynamoOrbitQuery {
+            resource: Some(p::ResourceId {
+                value: "dyn:ori".into(),
+            }),
+            instant: Some(instant(0, 0)),
+            samples: 4,
+        },
+    );
+    assert_eq!(code(wrong_type), p::ErrorCode::InvalidArgument);
+}

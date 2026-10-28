@@ -53,4 +53,5 @@ pub const OPERATIONS: &[&str] = &[
     "query.upload",
     "query.time_convert",
     "query.evaluate_dynamo",
+    "query.dynamo_orbit",
 ];

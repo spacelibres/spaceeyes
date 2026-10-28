@@ -253,3 +253,8 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 新增`dynamo.proto`：`EvaluateDynamoQuery{optional ResourceId position=1, optional ResourceId orientation=2, TimeInstant instant=3, DynamoBody body=4}`、`DynamoState{status=1, optional position_m=2, velocity_mps=3, orientation=4, angular_velocity_radps=5, optional TimeRange coverage=6, source_id=7, source_version=8}`；`DynamoStatus`为READY/OUT_OF_RANGE/INVALID_SAMPLES/UNSUPPORTED_ORBIT，`DynamoBody`为主/次天体。`QueryEnvelope.evaluate_dynamo=33`，`ResponseEnvelope.dynamo=24`，能力`query.evaluate_dynamo`总数42。
 
 查询只读：要求`TimeInstant`为TDB/J2000，位置资源必须是orb/pos/lin、姿态资源必须是ori/quat，至少提供一个；字节必须来自已就绪CPU上传且为内联DYN，索引文件显式拒绝（宿主需先解析分段）。Rust在核心解析并求值，位置/速度由km、km/s转换为m、m/s；覆盖区间以TDB/J2000返回；资源缺失/未就绪返回`PROVIDER_UNAVAILABLE`，字节/类型/尺度错误返回`INVALID_ARGUMENT`。查询不推进时钟、不写事件、不消耗命令历史。M3a不做解析缓存；M3b将浏览器切到该查询并用结果更新提供者帧。
+
+## 核心轨道采样查询（M3b-1 切片）
+`dynamo.proto`新增`DynamoOrbitQuery{ResourceId resource=1, TimeInstant instant=2, uint32 samples=3}`与`DynamoOrbit{repeated Vector3d points_m=1, bool closed=2, TimeRange coverage=3, source_id=4, source_version=5}`；`QueryEnvelope.dynamo_orbit=34`、`ResponseEnvelope.dynamo_orbit=25`，能力`query.dynamo_orbit`总数43。
+
+查询要求资源为已就绪内联`orb` DYN、时刻TDB/J2000；`samples=0`默认160，显式值须在3..=1024。Rust按当前时刻最近的oscillating历元采样椭圆轨道并转换为米制闭合折线；双曲/抛物/零角速度/非orb资源/越界采样数显式`INVALID_ARGUMENT`。该折线仅用于显示，不是科学轨迹，也不得用于位置查询；查询只读、不推进时钟/事件/历史。宿主只负责把折线组装成管状网格/线图元与材质。

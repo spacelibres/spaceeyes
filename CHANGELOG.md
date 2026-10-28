@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 核心轨道采样查询（M3b-1，2026-10-28）
+- `crates/dynamo` 新增椭圆轨道几何：`solve_eccentric_anomaly`、`orbit_position_at`（km）、`nearest_orb_point`、`orbit_polyline`（3..=1024 采样、闭合折线），最近历元开普勒传播，双曲/抛物与零角速度显式拒绝。
+- Proto 新增 `DynamoOrbitQuery`/`DynamoOrbit`，`QueryEnvelope.dynamo_orbit=34`、`ResponseEnvelope.dynamo_orbit=25`，能力 `query.dynamo_orbit`（总数 43）；`samples=0` 默认 160，米制折线、TDB 覆盖与来源。
+- `protocol-adapter` 只读求值：要求已就绪内联 orb DYN 与 TDB/J2000；非 orb、非法采样数、双曲/抛物拒绝；查询不写状态。
+- 验证：6 项轨道 Rust 测试（圆轨道四分之一点、旋转姿态、偏心率近点、最近历元与平局、开普勒残差、非法请求）；新增 1 项 wire 测试；adapter 47 项。折线只用于显示，不是科学轨迹。
+
+
 ### 核心 DYN 求值查询（M3a，2026-10-28）
 - `ResourceManager` 新增只读 `ready_bytes(id)`/`source_of(id)`，不发放租约、不改变修订；`Engine` 暴露只读字节与来源。
 - Proto 新增 `dynamo.proto`：`EvaluateDynamoQuery`/`DynamoState`/`DynamoStatus`/`DynamoBody`，`QueryEnvelope.evaluate_dynamo=33`、`ResponseEnvelope.dynamo=24`，能力 `query.evaluate_dynamo`（总数 42）。

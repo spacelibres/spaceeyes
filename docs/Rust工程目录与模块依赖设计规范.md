@@ -185,3 +185,7 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 ## M3a 核心DYN求值查询（0.0.1）
 
 `ResourceManager`新增只读`ready_bytes(id)`与`source_of(id)`，不发放租约、不改变修订；`Engine`暴露`ready_resource_bytes`/`resource_source`。`protocol-adapter`新增只读`query.evaluate_dynamo`：校验TDB/J2000时刻、位置/姿态资源类型与就绪状态，调用`crates/dynamo`解析求值，返回米制位置/速度、WXYZ姿态、角速度、TDB覆盖区间与上传来源；位置km→m、速度km/s→m/s在核心完成，TS不参与。索引DYN、缺失/未就绪资源、错误尺度/类型均结构化拒绝。本轮不做解析缓存（M5性能阶段再评估）；查询不写Engine状态。
+
+## M3b-1 核心轨道采样（0.0.1）
+
+`crates/dynamo`新增`orbit_position_at`（椭圆最近历元开普勒传播，km）、`solve_eccentric_anomaly`、`nearest_orb_point`与`orbit_polyline`（3..=1024采样，闭合折线）。`query.dynamo_orbit`在核心读取已就绪orb资源、按TDB/J2000时刻采样并转换为米制点；双曲/抛物、零角速度、非orb资源与非法采样数拒绝。折线仅用于显示，不能回答位置查询；管状网格/线图元与材质仍由宿主组装，但不得在TS重算轨道或历元。
