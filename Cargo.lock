@@ -1271,6 +1271,7 @@ dependencies = [
  "protoc-bin-vendored",
  "sha2",
  "spaceeyes-astro",
+ "spaceeyes-dynamo",
  "spaceeyes-engine",
  "spaceeyes-foundation",
  "spaceeyes-geometry",

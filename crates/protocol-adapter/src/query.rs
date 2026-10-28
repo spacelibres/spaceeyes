@@ -192,6 +192,193 @@ fn convert_time(query: p::TimeConversionQuery) -> Result<p::TimeConversion, Prot
     })
 }
 
+fn dyno_time(instant: &spaceeyes_time::TimeInstant) -> Result<f64, ProtocolError> {
+    if instant.scale() != "TDB" || instant.epoch() != "J2000" {
+        return Err(ProtocolError::InvalidContext);
+    }
+    Ok(instant.seconds() as f64 + f64::from(instant.nanos()) / 1_000_000_000.0)
+}
+
+fn dyno_instant(seconds: f64) -> Result<p::TimeInstant, ProtocolError> {
+    if !seconds.is_finite() {
+        return Err(ProtocolError::InvalidContext);
+    }
+    let floor = seconds.floor();
+    let mut nanos = ((seconds - floor) * 1_000_000_000.0).round();
+    let mut whole = floor;
+    if nanos >= 1_000_000_000.0 {
+        nanos -= 1_000_000_000.0;
+        whole += 1.0;
+    }
+    if whole < i64::MIN as f64 || whole > i64::MAX as f64 {
+        return Err(ProtocolError::InvalidContext);
+    }
+    Ok(p::TimeInstant {
+        time_scale: p::TimeScale::Tdb as i32,
+        epoch_id: "J2000".into(),
+        seconds: whole as i64,
+        nanos: nanos as u32,
+    })
+}
+
+fn dyno_range(interval: spaceeyes_dynamo::DynInterval) -> Result<p::TimeRange, ProtocolError> {
+    Ok(p::TimeRange {
+        start: Some(dyno_instant(interval.min)?),
+        end: Some(dyno_instant(interval.max)?),
+        include_start: true,
+        include_end: true,
+    })
+}
+
+fn dyno_status(reason: spaceeyes_dynamo::EvaluationReason) -> p::DynamoStatus {
+    match reason {
+        spaceeyes_dynamo::EvaluationReason::OutOfRange => p::DynamoStatus::OutOfRange,
+        spaceeyes_dynamo::EvaluationReason::InvalidSamples => p::DynamoStatus::InvalidSamples,
+        spaceeyes_dynamo::EvaluationReason::UnsupportedOrbit => p::DynamoStatus::UnsupportedOrbit,
+    }
+}
+
+fn dyno_body(value: i32) -> Result<Option<spaceeyes_dynamo::Body>, ProtocolError> {
+    match p::DynamoBody::try_from(value) {
+        Ok(p::DynamoBody::Unspecified) => Ok(None),
+        Ok(p::DynamoBody::Primary) => Ok(Some(spaceeyes_dynamo::Body::Primary)),
+        Ok(p::DynamoBody::Secondary) => Ok(Some(spaceeyes_dynamo::Body::Secondary)),
+        Err(_) => Err(ProtocolError::InvalidContext),
+    }
+}
+
+fn read_dyn_window(
+    engine: &spaceeyes_engine::Engine,
+    id: &spaceeyes_foundation::ResourceId,
+) -> Result<
+    (
+        spaceeyes_dynamo::DynHeader,
+        Vec<spaceeyes_dynamo::DynPoint>,
+        spaceeyes_dynamo::DynInterval,
+        Option<spaceeyes_resources::UploadSource>,
+    ),
+    ProtocolError,
+> {
+    let bytes = engine
+        .ready_resource_bytes(id)
+        .map_err(|_| ProtocolError::ResourceUnavailable)?;
+    let file = spaceeyes_dynamo::parse_dyn(&bytes).map_err(|_| ProtocolError::InvalidContext)?;
+    let interval = file.interval.ok_or(ProtocolError::InvalidContext)?;
+    let source = engine.resource_source(id);
+    Ok((file.header, file.points, interval, source))
+}
+
+fn evaluate_dynamo(
+    engine: &spaceeyes_engine::Engine,
+    query: p::EvaluateDynamoQuery,
+) -> Result<p::DynamoState, ProtocolError> {
+    use spaceeyes_dynamo::{EvaluationKind, EvaluationState, PointType};
+    let position_id = query.position.map(crate::decode_resource_id).transpose()?;
+    let orientation_id = query
+        .orientation
+        .map(crate::decode_resource_id)
+        .transpose()?;
+    if position_id.is_none() && orientation_id.is_none() {
+        return Err(ProtocolError::InvalidContext);
+    }
+    let instant = crate::decode_instant(query.instant.ok_or(ProtocolError::MissingField)?)?;
+    let time = dyno_time(&instant)?;
+    let body = dyno_body(query.body)?;
+
+    let mut status = p::DynamoStatus::Ready;
+    let mut position_m = None;
+    let mut velocity_mps = None;
+    let mut orientation = None;
+    let mut angular_velocity = None;
+    let mut coverage = None;
+    let mut source = None;
+
+    if let Some(id) = position_id {
+        let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
+        if !matches!(
+            header.point_type,
+            PointType::Orb | PointType::Pos | PointType::Lin
+        ) {
+            return Err(ProtocolError::InvalidContext);
+        }
+        let state = spaceeyes_dynamo::evaluate(&header, &points, interval, time, body);
+        coverage = Some(dyno_range(interval)?);
+        source = upload;
+        match state {
+            EvaluationState::Ready(EvaluationKind::Position { position, velocity }) => {
+                position_m = Some(p::Vector3d {
+                    x: position.x * 1000.0,
+                    y: position.y * 1000.0,
+                    z: position.z * 1000.0,
+                });
+                velocity_mps = Some(p::Vector3d {
+                    x: velocity.x * 1000.0,
+                    y: velocity.y * 1000.0,
+                    z: velocity.z * 1000.0,
+                });
+            }
+            EvaluationState::Unavailable(reason) => status = dyno_status(reason),
+            EvaluationState::Ready(EvaluationKind::Orientation { .. }) => {
+                return Err(ProtocolError::InvalidContext)
+            }
+        }
+    }
+
+    if let Some(id) = orientation_id {
+        let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
+        if !matches!(header.point_type, PointType::Ori | PointType::Quat) {
+            return Err(ProtocolError::InvalidContext);
+        }
+        let state = spaceeyes_dynamo::evaluate(&header, &points, interval, time, None);
+        if coverage.is_none() {
+            coverage = Some(dyno_range(interval)?);
+        }
+        if source.is_none() {
+            source = upload;
+        }
+        match state {
+            EvaluationState::Ready(EvaluationKind::Orientation {
+                orientation: value,
+                angular_velocity: angular,
+            }) => {
+                orientation = Some(p::Quaterniond {
+                    w: value.w,
+                    x: value.x,
+                    y: value.y,
+                    z: value.z,
+                });
+                angular_velocity = Some(p::Vector3d {
+                    x: angular.x,
+                    y: angular.y,
+                    z: angular.z,
+                });
+            }
+            EvaluationState::Unavailable(reason) => {
+                if status == p::DynamoStatus::Ready {
+                    status = dyno_status(reason);
+                }
+            }
+            EvaluationState::Ready(EvaluationKind::Position { .. }) => {
+                return Err(ProtocolError::InvalidContext)
+            }
+        }
+    }
+
+    let (source_id, source_version) = source
+        .map(|value| (value.source_id, value.source_version))
+        .unwrap_or_default();
+    Ok(p::DynamoState {
+        status: status as i32,
+        position_m,
+        velocity_mps,
+        orientation,
+        angular_velocity_radps: angular_velocity,
+        coverage,
+        source_id,
+        source_version,
+    })
+}
+
 impl ProtocolAdapter {
     /// Host must supply an authenticated, authorized principal; this only validates shape/session.
     pub fn query_bytes(
@@ -212,15 +399,14 @@ impl ProtocolAdapter {
         let result = self.query_envelope(principal_scope, envelope);
         let response = match result {
             Ok(r) => r,
-            Err(error) => rejection(
-                &id,
-                if error == ProtocolError::UnsupportedVersion {
-                    p::ErrorCode::UnsupportedVersion
-                } else {
-                    p::ErrorCode::InvalidArgument
-                },
-                format!("{error:?}"),
-            ),
+            Err(error) => {
+                let code = match error {
+                    ProtocolError::UnsupportedVersion => p::ErrorCode::UnsupportedVersion,
+                    ProtocolError::ResourceUnavailable => p::ErrorCode::ProviderUnavailable,
+                    _ => p::ErrorCode::InvalidArgument,
+                };
+                rejection(&id, code, format!("{error:?}"))
+            }
         };
         Ok(response.encode_to_vec())
     }
@@ -548,6 +734,9 @@ impl ProtocolAdapter {
             }
             p::query_envelope::Payload::TimeConversion(query) => {
                 p::response_envelope::Payload::TimeConversion(convert_time(query)?)
+            }
+            p::query_envelope::Payload::EvaluateDynamo(query) => {
+                p::response_envelope::Payload::Dynamo(evaluate_dynamo(dispatcher.engine(), query)?)
             }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)

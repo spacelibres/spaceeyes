@@ -52,4 +52,5 @@ pub const OPERATIONS: &[&str] = &[
     "resources.cancel_upload",
     "query.upload",
     "query.time_convert",
+    "query.evaluate_dynamo",
 ];

@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 SPACEEYES contributors
+syntax = "proto3";
+package spaceeyes.core.v1;
+import "spaceeyes/core/v1/common.proto";
+import "spaceeyes/core/v1/spatial.proto";
+import "spaceeyes/core/v1/time.proto";
+
+// Which body of a two-body pair an orb result is expressed for.
+enum DynamoBody {
+  DYNAMO_BODY_UNSPECIFIED = 0;
+  DYNAMO_BODY_PRIMARY = 1;
+  DYNAMO_BODY_SECONDARY = 2;
+}
+
+enum DynamoStatus {
+  DYNAMO_STATUS_UNSPECIFIED = 0;
+  DYNAMO_STATUS_READY = 1;
+  DYNAMO_STATUS_OUT_OF_RANGE = 2;
+  DYNAMO_STATUS_INVALID_SAMPLES = 3;
+  DYNAMO_STATUS_UNSUPPORTED_ORBIT = 4;
+}
+
+// Read-only evaluation of already-uploaded inline DYN bytes. Index files need a
+// host segment fetch and are rejected explicitly. The instant must be TDB/J2000.
+message EvaluateDynamoQuery {
+  optional ResourceId position = 1;
+  optional ResourceId orientation = 2;
+  TimeInstant instant = 3;
+  DynamoBody body = 4;
+}
+
+message DynamoState {
+  DynamoStatus status = 1;
+  optional Vector3d position_m = 2;
+  optional Vector3d velocity_mps = 3;
+  optional Quaterniond orientation = 4;
+  optional Vector3d angular_velocity_radps = 5;
+  optional TimeRange coverage = 6;
+  string source_id = 7;
+  string source_version = 8;
+}

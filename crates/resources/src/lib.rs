@@ -429,6 +429,20 @@ impl ResourceManager {
             .ok_or(ResourceError::InvalidLease)?;
         entry.data.as_deref().ok_or(ResourceError::NotReady)
     }
+    /// Read-only snapshot of a ready CPU byte asset by stable id. No lease is
+    /// issued and the resource revision is unchanged; callers must not cache the
+    /// value across mutations without recording the revision.
+    pub fn ready_bytes(&self, id: &ResourceId) -> Result<Arc<[u8]>, ResourceError> {
+        let entry = self.entries.get(id).ok_or(ResourceError::Unknown)?;
+        if entry.uploading || entry.state != ResourceState::Ready {
+            return Err(ResourceError::NotReady);
+        }
+        entry.data.clone().ok_or(ResourceError::NotReady)
+    }
+    /// Uploaded source metadata for a resource, if the entry still exists.
+    pub fn source_of(&self, id: &ResourceId) -> Option<UploadSource> {
+        self.entries.get(id).and_then(|entry| entry.source.clone())
+    }
     pub fn clear(&mut self) {
         self.uploads.clear();
         self.entries.clear();

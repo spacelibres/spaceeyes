@@ -8,12 +8,13 @@ import "spaceeyes/core/v1/scene.proto";
 import "spaceeyes/core/v1/resources.proto";
 import "spaceeyes/core/v1/spatial.proto";
 import "spaceeyes/core/v1/rendering.proto";
+import "spaceeyes/core/v1/dynamo.proto";
 import "spaceeyes/core/v1/project.proto";
 message CommandEnvelope { reserved 20, 21, 22, 30; RequestContext context=1; oneof payload { SceneCommand scene=2; TimeCommand time=3; ResourceCommand resource=4; SceneTransaction scene_transaction=7; SpatialCommand spatial=8; LifecycleCommand lifecycle=9; CameraCommand camera=10; } }
 enum ResponseStatus { RESPONSE_STATUS_UNSPECIFIED=0; RESPONSE_STATUS_ACCEPTED=1; RESPONSE_STATUS_COMPLETED=2; RESPONSE_STATUS_REJECTED=3; RESPONSE_STATUS_CANCELLED=4; RESPONSE_STATUS_FAILED=5; }
 message TimeResponse { ClockState clock=1; }
 message SceneResponse { uint64 revision=1; }
-message ResponseEnvelope { string request_id=1; ResponseStatus status=2; oneof payload { SceneResponse scene=3; TimeResponse time=4; ResourceResponse resource=5; Error error=6; SpatialResponse spatial=10; SessionStatus session=11; FrameResolution frame=12; Capabilities capabilities=13; FramePresented presented=14; PresentedSelection selection=15; CameraInfo camera=16; ResourceStats resource_stats=17; ResourceUploadStatus upload=18; ProjectSnapshot project=19; ObjectPage objects=20; EventPage events=21; FrameCoverage frame_coverage=22; TimeConversion time_conversion=23; } uint64 command_sequence=7; uint64 committed_scene_revision=8; uint64 frame_sequence=9; }
+message ResponseEnvelope { string request_id=1; ResponseStatus status=2; oneof payload { SceneResponse scene=3; TimeResponse time=4; ResourceResponse resource=5; Error error=6; SpatialResponse spatial=10; SessionStatus session=11; FrameResolution frame=12; Capabilities capabilities=13; FramePresented presented=14; PresentedSelection selection=15; CameraInfo camera=16; ResourceStats resource_stats=17; ResourceUploadStatus upload=18; ProjectSnapshot project=19; ObjectPage objects=20; EventPage events=21; FrameCoverage frame_coverage=22; TimeConversion time_conversion=23; DynamoState dynamo=24; } uint64 command_sequence=7; uint64 committed_scene_revision=8; uint64 frame_sequence=9; }
 
 message StartEngine {}
 message StopEngine {}
@@ -33,7 +34,7 @@ message CoreEvent { uint64 sequence=1; string session_id=2; CoreEventKind kind=3
 message ListObjectsQuery { optional string page_token=1; uint32 page_size=2; }
 message ObjectPage { repeated SceneObject objects=1; string next_page_token=2; uint64 scene_revision=3; }
 // Read-only: IDs do not participate in command idempotency history.
-message QueryEnvelope { reserved 2 to 9, 30; RequestContext context=1; oneof payload { SessionStatusQuery session_status=20; ResolveFrameQuery resolve_frame=21; CapabilitiesQuery capabilities=22; PickPresentedQuery pick_presented=23; CameraStateQuery camera_state=24; ResourceStatsQuery resource_stats=25; ResourceUploadQuery upload=26; ProjectExportQuery project_export=27; ListObjectsQuery list_objects=28; EventsQuery events=29; FrameCoverageQuery frame_coverage=31; TimeConversionQuery time_conversion=32; } }
+message QueryEnvelope { reserved 2 to 9, 30; RequestContext context=1; oneof payload { SessionStatusQuery session_status=20; ResolveFrameQuery resolve_frame=21; CapabilitiesQuery capabilities=22; PickPresentedQuery pick_presented=23; CameraStateQuery camera_state=24; ResourceStatsQuery resource_stats=25; ResourceUploadQuery upload=26; ProjectExportQuery project_export=27; ListObjectsQuery list_objects=28; EventsQuery events=29; FrameCoverageQuery frame_coverage=31; TimeConversionQuery time_conversion=32; EvaluateDynamoQuery evaluate_dynamo=33; } }
 
 message FocusCamera { ObjectId camera=1; ObjectId target=2; double distance_m=3; bool follow=4; }
 message CameraCommand { oneof action { FocusCamera focus=1; } }

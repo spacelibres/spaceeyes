@@ -79,6 +79,24 @@ await client.command({ case: "time", value: { action: { case: "seek", value: { i
 
 `TimeConversion.utc_regime`区分`OBSERVED`（表内）、`PREDICTED`（2027-01-01至2027-05-19短窗）与`CONTINUOUS`（2027-05-20起连续UTC，第28届CGPM 2026-10-15决议）。连续UTC后无闰秒、`TAI-UTC=37s`，`|UTC-UT1|`上限3600s的未来“闰时”尚未实现，不得声称支持。1972–2016历史闰秒仍保留，23:59:60只在这些历史日期有效。
 
+## M3a 核心DYN求值查询（0.0.1开发增量）
+
+公开只读`query.evaluate_dynamo`：输入已上传的内联DYN资源（位置限orb/pos/lin，姿态限ori/quat，至少一个）、TDB/J2000显式时刻与可选主/次天体。Rust核心解析求值并返回米制位置/速度、WXYZ姿态、角速度、TDB覆盖区间与上传来源；位置km→m、速度km/s→m/s在核心完成，TS不得再算轨道或插值。
+
+```ts
+const r = await client.query({
+  case: "evaluateDynamo",
+  value: {
+    position: { value: "dyn:earth" },
+    orientation: { value: "dyn:earth-ori" },
+    instant: { timeScale: TimeScale.TDB, epochId: "J2000", seconds: 0n, nanos: 0 },
+    body: DynamoBody.UNSPECIFIED,
+  },
+}, { requestId: "dyn:evaluate" });
+```
+
+索引DYN需宿主先解析分段；本查询拒绝索引文件。资源缺失/未就绪返回`PROVIDER_UNAVAILABLE`，错误尺度/类型/字节返回`INVALID_ARGUMENT`。查询只读、不推进时钟/事件/历史；结果只用于更新提供者帧或显示，不得在TS外推覆盖范围外时刻。
+
 ## M3-1a 分层资源预算契约（0.0.1开发增量）
 
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。

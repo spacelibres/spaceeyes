@@ -37,6 +37,8 @@ pub enum ProtocolError {
     UnsupportedVersion,
     /// The container digest does not match its payload.
     IntegrityMismatch,
+    /// A referenced ready resource is missing or not ready.
+    ResourceUnavailable,
 }
 impl From<CoreError> for ProtocolError {
     fn from(_: CoreError) -> Self {

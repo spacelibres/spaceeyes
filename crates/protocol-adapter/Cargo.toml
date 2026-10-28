@@ -14,6 +14,7 @@ spaceeyes-scene = { path = "../scene" }
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-time = { path = "../time" }
 spaceeyes-astro = { path = "../astro" }
+spaceeyes-dynamo = { path = "../dynamo" }
 prost = "0.13"
 sha2 = "=0.11.0"
 

@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 核心 DYN 求值查询（M3a，2026-10-28）
+- `ResourceManager` 新增只读 `ready_bytes(id)`/`source_of(id)`，不发放租约、不改变修订；`Engine` 暴露只读字节与来源。
+- Proto 新增 `dynamo.proto`：`EvaluateDynamoQuery`/`DynamoState`/`DynamoStatus`/`DynamoBody`，`QueryEnvelope.evaluate_dynamo=33`、`ResponseEnvelope.dynamo=24`，能力 `query.evaluate_dynamo`（总数 42）。
+- `protocol-adapter` 在 Rust 核心完成解析与求值：要求 TDB/J2000，位置资源限 orb/pos/lin、姿态资源限 ori/quat，至少一个；位置/速度 km→m、km/s→m/s，返回 WXYZ 姿态、角速度、TDB 覆盖区间与上传来源。索引文件、缺失/未就绪资源、错误尺度/类型显式拒绝；查询不推进时钟/事件/历史。
+- 验证：新增 3 项 wire 测试（上传→求值→覆盖/来源、位置+姿态组合、错误尺度/缺失/错类型/索引/空输入）；adapter 全套 46 项通过；SDK 生成 9 类；Web typecheck。解析缓存留待 M5 性能阶段。
+
+
 ### TS oracle 黄金对照（M2c，2026-10-28）
 - 新增一次性生成器 `packages/nasa-dynamo/scripts/emit-golden.mjs` 与 `npm run golden`：从固定 TS 参考输出 23 个合成案例到 `crates/dynamo/tests/golden/synthetic.tsv`（字节、时刻、body、状态/原因/类型与数值），不含 NASA 资产。
 - 新增 Rust `tests/golden.rs`：对同一字节与参数执行 `evaluate`，逐字段比较位置/速度或姿态/角速度，绝对容差 1e-9、四元数按 ± 等价；23 例全部通过。

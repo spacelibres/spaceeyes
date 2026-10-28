@@ -1443,6 +1443,16 @@ impl Engine {
     pub fn resource_bytes(&self, lease: &LeaseId) -> Result<&[u8], ResourceError> {
         self.resources.read(lease)
     }
+    /// Read-only ready CPU bytes by id for core decoders. No revision changes.
+    pub fn ready_resource_bytes(
+        &self,
+        id: &ResourceId,
+    ) -> Result<std::sync::Arc<[u8]>, ResourceError> {
+        self.resources.ready_bytes(id)
+    }
+    pub fn resource_source(&self, id: &ResourceId) -> Option<spaceeyes_resources::UploadSource> {
+        self.resources.source_of(id)
+    }
     pub fn begin_shutdown(&mut self) {
         if matches!(self.state, EngineState::Stopped | EngineState::Stopping) {
             return;

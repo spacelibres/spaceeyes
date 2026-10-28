@@ -248,3 +248,8 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 
 ## 连续 UTC 表字段（2026-10 增补）
 `TimeConversion` 追加 `utc_regime=7`，枚举 `UtcRegime`：UNSPECIFIED=0、OBSERVED=1、PREDICTED=2、CONTINUOUS=3。`CONTINUOUS` 表示 2027-05-20 起连续 UTC 已生效（第 28 届 CGPM 2026-10-15 决议），不再有闰秒；`PREDICTED` 仅用于 2027-01-01 至 2027-05-19 的短预测窗。`predicted` 布尔保留但只在该窗口为 true；旧客户端忽略新字段仍可读取其余结果。该字段只描述 UTC 定义状态，不改变 TimeInstant 的尺度/历元，也不表示 3600 秒“闰时”已实现。
+
+## 核心 DYN 求值查询（M3a 切片）
+新增`dynamo.proto`：`EvaluateDynamoQuery{optional ResourceId position=1, optional ResourceId orientation=2, TimeInstant instant=3, DynamoBody body=4}`、`DynamoState{status=1, optional position_m=2, velocity_mps=3, orientation=4, angular_velocity_radps=5, optional TimeRange coverage=6, source_id=7, source_version=8}`；`DynamoStatus`为READY/OUT_OF_RANGE/INVALID_SAMPLES/UNSUPPORTED_ORBIT，`DynamoBody`为主/次天体。`QueryEnvelope.evaluate_dynamo=33`，`ResponseEnvelope.dynamo=24`，能力`query.evaluate_dynamo`总数42。
+
+查询只读：要求`TimeInstant`为TDB/J2000，位置资源必须是orb/pos/lin、姿态资源必须是ori/quat，至少提供一个；字节必须来自已就绪CPU上传且为内联DYN，索引文件显式拒绝（宿主需先解析分段）。Rust在核心解析并求值，位置/速度由km、km/s转换为m、m/s；覆盖区间以TDB/J2000返回；资源缺失/未就绪返回`PROVIDER_UNAVAILABLE`，字节/类型/尺度错误返回`INVALID_ARGUMENT`。查询不推进时钟、不写事件、不消耗命令历史。M3a不做解析缓存；M3b将浏览器切到该查询并用结果更新提供者帧。

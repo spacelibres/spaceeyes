@@ -181,3 +181,7 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 ## M2c TS oracle 黄金对照（0.0.1）
 
 `packages/nasa-dynamo/scripts/emit-golden.mjs` 用固定TS参考生成23个合成案例（圆轨道、重心主/次、Hermite、线性、±四元数SLERP、ori投影/插值、双曲、越界、重复、抛物、零轴、负质量比、NaN），输出`crates/dynamo/tests/golden/synthetic.tsv`。Rust `tests/golden.rs` 对同一字节、时刻与body参数执行`evaluate`，逐字段比较（位置/速度或姿态/角速度，绝对容差1e-9，四元数按±等价）；所有23例通过。夹具为合成数据，不含NASA资产；仅当参考实现有意变更时运行`npm run golden --workspace @spaceeyes/nasa-dynamo`重生成。
+
+## M3a 核心DYN求值查询（0.0.1）
+
+`ResourceManager`新增只读`ready_bytes(id)`与`source_of(id)`，不发放租约、不改变修订；`Engine`暴露`ready_resource_bytes`/`resource_source`。`protocol-adapter`新增只读`query.evaluate_dynamo`：校验TDB/J2000时刻、位置/姿态资源类型与就绪状态，调用`crates/dynamo`解析求值，返回米制位置/速度、WXYZ姿态、角速度、TDB覆盖区间与上传来源；位置km→m、速度km/s→m/s在核心完成，TS不参与。索引DYN、缺失/未就绪资源、错误尺度/类型均结构化拒绝。本轮不做解析缓存（M5性能阶段再评估）；查询不写Engine状态。
