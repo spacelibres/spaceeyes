@@ -1,4 +1,4 @@
-# SPACEEYES Proto数据结构与消息字段设计规范
+﻿# SPACEEYES Proto数据结构与消息字段设计规范
 
 版本：0.0.1｜状态：第09阶段设计草案｜日期：2026-10-27
 范围：Markdown字段设计，不创建.proto文件、不编译、不进行工程测试。
@@ -242,7 +242,7 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 ## Rust 科学时间换算查询（M1b 切片）
 `time.proto`新增`UtcDateTime{year=1,month=2,day=3,hour=4,minute=5,second=6,nanos=7}`、`TimeConversionQuery{oneof input{utc=1,instant=2}}`与`TimeConversion{utc=1,tdb=2,tt=3,tai=4,tt_minus_utc_nanos=5,predicted=6}`；`QueryEnvelope`追加`time_conversion=32`，`ResponseEnvelope`追加`time_conversion=23`，命令保留位不变。能力新增`query.time_convert`，总数41。
 
-输入为UTC日历时校验公历、闰秒日与1972–2100范围；输入为`TimeInstant`时只接受TAI/TT/TDB且epoch必须为`J2000`，裸UTC拒绝。输出同时返回UTC日历、TAI/TT/TDB显式时刻、TT−UTC纳秒与“表后预测”标志；全部换算在Rust `spaceeyes-astro`完成，查询只读、不推进时钟、不消耗命令历史、不写事件。错误统一`INVALID_ARGUMENT`且不改变会话状态。
+输入为UTC日历时校验公历、闰秒日与1972–2100范围；输入为`TimeInstant`时只接受TAI/TT/TDB且epoch必须为`J2000`，裸UTC拒绝。输出同时返回UTC日历、TAI/TT/TDB显式时刻、TT−UTC纳秒与“表后预测”标志；全部换算在Rust `spaceeyes-time`完成，查询只读、不推进时钟、不消耗命令历史、不写事件。错误统一`INVALID_ARGUMENT`且不改变会话状态。
 
 浏览器初始时钟改为`TDB/J2000`，UTC显示与“按UTC跳转”都经该查询；TypeScript只做ISO文本到字段的输入解析与结果显示，不做尺度换算。这不改变旧wire字段，也不把UTC当作核心内部默认尺度。
 

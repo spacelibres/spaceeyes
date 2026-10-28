@@ -27,118 +27,7 @@ pub enum SpatialError {
     DerivativeUnavailable,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Vec3d {
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-}
-impl Vec3d {
-    pub const ZERO: Self = Self {
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    };
-    fn finite(self) -> bool {
-        self.x.is_finite() && self.y.is_finite() && self.z.is_finite()
-    }
-    fn add(self, rhs: Self) -> Self {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-            z: self.z + rhs.z,
-        }
-    }
-    fn sub(self, rhs: Self) -> Self {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-            z: self.z - rhs.z,
-        }
-    }
-    fn cross(self, rhs: Self) -> Self {
-        Self {
-            x: self.y * rhs.z - self.z * rhs.y,
-            y: self.z * rhs.x - self.x * rhs.z,
-            z: self.x * rhs.y - self.y * rhs.x,
-        }
-    }
-    fn neg(self) -> Self {
-        Self {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-        }
-    }
-}
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Quatd {
-    pub w: f64,
-    pub x: f64,
-    pub y: f64,
-    pub z: f64,
-}
-impl Quatd {
-    pub const IDENTITY: Self = Self {
-        w: 1.0,
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-    };
-    fn finite(self) -> bool {
-        [self.w, self.x, self.y, self.z]
-            .iter()
-            .all(|v| v.is_finite())
-    }
-    fn norm_squared(self) -> f64 {
-        self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z
-    }
-    fn normalized(self) -> Result<Self, SpatialError> {
-        if !self.finite() {
-            return Err(SpatialError::InvalidTransform);
-        }
-        let norm = self.norm_squared().sqrt();
-        if !norm.is_finite() || norm <= 1e-12 {
-            return Err(SpatialError::InvalidTransform);
-        }
-        Ok(Self {
-            w: self.w / norm,
-            x: self.x / norm,
-            y: self.y / norm,
-            z: self.z / norm,
-        })
-    }
-    fn conjugate(self) -> Self {
-        Self {
-            w: self.w,
-            x: -self.x,
-            y: -self.y,
-            z: -self.z,
-        }
-    }
-    fn mul(self, b: Self) -> Self {
-        Self {
-            w: self.w * b.w - self.x * b.x - self.y * b.y - self.z * b.z,
-            x: self.w * b.x + self.x * b.w + self.y * b.z - self.z * b.y,
-            y: self.w * b.y - self.x * b.z + self.y * b.w + self.z * b.x,
-            z: self.w * b.z + self.x * b.y - self.y * b.x + self.z * b.w,
-        }
-    }
-    fn rotate(self, v: Vec3d) -> Vec3d {
-        let q = Self {
-            w: 0.0,
-            x: v.x,
-            y: v.y,
-            z: v.z,
-        };
-        let rotated = self.mul(q).mul(self.conjugate());
-        Vec3d {
-            x: rotated.x,
-            y: rotated.y,
-            z: rotated.z,
-        }
-    }
-}
+pub use spaceeyes_math::{Quatd, Vec3d};
 
 /// Maps source-frame coordinates into target-frame coordinates:
 /// p_target = rotation * p_source + translation_m.
@@ -158,17 +47,19 @@ impl RigidTransform {
         }
         Ok(Self {
             translation_m,
-            rotation: rotation.normalized()?,
+            rotation: rotation
+                .normalized()
+                .ok_or(SpatialError::InvalidTransform)?,
         })
     }
     pub fn apply(self, p: Vec3d) -> Vec3d {
-        self.rotation.rotate(p).add(self.translation_m)
+        self.rotation.rotate(p).add_vec(self.translation_m)
     }
     pub fn inverse(self) -> Self {
         let rotation = self.rotation.conjugate();
         Self {
             rotation,
-            translation_m: rotation.rotate(self.translation_m.neg()),
+            translation_m: rotation.rotate(self.translation_m.negated()),
         }
     }
     /// self after previous: A->B (previous), B->C (self), yields A->C.
@@ -177,8 +68,8 @@ impl RigidTransform {
             translation_m: self
                 .rotation
                 .rotate(previous.translation_m)
-                .add(self.translation_m),
-            rotation: self.rotation.mul(previous.rotation),
+                .add_vec(self.translation_m),
+            rotation: self.rotation.multiply(previous.rotation),
         }
     }
 }
@@ -223,7 +114,7 @@ impl FrameState {
         let offset = self.transform.rotation.rotate(source_point_m);
         self.derivative
             .linear_velocity_m_s
-            .add(self.derivative.angular_velocity_rad_s.cross(offset))
+            .add_vec(self.derivative.angular_velocity_rad_s.cross(offset))
     }
 }
 
@@ -778,8 +669,8 @@ fn compose_state(parent: FrameState, child: FrameState) -> Result<FrameState, Sp
             .transform
             .rotation
             .rotate(child.transform.translation_m)
-            .add(parent.transform.translation_m),
-        parent.transform.rotation.mul(child.transform.rotation),
+            .add_vec(parent.transform.translation_m),
+        parent.transform.rotation.multiply(child.transform.rotation),
     )?;
     let rotated_translation = parent
         .transform
@@ -790,18 +681,18 @@ fn compose_state(parent: FrameState, child: FrameState) -> Result<FrameState, Sp
             .transform
             .rotation
             .rotate(child.derivative.linear_velocity_m_s)
-            .add(
+            .add_vec(
                 parent
                     .derivative
                     .angular_velocity_rad_s
                     .cross(rotated_translation),
             )
-            .add(parent.derivative.linear_velocity_m_s),
+            .add_vec(parent.derivative.linear_velocity_m_s),
         angular_velocity_rad_s: parent
             .transform
             .rotation
             .rotate(child.derivative.angular_velocity_rad_s)
-            .add(parent.derivative.angular_velocity_rad_s),
+            .add_vec(parent.derivative.angular_velocity_rad_s),
     };
     if !derivative.finite() {
         return Err(SpatialError::InvalidTransform);
@@ -819,11 +710,11 @@ fn invert_state(state: FrameState) -> Result<FrameState, SpatialError> {
                 .derivative
                 .angular_velocity_rad_s
                 .cross(state.transform.translation_m)
-                .sub(state.derivative.linear_velocity_m_s),
+                .sub_vec(state.derivative.linear_velocity_m_s),
         ),
         angular_velocity_rad_s: transform
             .rotation
-            .rotate(state.derivative.angular_velocity_rad_s.neg()),
+            .rotate(state.derivative.angular_velocity_rad_s.negated()),
     };
     if !derivative.finite() {
         return Err(SpatialError::InvalidTransform);

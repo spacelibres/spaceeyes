@@ -114,7 +114,7 @@ fn rejection(id: &str, code: p::ErrorCode, message: String) -> p::ResponseEnvelo
         ..Default::default()
     }
 }
-fn encode_utc(value: spaceeyes_astro::UtcDateTime) -> p::UtcDateTime {
+fn encode_utc(value: spaceeyes_time::UtcDateTime) -> p::UtcDateTime {
     p::UtcDateTime {
         year: value.year(),
         month: u32::from(value.month()),
@@ -126,8 +126,8 @@ fn encode_utc(value: spaceeyes_astro::UtcDateTime) -> p::UtcDateTime {
     }
 }
 
-fn decode_utc(value: p::UtcDateTime) -> Result<spaceeyes_astro::UtcDateTime, ProtocolError> {
-    spaceeyes_astro::UtcDateTime::new(
+fn decode_utc(value: p::UtcDateTime) -> Result<spaceeyes_time::UtcDateTime, ProtocolError> {
+    spaceeyes_time::UtcDateTime::new(
         value.year,
         u8::try_from(value.month).map_err(|_| ProtocolError::InvalidTime)?,
         u8::try_from(value.day).map_err(|_| ProtocolError::InvalidTime)?,
@@ -139,17 +139,17 @@ fn decode_utc(value: p::UtcDateTime) -> Result<spaceeyes_astro::UtcDateTime, Pro
     .map_err(|_| ProtocolError::InvalidTime)
 }
 
-fn encode_utc_regime(regime: Option<spaceeyes_astro::UtcRegime>) -> p::UtcRegime {
+fn encode_utc_regime(regime: Option<spaceeyes_time::UtcRegime>) -> p::UtcRegime {
     match regime {
-        Some(spaceeyes_astro::UtcRegime::Observed) => p::UtcRegime::Observed,
-        Some(spaceeyes_astro::UtcRegime::Predicted) => p::UtcRegime::Predicted,
-        Some(spaceeyes_astro::UtcRegime::Continuous) => p::UtcRegime::Continuous,
+        Some(spaceeyes_time::UtcRegime::Observed) => p::UtcRegime::Observed,
+        Some(spaceeyes_time::UtcRegime::Predicted) => p::UtcRegime::Predicted,
+        Some(spaceeyes_time::UtcRegime::Continuous) => p::UtcRegime::Continuous,
         None => p::UtcRegime::Unspecified,
     }
 }
 
 fn convert_time(query: p::TimeConversionQuery) -> Result<p::TimeConversion, ProtocolError> {
-    use spaceeyes_astro as astro;
+    use spaceeyes_time as astro;
     let tai = match query.input.ok_or(ProtocolError::MissingField)? {
         p::time_conversion_query::Input::Utc(value) => {
             let utc = decode_utc(value)?;
@@ -230,49 +230,63 @@ fn dyno_range(interval: spaceeyes_dynamo::DynInterval) -> Result<p::TimeRange, P
     })
 }
 
-fn dyno_status(reason: spaceeyes_dynamo::EvaluationReason) -> p::DynamoStatus {
+fn dyno_status(reason: spaceeyes_astro::EvaluationReason) -> p::DynamoStatus {
     match reason {
-        spaceeyes_dynamo::EvaluationReason::OutOfRange => p::DynamoStatus::OutOfRange,
-        spaceeyes_dynamo::EvaluationReason::InvalidSamples => p::DynamoStatus::InvalidSamples,
-        spaceeyes_dynamo::EvaluationReason::UnsupportedOrbit => p::DynamoStatus::UnsupportedOrbit,
+        spaceeyes_astro::EvaluationReason::OutOfRange => p::DynamoStatus::OutOfRange,
+        spaceeyes_astro::EvaluationReason::InvalidSamples => p::DynamoStatus::InvalidSamples,
+        spaceeyes_astro::EvaluationReason::UnsupportedOrbit => p::DynamoStatus::UnsupportedOrbit,
     }
 }
 
-fn dyno_body(value: i32) -> Result<Option<spaceeyes_dynamo::Body>, ProtocolError> {
+fn dyno_body(value: i32) -> Result<Option<spaceeyes_astro::Body>, ProtocolError> {
     match p::DynamoBody::try_from(value) {
         Ok(p::DynamoBody::Unspecified) => Ok(None),
-        Ok(p::DynamoBody::Primary) => Ok(Some(spaceeyes_dynamo::Body::Primary)),
-        Ok(p::DynamoBody::Secondary) => Ok(Some(spaceeyes_dynamo::Body::Secondary)),
+        Ok(p::DynamoBody::Primary) => Ok(Some(spaceeyes_astro::Body::Primary)),
+        Ok(p::DynamoBody::Secondary) => Ok(Some(spaceeyes_astro::Body::Secondary)),
         Err(_) => Err(ProtocolError::InvalidContext),
     }
+}
+
+struct DynWindow {
+    point_type: spaceeyes_dynamo::PointType,
+    points: Vec<spaceeyes_astro::EphemerisPoint>,
+    interval: spaceeyes_astro::Interval,
+    masses: Option<spaceeyes_astro::MassParameters>,
+    source: Option<spaceeyes_resources::UploadSource>,
 }
 
 fn read_dyn_window(
     engine: &spaceeyes_engine::Engine,
     id: &spaceeyes_foundation::ResourceId,
-) -> Result<
-    (
-        spaceeyes_dynamo::DynHeader,
-        Vec<spaceeyes_dynamo::DynPoint>,
-        spaceeyes_dynamo::DynInterval,
-        Option<spaceeyes_resources::UploadSource>,
-    ),
-    ProtocolError,
-> {
+) -> Result<DynWindow, ProtocolError> {
     let bytes = engine
         .ready_resource_bytes(id)
         .map_err(|_| ProtocolError::ResourceUnavailable)?;
     let file = spaceeyes_dynamo::parse_dyn(&bytes).map_err(|_| ProtocolError::InvalidContext)?;
     let interval = file.interval.ok_or(ProtocolError::InvalidContext)?;
     let source = engine.resource_source(id);
-    Ok((file.header, file.points, interval, source))
+    let masses =
+        file.header
+            .gravitational_parameters
+            .map(|parameters| spaceeyes_astro::MassParameters {
+                primary: parameters.mu1,
+                secondary: parameters.mu2,
+            });
+    Ok(DynWindow {
+        point_type: file.header.point_type,
+        points: file.points,
+        interval,
+        masses,
+        source,
+    })
 }
 
 fn evaluate_dynamo(
     engine: &spaceeyes_engine::Engine,
     query: p::EvaluateDynamoQuery,
 ) -> Result<p::DynamoState, ProtocolError> {
-    use spaceeyes_dynamo::{EvaluationKind, EvaluationState, PointType};
+    use spaceeyes_astro::{EvaluationKind, EvaluationState};
+    use spaceeyes_dynamo::PointType;
     let position_id = query.position.map(crate::decode_resource_id).transpose()?;
     let orientation_id = query
         .orientation
@@ -294,16 +308,17 @@ fn evaluate_dynamo(
     let mut source = None;
 
     if let Some(id) = position_id {
-        let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
+        let window = read_dyn_window(engine, &id)?;
         if !matches!(
-            header.point_type,
+            window.point_type,
             PointType::Orb | PointType::Pos | PointType::Lin
         ) {
             return Err(ProtocolError::InvalidContext);
         }
-        let state = spaceeyes_dynamo::evaluate(&header, &points, interval, time, body);
-        coverage = Some(dyno_range(interval)?);
-        source = upload;
+        let state =
+            spaceeyes_astro::evaluate(&window.points, window.interval, time, body, window.masses);
+        coverage = Some(dyno_range(window.interval)?);
+        source = window.source;
         match state {
             EvaluationState::Ready(EvaluationKind::Position { position, velocity }) => {
                 position_m = Some(p::Vector3d {
@@ -325,16 +340,17 @@ fn evaluate_dynamo(
     }
 
     if let Some(id) = orientation_id {
-        let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
-        if !matches!(header.point_type, PointType::Ori | PointType::Quat) {
+        let window = read_dyn_window(engine, &id)?;
+        if !matches!(window.point_type, PointType::Ori | PointType::Quat) {
             return Err(ProtocolError::InvalidContext);
         }
-        let state = spaceeyes_dynamo::evaluate(&header, &points, interval, time, None);
+        let state =
+            spaceeyes_astro::evaluate(&window.points, window.interval, time, None, window.masses);
         if coverage.is_none() {
-            coverage = Some(dyno_range(interval)?);
+            coverage = Some(dyno_range(window.interval)?);
         }
         if source.is_none() {
-            source = upload;
+            source = window.source;
         }
         match state {
             EvaluationState::Ready(EvaluationKind::Orientation {
@@ -391,13 +407,14 @@ fn evaluate_dynamo_orbit(
     } else {
         query.samples
     };
-    let (header, points, interval, upload) = read_dyn_window(engine, &id)?;
-    if header.point_type != spaceeyes_dynamo::PointType::Orb {
+    let window = read_dyn_window(engine, &id)?;
+    if window.point_type != spaceeyes_dynamo::PointType::Orb {
         return Err(ProtocolError::InvalidContext);
     }
-    let line = spaceeyes_dynamo::orbit_polyline(&header, &points, interval, time, samples)
+    let line = spaceeyes_astro::orbit_polyline(&window.points, window.interval, time, samples)
         .map_err(|_| ProtocolError::InvalidContext)?;
-    let (source_id, source_version) = upload
+    let (source_id, source_version) = window
+        .source
         .map(|value| (value.source_id, value.source_version))
         .unwrap_or_default();
     Ok(p::DynamoOrbit {
@@ -410,7 +427,7 @@ fn evaluate_dynamo_orbit(
             })
             .collect(),
         closed: true,
-        coverage: Some(dyno_range(interval)?),
+        coverage: Some(dyno_range(window.interval)?),
         source_id,
         source_version,
     })

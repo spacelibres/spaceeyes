@@ -14,16 +14,24 @@ export const DYNAMO_PLUGIN_ID = NASA_DYNAMO_MANIFEST.id;
 export interface DynamoPlugin {
   readonly manifest: PluginManifest;
   readonly factory: (context: PluginContext) => PluginInstance;
-  /** Loader for the currently enabled instance, or `undefined` when stopped. */
+  /** Raw bytes fetcher for the current instance; the core owns parsing. */
+  bytes():
+    | ((path: string, signal?: AbortSignal) => Promise<Uint8Array>)
+    | undefined;
+  /** Legacy parsed loader, retained for the migration oracle and tests only. */
   loader(): DynamoSegmentLoader | undefined;
 }
 
 /**
  * Adapter from the pure DYN package to the host context. The plugin never sees
- * the real transport; it can only request its declared NASA origin.
+ * the real transport; it can only request its declared NASA origin. The browser
+ * now uses `bytes()` and asks the Rust core to parse/evaluate.
  */
 export function createDynamoPlugin(): DynamoPlugin {
   let loader: DynamoSegmentLoader | undefined;
+  let fetcher:
+    | ((path: string, signal?: AbortSignal) => Promise<Uint8Array>)
+    | undefined;
   const manifest: PluginManifest = {
     id: NASA_DYNAMO_MANIFEST.id,
     version: NASA_DYNAMO_MANIFEST.version,
@@ -39,6 +47,8 @@ export function createDynamoPlugin(): DynamoPlugin {
     manifest,
     factory: (context) => ({
       start: async () => {
+        fetcher = (path, signal) =>
+          context.request(DYNAMO_ORIGIN, path, signal);
         loader = new DynamoSegmentLoader({
           fetchBytes: (path, signal) =>
             context.request(DYNAMO_ORIGIN, path, signal),
@@ -46,8 +56,10 @@ export function createDynamoPlugin(): DynamoPlugin {
       },
       stop: async () => {
         loader = undefined;
+        fetcher = undefined;
       },
     }),
+    bytes: () => fetcher,
     loader: () => loader,
   };
 }

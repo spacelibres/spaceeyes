@@ -4,34 +4,40 @@
 mod common;
 
 use common::*;
-use spaceeyes_dynamo::{
-    evaluate, parse_dyn, Body, DynHeader, DynInterval, DynPoint, EvaluationKind, EvaluationReason,
-    EvaluationState, Quat, Vec3,
+use spaceeyes_astro::{
+    evaluate, Body, EvaluationKind, EvaluationReason, EvaluationState, Interval, MassParameters,
 };
+use spaceeyes_dynamo::{parse_dyn, DynPoint, Quat, Vec3};
 
 struct Window {
-    header: DynHeader,
     points: Vec<DynPoint>,
-    interval: DynInterval,
+    interval: Interval,
+    masses: Option<MassParameters>,
 }
-
 impl Window {
     fn new(bytes: &[u8]) -> Self {
         let file = parse_dyn(bytes).expect("valid synthetic file");
         let interval = file.interval.expect("inline interval");
+        let masses = file
+            .header
+            .gravitational_parameters
+            .map(|parameters| MassParameters {
+                primary: parameters.mu1,
+                secondary: parameters.mu2,
+            });
         Self {
-            header: file.header,
             points: file.points,
             interval,
+            masses,
         }
     }
 
     fn eval(&self, time: f64) -> EvaluationState {
-        evaluate(&self.header, &self.points, self.interval, time, None)
+        evaluate(&self.points, self.interval, time, None, self.masses)
     }
 
     fn eval_body(&self, time: f64, body: Body) -> EvaluationState {
-        evaluate(&self.header, &self.points, self.interval, time, Some(body))
+        evaluate(&self.points, self.interval, time, Some(body), self.masses)
     }
 }
 
@@ -233,7 +239,11 @@ fn rejects_out_of_range_duplicate_mismatched_and_non_finite_windows() {
     );
 
     let mut mixed = Window::new(&duplicate.bytes());
-    mixed.header.point_type = spaceeyes_dynamo::PointType::Pos;
+    mixed.points[0] = DynPoint::Pos(spaceeyes_dynamo::PosPoint {
+        time: mixed.points[0].time(),
+        position: Vec3::ZERO,
+        velocity: Vec3::ZERO,
+    });
     assert_eq!(
         mixed.eval(0.0),
         EvaluationState::Unavailable(EvaluationReason::InvalidSamples)
@@ -275,7 +285,7 @@ fn rejects_out_of_range_duplicate_mismatched_and_non_finite_windows() {
     );
 
     let mut reversed = window;
-    reversed.interval = DynInterval { min: 2.0, max: 0.0 };
+    reversed.interval = Interval { min: 2.0, max: 0.0 };
     assert_eq!(
         reversed.eval(1.0),
         EvaluationState::Unavailable(EvaluationReason::InvalidSamples)

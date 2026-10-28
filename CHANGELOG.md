@@ -2,7 +2,19 @@
 
 项目：SPACEEYES｜统一开发版本：0.0.1
 
+> 路径说明（2026-10-28）：历史条目按当时目录记录；当前结构以最新“分层重构与浏览器核心 DYN 切换”条目及 `docs/Rust工程目录与模块依赖设计规范.md` 第0/3节为准。
+
 ## [0.0.1] — 2026-10-27
+
+
+### 分层重构与浏览器核心 DYN 切换（2026-10-28）
+- 新增 `crates/math`：Vec3/Quat、旋转、插值、SLERP 等唯一通用实现；`spatial` 与 `dynamo` 不再各自维护数学类型。
+- 时间全部归入 `crates/time`：历法/闰秒/UTC/TAI/TT/TDB/J2000 从独立 `astro` 迁入 `time` 的 `science` 子模块；删除旧 `astro` 时间 crate，时间不再出现在其它模块。
+- 新增 `crates/astro`：中性星历点、Hermite/线性/SLERP、Kepler 与椭圆轨道采样；只依赖 `math`，不知道 DYN、网络、时钟或 Engine。
+- `crates/dynamo` 降为纯解码器并移入 `crates/codecs/dynamo`：只做 DYN v1/v2 字节 → `astro` 中性点，不求值、不算轨道、不做时间换算；单格式不再与核心 crate 同级。
+- 浏览器太阳系改为：宿主取字节 → 核心上传 → `query.evaluate_dynamo`/`dynamo_orbit` → 提供者帧/轨道点；TS 只做网络、上传、显示与管道网格组装，删除 TS 星历/轨道计算。
+- 规则书 `docs/Rust工程目录与模块依赖设计规范.md` 新增“分层与通用性强制规则”（L0–L7、判定顺序、反例、提交检查清单）。
+- 验证：`math`/`spatial`/`astro`/`time`/`codecs/dynamo`/adapter 测试与 11 项 Chromium 通过；完整本地检查见提交关联。
 
 
 ### 核心轨道采样查询（M3b-1，2026-10-28）

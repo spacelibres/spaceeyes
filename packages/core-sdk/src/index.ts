@@ -25,6 +25,7 @@ export * from "./gen/spaceeyes/core/v1/time_pb.js";
 export * from "./gen/spaceeyes/core/v1/rendering_pb.js";
 export * from "./gen/spaceeyes/core/v1/resources_pb.js";
 export * from "./gen/spaceeyes/core/v1/project_pb.js";
+export * from "./gen/spaceeyes/core/v1/dynamo_pb.js";
 export { create, fromBinary, toBinary } from "@bufbuild/protobuf";
 
 export interface ByteTransport {
@@ -300,7 +301,11 @@ export class CoreClient {
                           ? "frameCoverage"
                           : payload.case === "timeConversion"
                             ? "timeConversion"
-                            : "capabilities";
+                            : payload.case === "evaluateDynamo"
+                              ? "dynamo"
+                              : payload.case === "dynamoOrbit"
+                                ? "dynamoOrbit"
+                                : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

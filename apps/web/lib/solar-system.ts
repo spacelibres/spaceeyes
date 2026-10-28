@@ -1,18 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
-import {
-  DynamoSegmentLoader,
-  evaluateEphemeris,
-  nearestPoint,
-  orbPositionAt,
-  type LoadedDynamo,
-  type OrbPoint,
-  type Vec3,
-} from "@spaceeyes/nasa-dynamo";
-
 /**
- * Display-only scale. Scientific positions stay in kilometers inside the data
- * source; the scene compresses 1 km to 1e-6 m so 1 AU is about 150 m.
+ * Solar-system catalog and display geometry only. Ephemeris parsing, evaluation,
+ * orbit sampling and time conversion live in the Rust core; this module must not
+ * gain astronomy math.
  */
 export const DISPLAY_METRES_PER_KM = 1e-6;
 
@@ -126,48 +117,6 @@ export function solarSeconds(instant: {
   return Number(instant.seconds) + instant.nanos / 1_000_000_000;
 }
 
-/** Position in display metres, or `null` when the window cannot answer. */
-/** Position in display metres, or `null` when the window cannot answer. */
-export function solarPosition(
-  loaded: LoadedDynamo,
-  timeEt: number,
-): Vec3 | null {
-  const state = solarState(loaded, timeEt);
-  return state === null ? null : displayPosition(state.position);
-}
-
-export interface SolarState {
-  readonly position: Vec3;
-  readonly velocity: Vec3;
-}
-
-/** Scientific kilometres and km/s from the evaluator. */
-export function solarState(
-  loaded: LoadedDynamo,
-  timeEt: number,
-): SolarState | null {
-  const state = evaluateEphemeris(
-    {
-      header: loaded.file.header,
-      points: loaded.points,
-      interval: loaded.interval,
-    },
-    timeEt,
-  );
-  if (state.status !== "ready" || state.kind !== "position") return null;
-  return { position: state.position, velocity: state.velocity };
-}
-
-/** Convert scientific kilometres to the display-space metres used by the scene. */
-export function displayPosition(position: Vec3): Vec3 {
-  const factor = 1000 * DISPLAY_METRES_PER_KM;
-  return {
-    x: position.x * factor,
-    y: position.y * factor,
-    z: position.z * factor,
-  };
-}
-
 export const SOLAR_NAMES: Readonly<Record<string, string>> = {
   "solar:sun": "太阳",
   "solar:mercury": "水星",
@@ -182,7 +131,13 @@ export const SOLAR_NAMES: Readonly<Record<string, string>> = {
   "solar:neptune": "海王星",
 };
 
-export interface OrbitMesh {
+export interface Vec3 {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}
+
+export interface TubeMesh {
   readonly vertices: readonly {
     readonly positionM: Vec3;
     readonly normal: Vec3;
@@ -208,37 +163,15 @@ const unit = (v: Vec3): Vec3 => {
 };
 
 /**
- * Display-only osculating orbit tube at the sample epoch nearest `timeEt`.
- * It is not propagated across the whole epoch and must not be read as a
- * scientific ephemeris.
+ * Assemble a closed tube from core-provided display-space points. This is pure
+ * geometry: no Kepler roots, epochs or ephemeris math are computed here.
  */
-export function orbitMesh(
-  loaded: LoadedDynamo,
-  timeEt: number,
-): OrbitMesh | null {
-  if (loaded.file.header.pointType !== "orb") return null;
-  const points = loaded.points.filter(
-    (point): point is OrbPoint => point.kind === "orb",
-  );
-  if (points.length < 2) return null;
-  const sample = nearestPoint(points, timeEt);
-  if (!sample) return null;
-  const motion = Math.abs(sample.meanAngularMotion);
-  if (!(motion > 0) || sample.eccentricity >= 1) return null;
-  const period = (2 * Math.PI) / motion;
-  const scale = 1000 * DISPLAY_METRES_PER_KM;
-  const samples = 160;
-  const width = 0.12;
-  const ring: Vec3[] = [];
-  for (let index = 0; index < samples; index += 1) {
-    const position = orbPositionAt(sample, timeEt + (period * index) / samples);
-    if (!position) return null;
-    ring.push({
-      x: position.x * scale,
-      y: position.y * scale,
-      z: position.z * scale,
-    });
-  }
+export function orbitTube(
+  points: readonly Vec3[],
+  width = 0.12,
+): TubeMesh | null {
+  if (points.length < 3) return null;
+  const samples = points.length;
   const vertices: {
     positionM: Vec3;
     normal: Vec3;
@@ -246,9 +179,9 @@ export function orbitMesh(
   }[] = [];
   const indices: number[] = [];
   for (let index = 0; index < samples; index += 1) {
-    const current = ring[index]!;
-    const previous = ring[(index + samples - 1) % samples]!;
-    const next = ring[(index + 1) % samples]!;
+    const current = points[index]!;
+    const previous = points[(index + samples - 1) % samples]!;
+    const next = points[(index + 1) % samples]!;
     const tangent = unit(sub(next, previous));
     let side = cross(tangent, { x: 0, y: 0, z: 1 });
     if (length(side) < 1e-6) side = cross(tangent, { x: 1, y: 0, z: 0 });
@@ -293,20 +226,4 @@ export function orbitMesh(
     }
   }
   return { vertices, indices };
-}
-
-/** Host-proxied loader. The route allowlists NASA paths and caps the size. */
-export function createSolarLoader(): DynamoSegmentLoader {
-  return new DynamoSegmentLoader({
-    async fetchBytes(path: string, signal?: AbortSignal): Promise<Uint8Array> {
-      const response = await fetch(`/api/dynamo/${path}`, {
-        cache: "no-store",
-        signal: signal ?? AbortSignal.timeout(15_000),
-      });
-      if (!response.ok) {
-        throw new Error(`星历请求失败（${response.status}）：${path}`);
-      }
-      return new Uint8Array(await response.arrayBuffer());
-    },
-  });
 }

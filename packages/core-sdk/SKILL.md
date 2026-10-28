@@ -62,7 +62,7 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 
 ## M1b 时间换算查询（0.0.1开发增量）
 
-公开只读`query.time_convert`：输入UTC日历字段或TAI/TT/TDB的`TimeInstant`（epoch必须`J2000`，裸UTC拒绝），返回UTC日历、TAI/TT/TDB、TT−UTC纳秒与“表后预测”标志。换算、闰秒与历法全部在Rust `spaceeyes-astro`；TypeScript只能把ISO文本拆成字段或格式化返回值，禁止在JS实现闰秒、历法或TDB公式。
+公开只读`query.time_convert`：输入UTC日历字段或TAI/TT/TDB的`TimeInstant`（epoch必须`J2000`，裸UTC拒绝），返回UTC日历、TAI/TT/TDB、TT−UTC纳秒与“表后预测”标志。换算、闰秒与历法全部在Rust `spaceeyes-time`；TypeScript只能把ISO文本拆成字段或格式化返回值，禁止在JS实现闰秒、历法或TDB公式。
 
 ```ts
 const r = await client.query(

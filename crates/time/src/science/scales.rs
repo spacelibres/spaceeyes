@@ -1,11 +1,11 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Scale conversions. Zero is the J2000 event for every scale, so TAI/TT/TDB
 //! values are exact integer offsets and only UTC needs the leap-second table.
 
-use crate::calendar::{civil_from_days, days_from_civil};
-use crate::leap::{delta_at_day, is_utc_day, UTC_MAX_DAY, UTC_MIN_DAY};
-use crate::{TimeError, UtcDateTime};
+use super::calendar::{civil_from_days, days_from_civil};
+use super::leap::{delta_at_day, is_utc_day, UTC_MAX_DAY, UTC_MIN_DAY};
+use super::{TimeError, UtcDateTime};
 
 pub(crate) const NANOS_PER_SECOND: i128 = 1_000_000_000;
 const SECONDS_PER_DAY: i128 = 86_400;

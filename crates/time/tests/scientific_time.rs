@@ -1,12 +1,12 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Scientific scale acceptance: known epochs, leap seconds, round trips, bounds.
-use spaceeyes_astro::{
+use spaceeyes_time::TimeInstant;
+use spaceeyes_time::{
     is_predicted_utc, tai_to_tt, tai_to_utc, tdb_to_tt, tdb_to_utc, tt_minus_utc_nanos, tt_to_tai,
     tt_to_tdb, tt_to_utc, utc_to_tai, utc_to_tdb, utc_to_tt, TaiInstant, TdbInstant, TimeError,
     TtInstant, UtcDateTime,
 };
-use spaceeyes_time::TimeInstant;
 
 fn utc(year: i32, month: u8, day: u8, hour: u8, minute: u8, second: u8, nanos: u32) -> UtcDateTime {
     UtcDateTime::new(year, month, day, hour, minute, second, nanos).unwrap()
@@ -246,7 +246,7 @@ fn tt_minus_utc_matches_the_leap_table() {
 
 #[test]
 fn continuous_utc_start_and_regimes_are_explicit() {
-    use spaceeyes_astro::{utc_regime, UtcRegime};
+    use spaceeyes_time::{utc_regime, UtcRegime};
     let at = |y, m, d| utc(y, m, d, 0, 0, 0, 0);
     assert_eq!(utc_regime(&at(2026, 12, 31)), Some(UtcRegime::Observed));
     assert_eq!(utc_regime(&at(2027, 1, 1)), Some(UtcRegime::Observed));

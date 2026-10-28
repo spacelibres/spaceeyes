@@ -1,12 +1,11 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Elliptic orbit geometry for display. This is the same nearest-osculating-epoch
 //! propagation the reference uses for orbit lines; it is not a full ephemeris and
 //! must not be used to answer a scientific position query.
 
-use crate::math::{normalize_quat, rotate_by_quat};
-use crate::{DynHeader, DynInterval, DynPoint, EvaluationReason, OrbPoint, PointType, Vec3};
-
+use crate::{EphemerisPoint, EvaluationReason, Interval, OrbPoint, Vec3};
+use spaceeyes_math::{normalize_quat, rotate_by_quat};
 const TWO_PI: f64 = std::f64::consts::PI * 2.0;
 const MIN_SAMPLES: u32 = 3;
 const MAX_SAMPLES: u32 = 1024;
@@ -74,11 +73,11 @@ pub fn orbit_position_at(point: &OrbPoint, time: f64) -> Option<Vec3> {
 
 /// Nearest orb sample epoch. Osculating elements are nearest-epoch propagated to
 /// keep the display orbit close to the evaluated state.
-pub fn nearest_orb_point(points: &[DynPoint], time: f64) -> Option<&OrbPoint> {
+pub fn nearest_orb_point(points: &[EphemerisPoint], time: f64) -> Option<&OrbPoint> {
     let orb: Vec<&OrbPoint> = points
         .iter()
         .filter_map(|point| match point {
-            DynPoint::Orb(value) => Some(value),
+            EphemerisPoint::Orb(value) => Some(value),
             _ => None,
         })
         .collect();
@@ -121,18 +120,19 @@ fn valid_orb(point: &OrbPoint) -> bool {
 
 /// Closed display polyline of the nearest elliptic osculating orbit, in km.
 pub fn orbit_polyline(
-    header: &DynHeader,
-    points: &[DynPoint],
-    interval: DynInterval,
+    points: &[EphemerisPoint],
+    interval: Interval,
     time: f64,
     samples: u32,
 ) -> Result<Vec<Vec3>, EvaluationReason> {
-    if header.point_type != PointType::Orb
-        || !time.is_finite()
+    if !time.is_finite()
         || !interval.min.is_finite()
         || !interval.max.is_finite()
         || interval.min > interval.max
         || points.len() < 2
+        || !points
+            .iter()
+            .all(|point| matches!(point, EphemerisPoint::Orb(_)))
         || !(MIN_SAMPLES..=MAX_SAMPLES).contains(&samples)
     {
         return Err(EvaluationReason::InvalidSamples);
@@ -140,7 +140,7 @@ pub fn orbit_polyline(
     let orb: Vec<&OrbPoint> = points
         .iter()
         .filter_map(|point| match point {
-            DynPoint::Orb(value) => Some(value),
+            EphemerisPoint::Orb(value) => Some(value),
             _ => None,
         })
         .collect();

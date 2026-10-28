@@ -6,4 +6,5 @@ license.workspace = true
 repository.workspace = true
 [dependencies]
 spaceeyes-foundation = { path = "../foundation" }
+spaceeyes-math = { path = "../math" }
 spaceeyes-time = { path = "../time" }

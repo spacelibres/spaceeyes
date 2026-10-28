@@ -1201,12 +1201,15 @@ checksum = "d0d5d4b1981b8bbbb7aed204cae5726d683d5d6ac7e74ec54122ea28f315e7c8"
 name = "spaceeyes-astro"
 version = "0.0.1"
 dependencies = [
- "spaceeyes-time",
+ "spaceeyes-math",
 ]
 
 [[package]]
 name = "spaceeyes-dynamo"
 version = "0.0.1"
+dependencies = [
+ "spaceeyes-astro",
+]
 
 [[package]]
 name = "spaceeyes-engine"
@@ -1245,6 +1248,10 @@ dependencies = [
  "zune-core",
  "zune-jpeg",
 ]
+
+[[package]]
+name = "spaceeyes-math"
+version = "0.0.1"
 
 [[package]]
 name = "spaceeyes-native"
@@ -1342,6 +1349,7 @@ name = "spaceeyes-spatial"
 version = "0.0.1"
 dependencies = [
  "spaceeyes-foundation",
+ "spaceeyes-math",
  "spaceeyes-time",
 ]
 

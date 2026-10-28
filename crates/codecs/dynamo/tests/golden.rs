@@ -4,9 +4,10 @@
 //! reference (`packages/nasa-dynamo/scripts/emit-golden.mjs`). The fixture is
 //! synthetic and contains no NASA data. Regenerate only when the oracle changes.
 
-use spaceeyes_dynamo::{
-    evaluate, parse_dyn, Body, EvaluationKind, EvaluationReason, EvaluationState, Quat, Vec3,
+use spaceeyes_astro::{
+    evaluate, Body, EvaluationKind, EvaluationReason, EvaluationState, MassParameters,
 };
+use spaceeyes_dynamo::{parse_dyn, Quat, Vec3};
 
 const TOLERANCE: f64 = 1e-9;
 
@@ -80,7 +81,14 @@ fn rust_evaluator_matches_the_typescript_oracle_snapshot() {
         };
         let file = parse_dyn(&bytes).unwrap_or_else(|error| panic!("{name}: {error}"));
         let interval = file.interval.expect("inline interval");
-        let state = evaluate(&file.header, &file.points, interval, time, body);
+        let masses = file
+            .header
+            .gravitational_parameters
+            .map(|parameters| MassParameters {
+                primary: parameters.mu1,
+                secondary: parameters.mu2,
+            });
+        let state = evaluate(&file.points, interval, time, body, masses);
         match fields[4] {
             "unavailable" => {
                 let expected = match fields[5] {

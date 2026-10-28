@@ -5,10 +5,10 @@
 //! fixed Kepler iteration limit, the ori projection convention and barycentric
 //! body factors.
 
-use crate::math::{
+use crate::{EphemerisPoint, Interval, OrbPoint, OriPoint, Quat, Vec3};
+use spaceeyes_math::{
     direction, mix, normalize_quat, quat_scale, rotate_by_quat, scale, slerp_quat, slerp_vector,
 };
-use crate::{DynHeader, DynInterval, DynPoint, OrbPoint, OriPoint, Quat, Vec3};
 
 const KEPLER_ITERATIONS: usize = 20;
 const KEPLER_TOLERANCE: f64 = 0.001_745_329_25;
@@ -45,16 +45,23 @@ pub enum Body {
     Secondary,
 }
 
+/// Primary/secondary gravitational parameters for barycentric orbit factors.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MassParameters {
+    pub primary: f64,
+    pub secondary: f64,
+}
+
 fn unavailable(reason: EvaluationReason) -> EvaluationState {
     EvaluationState::Unavailable(reason)
 }
 
-fn valid_sample(point: &DynPoint) -> bool {
+fn valid_sample(point: &EphemerisPoint) -> bool {
     if !point.time().is_finite() {
         return false;
     }
     match point {
-        DynPoint::Orb(value) => {
+        EphemerisPoint::Orb(value) => {
             value.semi_major_axis.is_finite()
                 && value.eccentricity.is_finite()
                 && value.mean_angular_motion.is_finite()
@@ -62,14 +69,14 @@ fn valid_sample(point: &DynPoint) -> bool {
                 && quat_scale(value.orientation).is_finite()
                 && quat_scale(value.orientation) > 0.0
         }
-        DynPoint::Pos(value) => value.position.is_finite() && value.velocity.is_finite(),
-        DynPoint::Lin(value) => value.position.is_finite(),
-        DynPoint::Ori(value) => {
+        EphemerisPoint::Pos(value) => value.position.is_finite() && value.velocity.is_finite(),
+        EphemerisPoint::Lin(value) => value.position.is_finite(),
+        EphemerisPoint::Ori(value) => {
             value.angular_velocity.is_finite()
                 && quat_scale(value.orientation).is_finite()
                 && quat_scale(value.orientation) > 0.0
         }
-        DynPoint::Quat(value) => {
+        EphemerisPoint::Quat(value) => {
             quat_scale(value.orientation).is_finite() && quat_scale(value.orientation) > 0.0
         }
     }
@@ -230,11 +237,11 @@ fn orientation_state(orientation: Quat, angular_velocity: Vec3) -> EvaluationSta
 /// Valid queries are the intersection of window coverage and sample coverage.
 /// Endpoints are accepted; there is no extrapolation or stale fallback.
 pub fn evaluate(
-    header: &DynHeader,
-    points: &[DynPoint],
-    interval: DynInterval,
+    points: &[EphemerisPoint],
+    interval: Interval,
     time: f64,
     body: Option<Body>,
+    masses: Option<MassParameters>,
 ) -> EvaluationState {
     if !time.is_finite()
         || !interval.min.is_finite()
@@ -244,9 +251,10 @@ pub fn evaluate(
     {
         return unavailable(EvaluationReason::InvalidSamples);
     }
+    let kind = points[0].kind();
     let mut previous = f64::NEG_INFINITY;
     for point in points {
-        if point.kind() != header.point_type || !valid_sample(point) || point.time() <= previous {
+        if point.kind() != kind || !valid_sample(point) || point.time() <= previous {
             return unavailable(EvaluationReason::InvalidSamples);
         }
         previous = point.time();
@@ -276,7 +284,7 @@ pub fn evaluate(
     let fraction = ((time - start.time()) / duration).clamp(0.0, 1.0);
 
     match (start, end) {
-        (DynPoint::Pos(start), DynPoint::Pos(end)) => {
+        (EphemerisPoint::Pos(start), EphemerisPoint::Pos(end)) => {
             let remaining = 1.0 - fraction;
             let square = fraction * fraction;
             let position = Vec3 {
@@ -309,7 +317,7 @@ pub fn evaluate(
             };
             position_state(position, velocity)
         }
-        (DynPoint::Lin(start), DynPoint::Lin(end)) => {
+        (EphemerisPoint::Lin(start), EphemerisPoint::Lin(end)) => {
             let velocity = Vec3 {
                 x: (end.position.x - start.position.x) / duration,
                 y: (end.position.y - start.position.y) / duration,
@@ -317,13 +325,13 @@ pub fn evaluate(
             };
             position_state(mix(start.position, end.position, fraction), velocity)
         }
-        (DynPoint::Quat(start), DynPoint::Quat(end)) => {
+        (EphemerisPoint::Quat(start), EphemerisPoint::Quat(end)) => {
             let Some(orientation) = slerp_quat(start.orientation, end.orientation, fraction) else {
                 return unavailable(EvaluationReason::InvalidSamples);
             };
             orientation_state(orientation, Vec3::ZERO)
         }
-        (DynPoint::Ori(start), DynPoint::Ori(end)) => {
+        (EphemerisPoint::Ori(start), EphemerisPoint::Ori(end)) => {
             let (Some(first), Some(last)) = (
                 project_orientation(start, time),
                 project_orientation(end, time),
@@ -343,7 +351,7 @@ pub fn evaluate(
                 rotate_by_quat(scale(interpolated, -1.0), orientation),
             )
         }
-        (DynPoint::Orb(start), DynPoint::Orb(end)) => {
+        (EphemerisPoint::Orb(start), EphemerisPoint::Orb(end)) => {
             let (Some((start_position, start_velocity)), Some((end_position, end_velocity))) =
                 (project_orbit(start, time), project_orbit(end, time))
             else {
@@ -351,8 +359,8 @@ pub fn evaluate(
             };
             let mut factor = 1.0;
             if let Some(body) = body {
-                let (primary, central) = match header.gravitational_parameters {
-                    Some(parameters) => (parameters.mu1, parameters.mu2),
+                let (primary, central) = match masses {
+                    Some(parameters) => (parameters.primary, parameters.secondary),
                     None => match body {
                         Body::Primary => (0.0, 1.0),
                         Body::Secondary => (1.0, 0.0),

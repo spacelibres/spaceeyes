@@ -15,11 +15,7 @@ pub struct GravitationalParameters {
     pub mu2: f64,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct DynInterval {
-    pub min: f64,
-    pub max: f64,
-}
+pub use spaceeyes_astro::Interval as DynInterval;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct DynHeader {

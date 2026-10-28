@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! UTC leap-second table (TAI - UTC) and the 2026 CGPM continuous-UTC decision.
 //!
@@ -10,8 +10,8 @@
 //! Days before the start are observed or predicted as before; they are never
 //! silently marked as observed.
 
-use crate::calendar::days_from_civil;
-use crate::UtcRegime;
+use super::calendar::days_from_civil;
+use super::UtcRegime;
 
 pub const UTC_MIN_DAY: i64 = days_from_civil(1972, 1, 1);
 pub const UTC_MAX_DAY: i64 = days_from_civil(2100, 12, 31);

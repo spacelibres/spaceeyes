@@ -1,4 +1,4 @@
-# Time仿真时间系统设计规范
+﻿# Time仿真时间系统设计规范
 
 版本：0.0.1｜状态：待审定设计草案｜日期：2026-10-27  
 设计阶段：03｜归属：Rust Core｜不包含实现代码  
@@ -111,7 +111,7 @@ Engine提供同名唯一协调入口；Ready状态允许初始化时间操作，
 
 ## M1a Rust科学时间实现（0.0.1，2026-10-28）
 
-按《核心与宿主职责边界规范》，时间尺度换算属于Rust核心，宿主不得实现。新增`crates/astro`，只依赖`spaceeyes-time`：
+按《核心与宿主职责边界规范》，时间尺度换算属于Rust核心，宿主不得实现。全部实现位于`crates/time`的`science`子模块（2026-10-28由独立`astro` crate迁入，时间只保留在`time`）：
 
 - **表示**：TAI/TT/TDB均以J2000事件为零点的`i128`纳秒保存，`TimeInstant`传输出口为`(scale, epoch="J2000", i64秒, u32纳秒)`；floor分解，负时刻不丢精度。TT与TAI同速率，32.184s常量由历元定义吸收，不能把两者的相对计数差当作TT−UTC。
 - **UTC**：严格公历校验；闰秒表从1972-01-01（TAI−UTC=10s）到2017-01-01（37s），之后按预测处理并显式标记；支持23:59:60，普通日拒绝60秒；UTC范围1972-01-01..=2100-12-31，范围外`UtcOutOfRange`，不静默近似。
@@ -124,7 +124,7 @@ Engine提供同名唯一协调入口；Ready状态允许初始化时间操作，
 
 ## M1b 时间换算公开契约与浏览器UTC轴（0.0.1，2026-10-28）
 
-`time.proto`新增`UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，能力`query.time_convert`（总数41）。输入可为UTC日历或TAI/TT/TDB显式`TimeInstant`（epoch必须J2000，裸UTC拒绝）；输出UTC日历、TAI/TT/TDB、TT−UTC与预测标志。全部换算在Rust `spaceeyes-astro`；查询只读、不推进时钟/代次、不写事件、不消耗命令历史，错误`INVALID_ARGUMENT`且不改变状态。
+`time.proto`新增`UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，能力`query.time_convert`（总数41）。输入可为UTC日历或TAI/TT/TDB显式`TimeInstant`（epoch必须J2000，裸UTC拒绝）；输出UTC日历、TAI/TT/TDB、TT−UTC与预测标志。全部换算在Rust `spaceeyes-time`；查询只读、不推进时钟/代次、不写事件、不消耗命令历史，错误`INVALID_ARGUMENT`且不改变状态。
 
 浏览器把初始会话改为`TDB`+`J2000`（与DYN的ET约定对齐），会话状态刷新时调用换算查询显示UTC；用户输入ISO UTC文本时，TypeScript只解析为字段并交给Rust换算，再用返回的TDB `TimeInstant`执行`time.seek`。TS不做闰秒、历法或TDB计算。仍待：完整科学误差定标、来源/覆盖面板、Live与固定步长接宿主。
 
@@ -132,7 +132,7 @@ Engine提供同名唯一协调入口；Ready状态允许初始化时间操作，
 
 国际计量大会（CGPM）第 28 届会议于 2026-10-15 通过 Resolution 5（DOI 10.59161/CGPM2026RES5E），决定实施**连续 UTC（continuous UTC）**：自 **2027-05-20（世界计量日）** 起不再插入闰秒；UTC 与 UT1 的最大允许偏差改为 **3600 秒（1 小时）**，未来以“闰时（leap hour）”而非闰秒调整。此前 2022 年第 27 届 CGPM 曾要求“不晚于 2035 年”取消闰秒，本次决议把生效日期提前到 2027 年。1972 年以来已实施的 27 次正闰秒保留在历史中，因此 2027-05-20 之后 `TAI − UTC` 固定为 37 秒，直到数千年尺度上可能出现的一次闰时。
 
-核心实现（`crates/astro`）：
+核心实现（`crates/time`的`science`子模块）：
 
 - `UtcRegime` 三态：`Observed`（表内已观测）、`Predicted`（2027-01-01 至 2027-05-19 的短预测窗）、`Continuous`（2027-05-20 起）。
 - `UTC_CONTINUOUS_FROM_DAY`/`UTC_CONTINUOUS_FROM_YEAR|MONTH|DATE` 与 `LEAP_HOUR_SECONDS=3600` 为显式常量；连续 UTC 之后 `is_leap_day` 恒为 false，`delta_at_day` 保持 37。

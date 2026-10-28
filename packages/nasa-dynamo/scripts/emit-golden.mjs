@@ -13,7 +13,7 @@ import { evaluateEphemeris, parseDyn } from "../dist/src/index.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const output = resolve(
   here,
-  "../../../crates/dynamo/tests/golden/synthetic.tsv",
+  "../../../crates/codecs/dynamo/tests/golden/synthetic.tsv",
 );
 
 class Writer {

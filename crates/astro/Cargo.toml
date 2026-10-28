@@ -6,4 +6,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-spaceeyes-time = { path = "../time" }
+spaceeyes-math = { path = "../math" }

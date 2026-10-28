@@ -13,8 +13,8 @@ spaceeyes-engine = { path = "../engine" }
 spaceeyes-scene = { path = "../scene" }
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-time = { path = "../time" }
+spaceeyes-dynamo = { path = "../codecs/dynamo" }
 spaceeyes-astro = { path = "../astro" }
-spaceeyes-dynamo = { path = "../dynamo" }
 prost = "0.13"
 sha2 = "=0.11.0"
 

@@ -2,11 +2,12 @@
 resolver = "2"
 members = [
   "crates/foundation",
+  "crates/math",
   "crates/geometry",
   "crates/image-import",
   "crates/time",
   "crates/astro",
-  "crates/dynamo",
+  "crates/codecs/dynamo",
   "crates/spatial",
   "crates/scene",
   "crates/simulation",

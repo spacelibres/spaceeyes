@@ -7,6 +7,65 @@
 ## 1. 工程设计目标
 Rust核心保持唯一源码，WASM和Native只承担不同编译目标与平台适配；Next.js/React/TypeScript为独立Web宿主。模块化与面向对象领域封装使用struct、impl、trait及组合。核心不依赖NASA DYN、具体天体目录、插件市场或AI模型。
 
+## 0. 分层与通用性强制规则（2026-10-28，先于编码）
+
+本节是新增代码、移动目录、拆分 crate 前的强制判定。**先归类，再写代码；无法归类时先改本节，不直接落盘。**
+
+### 0.1 层级定义
+
+| 层级 | 目录 | 只允许放 | 禁止放 |
+|---|---|---|---|
+| L0 基础值 | `crates/foundation` | ID、Revision、CoreError、不可变基础值 | 数学算法、领域状态、格式 |
+| L1 通用算法 | `crates/math` | Vec3/Quat、旋转、插值、SLERP、通用数值 | 时钟、天文语义、场景、格式、I/O |
+| L1 时间 | `crates/time` | 时钟、时间命令、历法、闰秒、UTC/TAI/TT/TDB、J2000 | 轨道、星历、场景、格式、宿主 |
+| L2 天文算法 | `crates/astro` | 中性星历点、插值、Kepler、轨道几何等可复用天文算法 | DYN 字节、网络、时钟/历法、Engine 状态 |
+| L2 几何 | `crates/geometry` | 三角形网格、纹理等领域值 | 格式解码、GPU 状态、场景 |
+| L3 领域状态 | `spatial`/`scene`/`simulation`/`resources`/`rendering`/`snapshot` | 各自唯一的领域状态与规则 | 其他领域状态、格式知识 |
+| L4 组合与契约 | `engine`/`protocol-adapter` | 组合、命令/查询、原子提交、Proto 映射 | 第二套状态、格式实现 |
+| L5 编解码 | `crates/codecs/<格式>` | **仅** 字节 ↔ 中性数据结构；格式自身的头/段/校验 | 插值、轨道、时间换算、场景、Engine、网络 |
+| L6 平台适配 | `adapters/` | Native/WASM 平台入口与 I/O | 领域算法、格式解码 |
+| L7 宿主/插件 | `apps/`、`packages/` | Next.js/React、SDK、插件宿主、UI | 权威科学计算、核心状态 |
+
+### 0.2 写代码前的判定顺序
+
+1. **纯数值/几何运算，且不依赖时间或天文语义？** → `math`。
+2. **时间、历法、闰秒、时间尺度、J2000？** → `time`（只能在这里）。
+3. **星历插值、Kepler、轨道/姿态算法，输入是中性的点/向量/时刻？** → `astro`。
+4. **网格/纹理等渲染领域值？** → `geometry`。
+5. **领域状态、事务、租约、调度、GPU？** → 对应的 L3 crate。
+6. **某个文件格式的字节布局？** → `crates/codecs/<格式>`；解码后返回 `astro`/`math`/`geometry` 的中性类型，**不得**在解码器中求值。
+7. **跨模块组合、公开命令/查询、Proto 映射？** → `engine`/`protocol-adapter`。
+8. **平台、进程、DOM、插件 UI？** → `adapters`/`apps`/`packages`。
+
+若一个问题同时命中两层，必须拆分：下层提供通用函数，上层组合。不得把上层语义塞进下层“顺便实现”。
+
+### 0.3 通用性判定（可复用性）
+
+- 至少两个独立功能可复用，且不依赖宿主、网络、文件、Engine、Scene、Proto，才可进入 `math`/`time`/`astro`。
+- 公开 API 使用中性类型与显式单位/时间；不得出现 `Dyn`、`NASA`、`Proto`、`Command`、`Plugin` 等格式或协议词汇。
+- `math` 不知道时间、天体、文件；`time` 不知道轨道、星历、格式；`astro` 不知道 DYN 字节、网络、时钟实现；`codecs` 不知道 Engine/Scene/Proto。
+- 算法由拥有它的 crate 测试；解码器只测解码；跨层链路由消费方集成测试。
+- 通用库不得读取系统时钟、环境变量、文件或网络；这些属于宿主。
+
+### 0.4 典型反例（禁止重演）
+
+- 把 Kepler/轨道采样写进 `dynamo` 解码器。
+- 把 UTC/闰秒换算写进 `astro` 或格式 crate。
+- 每个 crate 各自实现一份 `Vec3`/`Quat`/SLERP。
+- 在 `crates/` 顶层新增 `dynamo`、`dyn`、`ephemeris` 这类单格式目录。
+- 让 `math`/`astro` 依赖 `engine`/`scene`/Proto。
+- 让解码器返回 `SceneObject`、`Command` 或 Engine 句柄。
+
+### 0.5 提交前检查清单
+
+1. 新类型/算法是否放在唯一正确层级？
+2. 是否出现重复实现（四元数、插值、时间换算、Kepler）？
+3. 下层是否引用了上层（engine/scene/proto/host）？
+4. 格式解码器是否只做字节到中性数据？
+5. 测试是否在拥有者 crate；跨层测试是否放在消费方？
+6. 目录名是否表达层级（`codecs/<format>`，不是顶层 `formats`/`dynamo`）？
+7. 规则书、CHANGELOG、台账、模块文档是否同步？
+
 ## 2. 未来工程目录（规划，不创建）
 ```text
 spaceeyes/
@@ -43,32 +102,45 @@ spaceeyes/
 ```
 上述是目标结构，不要求所有逻辑对象各自形成crate；未来若拆分snapshot-types，必须保持其为无环的只读基础类型库。proto目录在设计阶段仅为路径约定。
 
-## 3. crate职责
-| crate | 负责 | 不允许负责 |
+## 3. crate职责与目录层级
+
+| 目录 | 负责 | 不允许负责 |
 |---|---|---|
-| foundation | ObjectId/FrameId/ResourceId、数学值类型、错误、不可变快照值类型 | 依赖上层引擎、NASA业务 |
-| time | SimulationClock、TimeSnapshot、时间命令领域语义 | 轨道计算、UI系统时间读取 |
-| astro | 历法、闰秒、UTC/TAI/TT/TDB、J2000 换算（纯值、无系统时钟） | 场景/渲染状态、宿主UI、网络与DYN文件读取 |
-| dynamo | DYN v1/v2 解析、五类点、分段/覆盖、星历求值（纯字节与显式时间） | 网络/文件I/O、Engine/Scene 可变状态、宿主UI |
-| spatial | ReferenceFrameGraph、TransformResolver、空间变换 | 场景对象所有权、DYN解析 |
-| scene | Scene、SceneObject、SceneCommand事务、SceneSnapshot | GPU分配、星历计算 |
-| simulation | SimulationScheduler、任务状态、依赖、结果校验 | 第二套Scene写入口 |
-| resources | ResourceManager、资源租约、代次、配额、恢复元数据 | 插件身份授权、具体GPU绘制 |
-| rendering | Renderer、相机派生视图、可见性、基础图元、GPU适配 | 修改Scene、推进Time |
-| engine | Engine、CommandDispatcher、模块组合、FrameSnapshot原子发布 | 持有第二套Scene/Clock |
-| protocol-adapter | Proto解码、版本校验、领域对象映射、错误编码 | 维护科学权威状态 |
+| `crates/foundation` | ObjectId/FrameId/ResourceId、Revision、CoreError、不可变基础值 | 依赖上层引擎、业务数据 |
+| `crates/math` | Vec3/Quat、旋转、插值、SLERP、通用数值算法（无领域状态） | 场景/时钟/资源状态、网络、文件I/O |
+| `crates/time` | SimulationClock、TimeSnapshot、时间命令语义；历法、闰秒、UTC/TAI/TT/TDB、J2000 换算 | 场景/渲染状态、宿主UI、网络、DYN文件读取 |
+| `crates/astro` | 中性星历点、插值、Kepler、轨道几何等通用天文算法 | DYN字节、网络、时钟/日历、Engine状态 |
+| `crates/spatial` | ReferenceFrameGraph、TransformResolver、空间变换 | 场景对象所有权、DYN解析 |
+| `crates/scene` | Scene、SceneObject、SceneCommand事务、SceneSnapshot | GPU分配、星历计算 |
+| `crates/simulation` | SimulationScheduler、任务状态、依赖、结果校验 | 第二套Scene写入口 |
+| `crates/resources` | ResourceManager、资源租约、代次、配额、恢复元数据 | 插件身份授权、具体GPU绘制 |
+| `crates/rendering` | Renderer、相机派生视图、可见性、基础图元、GPU适配 | 修改Scene、推进Time |
+| `crates/engine` | Engine、CommandDispatcher、模块组合、FrameSnapshot原子发布 | 持有第二套Scene/Clock |
+| `crates/protocol-adapter` | Proto解码、版本校验、领域对象映射、错误编码 | 维护科学权威状态 |
+| `crates/codecs/dynamo` | **仅** DYN v1/v2 字节解码为 `astro` 中性点、段表与覆盖区间 | 插值、Kepler、轨道几何、时间换算、网络、Engine状态 |
+
+### 3.1 目录分层规则
+
+- `crates/<模块>` 顶层只放可复用的核心与通用算法（foundation/math/time/astro/spatial/scene/simulation/resources/rendering/snapshot/engine/protocol-adapter）。
+- 所有文件/数据格式解码器统一放在 `crates/codecs/<格式>/`，例如 `crates/codecs/dynamo`；不允许再出现与 `engine` 同级的单独格式 crate。未来图像、网格、星表、航天器格式同样进入 `codecs`。
+- 解码器只做“字节 → 中性数据结构”，然后调用 `astro`/`math`/`time` 的通用能力；不得在解码器内实现插值、轨道、时间尺度或引擎状态。
+- `packages/` 只放 TS SDK、插件宿主与数据源适配；`apps/` 只放宿主界面；`adapters/` 只放平台入口。目录层级本身必须表达依赖方向。
+- 新增目录或 crate 前先回答：它是通用算法、核心状态、格式解码还是宿主适配？无法归类时先更新本规范，不直接落盘。
 
 ## 4. 依赖方向
 ```text
 foundation
+  ├── math
+  │     ├── astro
+  │     └── spatial（并依赖 time）
   ├── time
-  ├── spatial
   ├── scene
   └── resources
+math + astro ──> codecs/dynamo
 time + spatial + scene + resources ──> simulation
 foundation + resources + snapshot-values ──> rendering
 time + spatial + scene + simulation + resources + rendering ──> engine
-engine + generated-proto ──> protocol-adapter
+engine + generated-proto + astro + codecs/dynamo ──> protocol-adapter
 engine + protocol-adapter ──> wasm / native
 ```
 箭头指向依赖方。若snapshot-values属于foundation，不必另建crate。scene只能保存FrameId值，不依赖Spatial的可变图。rendering只能读取FrameSnapshot值类型，不依赖Simulation的可变状态。
@@ -161,31 +233,43 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 
 新增`crates/astro`，仅依赖`spaceeyes-time`，保持无环：提供严格公历校验与日数换算、1972–2100 UTC 闰秒表、UTC↔TAI、TT/TAI（同一J2000事件零点，常量32.184s由历元定义吸收）、TT↔TDB两项近似、J2000整数纳秒与`TimeInstant`（TAI/TT/TDB，epoch=J2000）无损往返。UTC超出1972–2100或表后日期必须显式`UtcOutOfRange`/预测标志，不静默近似；TDB近似仅为传输/显示模型，测试限定约1.8ms幅度，不宣称最终科学精度。
 
-本轮只交付核心值与测试（8项单元+12项集成），不新增Proto、不修改浏览器；宿主仍不做任何时间换算。依赖方向为`foundation ← time ← astro`，astro不依赖scene/spatial/simulation/rendering/engine或宿主。
+本轮只交付核心值与测试，不新增Proto、不修改浏览器；宿主仍不做任何时间换算。**2026-10-28模块归位：上述时间代码已迁入`crates/time`的`science`子模块（`calendar`/`leap`/`scales`与公开类型），`crates/astro`已删除；时间只存在于`time`。**
 
-与第96行“DYN解析/求值不放入核心”的历史表述冲突处，按`docs/核心与宿主职责边界规范.md`执行：DYN解析/求值/分段是Rust核心能力（规划`crates/dynamo`），只读取字节与显式时刻，不拥有Scene/Clock可变状态；插件仅取字节并调用核心。
+与第96行“DYN解析/求值不放入核心”的历史表述冲突处，按`docs/核心与宿主职责边界规范.md`执行：DYN解析/求值/分段是Rust核心能力（规划`crates/codecs/dynamo`），只读取字节与显式时刻，不拥有Scene/Clock可变状态；插件仅取字节并调用核心。
 
 
 ## M2a DYN 解析（0.0.1）
 
-新增`crates/dynamo`（仅std，无网络/文件/宿主依赖）：严格小端读取v1/v2头、orb/pos/lin/ori/quat五类点（W-first四元数）、内联点块、索引段表、无头续段；所有长度在切片/分配前校验，负计数、非法类型/标志、名称越界/非ASCII、截断、块/段表大小不符均返回结构化`DynError`，不产生部分`DynFile`。解析不计算轨道、不插值、不读系统时钟。
+新增`crates/codecs/dynamo`（仅std，无网络/文件/宿主依赖）：严格小端读取v1/v2头、orb/pos/lin/ori/quat五类点（W-first四元数）、内联点块、索引段表、无头续段；所有长度在切片/分配前校验，负计数、非法类型/标志、名称越界/非ASCII、截断、块/段表大小不符均返回结构化`DynError`，不产生部分`DynFile`。解析不计算轨道、不插值、不读系统时钟。
 
 验证：9项Rust测试（1单元+8集成）覆盖五类步长、v1/v2索引端推导、续段、空块、畸形输入与损坏尾随；M2b求值、M2c与TS合成黄金对照仍待完成。
 
 ## M2b DYN 求值（0.0.1）
 
-`crates/dynamo`新增纯Rust求值：`evaluate(header, points, interval, time, body)`严格校验窗口（至少2点、同类型、时间严格递增、有限字段、覆盖区间），二分定位区间后在`pos`上做三次Hermite、`lin`上做线性、`quat`上做最短路径SLERP、`ori`上按`q*conj(axisAngle(ω,dt))`投影再SLERP并旋转负角速度、`orb`上做开普勒迭代（20次/0.1°容差，椭圆与双曲）并按重心质量比输出主/次天体因子。越界、非有限、重复/乱序、类型混用、抛物线与非法质量比分别返回`OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退。
+`crates/astro`新增纯Rust求值：`evaluate(header, points, interval, time, body)`严格校验窗口（至少2点、同类型、时间严格递增、有限字段、覆盖区间），二分定位区间后在`pos`上做三次Hermite、`lin`上做线性、`quat`上做最短路径SLERP、`ori`上按`q*conj(axisAngle(ω,dt))`投影再SLERP并旋转负角速度、`orb`上做开普勒迭代（20次/0.1°容差，椭圆与双曲）并按重心质量比输出主/次天体因子。越界、非有限、重复/乱序、类型混用、抛物线与非法质量比分别返回`OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退。
 
 验证：10项Rust求值测试（圆轨道端点/中段/四分之一、重心因子、Hermite、线性、±四元数SLERP、ori投影与非退化插值、异常窗口、抛物/零轴/负质量比、双曲轨道）与解析9项合计19项通过；M2c将与TS oracle做同字节黄金对照。
 
 ## M2c TS oracle 黄金对照（0.0.1）
 
-`packages/nasa-dynamo/scripts/emit-golden.mjs` 用固定TS参考生成23个合成案例（圆轨道、重心主/次、Hermite、线性、±四元数SLERP、ori投影/插值、双曲、越界、重复、抛物、零轴、负质量比、NaN），输出`crates/dynamo/tests/golden/synthetic.tsv`。Rust `tests/golden.rs` 对同一字节、时刻与body参数执行`evaluate`，逐字段比较（位置/速度或姿态/角速度，绝对容差1e-9，四元数按±等价）；所有23例通过。夹具为合成数据，不含NASA资产；仅当参考实现有意变更时运行`npm run golden --workspace @spaceeyes/nasa-dynamo`重生成。
+`packages/nasa-dynamo/scripts/emit-golden.mjs` 用固定TS参考生成23个合成案例（圆轨道、重心主/次、Hermite、线性、±四元数SLERP、ori投影/插值、双曲、越界、重复、抛物、零轴、负质量比、NaN），输出`crates/codecs/dynamo/tests/golden/synthetic.tsv`。Rust `tests/golden.rs` 对同一字节、时刻与body参数执行`evaluate`，逐字段比较（位置/速度或姿态/角速度，绝对容差1e-9，四元数按±等价）；所有23例通过。夹具为合成数据，不含NASA资产；仅当参考实现有意变更时运行`npm run golden --workspace @spaceeyes/nasa-dynamo`重生成。
 
 ## M3a 核心DYN求值查询（0.0.1）
 
-`ResourceManager`新增只读`ready_bytes(id)`与`source_of(id)`，不发放租约、不改变修订；`Engine`暴露`ready_resource_bytes`/`resource_source`。`protocol-adapter`新增只读`query.evaluate_dynamo`：校验TDB/J2000时刻、位置/姿态资源类型与就绪状态，调用`crates/dynamo`解析求值，返回米制位置/速度、WXYZ姿态、角速度、TDB覆盖区间与上传来源；位置km→m、速度km/s→m/s在核心完成，TS不参与。索引DYN、缺失/未就绪资源、错误尺度/类型均结构化拒绝。本轮不做解析缓存（M5性能阶段再评估）；查询不写Engine状态。
+`ResourceManager`新增只读`ready_bytes(id)`与`source_of(id)`，不发放租约、不改变修订；`Engine`暴露`ready_resource_bytes`/`resource_source`。`protocol-adapter`新增只读`query.evaluate_dynamo`：校验TDB/J2000时刻、位置/姿态资源类型与就绪状态，调用`crates/codecs/dynamo`解析、`crates/astro`求值，返回米制位置/速度、WXYZ姿态、角速度、TDB覆盖区间与上传来源；位置km→m、速度km/s→m/s在核心完成，TS不参与。索引DYN、缺失/未就绪资源、错误尺度/类型均结构化拒绝。本轮不做解析缓存（M5性能阶段再评估）；查询不写Engine状态。
 
 ## M3b-1 核心轨道采样（0.0.1）
 
-`crates/dynamo`新增`orbit_position_at`（椭圆最近历元开普勒传播，km）、`solve_eccentric_anomaly`、`nearest_orb_point`与`orbit_polyline`（3..=1024采样，闭合折线）。`query.dynamo_orbit`在核心读取已就绪orb资源、按TDB/J2000时刻采样并转换为米制点；双曲/抛物、零角速度、非orb资源与非法采样数拒绝。折线仅用于显示，不能回答位置查询；管状网格/线图元与材质仍由宿主组装，但不得在TS重算轨道或历元。
+`crates/astro`新增`orbit_position_at`（椭圆最近历元开普勒传播，km）、`solve_eccentric_anomaly`、`nearest_orb_point`与`orbit_polyline`（3..=1024采样，闭合折线）。`query.dynamo_orbit`在核心读取已就绪orb资源、按TDB/J2000时刻采样并转换为米制点；双曲/抛物、零角速度、非orb资源与非法采样数拒绝。折线仅用于显示，不能回答位置查询；管状网格/线图元与材质仍由宿主组装，但不得在TS重算轨道或历元。
+
+## 目录重构与历史说明（2026-10-28）
+
+当前布局以本节及第0/3节为准：
+
+- `math`：唯一通用数值/四元数/插值实现。
+- `time`：唯一时间、历法、闰秒、UTC/TAI/TT/TDB、J2000 实现（`science` 子模块）。
+- `astro`：唯一通用天文算法（中性星历点、Hermite/线性/SLERP、Kepler、椭圆轨道采样），不依赖 DYN/网络/时钟/Engine。
+- `codecs/dynamo`：唯一 DYN 格式解码器，只把字节转为 `astro` 中性点；不包含求值、轨道或时间换算。
+- `spatial` 复用 `math` 的 Vec3/Quat，不再自建数学类型。
+- 历史段落中出现的“`crates/astro`（时间）”指旧布局，已迁入 `crates/time`；现在的 `crates/astro` 只表示天文算法。
+- 解码器测试覆盖“字节→中性点”；算法测试在 `astro`；跨层链路（解码+求值）的集成测试可保留在 `codecs/dynamo`，但不得把算法实现写回解码器。

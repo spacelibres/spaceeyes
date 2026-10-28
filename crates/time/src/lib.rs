@@ -3,6 +3,9 @@
 //! Authoritative simulation clock. No implicit system clock or assumed scientific epoch.
 use spaceeyes_foundation::CoreError;
 
+mod science;
+pub use science::*;
+
 /// Exact simulation nanoseconds / host nanoseconds. Construction validates policy bounds.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PlaybackRate {

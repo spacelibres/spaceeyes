@@ -4,10 +4,10 @@
 mod common;
 
 use common::*;
-use spaceeyes_dynamo::{
-    nearest_orb_point, orbit_polyline, orbit_position_at, parse_dyn, solve_eccentric_anomaly,
-    DynFile, DynPoint, EvaluationReason, Quat,
+use spaceeyes_astro::{
+    nearest_orb_point, orbit_polyline, orbit_position_at, solve_eccentric_anomaly, EvaluationReason,
 };
+use spaceeyes_dynamo::{parse_dyn, DynFile, DynPoint, Quat};
 
 fn orb_file(quat: Quat, eccentricity: f64, motion: f64) -> DynFile {
     let mut writer = header(2, "orb", 0, Some((1.0, 1.0)), true);
@@ -20,7 +20,7 @@ fn orb_file(quat: Quat, eccentricity: f64, motion: f64) -> DynFile {
 #[test]
 fn samples_a_circular_orbit_quarter_points() {
     let file = orb_file(Quat::IDENTITY, 0.0, 1.0);
-    let line = orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 4).unwrap();
+    let line = orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 4).unwrap();
     assert_eq!(line.len(), 4);
     close(line[0].x, 1.0, 1e-12);
     close(line[0].y, 0.0, 1e-12);
@@ -41,7 +41,7 @@ fn rotated_orbit_applies_the_orientation() {
         z: std::f64::consts::FRAC_1_SQRT_2,
     };
     let file = orb_file(quat, 0.0, 1.0);
-    let line = orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 4).unwrap();
+    let line = orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 4).unwrap();
     close(line[0].x, 0.0, 1e-12);
     close(line[0].y, 1.0, 1e-12);
 }
@@ -89,27 +89,15 @@ fn kepler_solver_residual_is_tight() {
 fn rejects_invalid_orbit_requests() {
     let file = orb_file(Quat::IDENTITY, 0.0, 1.0);
     assert_eq!(
-        orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 2),
+        orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 2),
         Err(EvaluationReason::InvalidSamples)
     );
     assert_eq!(
-        orbit_polyline(
-            &file.header,
-            &file.points,
-            file.interval.unwrap(),
-            0.0,
-            2048
-        ),
+        orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 2048),
         Err(EvaluationReason::InvalidSamples)
     );
     assert_eq!(
-        orbit_polyline(
-            &file.header,
-            &file.points,
-            file.interval.unwrap(),
-            f64::NAN,
-            4
-        ),
+        orbit_polyline(&file.points, file.interval.unwrap(), f64::NAN, 4),
         Err(EvaluationReason::InvalidSamples)
     );
 
@@ -119,7 +107,7 @@ fn rejects_invalid_orbit_requests() {
     orbit_point(&mut zero_motion, 10.0, 1.0, 0.0, 0.0, 1.0);
     let file = parse_dyn(&zero_motion.bytes()).unwrap();
     assert_eq!(
-        orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 4),
+        orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 4),
         Err(EvaluationReason::UnsupportedOrbit)
     );
 
@@ -129,7 +117,7 @@ fn rejects_invalid_orbit_requests() {
     orbit_point(&mut parabola, 10.0, 1.0, 1.0, 1.0, 1.0);
     let file = parse_dyn(&parabola.bytes()).unwrap();
     assert_eq!(
-        orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 4),
+        orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 4),
         Err(EvaluationReason::InvalidSamples)
     );
 
@@ -139,7 +127,7 @@ fn rejects_invalid_orbit_requests() {
     lin_point(&mut non_orb, 1.0, [1.0, 0.0, 0.0]);
     let file = parse_dyn(&non_orb.bytes()).unwrap();
     assert_eq!(
-        orbit_polyline(&file.header, &file.points, file.interval.unwrap(), 0.0, 4),
+        orbit_polyline(&file.points, file.interval.unwrap(), 0.0, 4),
         Err(EvaluationReason::InvalidSamples)
     );
 }

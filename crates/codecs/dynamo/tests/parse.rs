@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Strict DYN parsing acceptance, ported from the fixed TS reference behavior.
+use spaceeyes_astro::PointKind;
 use spaceeyes_dynamo::{
     parse_dyn, parse_dyn_segment, DynError, DynFile, DynPoint, PointType, Quat, Vec3,
 };
@@ -188,7 +189,7 @@ fn parses_a_continuation_segment_without_a_header() {
     lin_point(&mut writer, 2.0, [4.0, 2.0, 0.0]);
     let points = parse_dyn_segment(&writer.bytes(), PointType::Lin).unwrap();
     assert_eq!(points.len(), 2);
-    assert_eq!(points[1].kind(), PointType::Lin);
+    assert_eq!(points[1].kind(), PointKind::Lin);
     assert_eq!(points[1].time(), 2.0);
 
     let truncated = Writer {
@@ -233,11 +234,11 @@ fn parses_every_point_type_with_its_stride() {
     quat_point(&mut quat, 0.0, [1.0, 0.0, 0.0, 0.0]);
 
     for (writer, expected) in [
-        (orb, PointType::Orb),
-        (pos, PointType::Pos),
-        (lin, PointType::Lin),
-        (ori, PointType::Ori),
-        (quat, PointType::Quat),
+        (orb, PointKind::Orb),
+        (pos, PointKind::Pos),
+        (lin, PointKind::Lin),
+        (ori, PointKind::Ori),
+        (quat, PointKind::Quat),
     ] {
         let file = parse_dyn(&writer.bytes()).unwrap();
         assert_eq!(file.points.len(), 1);

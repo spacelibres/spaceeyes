@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import {
   CoreClient,
@@ -16,6 +16,8 @@ import {
   SamplingFilter,
   SamplingAddress,
   UtcRegime,
+  ResourceUploadFormat,
+  DynamoStatus,
   CoreRemoteError,
   ErrorCode,
   type SessionStatus,
@@ -23,18 +25,15 @@ import {
   type CameraState,
   type ResponseEnvelope,
 } from "@spaceeyes/core-sdk";
-import type { DynamoSegmentLoader } from "@spaceeyes/nasa-dynamo";
 import {
   DYNAMO_ORIGIN,
   DYNAMO_PLUGIN_ID,
   PluginHost,
   createDynamoPlugin,
 } from "@spaceeyes/plugin-host";
-import type { SolarState } from "./solar-system";
+import type { Vec3 } from "./solar-system";
 import {
-  displayPosition,
-  orbitMesh,
-  solarState,
+  orbitTube,
   solarSeconds,
   SOLAR_BODIES,
   SOLAR_CAMERA,
@@ -80,6 +79,17 @@ export const initialStatus: ViewStatus = {
 };
 const sessionId = "browser-session";
 const principal = "trusted-browser-host";
+
+/** Core returns true metres; preserve the legacy scene scale of 1e-6 per metre. */
+const displayMetres = (value: {
+  readonly x: number;
+  readonly y: number;
+  readonly z: number;
+}): Vec3 => ({
+  x: value.x * 1e-6,
+  y: value.y * 1e-6,
+  z: value.z * 1e-6,
+});
 
 function formatUtc(utc: {
   year: number;
@@ -225,9 +235,15 @@ export class BrowserSession {
   private solarMode = false;
   private utcText: string | undefined;
   private utcRegime: ViewStatus["utcRegime"];
-  private solarLoader: DynamoSegmentLoader | undefined;
+  private solarFetch:
+    | ((path: string, signal?: AbortSignal) => Promise<Uint8Array>)
+    | undefined;
   private pluginHost: PluginHost | undefined;
-  private readonly solarStates = new Map<string, SolarState>();
+  private readonly solarStates = new Map<
+    string,
+    { positionM: Vec3; velocityMps: Vec3 }
+  >();
+  private readonly solarResources = new Map<string, string>();
   private solarInstant: string | undefined;
   private solarTimeEt: number | undefined;
   private solarIndex = 0;
@@ -347,8 +363,9 @@ export class BrowserSession {
     if (this.disposed) return;
     if (this.projectBytes) {
       this.cameraCreated = true;
-      this.solarLoader = this.solarMode ? await this.enableDynamo() : undefined;
+      this.solarFetch = this.solarMode ? await this.enableDynamo() : undefined;
       await this.refresh();
+      await this.ensureSolarResources();
       await this.command({
         case: "lifecycle",
         value: { action: { case: "start", value: {} } },
@@ -392,7 +409,9 @@ export class BrowserSession {
           throw new Error("缺少参考系修订");
         revision = response.payload.value.frameGraphRevision;
       }
-      this.solarLoader = await this.enableDynamo();
+      this.solarFetch = await this.enableDynamo();
+      await this.refresh();
+      await this.ensureSolarResources();
       await this.command({
         case: "resource",
         value: {
@@ -458,57 +477,7 @@ export class BrowserSession {
       address: SamplingAddress.CLAMP,
     };
     await this.refresh();
-    const orbitCommands = [];
-    if (this.solarMode && this.solarLoader) {
-      for (const body of SOLAR_BODIES) {
-        try {
-          const loaded = await this.solarLoader.load(body.path, 0);
-          const mesh = orbitMesh(loaded, 0);
-          if (mesh === null) continue;
-          const resource = `solar:orbit:${body.frame}`;
-          await this.command({
-            case: "resource",
-            value: {
-              action: {
-                case: "registerMesh",
-                value: {
-                  resourceId: { value: resource },
-                  mesh: {
-                    vertices: [...mesh.vertices],
-                    indices: [...mesh.indices],
-                  },
-                },
-              },
-            },
-          });
-          orbitCommands.push({
-            action: {
-              case: "create" as const,
-              value: {
-                object: {
-                  objectId: { value: resource },
-                  frameId: { value: body.parentFrame },
-                  visible: true,
-                  lifecycle: ObjectLifecycle.ACTIVE,
-                  mesh: {
-                    geometry: { value: resource },
-                    material: {
-                      baseColor: body.color,
-                      filter: SamplingFilter.NEAREST,
-                      address: SamplingAddress.CLAMP,
-                      unlit: true,
-                    },
-                  },
-                },
-              },
-            },
-          });
-        } catch {
-          // Keep the body usable even when its orbit window is unavailable.
-          this.actionError = "轨道线加载失败，星体位置仍可用";
-        }
-      }
-    }
+    const orbitCommands = await this.buildSolarOrbits();
     const solarCommands = this.solarMode
       ? [
           ...SOLAR_BODIES.map((body) => ({
@@ -670,7 +639,9 @@ export class BrowserSession {
       },
     };
   }
-  private async enableDynamo(): Promise<DynamoSegmentLoader> {
+  private async enableDynamo(): Promise<
+    (path: string, signal?: AbortSignal) => Promise<Uint8Array>
+  > {
     const plugin = createDynamoPlugin();
     const host = new PluginHost(
       {
@@ -693,11 +664,174 @@ export class BrowserSession {
     );
     host.install(plugin.manifest, plugin.factory);
     await host.enable(plugin.manifest.id);
-    const loader = plugin.loader();
-    if (loader === undefined) throw new Error("星历插件未提供加载器");
+    const fetchBytes = plugin.bytes();
+    if (fetchBytes === undefined) throw new Error("星历插件未提供字节入口");
     this.pluginHost = host;
-    return loader;
+    return fetchBytes;
   }
+
+  /** Upload inline DYN bytes once per body; the Rust core owns parsing. */
+  private async ensureSolarResources(): Promise<void> {
+    if (!this.solarMode || !this.solarFetch || !this.client) return;
+    const instant = this.state?.clock?.instant;
+    if (!instant) throw new Error("缺少会话时刻");
+    for (const body of SOLAR_BODIES) {
+      const resource = `solar:dyn:${body.frame}`;
+      if (await this.solarResourceReady(resource, instant)) {
+        this.solarResources.set(body.frame, resource);
+        continue;
+      }
+      const bytes = await this.solarFetch(body.path);
+      await this.uploadResource(resource, body.path, bytes);
+      this.solarResources.set(body.frame, resource);
+    }
+  }
+
+  private async solarResourceReady(
+    resource: string,
+    instant: { seconds: bigint; nanos: number },
+  ): Promise<boolean> {
+    try {
+      const response = await this.client!.query(
+        {
+          case: "evaluateDynamo",
+          value: { position: { value: resource }, instant },
+        },
+        { requestId: `web:dyn:probe:${++this.request}` },
+      );
+      return response.payload.case === "dynamo";
+    } catch (error) {
+      if (
+        error instanceof CoreRemoteError &&
+        error.code === ErrorCode.PROVIDER_UNAVAILABLE
+      ) {
+        return false;
+      }
+      throw error;
+    }
+  }
+
+  private async uploadResource(
+    resource: string,
+    sourcePath: string,
+    bytes: Uint8Array,
+  ): Promise<void> {
+    const digest = new Uint8Array(
+      await crypto.subtle.digest("SHA-256", bytes.slice().buffer),
+    );
+    const started = await this.command({
+      case: "resource",
+      value: {
+        action: {
+          case: "beginUpload",
+          value: {
+            resourceId: { value: resource },
+            totalBytes: BigInt(bytes.length),
+            source: {
+              sourceId: sourcePath,
+              sourceVersion: "nasa-dyn",
+              sha256: digest,
+            },
+            format: ResourceUploadFormat.BYTES,
+          },
+        },
+      },
+    });
+    if (started.payload.case !== "upload") throw new Error("缺少上传回执");
+    const uploadId = started.payload.value.uploadId;
+    const chunk = 256 * 1024;
+    for (let offset = 0; offset < bytes.length; offset += chunk) {
+      const appended = await this.command({
+        case: "resource",
+        value: {
+          action: {
+            case: "appendUpload",
+            value: {
+              uploadId,
+              offset: BigInt(offset),
+              data: bytes.slice(offset, offset + chunk),
+            },
+          },
+        },
+      });
+      if (appended.payload.case !== "upload") throw new Error("缺少上传回执");
+    }
+    const finished = await this.command({
+      case: "resource",
+      value: { action: { case: "finishUpload", value: { uploadId } } },
+    });
+    if (finished.status !== ResponseStatus.COMPLETED)
+      throw new Error("上传完成被拒绝");
+  }
+
+  private async buildSolarOrbits(): Promise<object[]> {
+    if (!this.solarMode || !this.client || !this.state?.clock?.instant) {
+      return [];
+    }
+    const instant = this.state.clock.instant;
+    const commands: object[] = [];
+    for (const body of SOLAR_BODIES) {
+      const resource = this.solarResources.get(body.frame);
+      if (!resource) continue;
+      try {
+        const response = await this.client.query(
+          {
+            case: "dynamoOrbit",
+            value: { resource: { value: resource }, instant, samples: 160 },
+          },
+          { requestId: `web:dyn:orbit:${++this.request}` },
+        );
+        if (response.payload.case !== "dynamoOrbit") continue;
+        const mesh = orbitTube(
+          response.payload.value.pointsM.map(displayMetres),
+        );
+        if (mesh === null) continue;
+        const meshResource = `solar:orbit:${body.frame}`;
+        await this.command({
+          case: "resource",
+          value: {
+            action: {
+              case: "registerMesh",
+              value: {
+                resourceId: { value: meshResource },
+                mesh: {
+                  vertices: [...mesh.vertices],
+                  indices: [...mesh.indices],
+                },
+              },
+            },
+          },
+        });
+        commands.push({
+          action: {
+            case: "create" as const,
+            value: {
+              object: {
+                objectId: { value: meshResource },
+                frameId: { value: body.parentFrame },
+                visible: true,
+                lifecycle: ObjectLifecycle.ACTIVE,
+                mesh: {
+                  geometry: { value: meshResource },
+                  material: {
+                    baseColor: body.color,
+                    filter: SamplingFilter.NEAREST,
+                    address: SamplingAddress.CLAMP,
+                    unlit: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+      } catch {
+        // Keep the body usable even when its orbit window is unavailable.
+        this.actionError = "轨道线加载失败，星体位置仍可用";
+      }
+    }
+    return commands;
+  }
+
   private async command(payload: CommandPayload): Promise<ResponseEnvelope> {
     return this.client!.command(payload, {
       requestId: `web:command:${++this.request}`,
@@ -765,14 +899,18 @@ export class BrowserSession {
       ? this.solarStates.get(this.selected.id)
       : undefined;
     const selectedEphemeris = separated
-      ? `${SOLAR_NAMES[this.selected!.id] ?? this.selected!.id} · 距父级 ${Math.hypot(
-          separated.position.x,
-          separated.position.y,
-          separated.position.z,
-        ).toFixed(0)} km · 速度 ${Math.hypot(
-          separated.velocity.x,
-          separated.velocity.y,
-          separated.velocity.z,
+      ? `${SOLAR_NAMES[this.selected!.id] ?? this.selected!.id} · 距父级 ${(
+          Math.hypot(
+            separated.positionM.x,
+            separated.positionM.y,
+            separated.positionM.z,
+          ) / 1000
+        ).toFixed(0)} km · 速度 ${(
+          Math.hypot(
+            separated.velocityMps.x,
+            separated.velocityMps.y,
+            separated.velocityMps.z,
+          ) / 1000
         ).toFixed(2)} km/s`
       : undefined;
     return {
@@ -882,7 +1020,8 @@ export class BrowserSession {
   private async updateSolarSamples(): Promise<boolean> {
     const state = this.state;
     const clock = state?.clock;
-    if (!this.solarLoader || !this.client || !state || !clock) return false;
+    if (!this.client || !state || !clock || this.solarResources.size === 0)
+      return false;
     const instant = clock.instant;
     if (!instant) return false;
     const key = `${instant.seconds}:${instant.nanos}`;
@@ -896,13 +1035,23 @@ export class BrowserSession {
     let revision = state.frameGraphRevision;
     let changed = false;
     for (const body of SOLAR_BODIES) {
+      const resource = this.solarResources.get(body.frame);
+      if (!resource) continue;
       try {
-        const loaded = await this.solarLoader.load(body.path, timeEt);
-        const ephemeris = solarState(loaded, timeEt);
-        if (ephemeris === null) continue;
-        this.solarStates.set(body.id, ephemeris);
-        const position = displayPosition(ephemeris.position);
-        const response = await this.client.command(
+        const response = await this.client.query(
+          {
+            case: "evaluateDynamo",
+            value: { position: { value: resource }, instant },
+          },
+          { requestId: `web:dyn:state:${++this.request}` },
+        );
+        if (response.payload.case !== "dynamo") continue;
+        const dyn = response.payload.value;
+        if (dyn.status !== DynamoStatus.READY || !dyn.positionM) continue;
+        const positionM = dyn.positionM;
+        const velocityMps = dyn.velocityMps ?? { x: 0, y: 0, z: 0 };
+        this.solarStates.set(body.id, { positionM, velocityMps });
+        const command = await this.client.command(
           {
             case: "spatial",
             value: {
@@ -913,8 +1062,8 @@ export class BrowserSession {
                   frameId: { value: body.frame },
                   instant,
                   toParent: {
-                    translationM: position,
-                    rotation: { w: 1, x: 0, y: 0, z: 0 },
+                    translationM: displayMetres(positionM),
+                    rotation: dyn.orientation ?? { w: 1, x: 0, y: 0, z: 0 },
                   },
                 },
               },
@@ -926,9 +1075,9 @@ export class BrowserSession {
             timeGeneration: clock.generation,
           },
         );
-        if (response.payload.case !== "spatial")
+        if (command.payload.case !== "spatial")
           throw new Error("缺少参考系修订");
-        revision = response.payload.value.frameGraphRevision;
+        revision = command.payload.value.frameGraphRevision;
         changed = true;
       } catch (error) {
         // Keep the last valid sample; never invent a scientific position.
@@ -1189,7 +1338,7 @@ export class BrowserSession {
           // Disposal continues even when plugin shutdown fails.
         }
         this.pluginHost = undefined;
-        this.solarLoader = undefined;
+        this.solarFetch = undefined;
         this.engine?.free();
         this.engine = undefined;
       }
