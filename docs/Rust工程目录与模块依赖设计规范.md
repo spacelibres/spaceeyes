@@ -49,6 +49,7 @@ spaceeyes/
 | foundation | ObjectId/FrameId/ResourceId、数学值类型、错误、不可变快照值类型 | 依赖上层引擎、NASA业务 |
 | time | SimulationClock、TimeSnapshot、时间命令领域语义 | 轨道计算、UI系统时间读取 |
 | astro | 历法、闰秒、UTC/TAI/TT/TDB、J2000 换算（纯值、无系统时钟） | 场景/渲染状态、宿主UI、网络与DYN文件读取 |
+| dynamo | DYN v1/v2 解析、五类点、分段/覆盖、星历求值（纯字节与显式时间） | 网络/文件I/O、Engine/Scene 可变状态、宿主UI |
 | spatial | ReferenceFrameGraph、TransformResolver、空间变换 | 场景对象所有权、DYN解析 |
 | scene | Scene、SceneObject、SceneCommand事务、SceneSnapshot | GPU分配、星历计算 |
 | simulation | SimulationScheduler、任务状态、依赖、结果校验 | 第二套Scene写入口 |
@@ -164,3 +165,9 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 
 与第96行“DYN解析/求值不放入核心”的历史表述冲突处，按`docs/核心与宿主职责边界规范.md`执行：DYN解析/求值/分段是Rust核心能力（规划`crates/dynamo`），只读取字节与显式时刻，不拥有Scene/Clock可变状态；插件仅取字节并调用核心。
 
+
+## M2a DYN 解析（0.0.1）
+
+新增`crates/dynamo`（仅std，无网络/文件/宿主依赖）：严格小端读取v1/v2头、orb/pos/lin/ori/quat五类点（W-first四元数）、内联点块、索引段表、无头续段；所有长度在切片/分配前校验，负计数、非法类型/标志、名称越界/非ASCII、截断、块/段表大小不符均返回结构化`DynError`，不产生部分`DynFile`。解析不计算轨道、不插值、不读系统时钟。
+
+验证：9项Rust测试（1单元+8集成）覆盖五类步长、v1/v2索引端推导、续段、空块、畸形输入与损坏尾随；M2b求值、M2c与TS合成黄金对照仍待完成。

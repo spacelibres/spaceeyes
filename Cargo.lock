@@ -1205,6 +1205,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "spaceeyes-dynamo"
+version = "0.0.1"
+
+[[package]]
 name = "spaceeyes-engine"
 version = "0.0.1"
 dependencies = [
