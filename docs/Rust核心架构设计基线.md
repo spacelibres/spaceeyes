@@ -22,7 +22,7 @@ ADR-009：模块依赖单向、无环、职责可追溯。
 | 类别 | 文件 | 状态 |
 |---|---|---|
 | 总体 | 太空之眼平台架构书.md | 规划基线 |
-| 总体 | Rust核心引擎设计规范.md | 设计草案 |
+| 总体 | Rust核心引擎设计规范.md | 受控规范（Engine 定义/所有权已冻结） |
 | 核心01 | Scene场景系统与对象模型设计规范.md | 设计草案 |
 | 核心02 | Spatial空间与参考系系统设计规范.md | 设计草案 |
 | 核心03 | Time仿真时间系统设计规范.md | 设计草案 |
@@ -42,13 +42,13 @@ ADR-009：模块依赖单向、无环、职责可追溯。
 全部路径除CHANGELOG.md外均相对于docs/目录。当前不新增独立验证报告或工程测试文件。
 
 ## 4. 核心职责基线
-Engine：会话、命令协调与FrameSnapshot发布。
+Engine：**会话提交引擎**——会话生命周期、唯一公开写命令准入/排序、跨模块提交/回滚、FrameSnapshot 原子发布、执行上下文绑定；不拥有领域规则、算法、格式、渲染或任务调度。详见 `docs/Rust核心引擎设计规范.md` 第0/16/22节。
 Scene：对象身份、组织、场景权威状态和事务。
 Spatial：FrameId、参考系图和变换组合。
-Time：唯一SimulationClock、播放状态、时间代次。
+Time：唯一SimulationClock、播放状态、时间代次、时间尺度与历法。
 Simulation：任务调度与异步结果校验，不直接写Scene。
-Rendering：只读一致FrameSnapshot、相机派生视图与GPU绘制。
-Resources：资源ID、租约、配额、释放与恢复的唯一权威。
+Rendering：只读一致FrameSnapshot、相机派生视图、拾取与GPU绘制。
+Resources：资源ID、租约、配额、释放与恢复的唯一权威；上传状态归Resources。
 ProtocolAdapter：Proto校验、领域映射，不持有第二套状态。
 
 ## 5. 三类快照

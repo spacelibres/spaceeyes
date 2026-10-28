@@ -7,6 +7,14 @@
 ## [0.0.1] — 2026-10-27
 
 
+### Engine 定义与所有权规则（2026-10-28，仅文档）
+- 明确 Engine 是 `crates/engine` 的**会话提交引擎**，不是核心/渲染/游戏/物理/调度引擎；禁止用“引擎”泛指整个 Rust 核心。
+- 新增术语表、Engine 所有权矩阵、两层唯一写入口、提交/回滚与原子性协议、三类快照边界、生命周期/停机顺序、API 禁止项、测试归属、归属判定清单和反例。
+- 明确允许 Engine 持有的仅是生命周期、帧序号、已发布帧、任务/租约绑定索引与配置；禁止第二套 Scene/Clock/Resources/Spatial/任务状态。
+- 记录现状偏差：`camera_control` 的相机策略、`selection` 的拾取应迁往 `rendering`；`upload` 仅允许无状态 facade；迁移前不得扩大偏差。
+- 同步更新架构书、架构基线、职责边界、工程目录规则、C01 台账和 AGENTS 术语约束；未修改任何 Rust/TS 代码。
+
+
 ### 分层重构与浏览器核心 DYN 切换（2026-10-28）
 - 新增 `crates/math`：Vec3/Quat、旋转、插值、SLERP 等唯一通用实现；`spatial` 与 `dynamo` 不再各自维护数学类型。
 - 时间全部归入 `crates/time`：历法/闰秒/UTC/TAI/TT/TDB/J2000 从独立 `astro` 迁入 `time` 的 `science` 子模块；删除旧 `astro` 时间 crate，时间不再出现在其它模块。

@@ -21,7 +21,8 @@ Rust核心保持唯一源码，WASM和Native只承担不同编译目标与平台
 | L2 天文算法 | `crates/astro` | 中性星历点、插值、Kepler、轨道几何等可复用天文算法 | DYN 字节、网络、时钟/历法、Engine 状态 |
 | L2 几何 | `crates/geometry` | 三角形网格、纹理等领域值 | 格式解码、GPU 状态、场景 |
 | L3 领域状态 | `spatial`/`scene`/`simulation`/`resources`/`rendering`/`snapshot` | 各自唯一的领域状态与规则 | 其他领域状态、格式知识 |
-| L4 组合与契约 | `engine`/`protocol-adapter` | 组合、命令/查询、原子提交、Proto 映射 | 第二套状态、格式实现 |
+| L4 会话提交 | `engine` | **仅**会话生命周期、公开写命令准入、跨模块提交/回滚、FrameSnapshot 原子发布、执行上下文绑定 | 领域规则、算法、格式解码、Proto、渲染/拾取、第二套状态 |
+| L4 契约映射 | `protocol-adapter` | Proto 校验、领域对象/错误映射、查询/命令/事件编解码 | 第二套权威状态、直接写 Scene/Clock/Resources、格式实现 |
 | L5 编解码 | `crates/codecs/<格式>` | **仅** 字节 ↔ 中性数据结构；格式自身的头/段/校验 | 插值、轨道、时间换算、场景、Engine、网络 |
 | L6 平台适配 | `adapters/` | Native/WASM 平台入口与 I/O | 领域算法、格式解码 |
 | L7 宿主/插件 | `apps/`、`packages/` | Next.js/React、SDK、插件宿主、UI | 权威科学计算、核心状态 |
@@ -34,8 +35,11 @@ Rust核心保持唯一源码，WASM和Native只承担不同编译目标与平台
 4. **网格/纹理等渲染领域值？** → `geometry`。
 5. **领域状态、事务、租约、调度、GPU？** → 对应的 L3 crate。
 6. **某个文件格式的字节布局？** → `crates/codecs/<格式>`；解码后返回 `astro`/`math`/`geometry` 的中性类型，**不得**在解码器中求值。
-7. **跨模块组合、公开命令/查询、Proto 映射？** → `engine`/`protocol-adapter`。
-8. **平台、进程、DOM、插件 UI？** → `adapters`/`apps`/`packages`。
+7. **Proto 字段/错误码/命令查询映射？** → `protocol-adapter`。
+8. **会话生命周期、命令准入/排序、跨模块提交/回滚、FrameSnapshot 发布、执行上下文绑定？** → `engine`。
+9. **平台、进程、DOM、插件 UI？** → `adapters`/`apps`/`packages`。
+
+**Engine 不是“核心”或“渲染引擎”的同义词**：Engine 只做第 8 项的会话提交；任何命中原模块（Scene/Spatial/Time/Simulation/Resources/Rendering）规则的问题，必须回原模块。详见 `docs/Rust核心引擎设计规范.md` 第 0/16/22 节。
 
 若一个问题同时命中两层，必须拆分：下层提供通用函数，上层组合。不得把上层语义塞进下层“顺便实现”。
 
@@ -115,8 +119,8 @@ spaceeyes/
 | `crates/simulation` | SimulationScheduler、任务状态、依赖、结果校验 | 第二套Scene写入口 |
 | `crates/resources` | ResourceManager、资源租约、代次、配额、恢复元数据 | 插件身份授权、具体GPU绘制 |
 | `crates/rendering` | Renderer、相机派生视图、可见性、基础图元、GPU适配 | 修改Scene、推进Time |
-| `crates/engine` | Engine、CommandDispatcher、模块组合、FrameSnapshot原子发布 | 持有第二套Scene/Clock |
-| `crates/protocol-adapter` | Proto解码、版本校验、领域对象映射、错误编码 | 维护科学权威状态 |
+| `crates/engine` | **会话提交引擎**：会话生命周期、CommandDispatcher 准入/幂等/顺序、跨模块提交/回滚、FrameSnapshot 原子发布、执行上下文绑定 | 领域规则、时间/星历/轨道算法、格式解码、Proto、渲染/拾取、第二套 Scene/Clock/Resources、任务调度算法 |
+| `crates/protocol-adapter` | Proto解码、版本校验、领域对象映射、错误编码 | 维护科学权威状态、直接写 Scene/Clock/Resources、格式实现 |
 | `crates/codecs/dynamo` | **仅** DYN v1/v2 字节解码为 `astro` 中性点、段表与覆盖区间 | 插值、Kepler、轨道几何、时间换算、网络、Engine状态 |
 | `crates/codecs/image` | **仅** 有界PNG/JPEG字节解码为RGBA/尺寸，含格式校验与EXIF方向 | 场景、资源注册、上传协议、轨道/时间/网络 |
 
@@ -168,7 +172,7 @@ adapters/native负责本机设备、窗口或本地服务的启动与传输桥�
 apps/web为Next.js/React/TypeScript界面，可由服务器提供浏览器访问，也可通过localhost访问。宿主负责身份、插件权限、网络代理、UI和SDK，不持有第二套仿真科学权威状态。核心与宿主通过Proto适配通信。
 
 ## 11. 插件与NASA DYN边界
-NASA Dynamo作为未来首个独立数据插件，其下载、缓存、DYN解析和星历求值不放入crates/engine、spatial或simulation。插件经公开SDK提交带时间、参考系、来源和有效范围的标准化结果；核心只校验和消费。
+NASA Dynamo作为未来首个独立数据插件，其下载、缓存、DYN解析和星历求值不放入crates/engine、spatial或simulation；DYN字节解码归`crates/codecs/dynamo`，星历/轨道算法归`crates/astro`。插件经公开SDK提交带时间、参考系、来源和有效范围的标准化结果；核心只校验和消费。
 AI未来通过版本化SKILL.md与SDK开发插件，不能直接依赖crate私有模块。
 
 ## 12. 工程配置与版本规划

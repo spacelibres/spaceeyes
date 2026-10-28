@@ -5,28 +5,31 @@
 依据：Rust核心总规范、七项专项设计、已批准ADR-001至ADR-009。
 
 ## 1. 设计目标
-把七大核心系统的逻辑对象统一为可执行的职责契约，明确状态所有权、公开方法、依赖方向、错误与Proto边界。Rust采用struct、impl、trait与组合，不要求传统类继承。核心不包含NASA DYN、天体专用算法、插件管理或AI模型逻辑。
+把七大核心系统的逻辑对象统一为可执行的职责契约，明确状态所有权、公开方法、依赖方向、错误与Proto边界。Rust采用struct、impl、trait与组合，不要求传统类继承。核心不包含宿主/插件管理、AI模型或UI；天文算法归`astro`，时间归`time`，格式解码归`codecs`。
 
 ## 2. 对象所有权总表
 | 对象 | 权威状态 | 允许读取 | 禁止职责 |
 |---|---|---|---|
-| Engine | 会话生命周期、命令顺序、FrameSnapshot发布 | 各模块公开快照 | 直接存储第二套Scene |
+| Engine | **仅**会话生命周期、命令准入/顺序、跨模块提交/回滚、FrameSnapshot发布、执行上下文绑定 | 各模块公开快照 | 领域规则、算法、格式解码、第二套Scene/Clock/Resources、渲染/拾取 |
 | Scene | 场景对象、层级、通用状态、scene_revision | FrameId、资源引用 | 轨道计算、GPU分配 |
 | ReferenceFrameGraph | 参考系关系、graph_revision | TimeInstant值 | 管理Scene父子关系 |
-| SimulationClock | 仿真时刻、模式、rate、generation | 宿主单调elapsed | 自行读取NASA星历 |
+| SimulationClock | 仿真时刻、模式、rate、generation、时间尺度 | 宿主单调elapsed | 自行读取NASA星历 |
 | SimulationScheduler | 任务队列、依赖、状态、结果验证 | Time/Scene/Spatial快照 | 直接写Scene |
-| Renderer | GPU渲染状态、相机派生视图 | FrameSnapshot、ResourceLease | 修改科学状态、推进时间 |
-| ResourceManager | 资源ID、租约、代次、预算、释放 | 宿主授权上下文 | 自行授予插件权限 |
+| Renderer | GPU渲染状态、相机派生视图、拾取 | FrameSnapshot、ResourceLease | 修改科学状态、推进时间 |
+| ResourceManager | 资源ID、租约、代次、预算、上传状态、释放 | 宿主授权上下文 | 自行授予插件权限 |
 | ProtocolAdapter | 无科学权威状态；协议映射与校验 | Engine Facade | 持有第二套领域对象 |
-| CameraController | 相机逻辑命令与持久状态（候选归Scene） | Spatial/Time快照 | 直接修改Renderer私有GPU状态 |
+| CameraController | 相机逻辑命令与持久状态（归Scene/Rendering，不是Engine） | Spatial/Time快照 | 直接修改Renderer私有GPU状态 |
 
-## 3. Engine
-职责：创建与关闭会话、统一命令入口、模块协调、FrameSnapshot原子发布。
-候选属性：session_id、lifecycle、command_sequence、frame_sequence、last_published_snapshot、module_refs。
-候选接口：initialize(config)、submit_command(envelope)、query(request)、advance(elapsed_real)、latest_snapshot()、shutdown()。
-不变量：一个会话只有一个权威Scene和Clock；关闭后拒绝写命令；命令按确定顺序处理；快照修订一致。
-依赖：通过公开trait组合Scene、Spatial、Time、Simulation、Rendering、Resources；不依赖NASA或UI。
-Proto：CommandEnvelope、QueryEnvelope、ResponseEnvelope、EventEnvelope、FrameSnapshot。
+## 3. Engine（会话提交引擎）
+职责：会话生命周期、唯一公开写命令准入/排序/幂等、跨模块提交与回滚、FrameSnapshot原子发布、执行上下文绑定。Engine 是提交门面，不是领域规则、算法或渲染引擎。
+
+当前属性（示意）：session_id、lifecycle、command_sequence、frame_sequence、last_published_snapshot、module_refs、task/lease绑定索引；不得保存第二套Scene/Clock/Resources/Spatial/任务状态。
+
+当前接口（示意）：initialize(config)、submit_command(envelope)、query(request)、advance(elapsed_real)、latest_snapshot()、shutdown()。
+
+不变量：一个会话只有一个权威Scene和Clock；关闭后拒绝写命令；命令按确定顺序处理；快照修订一致；提交失败不得半提交。
+
+依赖：通过公开trait组合Scene、Spatial、Time、Simulation、Rendering、Resources；不依赖NASA、格式、UI或Proto。CameraController、拾取策略与相机几何不属于Engine。
 
 ## 4. Scene与SceneObject
 Scene属性：registry、hierarchy、object_states、scene_revision。
