@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### Rust DYN 求值核心（M2b，2026-10-28）
+- `crates/dynamo` 新增纯 Rust `evaluate`：窗口校验（≥2 点、同类型、时间严格递增、有限字段、覆盖区间）后，`pos` 三次 Hermite、`lin` 线性、`quat` 最短路径 SLERP、`ori` 投影+SLERP+负角速度旋转、`orb` 椭圆/双曲开普勒迭代与主次天体质量比。
+- 越界、非法样本、抛物/零轴/非法质量比分别返回 `OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退；不读网络/时钟。
+- 验证：10 项求值 Rust 测试（圆轨道端点/中段/四分之一、重心因子、Hermite、线性、±四元数 SLERP、ori 投影与非退化插值、异常窗口、非法轨道、双曲轨道）与解析 9 项合计 19 项通过；严格 Clippy/fmt。M2c 的 TS oracle 同字节对照仍待完成。
+
+
 ### Rust DYN 解析核心（M2a，2026-10-28）
 - 新增 `crates/dynamo`（仅 std，无网络/文件/宿主依赖）：严格小端 v1/v2 头、`orb/pos/lin/ori/quat` 五类点（W-first 四元数）、内联点块、索引段表与无头续段；所有长度在切片/分配前校验。
 - 负计数、非法类型/标志、名称越界/非 ASCII、截断、点块/段表大小不符均返回结构化 `DynError`，不产生部分 `DynFile`；解析层不做轨道、插值或时间计算。

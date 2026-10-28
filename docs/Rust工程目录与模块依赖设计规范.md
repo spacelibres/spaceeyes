@@ -171,3 +171,9 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 新增`crates/dynamo`（仅std，无网络/文件/宿主依赖）：严格小端读取v1/v2头、orb/pos/lin/ori/quat五类点（W-first四元数）、内联点块、索引段表、无头续段；所有长度在切片/分配前校验，负计数、非法类型/标志、名称越界/非ASCII、截断、块/段表大小不符均返回结构化`DynError`，不产生部分`DynFile`。解析不计算轨道、不插值、不读系统时钟。
 
 验证：9项Rust测试（1单元+8集成）覆盖五类步长、v1/v2索引端推导、续段、空块、畸形输入与损坏尾随；M2b求值、M2c与TS合成黄金对照仍待完成。
+
+## M2b DYN 求值（0.0.1）
+
+`crates/dynamo`新增纯Rust求值：`evaluate(header, points, interval, time, body)`严格校验窗口（至少2点、同类型、时间严格递增、有限字段、覆盖区间），二分定位区间后在`pos`上做三次Hermite、`lin`上做线性、`quat`上做最短路径SLERP、`ori`上按`q*conj(axisAngle(ω,dt))`投影再SLERP并旋转负角速度、`orb`上做开普勒迭代（20次/0.1°容差，椭圆与双曲）并按重心质量比输出主/次天体因子。越界、非有限、重复/乱序、类型混用、抛物线与非法质量比分别返回`OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退。
+
+验证：10项Rust求值测试（圆轨道端点/中段/四分之一、重心因子、Hermite、线性、±四元数SLERP、ori投影与非退化插值、异常窗口、抛物/零轴/负质量比、双曲轨道）与解析9项合计19项通过；M2c将与TS oracle做同字节黄金对照。

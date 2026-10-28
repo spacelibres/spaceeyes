@@ -14,8 +14,11 @@
 
 use std::fmt;
 
+mod eval;
+mod math;
 mod parse;
 
+pub use eval::{evaluate, Body, EvaluationKind, EvaluationReason, EvaluationState};
 pub use parse::{parse_dyn, parse_dyn_segment, DynFile, DynHeader, DynInterval, DynSegment};
 
 /// Why DYN bytes or an evaluation request were rejected. No partial value escapes.
