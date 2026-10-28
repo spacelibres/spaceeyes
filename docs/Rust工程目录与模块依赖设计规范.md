@@ -118,11 +118,12 @@ spaceeyes/
 | `crates/engine` | Engine、CommandDispatcher、模块组合、FrameSnapshot原子发布 | 持有第二套Scene/Clock |
 | `crates/protocol-adapter` | Proto解码、版本校验、领域对象映射、错误编码 | 维护科学权威状态 |
 | `crates/codecs/dynamo` | **仅** DYN v1/v2 字节解码为 `astro` 中性点、段表与覆盖区间 | 插值、Kepler、轨道几何、时间换算、网络、Engine状态 |
+| `crates/codecs/image` | **仅** 有界PNG/JPEG字节解码为RGBA/尺寸，含格式校验与EXIF方向 | 场景、资源注册、上传协议、轨道/时间/网络 |
 
 ### 3.1 目录分层规则
 
 - `crates/<模块>` 顶层只放可复用的核心与通用算法（foundation/math/time/astro/spatial/scene/simulation/resources/rendering/snapshot/engine/protocol-adapter）。
-- 所有文件/数据格式解码器统一放在 `crates/codecs/<格式>/`，例如 `crates/codecs/dynamo`；不允许再出现与 `engine` 同级的单独格式 crate。未来图像、网格、星表、航天器格式同样进入 `codecs`。
+- 所有文件/数据格式解码器统一放在 `crates/codecs/<格式>/`，例如 `crates/codecs/dynamo`；不允许再出现与 `engine` 同级的单独格式 crate。图像已位于 `crates/codecs/image`；未来网格、星表、航天器格式同样进入 `codecs`。
 - 解码器只做“字节 → 中性数据结构”，然后调用 `astro`/`math`/`time` 的通用能力；不得在解码器内实现插值、轨道、时间尺度或引擎状态。
 - `packages/` 只放 TS SDK、插件宿主与数据源适配；`apps/` 只放宿主界面；`adapters/` 只放平台入口。目录层级本身必须表达依赖方向。
 - 新增目录或 crate 前先回答：它是通用算法、核心状态、格式解码还是宿主适配？无法归类时先更新本规范，不直接落盘。

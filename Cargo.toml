@@ -4,7 +4,7 @@ members = [
   "crates/foundation",
   "crates/math",
   "crates/geometry",
-  "crates/image-import",
+  "crates/codecs/image",
   "crates/time",
   "crates/astro",
   "crates/codecs/dynamo",
