@@ -177,3 +177,7 @@ M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上
 `crates/dynamo`新增纯Rust求值：`evaluate(header, points, interval, time, body)`严格校验窗口（至少2点、同类型、时间严格递增、有限字段、覆盖区间），二分定位区间后在`pos`上做三次Hermite、`lin`上做线性、`quat`上做最短路径SLERP、`ori`上按`q*conj(axisAngle(ω,dt))`投影再SLERP并旋转负角速度、`orb`上做开普勒迭代（20次/0.1°容差，椭圆与双曲）并按重心质量比输出主/次天体因子。越界、非有限、重复/乱序、类型混用、抛物线与非法质量比分别返回`OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退。
 
 验证：10项Rust求值测试（圆轨道端点/中段/四分之一、重心因子、Hermite、线性、±四元数SLERP、ori投影与非退化插值、异常窗口、抛物/零轴/负质量比、双曲轨道）与解析9项合计19项通过；M2c将与TS oracle做同字节黄金对照。
+
+## M2c TS oracle 黄金对照（0.0.1）
+
+`packages/nasa-dynamo/scripts/emit-golden.mjs` 用固定TS参考生成23个合成案例（圆轨道、重心主/次、Hermite、线性、±四元数SLERP、ori投影/插值、双曲、越界、重复、抛物、零轴、负质量比、NaN），输出`crates/dynamo/tests/golden/synthetic.tsv`。Rust `tests/golden.rs` 对同一字节、时刻与body参数执行`evaluate`，逐字段比较（位置/速度或姿态/角速度，绝对容差1e-9，四元数按±等价）；所有23例通过。夹具为合成数据，不含NASA资产；仅当参考实现有意变更时运行`npm run golden --workspace @spaceeyes/nasa-dynamo`重生成。

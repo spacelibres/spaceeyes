@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### TS oracle 黄金对照（M2c，2026-10-28）
+- 新增一次性生成器 `packages/nasa-dynamo/scripts/emit-golden.mjs` 与 `npm run golden`：从固定 TS 参考输出 23 个合成案例到 `crates/dynamo/tests/golden/synthetic.tsv`（字节、时刻、body、状态/原因/类型与数值），不含 NASA 资产。
+- 新增 Rust `tests/golden.rs`：对同一字节与参数执行 `evaluate`，逐字段比较位置/速度或姿态/角速度，绝对容差 1e-9、四元数按 ± 等价；23 例全部通过。
+- 验证：`cargo test -p spaceeyes-dynamo` 20 项（1 单元 + 10 求值 + 8 解析 + 1 黄金）通过，Clippy/fmt 通过。M2 完成；下一增量 M3a 接入核心公开路径。
+
+
 ### Rust DYN 求值核心（M2b，2026-10-28）
 - `crates/dynamo` 新增纯 Rust `evaluate`：窗口校验（≥2 点、同类型、时间严格递增、有限字段、覆盖区间）后，`pos` 三次 Hermite、`lin` 线性、`quat` 最短路径 SLERP、`ori` 投影+SLERP+负角速度旋转、`orb` 椭圆/双曲开普勒迭代与主次天体质量比。
 - 越界、非法样本、抛物/零轴/非法质量比分别返回 `OutOfRange`/`InvalidSamples`/`UnsupportedOrbit`，不外推、不回退；不读网络/时钟。
