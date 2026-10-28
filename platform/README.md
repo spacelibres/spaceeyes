@@ -1,6 +1,6 @@
 # 平台基础运行层
 
-按[平台基础功能实施](../docs/平台基础功能实施.md)逐项实现，架构依据为[太空之眼平台架构书](../docs/太空之眼平台架构书.md)。原创代码 MIT，版本 0.0.1。
+按[平台基础功能实施](../docs/平台基础功能实施.md)逐项实现，架构依据为[太空之眼平台架构书](../docs/太空之眼平台架构书.md)。原创代码 MIT，版本以 package.json 为准。
 
 当前提供可信进程内 TS 插件的清单注册、能力声明审批和生命周期管理。Node.js 24.15.0 以上，无运行时外部依赖：
 
@@ -14,4 +14,6 @@ node --test platform/tests/*.test.ts
 
 已提供首个受控 SDK 意图 `context.camera.focus(targetId)`，宿主校验授权、会话和目标格式后转发给注入的 `CorePort`。插件不获得核心适配器或会话标识。停用时调用适配器释放本次会话。详见 [SDK 技能书](../.agents/skills/spaceeyes-platform-sdk/SKILL.md)。
 
-当前仅测试调用边界，尚无真实 Bevy 适配器、数据发布 API、Next.js 页面、市场或不可信代码隔离；不能据此宣称画面已可控制。`CorePort` 为内部接口，不决定最终 Proto 或其他传输协议。
+已提供 `data.publish/remove` 和 `time.seek/setPlayback`。`WasmCorePort` 将调用转发到实际 Rust WASM；核心再次验证权限和归属。运行集中验证见 `core/README.md`，跨语言测试位于 `integration/wasm.test.ts`。
+
+尚无真实 Bevy 显示、Next.js 页面、市场或不可信代码隔离；不能据此宣称画面已可控制。`CorePort` 为内部接口，不决定最终 Proto 或其他传输协议。

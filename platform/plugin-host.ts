@@ -1,12 +1,15 @@
 // Original SPACEEYES code, MIT. Trusted in-process plugin lifecycle only.
 import type { CorePort } from './core-port.ts';
-export type Capability = 'data.publish' | 'camera.control';
+import { snapshotState, targetId as validateTargetId, type ObjectState } from './state-contract.ts';
+export type Capability = 'data.publish' | 'camera.control' | 'time.control';
 export type PluginStatus = 'registered' | 'starting' | 'active' | 'stopping' | 'disabled' | 'failed';
 type Dispose = () => void | Promise<void>;
 export interface PluginContext {
   readonly pluginId: string;
   readonly signal: AbortSignal;
   readonly camera: { focus(targetId: string): void };
+  readonly data: { publish(targetId: string, state: ObjectState): void; remove(targetId: string): void };
+  readonly time: { seek(epochTdbSeconds: number): void; setPlayback(playing: boolean, rate: number): void };
   requireCapability(capability: Capability): void;
   onDispose(dispose: Dispose): void;
 }
@@ -18,7 +21,7 @@ export interface PluginManifest {
 export type Activate = (context: PluginContext) => void | Dispose | Promise<void | Dispose>;
 type Session = { controller: AbortController; live: boolean; disposers: Dispose[] };
 type Entry = { manifest: PluginManifest; activate: Activate; state: PluginStatus; busy: boolean; session?: Session };
-const capabilities = new Set<string>(['data.publish', 'camera.control']);
+const capabilities = new Set<string>(['data.publish', 'camera.control', 'time.control']);
 
 export class PluginHost {
   #entries = new Map<string, Entry>();
@@ -67,12 +70,39 @@ export class PluginHost {
       signal: session.controller.signal,
       camera: Object.freeze({ focus(targetId: string) {
         requireCapability('camera.control');
-        if (typeof targetId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9:._/-]{0,255}$/.test(targetId)) {
-          throw new Error('invalid target id');
-        }
+        validateTargetId(targetId);
         if (!core) throw new Error('render core unavailable');
         core.focus(Object.freeze({ pluginId: id, sessionId, targetId }));
       } }),
+      data: Object.freeze({
+        publish(targetId: string, state: ObjectState) {
+          requireCapability('data.publish');
+          validateTargetId(targetId);
+          const snapshot = snapshotState(state);
+          if (!core?.publishObject) throw new Error('data core unavailable');
+          core.publishObject(Object.freeze({ pluginId: id, sessionId, targetId, state: snapshot }));
+        },
+        remove(targetId: string) {
+          requireCapability('data.publish');
+          validateTargetId(targetId);
+          if (!core?.removeObject) throw new Error('data core unavailable');
+          core.removeObject(Object.freeze({ pluginId: id, sessionId, targetId }));
+        },
+      }),
+      time: Object.freeze({
+        seek(epochTdbSeconds: number) {
+          requireCapability('time.control');
+          if (!Number.isFinite(epochTdbSeconds)) throw new Error('invalid time');
+          if (!core?.seek) throw new Error('time core unavailable');
+          core.seek(Object.freeze({ pluginId: id, sessionId, epochTdbSeconds }));
+        },
+        setPlayback(playing: boolean, rate: number) {
+          requireCapability('time.control');
+          if (typeof playing !== 'boolean' || !Number.isFinite(rate)) throw new Error('invalid time playback');
+          if (!core?.setPlayback) throw new Error('time core unavailable');
+          core.setPlayback(Object.freeze({ pluginId: id, sessionId, playing, rate }));
+        },
+      }),
       requireCapability,
       onDispose(dispose: Dispose) {
         live();
@@ -82,7 +112,9 @@ export class PluginHost {
     });
     try {
       core?.openSession(Object.freeze({ pluginId: id, sessionId,
-        cameraControl: entry.manifest.capabilities.includes('camera.control') && granted.has('camera.control') }));
+        cameraControl: entry.manifest.capabilities.includes('camera.control') && granted.has('camera.control'),
+        dataPublish: entry.manifest.capabilities.includes('data.publish') && granted.has('data.publish'),
+        timeControl: entry.manifest.capabilities.includes('time.control') && granted.has('time.control') }));
       const dispose = await entry.activate(context);
       if (dispose !== undefined) {
         if (typeof dispose !== 'function') throw new Error('invalid activation cleanup');

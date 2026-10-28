@@ -1,0 +1,23 @@
+name: Core Foundation CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+      - name: Install Rust tools
+        run: |
+          rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt --target wasm32-unknown-unknown
+          rustup override set 1.96.0
+          cargo install wasm-bindgen-cli --version 0.2.129 --locked
+      - run: npm ci --prefix platform --ignore-scripts
+      - name: Core and real WASM integration
+        shell: pwsh
+        run: ./tools/check-core.ps1
