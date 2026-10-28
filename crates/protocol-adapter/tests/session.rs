@@ -1,4 +1,4 @@
-﻿// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Integration path uses only wire writes; direct Engine access is read-only frame publication.
 use prost::Message;
@@ -1342,4 +1342,36 @@ fn time_conversion_is_read_only_and_uses_explicit_scales() {
     assert_eq!(status(&a), before);
     assert_eq!(a.dispatcher().command_sequence(), sequence);
     assert_eq!(a.dispatcher().events().count(), events);
+}
+
+#[test]
+fn continuous_utc_regime_is_explicit_on_the_wire() {
+    let a = adapter(2);
+    let at = |year: i32, month: u32, day: u32| p::QueryEnvelope {
+        context: Some(context("utc-regime")),
+        payload: Some(p::query_envelope::Payload::TimeConversion(
+            p::TimeConversionQuery {
+                input: Some(p::time_conversion_query::Input::Utc(p::UtcDateTime {
+                    year,
+                    month,
+                    day,
+                    hour: 0,
+                    minute: 0,
+                    second: 0,
+                    nanos: 0,
+                })),
+            },
+        )),
+    };
+    let read = |envelope: p::QueryEnvelope| match completed(query(&a, envelope)).payload.unwrap() {
+        p::response_envelope::Payload::TimeConversion(value) => value,
+        other => panic!("{other:?}"),
+    };
+    let predicted = read(at(2027, 5, 19));
+    assert_eq!(predicted.utc_regime, p::UtcRegime::Predicted as i32);
+    assert!(predicted.predicted);
+    let continuous = read(at(2027, 5, 20));
+    assert_eq!(continuous.utc_regime, p::UtcRegime::Continuous as i32);
+    assert!(!continuous.predicted);
+    assert_eq!(continuous.tt_minus_utc_nanos, 69_184_000_000);
 }

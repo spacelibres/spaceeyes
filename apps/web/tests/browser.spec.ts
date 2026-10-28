@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import { test, expect } from "@playwright/test";
 import { PNG } from "pngjs";
@@ -561,6 +561,9 @@ test("UTC display and seek are converted by the Rust core", async ({
   await expect(page.getByTestId("utc-clock")).toContainText(
     "2026-10-28 00:00:00.000000000 UTC",
   );
+  await utc.fill("2027-05-20T00:00:00Z");
+  await jump.click();
+  await expect(page.getByTestId("utc-clock")).toContainText("连续 UTC");
   await page.screenshot({
     path: "test-results/spaceeyes-utc-time.png",
     fullPage: true,

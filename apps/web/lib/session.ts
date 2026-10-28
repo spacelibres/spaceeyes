@@ -15,6 +15,7 @@ import {
   TextureColorSpace,
   SamplingFilter,
   SamplingAddress,
+  UtcRegime,
   CoreRemoteError,
   ErrorCode,
   type SessionStatus,
@@ -49,7 +50,7 @@ export type ViewStatus = {
   clockNs: string;
   clockText: string;
   utcText?: string;
-  utcPredicted?: boolean;
+  utcRegime?: "observed" | "predicted" | "continuous";
   playing: boolean;
   resourceBytes: string;
   width: number;
@@ -223,7 +224,7 @@ export class BrowserSession {
   private actionError: string | undefined;
   private solarMode = false;
   private utcText: string | undefined;
-  private utcPredicted = false;
+  private utcRegime: ViewStatus["utcRegime"];
   private solarLoader: DynamoSegmentLoader | undefined;
   private pluginHost: PluginHost | undefined;
   private readonly solarStates = new Map<string, SolarState>();
@@ -746,7 +747,12 @@ export class BrowserSession {
       }
       const conversion = response.payload.value;
       this.utcText = conversion.utc ? formatUtc(conversion.utc) : undefined;
-      this.utcPredicted = conversion.predicted;
+      this.utcRegime =
+        conversion.utcRegime === UtcRegime.CONTINUOUS
+          ? "continuous"
+          : conversion.utcRegime === UtcRegime.PREDICTED
+            ? "predicted"
+            : "observed";
     } catch {
       this.utcText = undefined;
     }
@@ -776,7 +782,7 @@ export class BrowserSession {
       clockNs: (seconds * 1000000000n + BigInt(nanos)).toString(),
       clockText: formatSimulationTime(seconds, nanos),
       utcText: this.utcText,
-      utcPredicted: this.utcPredicted,
+      utcRegime: this.utcRegime,
       playbackRate: String(
         (this.state?.clock?.rateNumerator ?? 1) /
           (this.state?.clock?.rateDenominator || 1),

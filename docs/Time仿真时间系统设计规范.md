@@ -127,3 +127,19 @@ Engine提供同名唯一协调入口；Ready状态允许初始化时间操作，
 `time.proto`新增`UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，能力`query.time_convert`（总数41）。输入可为UTC日历或TAI/TT/TDB显式`TimeInstant`（epoch必须J2000，裸UTC拒绝）；输出UTC日历、TAI/TT/TDB、TT−UTC与预测标志。全部换算在Rust `spaceeyes-astro`；查询只读、不推进时钟/代次、不写事件、不消耗命令历史，错误`INVALID_ARGUMENT`且不改变状态。
 
 浏览器把初始会话改为`TDB`+`J2000`（与DYN的ET约定对齐），会话状态刷新时调用换算查询显示UTC；用户输入ISO UTC文本时，TypeScript只解析为字段并交给Rust换算，再用返回的TDB `TimeInstant`执行`time.seek`。TS不做闰秒、历法或TDB计算。仍待：完整科学误差定标、来源/覆盖面板、Live与固定步长接宿主。
+
+## UTC 连续化：2027-05-20 起取消闰秒（2026-10-28 增补）
+
+国际计量大会（CGPM）第 28 届会议于 2026-10-15 通过 Resolution 5（DOI 10.59161/CGPM2026RES5E），决定实施**连续 UTC（continuous UTC）**：自 **2027-05-20（世界计量日）** 起不再插入闰秒；UTC 与 UT1 的最大允许偏差改为 **3600 秒（1 小时）**，未来以“闰时（leap hour）”而非闰秒调整。此前 2022 年第 27 届 CGPM 曾要求“不晚于 2035 年”取消闰秒，本次决议把生效日期提前到 2027 年。1972 年以来已实施的 27 次正闰秒保留在历史中，因此 2027-05-20 之后 `TAI − UTC` 固定为 37 秒，直到数千年尺度上可能出现的一次闰时。
+
+核心实现（`crates/astro`）：
+
+- `UtcRegime` 三态：`Observed`（表内已观测）、`Predicted`（2027-01-01 至 2027-05-19 的短预测窗）、`Continuous`（2027-05-20 起）。
+- `UTC_CONTINUOUS_FROM_DAY`/`UTC_CONTINUOUS_FROM_YEAR|MONTH|DATE` 与 `LEAP_HOUR_SECONDS=3600` 为显式常量；连续 UTC 之后 `is_leap_day` 恒为 false，`delta_at_day` 保持 37。
+- 闰秒表不再扩展；2027 年后日期不得再报“预测闰秒”，也不得把 3600 秒闰时当成已实现。闰时属于未来标准，本版本不建模。
+- 旧闰秒历史（1972–2016 的 27 次）必须保留：`23:59:60` 只在这些历史闰日有效，不能因为新标准删除历史数据。
+- 飞行/星历侧不受影响：DYN/TDB 使用 TDB+J2000 连续时标；UTC 只用于显示、输入与来源面板。TT−UTC 在 2027-05-20 后为 69.184 秒。
+
+Proto 在 `TimeConversion` 增加 `UtcRegime utc_regime=7`（OBSERVED=1、PREDICTED=2、CONTINUOUS=3），浏览器据此显示“连续 UTC，2027-05-20 起无闰秒”；`predicted` 字段保留为兼容布尔值，只在短预测窗为 true。
+
+参考：BIPM 第 28 届 CGPM 决议页 <https://www.bipm.org/en/cgpm-2026/resolution-5>；IANA tz 讨论确认生效日 2027-05-20 <https://lists.iana.org/hyperkitty/list/tz@iana.org/thread/FVMU4ZJROJCCJ7IWT6VNE2KEUIO7EPTB/>；中国科学报/中国科学院转载 <https://www.cas.cn/kj/202610/t20261019_5122458.shtml>。

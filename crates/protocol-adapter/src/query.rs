@@ -139,6 +139,15 @@ fn decode_utc(value: p::UtcDateTime) -> Result<spaceeyes_astro::UtcDateTime, Pro
     .map_err(|_| ProtocolError::InvalidTime)
 }
 
+fn encode_utc_regime(regime: Option<spaceeyes_astro::UtcRegime>) -> p::UtcRegime {
+    match regime {
+        Some(spaceeyes_astro::UtcRegime::Observed) => p::UtcRegime::Observed,
+        Some(spaceeyes_astro::UtcRegime::Predicted) => p::UtcRegime::Predicted,
+        Some(spaceeyes_astro::UtcRegime::Continuous) => p::UtcRegime::Continuous,
+        None => p::UtcRegime::Unspecified,
+    }
+}
+
 fn convert_time(query: p::TimeConversionQuery) -> Result<p::TimeConversion, ProtocolError> {
     use spaceeyes_astro as astro;
     let tai = match query.input.ok_or(ProtocolError::MissingField)? {
@@ -179,6 +188,7 @@ fn convert_time(query: p::TimeConversionQuery) -> Result<p::TimeConversion, Prot
         )?),
         tt_minus_utc_nanos: i64::try_from(tt_minus_utc).map_err(|_| ProtocolError::InvalidTime)?,
         predicted: astro::is_predicted_utc(&utc),
+        utc_regime: encode_utc_regime(astro::utc_regime(&utc)) as i32,
     })
 }
 

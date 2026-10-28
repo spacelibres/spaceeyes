@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Scientific scale acceptance: known epochs, leap seconds, round trips, bounds.
 use spaceeyes_astro::{
@@ -215,7 +215,9 @@ fn iso8601_round_trip_and_leap_second_text() {
 fn predicted_flag_tracks_the_table() {
     assert!(!is_predicted_utc(&utc(2026, 10, 28, 0, 0, 0, 0)));
     assert!(!is_predicted_utc(&utc(2027, 1, 1, 0, 0, 0, 0)));
-    assert!(is_predicted_utc(&utc(2028, 1, 1, 0, 0, 0, 0)));
+    assert!(is_predicted_utc(&utc(2027, 3, 1, 0, 0, 0, 0)));
+    assert!(!is_predicted_utc(&utc(2027, 5, 20, 0, 0, 0, 0)));
+    assert!(!is_predicted_utc(&utc(2028, 1, 1, 0, 0, 0, 0)));
 }
 
 #[test]
@@ -239,5 +241,41 @@ fn tt_minus_utc_matches_the_leap_table() {
     assert_eq!(
         tt_minus_utc_nanos(&utc(2026, 10, 28, 0, 0, 0, 0)).unwrap(),
         69_184_000_000
+    );
+}
+
+#[test]
+fn continuous_utc_start_and_regimes_are_explicit() {
+    use spaceeyes_astro::{utc_regime, UtcRegime};
+    let at = |y, m, d| utc(y, m, d, 0, 0, 0, 0);
+    assert_eq!(utc_regime(&at(2026, 12, 31)), Some(UtcRegime::Observed));
+    assert_eq!(utc_regime(&at(2027, 1, 1)), Some(UtcRegime::Observed));
+    assert_eq!(utc_regime(&at(2027, 1, 2)), Some(UtcRegime::Predicted));
+    assert_eq!(utc_regime(&at(2027, 5, 19)), Some(UtcRegime::Predicted));
+    assert_eq!(utc_regime(&at(2027, 5, 20)), Some(UtcRegime::Continuous));
+    assert_eq!(utc_regime(&at(2028, 1, 1)), Some(UtcRegime::Continuous));
+    assert_eq!(utc_regime(&at(2100, 12, 31)), Some(UtcRegime::Continuous));
+}
+
+#[test]
+fn no_leap_second_or_prediction_after_continuous_utc() {
+    assert!(is_predicted_utc(&utc(2027, 5, 19, 0, 0, 0, 0)));
+    assert!(!is_predicted_utc(&utc(2027, 5, 20, 0, 0, 0, 0)));
+    assert_eq!(
+        utc_to_tai(&utc(2027, 5, 21, 0, 0, 0, 0))
+            .unwrap()
+            .nanos_since_j2000()
+            - utc_to_tai(&utc(2027, 5, 20, 0, 0, 0, 0))
+                .unwrap()
+                .nanos_since_j2000(),
+        86_400_000_000_000
+    );
+    assert_eq!(
+        tt_minus_utc_nanos(&utc(2027, 5, 20, 0, 0, 0, 0)).unwrap(),
+        69_184_000_000
+    );
+    assert_eq!(
+        tdb_to_utc(utc_to_tdb(&utc(2027, 5, 20, 12, 0, 0, 0)).unwrap()).unwrap(),
+        utc(2027, 5, 20, 12, 0, 0, 0)
     );
 }

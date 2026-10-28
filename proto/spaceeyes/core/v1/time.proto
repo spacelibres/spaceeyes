@@ -36,6 +36,16 @@ message TimeConversionQuery {
     TimeInstant instant = 2;
   }
 }
+// How UTC is defined for the returned date.
+enum UtcRegime {
+  UTC_REGIME_UNSPECIFIED = 0;
+  // Inside the published leap-second table.
+  UTC_REGIME_OBSERVED = 1;
+  // After the table but before continuous UTC starts (short prediction window).
+  UTC_REGIME_PREDICTED = 2;
+  // Continuous UTC from 2027-05-20: no leap seconds; |UTC-UT1| may grow to 3600 s.
+  UTC_REGIME_CONTINUOUS = 3;
+}
 message TimeConversion {
   UtcDateTime utc = 1;
   TimeInstant tdb = 2;
@@ -43,6 +53,7 @@ message TimeConversion {
   TimeInstant tai = 4;
   sint64 tt_minus_utc_nanos = 5;
   bool predicted = 6;
+  UtcRegime utc_regime = 7;
 }
 message TimeRange {
   TimeInstant start = 1;

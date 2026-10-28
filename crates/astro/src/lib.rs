@@ -10,8 +10,10 @@
 //! function reads a system clock.
 //!
 //! UTC is only defined here for 1972-01-01..=2100-12-31 because the leap-second
-//! table starts in 1972 and later values are predictions. Pre-1972 UTC is
-//! rejected explicitly instead of being silently approximated.
+//! table starts in 1972. The 28th CGPM decided that continuous UTC starts on
+//! 2027-05-20, so dates from then on carry no leap seconds and are labelled
+//! `UtcRegime::Continuous`. Pre-1972 UTC is rejected explicitly instead of being
+//! silently approximated.
 use spaceeyes_time::TimeInstant;
 use std::fmt;
 
@@ -20,12 +22,26 @@ mod leap;
 mod scales;
 
 pub use calendar::{days_from_civil, days_in_month, is_leap_year};
-pub use leap::is_predicted_day;
+pub use leap::{
+    is_predicted_day, utc_regime_day, LEAP_HOUR_SECONDS, UTC_CONTINUOUS_FROM_DATE,
+    UTC_CONTINUOUS_FROM_DAY, UTC_CONTINUOUS_FROM_MONTH, UTC_CONTINUOUS_FROM_YEAR,
+};
 
 /// First UTC year supported by the leap-second table.
 pub const UTC_MIN_YEAR: i32 = 1972;
-/// Last UTC year supported by this build (predictions beyond the table).
+/// Last UTC year supported by this build (continuous UTC after 2027).
 pub const UTC_MAX_YEAR: i32 = 2100;
+
+/// How UTC is defined for a given date.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UtcRegime {
+    /// The date is inside the published leap-second table.
+    Observed,
+    /// The date is after the table but before continuous UTC starts.
+    Predicted,
+    /// Continuous UTC from 2027-05-20: no leap seconds, |UTC-UT1| may grow to 3600 s.
+    Continuous,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TimeError {
@@ -311,7 +327,12 @@ pub fn tdb_to_utc(tdb: TdbInstant) -> Result<UtcDateTime, TimeError> {
     tt_to_utc(tdb_to_tt(tdb)?)
 }
 
-/// True when the UTC date lies beyond the published leap-second table of this build.
+/// True only inside the short prediction window before continuous UTC starts.
 pub fn is_predicted_utc(utc: &UtcDateTime) -> bool {
     is_predicted_day(days_from_civil(utc.year, utc.month, utc.day))
+}
+
+/// Observed/predicted/continuous regime; `None` when UTC is out of range.
+pub fn utc_regime(utc: &UtcDateTime) -> Option<UtcRegime> {
+    utc_regime_day(days_from_civil(utc.year, utc.month, utc.day))
 }

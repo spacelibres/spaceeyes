@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/time.proto.
  */
 export const file_spaceeyes_core_v1_time: GenFile = /*@__PURE__*/
-  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS90aW1lLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSJxCgtUaW1lSW5zdGFudBIwCgp0aW1lX3NjYWxlGAEgASgOMhwuc3BhY2VleWVzLmNvcmUudjEuVGltZVNjYWxlEhAKCGVwb2NoX2lkGAIgASgJEg8KB3NlY29uZHMYAyABKBISDQoFbmFub3MYBCABKA0idAoLVXRjRGF0ZVRpbWUSDAoEeWVhchgBIAEoBRINCgVtb250aBgCIAEoDRILCgNkYXkYAyABKA0SDAoEaG91chgEIAEoDRIOCgZtaW51dGUYBSABKA0SDgoGc2Vjb25kGAYgASgNEg0KBW5hbm9zGAcgASgNIoABChNUaW1lQ29udmVyc2lvblF1ZXJ5Ei0KA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lSAASMQoHaW5zdGFudBgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50SABCBwoFaW5wdXQi8gEKDlRpbWVDb252ZXJzaW9uEisKA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lEisKA3RkYhgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50EioKAnR0GAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSKwoDdGFpGAQgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSGgoSdHRfbWludXNfdXRjX25hbm9zGAUgASgSEhEKCXByZWRpY3RlZBgGIAEoCCKTAQoJVGltZVJhbmdlEi0KBXN0YXJ0GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSKwoDZW5kGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSFQoNaW5jbHVkZV9zdGFydBgDIAEoCBITCgtpbmNsdWRlX2VuZBgEIAEoCCLSAQoKQ2xvY2tTdGF0ZRIvCgdpbnN0YW50GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSLQoEbW9kZRgCIAEoDjIfLnNwYWNlZXllcy5jb3JlLnYxLlBsYXliYWNrTW9kZRIMCgRyYXRlGAMgASgBEhIKCmdlbmVyYXRpb24YBCABKAQSEAoIcmV2aXNpb24YBSABKAQSFgoOcmF0ZV9udW1lcmF0b3IYBiABKBESGAoQcmF0ZV9kZW5vbWluYXRvchgHIAEoDSINCgtQbGF5Q29tbWFuZCIOCgxQYXVzZUNvbW1hbmQiPgoLU2Vla0NvbW1hbmQSLwoHaW5zdGFudBgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50Ih4KDlNldFJhdGVDb21tYW5kEgwKBHJhdGUYASABKAEiDQoLTGl2ZUNvbW1hbmQiIgoLU3RlcENvbW1hbmQSEwoLZGVsdGFfbmFub3MYASABKBIiwAIKC1RpbWVDb21tYW5kEi4KBHBsYXkYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5QbGF5Q29tbWFuZEgAEjAKBXBhdXNlGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuUGF1c2VDb21tYW5kSAASLgoEc2VlaxgDIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlNlZWtDb21tYW5kSAASNQoIc2V0X3JhdGUYBCABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5TZXRSYXRlQ29tbWFuZEgAEi4KBGxpdmUYBSABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5MaXZlQ29tbWFuZEgAEi4KBHN0ZXAYBiABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TdGVwQ29tbWFuZEgAQggKBmFjdGlvbipKCglUaW1lU2NhbGUSGgoWVElNRV9TQ0FMRV9VTlNQRUNJRklFRBAAEgYKAlRUEAESBwoDVERCEAISBwoDVVRDEAMSBwoDVEFJEAQqUAoMUGxheWJhY2tNb2RlEh0KGVBMQVlCQUNLX01PREVfVU5TUEVDSUZJRUQQABIKCgZQQVVTRUQQARILCgdQTEFZSU5HEAISCAoETElWRRADYgZwcm90bzM", [file_spaceeyes_core_v1_common]);
+  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS90aW1lLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSJxCgtUaW1lSW5zdGFudBIwCgp0aW1lX3NjYWxlGAEgASgOMhwuc3BhY2VleWVzLmNvcmUudjEuVGltZVNjYWxlEhAKCGVwb2NoX2lkGAIgASgJEg8KB3NlY29uZHMYAyABKBISDQoFbmFub3MYBCABKA0idAoLVXRjRGF0ZVRpbWUSDAoEeWVhchgBIAEoBRINCgVtb250aBgCIAEoDRILCgNkYXkYAyABKA0SDAoEaG91chgEIAEoDRIOCgZtaW51dGUYBSABKA0SDgoGc2Vjb25kGAYgASgNEg0KBW5hbm9zGAcgASgNIoABChNUaW1lQ29udmVyc2lvblF1ZXJ5Ei0KA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lSAASMQoHaW5zdGFudBgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50SABCBwoFaW5wdXQipAIKDlRpbWVDb252ZXJzaW9uEisKA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lEisKA3RkYhgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50EioKAnR0GAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSKwoDdGFpGAQgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSGgoSdHRfbWludXNfdXRjX25hbm9zGAUgASgSEhEKCXByZWRpY3RlZBgGIAEoCBIwCgp1dGNfcmVnaW1lGAcgASgOMhwuc3BhY2VleWVzLmNvcmUudjEuVXRjUmVnaW1lIpMBCglUaW1lUmFuZ2USLQoFc3RhcnQYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudBIrCgNlbmQYAiABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudBIVCg1pbmNsdWRlX3N0YXJ0GAMgASgIEhMKC2luY2x1ZGVfZW5kGAQgASgIItIBCgpDbG9ja1N0YXRlEi8KB2luc3RhbnQYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudBItCgRtb2RlGAIgASgOMh8uc3BhY2VleWVzLmNvcmUudjEuUGxheWJhY2tNb2RlEgwKBHJhdGUYAyABKAESEgoKZ2VuZXJhdGlvbhgEIAEoBBIQCghyZXZpc2lvbhgFIAEoBBIWCg5yYXRlX251bWVyYXRvchgGIAEoERIYChByYXRlX2Rlbm9taW5hdG9yGAcgASgNIg0KC1BsYXlDb21tYW5kIg4KDFBhdXNlQ29tbWFuZCI+CgtTZWVrQ29tbWFuZBIvCgdpbnN0YW50GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQiHgoOU2V0UmF0ZUNvbW1hbmQSDAoEcmF0ZRgBIAEoASINCgtMaXZlQ29tbWFuZCIiCgtTdGVwQ29tbWFuZBITCgtkZWx0YV9uYW5vcxgBIAEoEiLAAgoLVGltZUNvbW1hbmQSLgoEcGxheRgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlBsYXlDb21tYW5kSAASMAoFcGF1c2UYAiABKAsyHy5zcGFjZWV5ZXMuY29yZS52MS5QYXVzZUNvbW1hbmRIABIuCgRzZWVrGAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU2Vla0NvbW1hbmRIABI1CghzZXRfcmF0ZRgEIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLlNldFJhdGVDb21tYW5kSAASLgoEbGl2ZRgFIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLkxpdmVDb21tYW5kSAASLgoEc3RlcBgGIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlN0ZXBDb21tYW5kSABCCAoGYWN0aW9uKkoKCVRpbWVTY2FsZRIaChZUSU1FX1NDQUxFX1VOU1BFQ0lGSUVEEAASBgoCVFQQARIHCgNUREIQAhIHCgNVVEMQAxIHCgNUQUkQBCp1CglVdGNSZWdpbWUSGgoWVVRDX1JFR0lNRV9VTlNQRUNJRklFRBAAEhcKE1VUQ19SRUdJTUVfT0JTRVJWRUQQARIYChRVVENfUkVHSU1FX1BSRURJQ1RFRBACEhkKFVVUQ19SRUdJTUVfQ09OVElOVU9VUxADKlAKDFBsYXliYWNrTW9kZRIdChlQTEFZQkFDS19NT0RFX1VOU1BFQ0lGSUVEEAASCgoGUEFVU0VEEAESCwoHUExBWUlORxACEggKBExJVkUQA2IGcHJvdG8z", [file_spaceeyes_core_v1_common]);
 
 /**
  * @generated from message spaceeyes.core.v1.TimeInstant
@@ -163,6 +163,11 @@ export type TimeConversion = Message<"spaceeyes.core.v1.TimeConversion"> & {
    * @generated from field: bool predicted = 6;
    */
   predicted: boolean;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.UtcRegime utc_regime = 7;
+   */
+  utcRegime: UtcRegime;
 };
 
 /**
@@ -431,6 +436,45 @@ export const TimeScaleSchema: GenEnum<TimeScale> = /*@__PURE__*/
   enumDesc(file_spaceeyes_core_v1_time, 0);
 
 /**
+ * How UTC is defined for the returned date.
+ *
+ * @generated from enum spaceeyes.core.v1.UtcRegime
+ */
+export enum UtcRegime {
+  /**
+   * @generated from enum value: UTC_REGIME_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Inside the published leap-second table.
+   *
+   * @generated from enum value: UTC_REGIME_OBSERVED = 1;
+   */
+  OBSERVED = 1,
+
+  /**
+   * After the table but before continuous UTC starts (short prediction window).
+   *
+   * @generated from enum value: UTC_REGIME_PREDICTED = 2;
+   */
+  PREDICTED = 2,
+
+  /**
+   * Continuous UTC from 2027-05-20: no leap seconds; |UTC-UT1| may grow to 3600 s.
+   *
+   * @generated from enum value: UTC_REGIME_CONTINUOUS = 3;
+   */
+  CONTINUOUS = 3,
+}
+
+/**
+ * Describes the enum spaceeyes.core.v1.UtcRegime.
+ */
+export const UtcRegimeSchema: GenEnum<UtcRegime> = /*@__PURE__*/
+  enumDesc(file_spaceeyes_core_v1_time, 1);
+
+/**
  * @generated from enum spaceeyes.core.v1.PlaybackMode
  */
 export enum PlaybackMode {
@@ -459,4 +503,4 @@ export enum PlaybackMode {
  * Describes the enum spaceeyes.core.v1.PlaybackMode.
  */
 export const PlaybackModeSchema: GenEnum<PlaybackMode> = /*@__PURE__*/
-  enumDesc(file_spaceeyes_core_v1_time, 1);
+  enumDesc(file_spaceeyes_core_v1_time, 2);

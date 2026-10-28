@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### UTC 连续化：2027-05-20 起取消闰秒（2026-10-28）
+- 按第 28 届 CGPM（2026-10-15，Resolution 5）更新 `crates/astro`：连续 UTC 于 2027-05-20 生效，不再插入闰秒，`|UTC-UT1|` 上限改为 3600 秒（未来“闰时”）；1972–2016 的 27 次历史闰秒保留，`TAI-UTC` 固定 37 秒。此前 2022 年“不晚于 2035 年”的目标被提前。
+- 新增 `UtcRegime`（Observed/Predicted/Continuous）、`UTC_CONTINUOUS_FROM_DAY`、`LEAP_HOUR_SECONDS`；`is_leap_day` 在 2027-05-20 后恒为 false，短预测窗 2027-01-01..2027-05-19 单独标记；闰时仅记录为未来标准，不建模。
+- Proto `TimeConversion.utc_regime=7`（OBSERVED/PREDICTED/CONTINUOUS）；浏览器显示“连续 UTC，2027-05-20 起无闰秒”。
+- 验证：astro 23 项（含 2027-05-19/20 边界、无闰秒日长 86400s、TT−UTC 69.184s、跨边界往返）、adapter 连续 UTC wire 测试、Web typecheck/Chromium 更新；完整本地检查见提交关联。
+
+
 ### 时间换算公开契约与浏览器 UTC 轴（M1b，2026-10-28）
 - Proto 新增 `UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，`TimeScale` 增加 TAI=4；能力新增 `query.time_convert`（总数 41）。
 - 协议适配器在 Rust `spaceeyes-astro` 中完成 UTC 日历 ⇄ TAI/TT/TDB 换算，返回 TT−UTC 与预测标志；裸 UTC `TimeInstant`、非法闰秒/日期、非 J2000 历元显式拒绝，查询只读且不消耗历史。

@@ -313,7 +313,11 @@ export default function Page() {
               <dt>UTC</dt>
               <dd data-testid="utc-clock">
                 {status.utcText ?? "—"}
-                {status.utcPredicted ? "（预测）" : ""}
+                {status.utcRegime === "predicted"
+                  ? "（预测）"
+                  : status.utcRegime === "continuous"
+                    ? "（连续 UTC，2027-05-20 起无闰秒）"
+                    : ""}
               </dd>
             </div>
             <div>

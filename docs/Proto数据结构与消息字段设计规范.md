@@ -245,3 +245,6 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 输入为UTC日历时校验公历、闰秒日与1972–2100范围；输入为`TimeInstant`时只接受TAI/TT/TDB且epoch必须为`J2000`，裸UTC拒绝。输出同时返回UTC日历、TAI/TT/TDB显式时刻、TT−UTC纳秒与“表后预测”标志；全部换算在Rust `spaceeyes-astro`完成，查询只读、不推进时钟、不消耗命令历史、不写事件。错误统一`INVALID_ARGUMENT`且不改变会话状态。
 
 浏览器初始时钟改为`TDB/J2000`，UTC显示与“按UTC跳转”都经该查询；TypeScript只做ISO文本到字段的输入解析与结果显示，不做尺度换算。这不改变旧wire字段，也不把UTC当作核心内部默认尺度。
+
+## 连续 UTC 表字段（2026-10 增补）
+`TimeConversion` 追加 `utc_regime=7`，枚举 `UtcRegime`：UNSPECIFIED=0、OBSERVED=1、PREDICTED=2、CONTINUOUS=3。`CONTINUOUS` 表示 2027-05-20 起连续 UTC 已生效（第 28 届 CGPM 2026-10-15 决议），不再有闰秒；`PREDICTED` 仅用于 2027-01-01 至 2027-05-19 的短预测窗。`predicted` 布尔保留但只在该窗口为 true；旧客户端忽略新字段仍可读取其余结果。该字段只描述 UTC 定义状态，不改变 TimeInstant 的尺度/历元，也不表示 3600 秒“闰时”已实现。

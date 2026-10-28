@@ -1,16 +1,33 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
-//! UTC leap-second table (TAI - UTC) from 1972 through the last announcement
-//! known to this build. Values after the last effective date are predictions and
-//! are surfaced through [`is_predicted_day`]; they are never silently marked as
-//! observed.
+//! UTC leap-second table (TAI - UTC) and the 2026 CGPM continuous-UTC decision.
+//!
+//! The 28th CGPM (15 October 2026) decided that continuous UTC starts on
+//! 2027-05-20: no further leap seconds are inserted, and the allowed |UTC-UT1|
+//! difference becomes 3600 s (a future "leap hour", not modelled here). The 27
+//! historical leap seconds remain part of the table, so TAI-UTC stays 37 s until
+//! a leap hour is eventually needed (expected on a multi-millennial scale).
+//! Days before the start are observed or predicted as before; they are never
+//! silently marked as observed.
 
 use crate::calendar::days_from_civil;
+use crate::UtcRegime;
 
 pub const UTC_MIN_DAY: i64 = days_from_civil(1972, 1, 1);
 pub const UTC_MAX_DAY: i64 = days_from_civil(2100, 12, 31);
 /// Last date covered by a published IERS announcement at the time of this build.
 pub const PUBLISHED_THROUGH_DAY: i64 = days_from_civil(2027, 1, 1);
+/// Continuous UTC takes effect on 2027-05-20 (World Metrology Day).
+pub const UTC_CONTINUOUS_FROM_YEAR: i32 = 2027;
+pub const UTC_CONTINUOUS_FROM_MONTH: u8 = 5;
+pub const UTC_CONTINUOUS_FROM_DATE: u8 = 20;
+pub const UTC_CONTINUOUS_FROM_DAY: i64 = days_from_civil(
+    UTC_CONTINUOUS_FROM_YEAR,
+    UTC_CONTINUOUS_FROM_MONTH,
+    UTC_CONTINUOUS_FROM_DATE,
+);
+/// Maximum |UTC - UT1| under continuous UTC; a future leap hour, not modelled.
+pub const LEAP_HOUR_SECONDS: i64 = 3600;
 
 /// `(UTC effective day at 00:00, TAI - UTC in seconds)`.
 const LEAPS: &[(i64, i32)] = &[
@@ -61,16 +78,34 @@ pub(crate) fn is_utc_day(day: i64) -> bool {
 }
 
 /// True when a leap second is inserted at the end of this UTC day (23:59:60).
+/// Continuous UTC starts on 2027-05-20, so no later day can carry second 60.
 pub fn is_leap_day(day: i64) -> bool {
+    if day >= UTC_CONTINUOUS_FROM_DAY {
+        return false;
+    }
     match (delta_at_day(day), delta_at_day(day + 1)) {
         (Some(current), Some(next)) => next == current + 1,
         _ => false,
     }
 }
 
-/// True when the day lies beyond the published table and relies on prediction.
+/// Observed table, short prediction window, or the post-2027 continuous regime.
+pub fn utc_regime_day(day: i64) -> Option<UtcRegime> {
+    if !is_utc_day(day) {
+        return None;
+    }
+    Some(if day >= UTC_CONTINUOUS_FROM_DAY {
+        UtcRegime::Continuous
+    } else if day > PUBLISHED_THROUGH_DAY {
+        UtcRegime::Predicted
+    } else {
+        UtcRegime::Observed
+    })
+}
+
+/// True only inside the short prediction window before continuous UTC starts.
 pub fn is_predicted_day(day: i64) -> bool {
-    day > PUBLISHED_THROUGH_DAY
+    utc_regime_day(day) == Some(UtcRegime::Predicted)
 }
 
 #[cfg(test)]
@@ -97,9 +132,26 @@ mod tests {
     }
 
     #[test]
+    fn continuous_utc_from_2027() {
+        assert_eq!(
+            utc_regime_day(days_from_civil(2027, 5, 19)),
+            Some(UtcRegime::Predicted)
+        );
+        assert_eq!(
+            utc_regime_day(days_from_civil(2027, 5, 20)),
+            Some(UtcRegime::Continuous)
+        );
+        assert_eq!(delta_at_day(UTC_CONTINUOUS_FROM_DAY), Some(37));
+        assert!(!is_leap_day(days_from_civil(2027, 6, 30)));
+        assert!(!is_leap_day(days_from_civil(2100, 12, 31)));
+    }
+
+    #[test]
     fn prediction_flag() {
         assert!(!is_predicted_day(days_from_civil(2026, 10, 28)));
-        assert!(is_predicted_day(days_from_civil(2028, 1, 1)));
+        assert!(is_predicted_day(days_from_civil(2027, 3, 1)));
+        assert!(!is_predicted_day(days_from_civil(2027, 5, 20)));
+        assert!(!is_predicted_day(days_from_civil(2028, 1, 1)));
     }
 
     #[test]
