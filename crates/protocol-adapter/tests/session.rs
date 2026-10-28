@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 //! Integration path uses only wire writes; direct Engine access is read-only frame publication.
 use prost::Message;
@@ -1023,7 +1023,7 @@ fn capability_discovery_reports_executable_limits_and_live_history_without_write
     );
     let names: std::collections::HashSet<_> = caps.operations.iter().collect();
     assert_eq!(names.len(), caps.operations.len());
-    assert_eq!(names.len(), 40);
+    assert_eq!(names.len(), 41);
     assert!(names.contains(&"query.project_export".to_string()));
     assert!(!names
         .iter()
@@ -1259,4 +1259,87 @@ fn object_pagination_is_stable_ordered_and_bounded() {
         error(query(&a, object_page(None, 1))),
         p::ErrorCode::EngineUnavailable
     );
+}
+
+#[test]
+fn time_conversion_is_read_only_and_uses_explicit_scales() {
+    let a = adapter(3);
+    let before = status(&a);
+    let sequence = a.dispatcher().command_sequence();
+    let events = a.dispatcher().events().count();
+    let total = |instant: &p::TimeInstant| {
+        i128::from(instant.seconds) * 1_000_000_000 + i128::from(instant.nanos)
+    };
+
+    let utc_query = |id: &str, utc: p::UtcDateTime| p::QueryEnvelope {
+        context: Some(context(id)),
+        payload: Some(p::query_envelope::Payload::TimeConversion(
+            p::TimeConversionQuery {
+                input: Some(p::time_conversion_query::Input::Utc(utc)),
+            },
+        )),
+    };
+    let j2000 = p::UtcDateTime {
+        year: 2000,
+        month: 1,
+        day: 1,
+        hour: 11,
+        minute: 58,
+        second: 55,
+        nanos: 816_000_000,
+    };
+    let response = completed(query(&a, utc_query("time-utc", j2000)));
+    let p::response_envelope::Payload::TimeConversion(conversion) = response.payload.unwrap()
+    else {
+        panic!()
+    };
+    let utc = conversion.utc.as_ref().unwrap();
+    assert_eq!(
+        (utc.year, utc.month, utc.day, utc.hour, utc.minute, utc.second, utc.nanos),
+        (2000, 1, 1, 11, 58, 55, 816_000_000)
+    );
+    let tt = conversion.tt.as_ref().unwrap();
+    assert_eq!(tt.time_scale, p::TimeScale::Tt as i32);
+    assert_eq!(tt.epoch_id, "J2000");
+    assert_eq!((tt.seconds, tt.nanos), (0, 0));
+    assert_eq!(conversion.tt_minus_utc_nanos, 64_184_000_000);
+    assert!(!conversion.predicted);
+    let tdb = conversion.tdb.as_ref().unwrap();
+    assert_eq!(tdb.time_scale, p::TimeScale::Tdb as i32);
+    assert!((-100_000..0).contains(&total(tdb)));
+
+    let tai_query = p::QueryEnvelope {
+        context: Some(context("time-tai")),
+        payload: Some(p::query_envelope::Payload::TimeConversion(
+            p::TimeConversionQuery {
+                input: Some(p::time_conversion_query::Input::Instant(
+                    conversion.tai.clone().unwrap(),
+                )),
+            },
+        )),
+    };
+    let response = completed(query(&a, tai_query));
+    let p::response_envelope::Payload::TimeConversion(round_trip) = response.payload.unwrap()
+    else {
+        panic!()
+    };
+    assert_eq!(round_trip.utc, conversion.utc);
+    assert_eq!(round_trip.tdb, conversion.tdb);
+
+    let bad = p::UtcDateTime {
+        year: 2016,
+        month: 12,
+        day: 30,
+        hour: 23,
+        minute: 59,
+        second: 60,
+        nanos: 0,
+    };
+    assert_eq!(
+        error(query(&a, utc_query("bad-leap", bad))),
+        p::ErrorCode::InvalidArgument
+    );
+    assert_eq!(status(&a), before);
+    assert_eq!(a.dispatcher().command_sequence(), sequence);
+    assert_eq!(a.dispatcher().events().count(), events);
 }

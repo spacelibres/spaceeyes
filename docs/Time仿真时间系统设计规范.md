@@ -121,3 +121,9 @@ Engine提供同名唯一协调入口；Ready状态允许初始化时间操作，
 
 仍待M1b：Proto只读换算查询、能力发现/SDK、浏览器UTC日期轴与输入；仍待M4：真实来源/覆盖与误差对照。Live模式与固定步长接入宿主调度仍未实现，不以本增量宣称完整科学时间轴。
 
+
+## M1b 时间换算公开契约与浏览器UTC轴（0.0.1，2026-10-28）
+
+`time.proto`新增`UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，能力`query.time_convert`（总数41）。输入可为UTC日历或TAI/TT/TDB显式`TimeInstant`（epoch必须J2000，裸UTC拒绝）；输出UTC日历、TAI/TT/TDB、TT−UTC与预测标志。全部换算在Rust `spaceeyes-astro`；查询只读、不推进时钟/代次、不写事件、不消耗命令历史，错误`INVALID_ARGUMENT`且不改变状态。
+
+浏览器把初始会话改为`TDB`+`J2000`（与DYN的ET约定对齐），会话状态刷新时调用换算查询显示UTC；用户输入ISO UTC文本时，TypeScript只解析为字段并交给Rust换算，再用返回的TDB `TimeInstant`执行`time.seek`。TS不做闰秒、历法或TDB计算。仍待：完整科学误差定标、来源/覆盖面板、Live与固定步长接宿主。

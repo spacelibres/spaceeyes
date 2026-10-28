@@ -13,6 +13,7 @@ spaceeyes-engine = { path = "../engine" }
 spaceeyes-scene = { path = "../scene" }
 spaceeyes-foundation = { path = "../foundation" }
 spaceeyes-time = { path = "../time" }
+spaceeyes-astro = { path = "../astro" }
 prost = "0.13"
 sha2 = "=0.11.0"
 

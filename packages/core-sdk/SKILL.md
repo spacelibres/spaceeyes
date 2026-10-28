@@ -60,6 +60,23 @@ Engine接受camera.focus（相机/目标ObjectId、正有限米制距离、follo
 
 暂停前置条件是当前浏览器步进/跳转工作流的限制，不改变既有核心time.seek/step在其它宿主中的协议语义。输入控件的文本是未提交目标，不能作为权威时钟；以命令完成后的Rust查询为准。
 
+## M1b 时间换算查询（0.0.1开发增量）
+
+公开只读`query.time_convert`：输入UTC日历字段或TAI/TT/TDB的`TimeInstant`（epoch必须`J2000`，裸UTC拒绝），返回UTC日历、TAI/TT/TDB、TT−UTC纳秒与“表后预测”标志。换算、闰秒与历法全部在Rust `spaceeyes-astro`；TypeScript只能把ISO文本拆成字段或格式化返回值，禁止在JS实现闰秒、历法或TDB公式。
+
+```ts
+const r = await client.query(
+  { case: "timeConversion", value: { input: { case: "utc", value: {
+    year: 2026, month: 10, day: 28, hour: 0, minute: 0, second: 0, nanos: 0,
+  } } } },
+  { requestId: "time:convert" },
+);
+if (r.payload.case !== "timeConversion") throw new Error("missing conversion");
+await client.command({ case: "time", value: { action: { case: "seek", value: { instant: r.payload.value.tdb! } } } });
+```
+
+查询只读：不推进时钟/代次、不写事件、不消耗命令历史。非法日期、错误历元或范围外UTC返回`INVALID_ARGUMENT`且不改变状态；查询失败时不得显示伪造UTC或静默外推。浏览器初始会话为`TDB/J2000`，与DYN的ET约定一致；UTC仅作为显示/输入层。
+
 ## M3-1a 分层资源预算契约（0.0.1开发增量）
 
 ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须同时满足类别与总额，计数和资源修订原子更新。Engine原型总256MiB、CPU128MiB、GPU128MiB、Staging32MiB；属于可配置原型限制，不是实测内存保证。纹理/网格/加载声明归Cpu，Surface附件容量归Gpu，帧GPU分配和CPU打包/上传/回读暂存分别归Gpu与Staging；成对预留失败不留下部分占用，完成或错误时释放。GPU/临时资源不得成为Scene资产引用，ProjectState只导出显式Cpu记录，恢复拒绝Gpu/Staging并采用目标宿主额度。query.resource_stats只读返回分项/总占用、上限与资源修订；不推进时钟、不占幂等历史，Stop后占用0。统计不覆盖全部旧快照、驱动内部开销或宿主长期输出副本；消息仍限1MiB，尚不宣称分块上传完成。SDK不能借统计查询提高权限或直接申请内部GPU/临时资源。

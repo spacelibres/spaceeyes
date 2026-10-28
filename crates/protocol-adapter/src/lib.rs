@@ -49,6 +49,7 @@ pub fn decode_instant(value: generated::TimeInstant) -> Result<TimeInstant, Prot
         Ok(generated::TimeScale::Tt) => "TT",
         Ok(generated::TimeScale::Tdb) => "TDB",
         Ok(generated::TimeScale::Utc) => "UTC",
+        Ok(generated::TimeScale::Tai) => "TAI",
         _ => return Err(ProtocolError::UnsupportedTimeScale),
     };
     TimeInstant::new(scale, value.epoch_id, value.seconds, value.nanos)
@@ -59,6 +60,7 @@ pub fn encode_instant(value: &TimeInstant) -> Result<generated::TimeInstant, Pro
         "TT" => generated::TimeScale::Tt,
         "TDB" => generated::TimeScale::Tdb,
         "UTC" => generated::TimeScale::Utc,
+        "TAI" => generated::TimeScale::Tai,
         _ => return Err(ProtocolError::UnsupportedTimeScale),
     };
     Ok(generated::TimeInstant {

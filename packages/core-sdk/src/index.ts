@@ -125,6 +125,7 @@ function commandOperation(payload: CommandPayload): string {
 }
 function queryOperation(payload: QueryPayload): string {
   if (!payload.case) throw new TypeError("Missing query payload");
+  if (payload.case === "timeConversion") return "query.time_convert";
   return (
     "query." + payload.case.replace(/[A-Z]/g, (c) => "_" + c.toLowerCase())
   );
@@ -297,7 +298,9 @@ export class CoreClient {
                         ? "events"
                         : payload.case === "frameCoverage"
                           ? "frameCoverage"
-                          : "capabilities";
+                          : payload.case === "timeConversion"
+                            ? "timeConversion"
+                            : "capabilities";
     return this.exchange(
       "query",
       toBinary(QueryEnvelopeSchema, message),

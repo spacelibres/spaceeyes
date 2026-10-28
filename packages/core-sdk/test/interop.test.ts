@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+﻿// SPDX-License-Identifier: MIT
 // Copyright (c) 2026 SPACEEYES contributors
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -219,7 +219,7 @@ async function exercise(backend: "native" | "wasm"): Promise<Uint8Array[]> {
       "resources.register_texture",
       "query.resolve_frame",
     ]);
-    assert.equal(caps.operations.length, 40);
+    assert.equal(caps.operations.length, 41);
     assert.equal(caps.limits?.commandHistoryCapacity, 4096n);
     assert.equal(caps.limits?.maxTextureDimension, 2048);
     assert(!client.supports("time.live"));

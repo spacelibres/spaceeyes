@@ -534,3 +534,35 @@ test("time controls preserve nanoseconds, signed playback and nonfatal input err
   await expect(page.getByTestId("clock")).toHaveAttribute("data-nanos", "0");
   await expect(page.getByLabel("播放倍速")).toHaveValue("1");
 });
+
+test("UTC display and seek are converted by the Rust core", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.getByTestId("phase")).toHaveText("运行中");
+  await expect(page.getByTestId("utc-clock")).toContainText(
+    "2000-01-01 11:58:55",
+  );
+  const utc = page.getByLabel("UTC 日期时间（ISO 8601）");
+  const jump = page.getByRole("button", { name: "按 UTC 跳转", exact: true });
+  await utc.fill("2026-10-28T00:00:00Z");
+  await jump.click();
+  await expect(page.getByTestId("utc-clock")).toContainText(
+    "2026-10-28 00:00:00.000000000 UTC",
+  );
+  expect(
+    BigInt((await page.getByTestId("clock").getAttribute("data-nanos"))!),
+  ).toBeGreaterThan(0n);
+  await utc.fill("2016-12-30T23:59:60Z");
+  await jump.click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "时间操作未完成" }),
+  ).toHaveCount(1);
+  await expect(page.getByTestId("utc-clock")).toContainText(
+    "2026-10-28 00:00:00.000000000 UTC",
+  );
+  await page.screenshot({
+    path: "test-results/spaceeyes-utc-time.png",
+    fullPage: true,
+  });
+});

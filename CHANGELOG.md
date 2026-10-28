@@ -5,6 +5,13 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 时间换算公开契约与浏览器 UTC 轴（M1b，2026-10-28）
+- Proto 新增 `UtcDateTime`、`TimeConversionQuery`、`TimeConversion`，`QueryEnvelope.time_conversion=32`、`ResponseEnvelope.time_conversion=23`，`TimeScale` 增加 TAI=4；能力新增 `query.time_convert`（总数 41）。
+- 协议适配器在 Rust `spaceeyes-astro` 中完成 UTC 日历 ⇄ TAI/TT/TDB 换算，返回 TT−UTC 与预测标志；裸 UTC `TimeInstant`、非法闰秒/日期、非 J2000 历元显式拒绝，查询只读且不消耗历史。
+- 浏览器初始会话改为 TDB/J2000（与 DYN 的 ET 约定一致），状态刷新显示 UTC；ISO UTC 输入只解析为字段，经 Rust 换算后 `time.seek`。TS 不实现闰秒/历法/TDB 计算。
+- 验证：protocol-adapter 21 项 session（J2000、TAI 往返、非法闰秒只读）、TS 生成类型、Web typecheck/生产构建、11 项真实 Chromium（新增 UTC 显示/跳转/非法输入）。
+
+
 ### Rust 科学时间核心（M1a，2026-10-28）
 - 新增 `crates/astro`（仅依赖 `spaceeyes-time`）：严格公历/日数换算、1972–2100 闰秒表（含 23:59:60）、UTC↔TAI、TAI/TT 同 J2000 零点、TT↔TDB 两项近似、J2000 整数纳秒与 TAI/TT/TDB `TimeInstant` 无损往返；UTC 范围外、普通日 60 秒、非法字段显式拒绝，表后日期带预测标志。
 - 20 项 Rust 测试（8 单元 + 12 集成）：J2000 零点、2016 闰秒逐秒、1972/2017 TT−UTC、普通日 86400s、往返、TDB 反演 ≤1ns、范围双向、ISO8601、预测标志；TDB 近似幅度限定约 ±1.8ms，明确不是最终科学模型。

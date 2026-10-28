@@ -9,12 +9,40 @@ enum TimeScale {
   TT = 1;
   TDB = 2;
   UTC = 3;
+  TAI = 4;
 }
 message TimeInstant {
   TimeScale time_scale = 1;
   string epoch_id = 2;
   sint64 seconds = 3;
   uint32 nanos = 4;
+}
+// Strict proleptic Gregorian UTC fields; second 60 is only valid on a leap day.
+message UtcDateTime {
+  int32 year = 1;
+  uint32 month = 2;
+  uint32 day = 3;
+  uint32 hour = 4;
+  uint32 minute = 5;
+  uint32 second = 6;
+  uint32 nanos = 7;
+}
+// Read-only conversion; input is either a UTC calendar value or an explicit
+// TAI/TT/TDB instant. UTC as a bare TimeInstant is rejected because UTC needs
+// the leap-second calendar context.
+message TimeConversionQuery {
+  oneof input {
+    UtcDateTime utc = 1;
+    TimeInstant instant = 2;
+  }
+}
+message TimeConversion {
+  UtcDateTime utc = 1;
+  TimeInstant tdb = 2;
+  TimeInstant tt = 3;
+  TimeInstant tai = 4;
+  sint64 tt_minus_utc_nanos = 5;
+  bool predicted = 6;
 }
 message TimeRange {
   TimeInstant start = 1;

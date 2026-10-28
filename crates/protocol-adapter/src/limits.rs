@@ -51,4 +51,5 @@ pub const OPERATIONS: &[&str] = &[
     "resources.finish_upload",
     "resources.cancel_upload",
     "query.upload",
+    "query.time_convert",
 ];

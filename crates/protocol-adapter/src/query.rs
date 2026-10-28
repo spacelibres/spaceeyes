@@ -114,6 +114,74 @@ fn rejection(id: &str, code: p::ErrorCode, message: String) -> p::ResponseEnvelo
         ..Default::default()
     }
 }
+fn encode_utc(value: spaceeyes_astro::UtcDateTime) -> p::UtcDateTime {
+    p::UtcDateTime {
+        year: value.year(),
+        month: u32::from(value.month()),
+        day: u32::from(value.day()),
+        hour: u32::from(value.hour()),
+        minute: u32::from(value.minute()),
+        second: u32::from(value.second()),
+        nanos: value.nanos(),
+    }
+}
+
+fn decode_utc(value: p::UtcDateTime) -> Result<spaceeyes_astro::UtcDateTime, ProtocolError> {
+    spaceeyes_astro::UtcDateTime::new(
+        value.year,
+        u8::try_from(value.month).map_err(|_| ProtocolError::InvalidTime)?,
+        u8::try_from(value.day).map_err(|_| ProtocolError::InvalidTime)?,
+        u8::try_from(value.hour).map_err(|_| ProtocolError::InvalidTime)?,
+        u8::try_from(value.minute).map_err(|_| ProtocolError::InvalidTime)?,
+        u8::try_from(value.second).map_err(|_| ProtocolError::InvalidTime)?,
+        value.nanos,
+    )
+    .map_err(|_| ProtocolError::InvalidTime)
+}
+
+fn convert_time(query: p::TimeConversionQuery) -> Result<p::TimeConversion, ProtocolError> {
+    use spaceeyes_astro as astro;
+    let tai = match query.input.ok_or(ProtocolError::MissingField)? {
+        p::time_conversion_query::Input::Utc(value) => {
+            let utc = decode_utc(value)?;
+            astro::utc_to_tai(&utc).map_err(|_| ProtocolError::InvalidTime)?
+        }
+        p::time_conversion_query::Input::Instant(value) => {
+            let instant = crate::decode_instant(value)?;
+            match instant.scale() {
+                "TAI" => astro::TaiInstant::from_time_instant(&instant),
+                "TT" => astro::TtInstant::from_time_instant(&instant).and_then(astro::tt_to_tai),
+                "TDB" => astro::TdbInstant::from_time_instant(&instant)
+                    .and_then(astro::tdb_to_tt)
+                    .and_then(astro::tt_to_tai),
+                _ => return Err(ProtocolError::UnsupportedTimeScale),
+            }
+            .map_err(|_| ProtocolError::InvalidTime)?
+        }
+    };
+    let utc = astro::tai_to_utc(tai).map_err(|_| ProtocolError::InvalidTime)?;
+    let tt = astro::tai_to_tt(tai);
+    let tdb = astro::tt_to_tdb(tt);
+    let tt_minus_utc = astro::tt_minus_utc_nanos(&utc).map_err(|_| ProtocolError::InvalidTime)?;
+    Ok(p::TimeConversion {
+        utc: Some(encode_utc(utc)),
+        tdb: Some(encode_instant(
+            &tdb.to_time_instant()
+                .map_err(|_| ProtocolError::InvalidTime)?,
+        )?),
+        tt: Some(encode_instant(
+            &tt.to_time_instant()
+                .map_err(|_| ProtocolError::InvalidTime)?,
+        )?),
+        tai: Some(encode_instant(
+            &tai.to_time_instant()
+                .map_err(|_| ProtocolError::InvalidTime)?,
+        )?),
+        tt_minus_utc_nanos: i64::try_from(tt_minus_utc).map_err(|_| ProtocolError::InvalidTime)?,
+        predicted: astro::is_predicted_utc(&utc),
+    })
+}
+
 impl ProtocolAdapter {
     /// Host must supply an authenticated, authorized principal; this only validates shape/session.
     pub fn query_bytes(
@@ -467,6 +535,9 @@ impl ProtocolAdapter {
                         ))
                     }
                 }
+            }
+            p::query_envelope::Payload::TimeConversion(query) => {
+                p::response_envelope::Payload::TimeConversion(convert_time(query)?)
             }
             p::query_envelope::Payload::SessionStatus(_) => {
                 p::response_envelope::Payload::Session(encode_status(&state)?)

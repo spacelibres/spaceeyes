@@ -15,6 +15,7 @@ export default function Page() {
   const [enabled, setEnabled] = useState(true);
   const [status, setStatus] = useState<ViewStatus>(initialStatus);
   const [seekInput, setSeekInput] = useState("0");
+  const [utcInput, setUtcInput] = useState("2026-10-28T00:00:00Z");
   const [scene, setScene] = useState<string | null>(null);
   const [projectBytes, setProjectBytes] = useState<Uint8Array | undefined>();
   const [projectError, setProjectError] = useState<string | null>(null);
@@ -258,7 +259,33 @@ export default function Page() {
               </div>
             </form>
             <p className="hint">
-              暂停后可步进或跳转，小数最多9位；相对当前显式历元，不是UTC日期。
+              暂停后可步进或跳转，小数最多9位；相对当前显式历元（TDB/J2000），不是UTC日期。
+            </p>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void host.current?.seekUtc(utcInput).catch(() => {});
+              }}
+            >
+              <label htmlFor="seek-utc">UTC 日期时间（ISO 8601）</label>
+              <div className="seek-row">
+                <input
+                  id="seek-utc"
+                  data-testid="seek-utc"
+                  type="text"
+                  maxLength={32}
+                  placeholder="2026-10-28T00:00:00Z"
+                  disabled={!ready || status.playing}
+                  value={utcInput}
+                  onChange={(event) => setUtcInput(event.target.value)}
+                />
+                <button type="submit" disabled={!ready || status.playing}>
+                  按 UTC 跳转
+                </button>
+              </div>
+            </form>
+            <p className="hint">
+              UTC 与 TDB 的换算由 Rust 核心完成；浏览器只负责输入与显示。
             </p>
           </section>
           <dl>
@@ -280,6 +307,13 @@ export default function Page() {
               <dt>仿真时间 / 秒</dt>
               <dd data-testid="clock" data-nanos={status.clockNs}>
                 {status.clockText}
+              </dd>
+            </div>
+            <div>
+              <dt>UTC</dt>
+              <dd data-testid="utc-clock">
+                {status.utcText ?? "—"}
+                {status.utcPredicted ? "（预测）" : ""}
               </dd>
             </div>
             <div>

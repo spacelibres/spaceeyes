@@ -58,7 +58,7 @@ ObjectId、FrameId、ResourceId建议各自使用value:string字段1，属于不
 | 2 | epoch_id | string | 显式历元标识，禁止隐式J2000 |
 | 3 | seconds | sint64 | 相对历元整秒 |
 | 4 | nanos | uint32 | 0至999999999 |
-TimeScale候选值：UNSPECIFIED=0、TT=1、TDB=2、UTC=3；枚举数字尚未冻结。TT/TDB与NASA DYN实际约定仍待后续实证；不因此假定某一时间尺度为核心唯一标准。
+TimeScale候选值：UNSPECIFIED=0、TT=1、TDB=2、UTC=3、TAI=4；枚举数字尚未冻结。M1b起`TAI`用于只读换算与测试；UTC必须通过日历字段表达，裸`TimeInstant`的UTC缺闰秒上下文。TT/TDB与NASA DYN实际约定仍待后续实证；不因此假定某一时间尺度为核心唯一标准。
 
 ### TimeRange
 1 start:TimeInstant；2 end:TimeInstant；3 include_start:bool；4 include_end:bool。范围必须可比较，跨尺度需显式转换。
@@ -238,3 +238,10 @@ QueryEnvelope新增list_objects=28，ResponseEnvelope新增objects=20。ListObje
 
 ## 正交投影相机（C13切片）
 `Projection.kind`新增`orthographic=2`（`OrthographicProjection{half_height_m=1,near_m=2,far_m=3}`），`perspective=1`保持不变；旧客户端缺省只发送perspective。两类投影共用position/orientation/tracking字段，half_height必须有限且为正，near/far校验一致。该字段只改变视图投影，不改变参考系、时间或科学状态。
+
+## Rust 科学时间换算查询（M1b 切片）
+`time.proto`新增`UtcDateTime{year=1,month=2,day=3,hour=4,minute=5,second=6,nanos=7}`、`TimeConversionQuery{oneof input{utc=1,instant=2}}`与`TimeConversion{utc=1,tdb=2,tt=3,tai=4,tt_minus_utc_nanos=5,predicted=6}`；`QueryEnvelope`追加`time_conversion=32`，`ResponseEnvelope`追加`time_conversion=23`，命令保留位不变。能力新增`query.time_convert`，总数41。
+
+输入为UTC日历时校验公历、闰秒日与1972–2100范围；输入为`TimeInstant`时只接受TAI/TT/TDB且epoch必须为`J2000`，裸UTC拒绝。输出同时返回UTC日历、TAI/TT/TDB显式时刻、TT−UTC纳秒与“表后预测”标志；全部换算在Rust `spaceeyes-astro`完成，查询只读、不推进时钟、不消耗命令历史、不写事件。错误统一`INVALID_ARGUMENT`且不改变会话状态。
+
+浏览器初始时钟改为`TDB/J2000`，UTC显示与“按UTC跳转”都经该查询；TypeScript只做ISO文本到字段的输入解析与结果显示，不做尺度换算。这不改变旧wire字段，也不把UTC当作核心内部默认尺度。

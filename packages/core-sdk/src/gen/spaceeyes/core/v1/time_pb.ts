@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/time.proto.
  */
 export const file_spaceeyes_core_v1_time: GenFile = /*@__PURE__*/
-  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS90aW1lLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSJxCgtUaW1lSW5zdGFudBIwCgp0aW1lX3NjYWxlGAEgASgOMhwuc3BhY2VleWVzLmNvcmUudjEuVGltZVNjYWxlEhAKCGVwb2NoX2lkGAIgASgJEg8KB3NlY29uZHMYAyABKBISDQoFbmFub3MYBCABKA0ikwEKCVRpbWVSYW5nZRItCgVzdGFydBgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50EisKA2VuZBgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50EhUKDWluY2x1ZGVfc3RhcnQYAyABKAgSEwoLaW5jbHVkZV9lbmQYBCABKAgi0gEKCkNsb2NrU3RhdGUSLwoHaW5zdGFudBgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50Ei0KBG1vZGUYAiABKA4yHy5zcGFjZWV5ZXMuY29yZS52MS5QbGF5YmFja01vZGUSDAoEcmF0ZRgDIAEoARISCgpnZW5lcmF0aW9uGAQgASgEEhAKCHJldmlzaW9uGAUgASgEEhYKDnJhdGVfbnVtZXJhdG9yGAYgASgREhgKEHJhdGVfZGVub21pbmF0b3IYByABKA0iDQoLUGxheUNvbW1hbmQiDgoMUGF1c2VDb21tYW5kIj4KC1NlZWtDb21tYW5kEi8KB2luc3RhbnQYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5UaW1lSW5zdGFudCIeCg5TZXRSYXRlQ29tbWFuZBIMCgRyYXRlGAEgASgBIg0KC0xpdmVDb21tYW5kIiIKC1N0ZXBDb21tYW5kEhMKC2RlbHRhX25hbm9zGAEgASgSIsACCgtUaW1lQ29tbWFuZBIuCgRwbGF5GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuUGxheUNvbW1hbmRIABIwCgVwYXVzZRgCIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlBhdXNlQ29tbWFuZEgAEi4KBHNlZWsYAyABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TZWVrQ29tbWFuZEgAEjUKCHNldF9yYXRlGAQgASgLMiEuc3BhY2VleWVzLmNvcmUudjEuU2V0UmF0ZUNvbW1hbmRIABIuCgRsaXZlGAUgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuTGl2ZUNvbW1hbmRIABIuCgRzdGVwGAYgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU3RlcENvbW1hbmRIAEIICgZhY3Rpb24qQQoJVGltZVNjYWxlEhoKFlRJTUVfU0NBTEVfVU5TUEVDSUZJRUQQABIGCgJUVBABEgcKA1REQhACEgcKA1VUQxADKlAKDFBsYXliYWNrTW9kZRIdChlQTEFZQkFDS19NT0RFX1VOU1BFQ0lGSUVEEAASCgoGUEFVU0VEEAESCwoHUExBWUlORxACEggKBExJVkUQA2IGcHJvdG8z", [file_spaceeyes_core_v1_common]);
+  fileDesc("ChxzcGFjZWV5ZXMvY29yZS92MS90aW1lLnByb3RvEhFzcGFjZWV5ZXMuY29yZS52MSJxCgtUaW1lSW5zdGFudBIwCgp0aW1lX3NjYWxlGAEgASgOMhwuc3BhY2VleWVzLmNvcmUudjEuVGltZVNjYWxlEhAKCGVwb2NoX2lkGAIgASgJEg8KB3NlY29uZHMYAyABKBISDQoFbmFub3MYBCABKA0idAoLVXRjRGF0ZVRpbWUSDAoEeWVhchgBIAEoBRINCgVtb250aBgCIAEoDRILCgNkYXkYAyABKA0SDAoEaG91chgEIAEoDRIOCgZtaW51dGUYBSABKA0SDgoGc2Vjb25kGAYgASgNEg0KBW5hbm9zGAcgASgNIoABChNUaW1lQ29udmVyc2lvblF1ZXJ5Ei0KA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lSAASMQoHaW5zdGFudBgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50SABCBwoFaW5wdXQi8gEKDlRpbWVDb252ZXJzaW9uEisKA3V0YxgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlV0Y0RhdGVUaW1lEisKA3RkYhgCIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50EioKAnR0GAMgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSKwoDdGFpGAQgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSGgoSdHRfbWludXNfdXRjX25hbm9zGAUgASgSEhEKCXByZWRpY3RlZBgGIAEoCCKTAQoJVGltZVJhbmdlEi0KBXN0YXJ0GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSKwoDZW5kGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSFQoNaW5jbHVkZV9zdGFydBgDIAEoCBITCgtpbmNsdWRlX2VuZBgEIAEoCCLSAQoKQ2xvY2tTdGF0ZRIvCgdpbnN0YW50GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuVGltZUluc3RhbnQSLQoEbW9kZRgCIAEoDjIfLnNwYWNlZXllcy5jb3JlLnYxLlBsYXliYWNrTW9kZRIMCgRyYXRlGAMgASgBEhIKCmdlbmVyYXRpb24YBCABKAQSEAoIcmV2aXNpb24YBSABKAQSFgoOcmF0ZV9udW1lcmF0b3IYBiABKBESGAoQcmF0ZV9kZW5vbWluYXRvchgHIAEoDSINCgtQbGF5Q29tbWFuZCIOCgxQYXVzZUNvbW1hbmQiPgoLU2Vla0NvbW1hbmQSLwoHaW5zdGFudBgBIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50Ih4KDlNldFJhdGVDb21tYW5kEgwKBHJhdGUYASABKAEiDQoLTGl2ZUNvbW1hbmQiIgoLU3RlcENvbW1hbmQSEwoLZGVsdGFfbmFub3MYASABKBIiwAIKC1RpbWVDb21tYW5kEi4KBHBsYXkYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5QbGF5Q29tbWFuZEgAEjAKBXBhdXNlGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuUGF1c2VDb21tYW5kSAASLgoEc2VlaxgDIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlNlZWtDb21tYW5kSAASNQoIc2V0X3JhdGUYBCABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5TZXRSYXRlQ29tbWFuZEgAEi4KBGxpdmUYBSABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5MaXZlQ29tbWFuZEgAEi4KBHN0ZXAYBiABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TdGVwQ29tbWFuZEgAQggKBmFjdGlvbipKCglUaW1lU2NhbGUSGgoWVElNRV9TQ0FMRV9VTlNQRUNJRklFRBAAEgYKAlRUEAESBwoDVERCEAISBwoDVVRDEAMSBwoDVEFJEAQqUAoMUGxheWJhY2tNb2RlEh0KGVBMQVlCQUNLX01PREVfVU5TUEVDSUZJRUQQABIKCgZQQVVTRUQQARILCgdQTEFZSU5HEAISCAoETElWRRADYgZwcm90bzM", [file_spaceeyes_core_v1_common]);
 
 /**
  * @generated from message spaceeyes.core.v1.TimeInstant
@@ -49,6 +49,130 @@ export const TimeInstantSchema: GenMessage<TimeInstant> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_time, 0);
 
 /**
+ * Strict proleptic Gregorian UTC fields; second 60 is only valid on a leap day.
+ *
+ * @generated from message spaceeyes.core.v1.UtcDateTime
+ */
+export type UtcDateTime = Message<"spaceeyes.core.v1.UtcDateTime"> & {
+  /**
+   * @generated from field: int32 year = 1;
+   */
+  year: number;
+
+  /**
+   * @generated from field: uint32 month = 2;
+   */
+  month: number;
+
+  /**
+   * @generated from field: uint32 day = 3;
+   */
+  day: number;
+
+  /**
+   * @generated from field: uint32 hour = 4;
+   */
+  hour: number;
+
+  /**
+   * @generated from field: uint32 minute = 5;
+   */
+  minute: number;
+
+  /**
+   * @generated from field: uint32 second = 6;
+   */
+  second: number;
+
+  /**
+   * @generated from field: uint32 nanos = 7;
+   */
+  nanos: number;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.UtcDateTime.
+ * Use `create(UtcDateTimeSchema)` to create a new message.
+ */
+export const UtcDateTimeSchema: GenMessage<UtcDateTime> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_time, 1);
+
+/**
+ * Read-only conversion; input is either a UTC calendar value or an explicit
+ * TAI/TT/TDB instant. UTC as a bare TimeInstant is rejected because UTC needs
+ * the leap-second calendar context.
+ *
+ * @generated from message spaceeyes.core.v1.TimeConversionQuery
+ */
+export type TimeConversionQuery = Message<"spaceeyes.core.v1.TimeConversionQuery"> & {
+  /**
+   * @generated from oneof spaceeyes.core.v1.TimeConversionQuery.input
+   */
+  input: {
+    /**
+     * @generated from field: spaceeyes.core.v1.UtcDateTime utc = 1;
+     */
+    value: UtcDateTime;
+    case: "utc";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.TimeInstant instant = 2;
+     */
+    value: TimeInstant;
+    case: "instant";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.TimeConversionQuery.
+ * Use `create(TimeConversionQuerySchema)` to create a new message.
+ */
+export const TimeConversionQuerySchema: GenMessage<TimeConversionQuery> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_time, 2);
+
+/**
+ * @generated from message spaceeyes.core.v1.TimeConversion
+ */
+export type TimeConversion = Message<"spaceeyes.core.v1.TimeConversion"> & {
+  /**
+   * @generated from field: spaceeyes.core.v1.UtcDateTime utc = 1;
+   */
+  utc?: UtcDateTime | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TimeInstant tdb = 2;
+   */
+  tdb?: TimeInstant | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TimeInstant tt = 3;
+   */
+  tt?: TimeInstant | undefined;
+
+  /**
+   * @generated from field: spaceeyes.core.v1.TimeInstant tai = 4;
+   */
+  tai?: TimeInstant | undefined;
+
+  /**
+   * @generated from field: sint64 tt_minus_utc_nanos = 5;
+   */
+  ttMinusUtcNanos: bigint;
+
+  /**
+   * @generated from field: bool predicted = 6;
+   */
+  predicted: boolean;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.TimeConversion.
+ * Use `create(TimeConversionSchema)` to create a new message.
+ */
+export const TimeConversionSchema: GenMessage<TimeConversion> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_time, 3);
+
+/**
  * @generated from message spaceeyes.core.v1.TimeRange
  */
 export type TimeRange = Message<"spaceeyes.core.v1.TimeRange"> & {
@@ -78,7 +202,7 @@ export type TimeRange = Message<"spaceeyes.core.v1.TimeRange"> & {
  * Use `create(TimeRangeSchema)` to create a new message.
  */
 export const TimeRangeSchema: GenMessage<TimeRange> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 1);
+  messageDesc(file_spaceeyes_core_v1_time, 4);
 
 /**
  * @generated from message spaceeyes.core.v1.ClockState
@@ -125,7 +249,7 @@ export type ClockState = Message<"spaceeyes.core.v1.ClockState"> & {
  * Use `create(ClockStateSchema)` to create a new message.
  */
 export const ClockStateSchema: GenMessage<ClockState> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 2);
+  messageDesc(file_spaceeyes_core_v1_time, 5);
 
 /**
  * @generated from message spaceeyes.core.v1.PlayCommand
@@ -138,7 +262,7 @@ export type PlayCommand = Message<"spaceeyes.core.v1.PlayCommand"> & {
  * Use `create(PlayCommandSchema)` to create a new message.
  */
 export const PlayCommandSchema: GenMessage<PlayCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 3);
+  messageDesc(file_spaceeyes_core_v1_time, 6);
 
 /**
  * @generated from message spaceeyes.core.v1.PauseCommand
@@ -151,7 +275,7 @@ export type PauseCommand = Message<"spaceeyes.core.v1.PauseCommand"> & {
  * Use `create(PauseCommandSchema)` to create a new message.
  */
 export const PauseCommandSchema: GenMessage<PauseCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 4);
+  messageDesc(file_spaceeyes_core_v1_time, 7);
 
 /**
  * @generated from message spaceeyes.core.v1.SeekCommand
@@ -168,7 +292,7 @@ export type SeekCommand = Message<"spaceeyes.core.v1.SeekCommand"> & {
  * Use `create(SeekCommandSchema)` to create a new message.
  */
 export const SeekCommandSchema: GenMessage<SeekCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 5);
+  messageDesc(file_spaceeyes_core_v1_time, 8);
 
 /**
  * @generated from message spaceeyes.core.v1.SetRateCommand
@@ -185,7 +309,7 @@ export type SetRateCommand = Message<"spaceeyes.core.v1.SetRateCommand"> & {
  * Use `create(SetRateCommandSchema)` to create a new message.
  */
 export const SetRateCommandSchema: GenMessage<SetRateCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 6);
+  messageDesc(file_spaceeyes_core_v1_time, 9);
 
 /**
  * @generated from message spaceeyes.core.v1.LiveCommand
@@ -198,7 +322,7 @@ export type LiveCommand = Message<"spaceeyes.core.v1.LiveCommand"> & {
  * Use `create(LiveCommandSchema)` to create a new message.
  */
 export const LiveCommandSchema: GenMessage<LiveCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 7);
+  messageDesc(file_spaceeyes_core_v1_time, 10);
 
 /**
  * @generated from message spaceeyes.core.v1.StepCommand
@@ -215,7 +339,7 @@ export type StepCommand = Message<"spaceeyes.core.v1.StepCommand"> & {
  * Use `create(StepCommandSchema)` to create a new message.
  */
 export const StepCommandSchema: GenMessage<StepCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 8);
+  messageDesc(file_spaceeyes_core_v1_time, 11);
 
 /**
  * @generated from message spaceeyes.core.v1.TimeCommand
@@ -268,7 +392,7 @@ export type TimeCommand = Message<"spaceeyes.core.v1.TimeCommand"> & {
  * Use `create(TimeCommandSchema)` to create a new message.
  */
 export const TimeCommandSchema: GenMessage<TimeCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_time, 9);
+  messageDesc(file_spaceeyes_core_v1_time, 12);
 
 /**
  * @generated from enum spaceeyes.core.v1.TimeScale
@@ -293,6 +417,11 @@ export enum TimeScale {
    * @generated from enum value: UTC = 3;
    */
   UTC = 3,
+
+  /**
+   * @generated from enum value: TAI = 4;
+   */
+  TAI = 4,
 }
 
 /**

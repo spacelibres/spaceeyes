@@ -48,6 +48,8 @@ export type ViewStatus = {
   objectCount: number;
   clockNs: string;
   clockText: string;
+  utcText?: string;
+  utcPredicted?: boolean;
   playing: boolean;
   resourceBytes: string;
   width: number;
@@ -77,6 +79,38 @@ export const initialStatus: ViewStatus = {
 };
 const sessionId = "browser-session";
 const principal = "trusted-browser-host";
+
+function formatUtc(utc: {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+  nanos: number;
+}): string {
+  const pad = (value: number, width = 2) => String(value).padStart(width, "0");
+  return `${utc.year}-${pad(utc.month)}-${pad(utc.day)} ${pad(utc.hour)}:${pad(utc.minute)}:${pad(utc.second)}.${pad(utc.nanos, 9)} UTC`;
+}
+
+function parseUtcDateTime(text: string) {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,9}))?Z$/.exec(
+      text.trim(),
+    );
+  if (!match) {
+    throw new RangeError("请输入 UTC 时间，例如 2026-10-28T00:00:00Z。");
+  }
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6]),
+    nanos: Number((match[7] ?? "").padEnd(9, "0")),
+  };
+}
 type BrowserBindings = typeof import("../public/wasm/spaceeyes_wasm.js");
 let runtime: Promise<BrowserBindings> | undefined;
 function loadRuntime(): Promise<BrowserBindings> {
@@ -188,6 +222,8 @@ export class BrowserSession {
   private cameraState: CameraState | undefined;
   private actionError: string | undefined;
   private solarMode = false;
+  private utcText: string | undefined;
+  private utcPredicted = false;
   private solarLoader: DynamoSegmentLoader | undefined;
   private pluginHost: PluginHost | undefined;
   private readonly solarStates = new Map<string, SolarState>();
@@ -278,13 +314,7 @@ export class BrowserSession {
     if (this.disposed) return;
     this.engine = this.projectBytes
       ? bindings.WasmEngine.from_project(sessionId, this.projectBytes)
-      : new bindings.WasmEngine(
-          sessionId,
-          "TT",
-          "PROTOTYPE_EXPLICIT_EPOCH",
-          0n,
-          0,
-        );
+      : new bindings.WasmEngine(sessionId, "TDB", "J2000", 0n, 0);
     this.client = new CoreClient(
       wasmTransport(this.engine, principal),
       sessionId,
@@ -299,6 +329,7 @@ export class BrowserSession {
       "time.set_rate",
       "time.step",
       "time.seek",
+      "query.time_convert",
       "query.project_export",
       ...(this.solarMode
         ? [
@@ -684,6 +715,7 @@ export class BrowserSession {
     );
     if (response.payload.case !== "session") throw new Error("缺少会话状态");
     this.state = response.payload.value;
+    await this.refreshUtc();
     if (this.cameraCreated) {
       const camera = await this.client!.query(
         { case: "cameraState", value: { camera: { value: "demo:camera" } } },
@@ -691,6 +723,32 @@ export class BrowserSession {
       );
       if (camera.payload.case !== "camera") throw new Error("缺少相机状态");
       this.cameraState = camera.payload.value.state;
+    }
+  }
+  /** Display-only UTC projection of the authoritative TDB instant; never a write. */
+  private async refreshUtc(): Promise<void> {
+    const instant = this.state?.clock?.instant;
+    if (!instant) {
+      this.utcText = undefined;
+      return;
+    }
+    try {
+      const response = await this.client!.query(
+        {
+          case: "timeConversion",
+          value: { input: { case: "instant", value: instant } },
+        },
+        { requestId: `web:utc:${++this.request}` },
+      );
+      if (response.payload.case !== "timeConversion") {
+        this.utcText = undefined;
+        return;
+      }
+      const conversion = response.payload.value;
+      this.utcText = conversion.utc ? formatUtc(conversion.utc) : undefined;
+      this.utcPredicted = conversion.predicted;
+    } catch {
+      this.utcText = undefined;
     }
   }
   private summary(phase: ViewStatus["phase"]): ViewStatus {
@@ -717,6 +775,8 @@ export class BrowserSession {
       objectCount: Number(this.state?.objectCount ?? 0n),
       clockNs: (seconds * 1000000000n + BigInt(nanos)).toString(),
       clockText: formatSimulationTime(seconds, nanos),
+      utcText: this.utcText,
+      utcPredicted: this.utcPredicted,
       playbackRate: String(
         (this.state?.clock?.rateNumerator ?? 1) /
           (this.state?.clock?.rateDenominator || 1),
@@ -1056,6 +1116,29 @@ export class BrowserSession {
             },
           },
         },
+      });
+      this.clearTimeSelection();
+    });
+  }
+  /** UTC text is parsed into fields only; all scale conversion happens in Rust. */
+  seekUtc(text: string): Promise<void> {
+    return this.performAction("时间", async () => {
+      const utc = parseUtcDateTime(text);
+      await this.requirePaused();
+      const response = await this.client!.query(
+        {
+          case: "timeConversion",
+          value: { input: { case: "utc", value: utc } },
+        },
+        { requestId: `web:utc-seek:${++this.request}` },
+      );
+      if (response.payload.case !== "timeConversion")
+        throw new Error("缺少时间换算结果");
+      const instant = response.payload.value.tdb;
+      if (!instant) throw new Error("缺少 TDB 时刻");
+      await this.command({
+        case: "time",
+        value: { action: { case: "seek", value: { instant } } },
       });
       this.clearTimeSelection();
     });
