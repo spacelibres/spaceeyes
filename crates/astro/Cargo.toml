@@ -1,0 +1,9 @@
+[package]
+name = "spaceeyes-astro"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+spaceeyes-time = { path = "../time" }

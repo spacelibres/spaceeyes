@@ -5,6 +5,7 @@ members = [
   "crates/geometry",
   "crates/image-import",
   "crates/time",
+  "crates/astro",
   "crates/spatial",
   "crates/scene",
   "crates/simulation",

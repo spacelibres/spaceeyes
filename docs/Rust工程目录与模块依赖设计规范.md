@@ -48,6 +48,7 @@ spaceeyes/
 |---|---|---|
 | foundation | ObjectId/FrameId/ResourceId、数学值类型、错误、不可变快照值类型 | 依赖上层引擎、NASA业务 |
 | time | SimulationClock、TimeSnapshot、时间命令领域语义 | 轨道计算、UI系统时间读取 |
+| astro | 历法、闰秒、UTC/TAI/TT/TDB、J2000 换算（纯值、无系统时钟） | 场景/渲染状态、宿主UI、网络与DYN文件读取 |
 | spatial | ReferenceFrameGraph、TransformResolver、空间变换 | 场景对象所有权、DYN解析 |
 | scene | Scene、SceneObject、SceneCommand事务、SceneSnapshot | GPU分配、星历计算 |
 | simulation | SimulationScheduler、任务状态、依赖、结果校验 | 第二套Scene写入口 |
@@ -154,3 +155,12 @@ React每次挂载创建独立canvas与Engine，异步初始化/呈现期间的�
 首个可运行宿主提供开始/暂停时间、相机偏航、状态/错误与挂载开关。验证实际Chromium WebGPU绘制像素、相机变化、暂停/播放、resize、卸载/重挂和不支持WebGPU路径；截图、生产构建、严格WASM feature编译和浏览器自动测试纳入检查。目标为M2首个增量，不声称NASA真实场景、拾取UI、完整控制台、设备恢复或硬件性能已完成。
 
 M2-1补充：浏览器采用非映射流式顶点上传，并将顶点目标/上传暂存双份计费；Surface保留Instance，GPU完成后回收临时预算。WASM模块加载Promise共享而Engine实例独立，避免并发初始化替换运行时；设备丢失/验证/分配错误返回失败，初始化失败或卸载时显式destroy设备。
+
+## M1a Rust科学时间（0.0.1实施增量）
+
+新增`crates/astro`，仅依赖`spaceeyes-time`，保持无环：提供严格公历校验与日数换算、1972–2100 UTC 闰秒表、UTC↔TAI、TT/TAI（同一J2000事件零点，常量32.184s由历元定义吸收）、TT↔TDB两项近似、J2000整数纳秒与`TimeInstant`（TAI/TT/TDB，epoch=J2000）无损往返。UTC超出1972–2100或表后日期必须显式`UtcOutOfRange`/预测标志，不静默近似；TDB近似仅为传输/显示模型，测试限定约1.8ms幅度，不宣称最终科学精度。
+
+本轮只交付核心值与测试（8项单元+12项集成），不新增Proto、不修改浏览器；宿主仍不做任何时间换算。依赖方向为`foundation ← time ← astro`，astro不依赖scene/spatial/simulation/rendering/engine或宿主。
+
+与第96行“DYN解析/求值不放入核心”的历史表述冲突处，按`docs/核心与宿主职责边界规范.md`执行：DYN解析/求值/分段是Rust核心能力（规划`crates/dynamo`），只读取字节与显式时刻，不拥有Scene/Clock可变状态；插件仅取字节并调用核心。
+
