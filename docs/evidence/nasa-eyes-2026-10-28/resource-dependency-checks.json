@@ -1,0 +1,177 @@
+{
+  "date": "2026-10-28",
+  "sourceCommit": "4a8a83be2ff8298d7fe26fc5c9bbfe47f2fee7db",
+  "downloads": [
+    {
+      "name": "juno.gltf",
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf",
+      "bytes": 56278,
+      "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9"
+    },
+    {
+      "name": "earth-color-configuration.json",
+      "url": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/color/configuration.json",
+      "bytes": 1541,
+      "sha256": "ebb4d97c82a1b91c1ff902b036e7bc28654531d431bc449847ca9134bc03c9af"
+    },
+    {
+      "name": "galaxies.0.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "bytes": 27857,
+      "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05"
+    },
+    {
+      "name": "earth-wmts.xml",
+      "url": "https://eyes.nasa.gov/apps/solar-system/assets/wmts_xml/1.0.0/WMTSCapabilities.xml",
+      "bytes": 4029,
+      "sha256": "a855104ede4eea6a884d9b0baa1b123351b0d85c6e3490ab91dd326701ce7c99"
+    }
+  ],
+  "juno": {
+    "extensionsUsed": [
+      "KHR_texture_transform"
+    ],
+    "extensionsRequired": [
+      "KHR_texture_transform"
+    ],
+    "dependencies": [
+      {
+        "uri": "juno_closed.bin",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "1779752",
+        "contentType": "application/octet-stream"
+      },
+      {
+        "uri": "foil_normal.png",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/foil_normal.png",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "309641",
+        "contentType": "image/png"
+      },
+      {
+        "uri": "juno_transparent_crosses.png",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_transparent_crosses.png",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "12472",
+        "contentType": "image/png"
+      },
+      {
+        "uri": "foil_dish_normal.png",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/foil_dish_normal.png",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "174577",
+        "contentType": "image/png"
+      },
+      {
+        "uri": "juno_tex_01_normal.png",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_normal.png",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "910296",
+        "contentType": "image/png"
+      },
+      {
+        "uri": "juno_tex_01_albedo.jpg",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_albedo.jpg",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "308049",
+        "contentType": "image/jpeg"
+      },
+      {
+        "uri": "juno_tex_01_pbr.jpg",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_pbr.jpg",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "152691",
+        "contentType": "image/jpeg"
+      },
+      {
+        "uri": "juno_array_normal.png",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_normal.png",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "1421533",
+        "contentType": "image/png"
+      },
+      {
+        "uri": "juno_array_albedo.jpg",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_albedo.jpg",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "1309073",
+        "contentType": "image/jpeg"
+      },
+      {
+        "uri": "juno_array_pbr.jpg",
+        "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_pbr.jpg",
+        "method": "HEAD",
+        "status": 200,
+        "bytes": "1202326",
+        "contentType": "image/jpeg"
+      }
+    ]
+  },
+  "cmts": {
+    "first_level": -7,
+    "tile_size": 2048,
+    "extension": "ktx2",
+    "boundaryCount": 28,
+    "last_levels": [
+      4,
+      12
+    ]
+  },
+  "galaxies": {
+    "count": 1211,
+    "stride": 23,
+    "headerBytes": 4,
+    "length": 27857,
+    "lengthMatches": true,
+    "coordinateUnitsVerified": false
+  },
+  "wmts": [
+    {
+      "id": "VIIRS_SNPP_CorrectedReflectance_TrueColor",
+      "resources": [
+        {
+          "format": "image/jpeg",
+          "resourceType": "tile",
+          "template": "https://gitc.earthdata.nasa.gov/wmts/epsg4326/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.jpeg"
+        }
+      ],
+      "timeDefault": [
+        "2021-06-15"
+      ],
+      "matrixSets": [
+        "250m"
+      ]
+    }
+  ],
+  "limitations": "Model dependencies are HEAD-only; no mesh/texture decode, browser render, scientific coordinate-unit verification or WMTS tile load performed.",
+  "visibleEarth": {
+    "manifestURL": "https://eyes.nasa.gov/assets/dynamic/earth/data/visibleEarth/dataset_manifest.json",
+    "manifestSHA256": "8eda43dd4bc604f667987fbb4a04323fe210a5c818439b25fc69e76b59dce113",
+    "availableDateCount": 3948,
+    "latestDate": "2026-10-26",
+    "latestDateEntry": {
+      "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+      "blankAreaPct": 0.018
+    },
+    "clientYesterday20261027Present": false,
+    "capabilitiesURL": "https://eyes.nasa.gov/apps/solar-system/assets/wmts_xml_noaa_20/1.0.0/WMTSCapabilities.xml",
+    "capabilitiesSHA256": "c17423723b5b0d504cf76277d3cea618c12ad15b2e3043fe5fa1cd7de66e9f20",
+    "tileProbe": {
+      "url": "https://gitc.earthdata.nasa.gov/wmts/epsg4326/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/2026-10-26/250m/0/0/0.jpeg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": "52011",
+      "method": "HEAD"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+[package]
+name = "spaceeyes-core"
+version = "0.0.2"
+edition = "2024"
+license = "MIT"
+
+[lib]
+path = "src/lib.rs"

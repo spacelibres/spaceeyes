@@ -1,0 +1,9 @@
+{
+  "name": "@spaceeyes/platform-foundation",
+  "version": "0.0.2",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=24.15.0" },
+  "scripts": { "test": "node --test tests/*.test.ts" }
+}

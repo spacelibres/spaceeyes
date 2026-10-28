@@ -1,0 +1,797 @@
+{
+  "date": "2026-10-28",
+  "modelBuffer": {
+    "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin",
+    "bytes": 1779752,
+    "sha256": "ecb0f34d8cdcd961e0e4e6ddf1aafc402be4d2a9071a41ec4829b1a667cebee0",
+    "bufferViewCount": 110,
+    "positionAccessors": [
+      {
+        "accessor": 0,
+        "count": 864,
+        "min": [
+          -6.1133809089660645,
+          -9.285502433776855,
+          -1.2363399267196655
+        ],
+        "max": [
+          7.455722808837891,
+          9.25764274597168,
+          -0.07377934455871582
+        ]
+      },
+      {
+        "accessor": 5,
+        "count": 248,
+        "min": [
+          -1.1823999881744385,
+          -1.1866618394851685,
+          -1.4710696935653687
+        ],
+        "max": [
+          1.201642394065857,
+          1.1953665018081665,
+          -0.9269607663154602
+        ]
+      },
+      {
+        "accessor": 10,
+        "count": 315,
+        "min": [
+          -1.1861640214920044,
+          -1.191107988357544,
+          -1.893728256225586
+        ],
+        "max": [
+          1.2059015035629272,
+          1.1984000205993652,
+          -1.4447327852249146
+        ]
+      },
+      {
+        "accessor": 15,
+        "count": 315,
+        "min": [
+          -1.1816874742507935,
+          -1.1866618394851685,
+          -1.8839229345321655
+        ],
+        "max": [
+          1.2013589143753052,
+          1.1938365697860718,
+          -1.4366204738616943
+        ]
+      },
+      {
+        "accessor": 20,
+        "count": 360,
+        "min": [
+          -0.36595040559768677,
+          -0.013122409582138062,
+          -0.10392950475215912
+        ],
+        "max": [
+          0.2523415684700012,
+          0.7950883507728577,
+          0.013090895488858223
+        ]
+      },
+      {
+        "accessor": 25,
+        "count": 4482,
+        "min": [
+          -1.3963850736618042,
+          -1.5726571083068848,
+          -0.9091469645500183
+        ],
+        "max": [
+          1.2672977447509766,
+          1.5545907020568848,
+          1.7166743278503418
+        ]
+      },
+      {
+        "accessor": 30,
+        "count": 282,
+        "min": [
+          -1.439476728439331,
+          -0.7039286494255066,
+          1.3816999197006226
+        ],
+        "max": [
+          -0.7773617506027222,
+          -0.08795005083084106,
+          1.6036757230758667
+        ]
+      },
+      {
+        "accessor": 35,
+        "count": 100,
+        "min": [
+          -1.3870174884796143,
+          -0.46524494886398315,
+          1.4004772901535034
+        ],
+        "max": [
+          -1.1681770086288452,
+          -0.21865878999233246,
+          1.5364749431610107
+        ]
+      },
+      {
+        "accessor": 40,
+        "count": 3428,
+        "min": [
+          -1.3760182857513428,
+          -0.6584413051605225,
+          1.3959766626358032
+        ],
+        "max": [
+          -0.8167736530303955,
+          -0.17583191394805908,
+          1.55818510055542
+        ]
+      },
+      {
+        "accessor": 45,
+        "count": 328,
+        "min": [
+          -1.3147584199905396,
+          -0.6134989261627197,
+          1.4304760694503784
+        ],
+        "max": [
+          -0.8888653516769409,
+          -0.18919876217842102,
+          1.5956754684448242
+        ]
+      },
+      {
+        "accessor": 50,
+        "count": 64,
+        "min": [
+          -6.1133809089660645,
+          -9.285503387451172,
+          -0.10561315715312958
+        ],
+        "max": [
+          7.455723285675049,
+          9.25764274597168,
+          -0.10194776952266693
+        ]
+      },
+      {
+        "accessor": 55,
+        "count": 4223,
+        "min": [
+          -2.414078950881958,
+          -3.3968019485473633,
+          -0.837943971157074
+        ],
+        "max": [
+          3.4702579975128174,
+          3.367901563644409,
+          1.940272569656372
+        ]
+      },
+      {
+        "accessor": 60,
+        "count": 48,
+        "min": [
+          -1.4733635187149048,
+          -0.014526721090078354,
+          -0.024003803730010986
+        ],
+        "max": [
+          -1.435177206993103,
+          0.08691612631082535,
+          0.10751610994338989
+        ]
+      },
+      {
+        "accessor": 65,
+        "count": 6,
+        "min": [
+          -1.435177206993103,
+          0.014859775081276894,
+          0.014004945755004883
+        ],
+        "max": [
+          -1.435177206993103,
+          0.05752963572740555,
+          0.06951695680618286
+        ]
+      },
+      {
+        "accessor": 70,
+        "count": 1079,
+        "min": [
+          -6.1133809089660645,
+          -9.285503387451172,
+          -0.13948188722133636
+        ],
+        "max": [
+          11.540729522705078,
+          9.25764274597168,
+          0.05655059218406677
+        ]
+      },
+      {
+        "accessor": 75,
+        "count": 16645,
+        "min": [
+          -4.466746807098389,
+          -6.9554572105407715,
+          -1.5178229808807373
+        ],
+        "max": [
+          11.342008590698242,
+          6.928534030914307,
+          2.362873077392578
+        ]
+      },
+      {
+        "accessor": 80,
+        "count": 543,
+        "min": [
+          -1.4553993940353394,
+          -2.1265456676483154,
+          0.6139700412750244
+        ],
+        "max": [
+          2.2670516967773438,
+          1.7963833808898926,
+          1.4756022691726685
+        ]
+      },
+      {
+        "accessor": 85,
+        "count": 639,
+        "min": [
+          -2.323991298675537,
+          -3.290487766265869,
+          -0.02212444692850113
+        ],
+        "max": [
+          3.3727760314941406,
+          3.2671501636505127,
+          0.7041343450546265
+        ]
+      },
+      {
+        "accessor": 90,
+        "count": 96,
+        "min": [
+          9.61967658996582,
+          -0.23416496813297272,
+          -0.10038554668426514
+        ],
+        "max": [
+          11.342008590698242,
+          0.21897290647029877,
+          0.260692298412323
+        ]
+      },
+      {
+        "accessor": 95,
+        "count": 210,
+        "min": [
+          0.0718640685081482,
+          1.6599926948547363,
+          1.2482951879501343
+        ],
+        "max": [
+          0.1583850383758545,
+          1.745089054107666,
+          1.4272383451461792
+        ]
+      },
+      {
+        "accessor": 100,
+        "count": 338,
+        "min": [
+          -1.4722261428833008,
+          -1.715466022491455,
+          -0.09439140558242798
+        ],
+        "max": [
+          1.489804744720459,
+          1.6919467449188232,
+          1.3816999197006226
+        ]
+      },
+      {
+        "accessor": 105,
+        "count": 24,
+        "min": [
+          -1.4722261428833008,
+          -0.014526721090078354,
+          -0.024003803730010986
+        ],
+        "max": [
+          -1.4309840202331543,
+          0.08691612631082535,
+          0.10751610994338989
+        ]
+      }
+    ],
+    "checkScope": "bufferView bounds, float32 POSITION bounds and finite values; no index/topology/material/render verification"
+  },
+  "heightTile": {
+    "url": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/height/0/-3/0/0.webp",
+    "bytes": 562,
+    "sha256": "82eaa20245d7b29d171d51231eda360ca13d00a8c7df83e82c2ca60eca41e97b",
+    "chunks": [
+      "VP8L"
+    ],
+    "format": "WEBP",
+    "size": [
+      20,
+      20
+    ],
+    "mode": "RGB",
+    "iccProfilePresent": false,
+    "normalizedMinMax": [
+      0.5440462827682495,
+      0.6520857810974121
+    ],
+    "sourceDefaultHeightMinMax": [
+      -0.030981779098510742,
+      2.3458871841430664
+    ],
+    "decodeLibrary": "Pillow",
+    "limitations": "One low-LOD tile, source-default scale/offset; no browser Canvas byte-equivalence, vertical datum or external terrain accuracy validation"
+  },
+  "constellations": {
+    "url": "https://eyes.nasa.gov/assets/static/stars/constellations.bin",
+    "bytes": 10952,
+    "sha256": "a83c62d604773ffdbc0169509ca11ae3749ca300419e676c60b7f5208c2dcf41",
+    "count": 88,
+    "allFinite": true,
+    "indicesWithinBounds": true,
+    "fullyConsumed": true,
+    "records": [
+      {
+        "name": "Aquila",
+        "pointCount": 9,
+        "segmentCount": 8
+      },
+      {
+        "name": "Andromeda",
+        "pointCount": 6,
+        "segmentCount": 5
+      },
+      {
+        "name": "Sculptor",
+        "pointCount": 3,
+        "segmentCount": 3
+      },
+      {
+        "name": "Ara",
+        "pointCount": 7,
+        "segmentCount": 7
+      },
+      {
+        "name": "Libra",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Cetus",
+        "pointCount": 19,
+        "segmentCount": 20
+      },
+      {
+        "name": "Aries",
+        "pointCount": 4,
+        "segmentCount": 3
+      },
+      {
+        "name": "Scutum",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Pyxis",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Bootes",
+        "pointCount": 9,
+        "segmentCount": 9
+      },
+      {
+        "name": "Caelum",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Chamaeleon",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Cancer",
+        "pointCount": 6,
+        "segmentCount": 5
+      },
+      {
+        "name": "Capricornus",
+        "pointCount": 9,
+        "segmentCount": 9
+      },
+      {
+        "name": "Carina",
+        "pointCount": 15,
+        "segmentCount": 14
+      },
+      {
+        "name": "Cassiopeia",
+        "pointCount": 5,
+        "segmentCount": 4
+      },
+      {
+        "name": "Centaurus",
+        "pointCount": 17,
+        "segmentCount": 16
+      },
+      {
+        "name": "Cepheus",
+        "pointCount": 5,
+        "segmentCount": 6
+      },
+      {
+        "name": "Coma Berenices",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Canes Venatici",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Auriga",
+        "pointCount": 6,
+        "segmentCount": 6
+      },
+      {
+        "name": "Columba",
+        "pointCount": 7,
+        "segmentCount": 6
+      },
+      {
+        "name": "Circinus",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Crater",
+        "pointCount": 8,
+        "segmentCount": 9
+      },
+      {
+        "name": "Corona Australis",
+        "pointCount": 10,
+        "segmentCount": 9
+      },
+      {
+        "name": "Corona Borealis",
+        "pointCount": 7,
+        "segmentCount": 6
+      },
+      {
+        "name": "Corvus",
+        "pointCount": 6,
+        "segmentCount": 6
+      },
+      {
+        "name": "Crux",
+        "pointCount": 4,
+        "segmentCount": 2
+      },
+      {
+        "name": "Cygnus",
+        "pointCount": 10,
+        "segmentCount": 9
+      },
+      {
+        "name": "Delphinus",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Dorado",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Draco",
+        "pointCount": 14,
+        "segmentCount": 14
+      },
+      {
+        "name": "Norma",
+        "pointCount": 4,
+        "segmentCount": 5
+      },
+      {
+        "name": "Eridanus",
+        "pointCount": 28,
+        "segmentCount": 27
+      },
+      {
+        "name": "Sagitta",
+        "pointCount": 5,
+        "segmentCount": 4
+      },
+      {
+        "name": "Fornax",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Gemini",
+        "pointCount": 17,
+        "segmentCount": 16
+      },
+      {
+        "name": "Camelopardalis",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Canis Major",
+        "pointCount": 16,
+        "segmentCount": 17
+      },
+      {
+        "name": "Ursa Major",
+        "pointCount": 18,
+        "segmentCount": 19
+      },
+      {
+        "name": "Grus",
+        "pointCount": 9,
+        "segmentCount": 9
+      },
+      {
+        "name": "Hercules",
+        "pointCount": 18,
+        "segmentCount": 18
+      },
+      {
+        "name": "Horologium",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Hydra",
+        "pointCount": 18,
+        "segmentCount": 18
+      },
+      {
+        "name": "Hydrus",
+        "pointCount": 5,
+        "segmentCount": 4
+      },
+      {
+        "name": "Indus",
+        "pointCount": 3,
+        "segmentCount": 3
+      },
+      {
+        "name": "Lacerta",
+        "pointCount": 6,
+        "segmentCount": 6
+      },
+      {
+        "name": "Monoceros",
+        "pointCount": 7,
+        "segmentCount": 6
+      },
+      {
+        "name": "Lepus",
+        "pointCount": 13,
+        "segmentCount": 14
+      },
+      {
+        "name": "Leo",
+        "pointCount": 9,
+        "segmentCount": 10
+      },
+      {
+        "name": "Lupus",
+        "pointCount": 12,
+        "segmentCount": 13
+      },
+      {
+        "name": "Lynx",
+        "pointCount": 8,
+        "segmentCount": 7
+      },
+      {
+        "name": "Lyra",
+        "pointCount": 5,
+        "segmentCount": 5
+      },
+      {
+        "name": "Antlia",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Microscopium",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Musca",
+        "pointCount": 4,
+        "segmentCount": 4
+      },
+      {
+        "name": "Octans",
+        "pointCount": 3,
+        "segmentCount": 3
+      },
+      {
+        "name": "Apus",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Ophiuchus",
+        "pointCount": 7,
+        "segmentCount": 7
+      },
+      {
+        "name": "Orion",
+        "pointCount": 19,
+        "segmentCount": 21
+      },
+      {
+        "name": "Pavo",
+        "pointCount": 11,
+        "segmentCount": 13
+      },
+      {
+        "name": "Pegasus",
+        "pointCount": 14,
+        "segmentCount": 14
+      },
+      {
+        "name": "Pictor",
+        "pointCount": 3,
+        "segmentCount": 2
+      },
+      {
+        "name": "Perseus",
+        "pointCount": 11,
+        "segmentCount": 10
+      },
+      {
+        "name": "Equuleus",
+        "pointCount": 4,
+        "segmentCount": 4
+      },
+      {
+        "name": "Canis Minor",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Leo Minor",
+        "pointCount": 4,
+        "segmentCount": 4
+      },
+      {
+        "name": "Vulpecula",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Ursa Minor",
+        "pointCount": 7,
+        "segmentCount": 7
+      },
+      {
+        "name": "Phoenix",
+        "pointCount": 8,
+        "segmentCount": 11
+      },
+      {
+        "name": "Pisces",
+        "pointCount": 18,
+        "segmentCount": 19
+      },
+      {
+        "name": "Piscis Austrinus",
+        "pointCount": 7,
+        "segmentCount": 6
+      },
+      {
+        "name": "Volans",
+        "pointCount": 6,
+        "segmentCount": 7
+      },
+      {
+        "name": "Puppis",
+        "pointCount": 7,
+        "segmentCount": 7
+      },
+      {
+        "name": "Reticulum",
+        "pointCount": 4,
+        "segmentCount": 4
+      },
+      {
+        "name": "Sagittarius",
+        "pointCount": 21,
+        "segmentCount": 24
+      },
+      {
+        "name": "Scorpius",
+        "pointCount": 13,
+        "segmentCount": 12
+      },
+      {
+        "name": "Serpens",
+        "pointCount": 12,
+        "segmentCount": 11
+      },
+      {
+        "name": "Sextans",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Mensa",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Taurus",
+        "pointCount": 12,
+        "segmentCount": 12
+      },
+      {
+        "name": "Telescopium",
+        "pointCount": 2,
+        "segmentCount": 1
+      },
+      {
+        "name": "Tucana",
+        "pointCount": 4,
+        "segmentCount": 3
+      },
+      {
+        "name": "Triangulum",
+        "pointCount": 3,
+        "segmentCount": 3
+      },
+      {
+        "name": "Triangulum Australe",
+        "pointCount": 3,
+        "segmentCount": 3
+      },
+      {
+        "name": "Aquarius",
+        "pointCount": 15,
+        "segmentCount": 14
+      },
+      {
+        "name": "Virgo",
+        "pointCount": 12,
+        "segmentCount": 12
+      },
+      {
+        "name": "Vela",
+        "pointCount": 10,
+        "segmentCount": 10
+      }
+    ],
+    "limitations": "Binary layout and local indices checked; source catalog, coordinate units and rendered alignments not independently validated"
+  }
+}
