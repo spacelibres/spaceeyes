@@ -9,6 +9,7 @@ pub struct Material {
     texture: Option<ResourceId>,
     sampling: Sampling,
     unlit: bool,
+    alpha: f32,
 }
 impl Eq for Material {}
 impl Material {
@@ -29,7 +30,17 @@ impl Material {
             texture,
             sampling,
             unlit,
+            alpha: 1.0,
         })
+    }
+    /// Alpha is display-only and does not change ownership or scientific state.
+    /// Values below 1.0 are drawn with alpha blending after opaque geometry.
+    pub fn with_alpha(mut self, alpha: f32) -> Result<Self, CoreError> {
+        if !alpha.is_finite() || !(0.0..=1.0).contains(&alpha) {
+            return Err(CoreError::InvalidState);
+        }
+        self.alpha = alpha;
+        Ok(self)
     }
     pub fn base_color(&self) -> [f32; 3] {
         self.base_color
@@ -42,5 +53,8 @@ impl Material {
     }
     pub fn unlit(&self) -> bool {
         self.unlit
+    }
+    pub fn alpha(&self) -> f32 {
+        self.alpha
     }
 }

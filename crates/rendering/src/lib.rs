@@ -336,6 +336,7 @@ fn prepare_oriented(
                     instance.material().texture(),
                     instance.material().sampling(),
                     instance.material().unlit(),
+                    instance.material().alpha(),
                 )?,
             });
             continue;
@@ -354,6 +355,7 @@ fn prepare_oriented(
                         sphere.material().texture(),
                         sphere.material().sampling(),
                         sphere.material().unlit(),
+                        sphere.material().alpha(),
                     )?,
                     rotation_to_camera: reference_to_camera_rotation.after(
                         RigidTransform::new(Vec3d::ZERO, pose.transform.rotation)

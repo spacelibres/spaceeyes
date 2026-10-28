@@ -14,6 +14,7 @@ pub struct GpuRenderer {
     queue: wgpu::Queue,
     pipeline: wgpu::RenderPipeline,
     line_pipeline: wgpu::RenderPipeline,
+    transparent_pipeline: wgpu::RenderPipeline,
     material_layout: wgpu::BindGroupLayout,
     pub adapter_name: String,
 }
@@ -72,7 +73,7 @@ impl GpuRenderer {
                 entry_point: Some("vs_main"),
                 compilation_options: Default::default(),
                 buffers: &[Some(wgpu::VertexBufferLayout {
-                    array_stride: 52,
+                    array_stride: 56,
                     step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &[
                         wgpu::VertexAttribute {
@@ -99,6 +100,11 @@ impl GpuRenderer {
                             format: wgpu::VertexFormat::Float32,
                             offset: 48,
                             shader_location: 4,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32,
+                            offset: 52,
+                            shader_location: 5,
                         },
                     ],
                 })],
@@ -133,7 +139,7 @@ impl GpuRenderer {
                 entry_point: Some("vs_main"),
                 compilation_options: Default::default(),
                 buffers: &[Some(wgpu::VertexBufferLayout {
-                    array_stride: 52,
+                    array_stride: 56,
                     step_mode: wgpu::VertexStepMode::Vertex,
                     attributes: &[
                         wgpu::VertexAttribute {
@@ -160,6 +166,11 @@ impl GpuRenderer {
                             format: wgpu::VertexFormat::Float32,
                             offset: 48,
                             shader_location: 4,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32,
+                            offset: 52,
+                            shader_location: 5,
                         },
                     ],
                 })],
@@ -189,11 +200,78 @@ impl GpuRenderer {
             multiview_mask: None,
             cache: None,
         });
+        let transparent_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("SpaceEyes transparent pipeline"),
+            layout: Some(&pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("vs_main"),
+                compilation_options: Default::default(),
+                buffers: &[Some(wgpu::VertexBufferLayout {
+                    array_stride: 56,
+                    step_mode: wgpu::VertexStepMode::Vertex,
+                    attributes: &[
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x4,
+                            offset: 0,
+                            shader_location: 0,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x3,
+                            offset: 16,
+                            shader_location: 1,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x3,
+                            offset: 28,
+                            shader_location: 2,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x2,
+                            offset: 40,
+                            shader_location: 3,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32,
+                            offset: 48,
+                            shader_location: 4,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32,
+                            offset: 52,
+                            shader_location: 5,
+                        },
+                    ],
+                })],
+            },
+            primitive: Default::default(),
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: wgpu::TextureFormat::Depth32Float,
+                depth_write_enabled: Some(false),
+                depth_compare: Some(wgpu::CompareFunction::LessEqual),
+                stencil: Default::default(),
+                bias: Default::default(),
+            }),
+            multisample: Default::default(),
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: Some("fs_main"),
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format,
+                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            multiview_mask: None,
+            cache: None,
+        });
         Self {
             device,
             queue,
             pipeline,
             line_pipeline,
+            transparent_pipeline,
             material_layout,
             adapter_name: String::new(),
         }
@@ -227,7 +305,7 @@ impl GpuRenderer {
             .and_then(|n| n.checked_add(mesh_vertices))
             .and_then(|n| n.checked_add(line_vertices))
             .ok_or(RenderError::Budget)?;
-        let vertex_bytes = u64::from(vertices.max(1)) * 52;
+        let vertex_bytes = u64::from(vertices.max(1)) * 56;
         if vertex_bytes > self.device.limits().max_buffer_size {
             return Err(RenderError::Budget);
         }
@@ -249,7 +327,7 @@ impl GpuRenderer {
         Ok((vertices, gpu_bytes, staging_bytes))
     }
     fn upload_frame(&self, frame: &PreparedFrame, vertices: u32) -> Result<GpuFrame, RenderError> {
-        let mut data = Vec::with_capacity(vertices as usize * 52);
+        let mut data = Vec::with_capacity(vertices as usize * 56);
         let assets = texture_assets(frame);
         let mut gpu_textures = vec![self.upload_texture(
             &TextureData::new(1, 1, vec![255; 4], ColorSpace::Linear).expect("white texel"),
@@ -259,6 +337,7 @@ impl GpuRenderer {
         }
         let mut bindings = vec![self.bind_texture(&gpu_textures[0], Sampling::default())];
         let mut batches = Vec::new();
+        let mut transparent_batches = Vec::new();
         let mut line_batches = Vec::new();
         let mut cursor = 0u32;
         let mut marker_material = DrawMaterial::plain([1.0, 0.5, 0.0]);
@@ -311,7 +390,11 @@ impl GpuRenderer {
                 }
                 let binding =
                     self.material_binding(&sphere.material, &assets, &gpu_textures, &mut bindings);
-                batches.push((start..cursor, binding));
+                if sphere.material.alpha < 1.0 {
+                    transparent_batches.push((start..cursor, binding));
+                } else {
+                    batches.push((start..cursor, binding));
+                }
             }
         }
         for draw in &frame.meshes {
@@ -336,7 +419,11 @@ impl GpuRenderer {
             }
             let binding =
                 self.material_binding(&draw.material, &assets, &gpu_textures, &mut bindings);
-            batches.push((start..cursor, binding));
+            if draw.material.alpha < 1.0 {
+                transparent_batches.push((start..cursor, binding));
+            } else {
+                batches.push((start..cursor, binding));
+            }
         }
         for line in &frame.lines {
             if line.points.len() < 2 {
@@ -362,7 +449,7 @@ impl GpuRenderer {
         }
         debug_assert_eq!(cursor, vertices);
         if data.is_empty() {
-            data.resize(52, 0);
+            data.resize(56, 0);
         }
         #[cfg(not(target_arch = "wasm32"))]
         let buffer = self
@@ -387,6 +474,7 @@ impl GpuRenderer {
             buffer,
             bindings,
             batches,
+            transparent_batches,
             line_batches,
         })
     }
@@ -426,6 +514,13 @@ impl GpuRenderer {
         if !draw.line_batches.is_empty() {
             pass.set_pipeline(&self.line_pipeline);
             for (range, binding) in &draw.line_batches {
+                pass.set_bind_group(0, &draw.bindings[*binding], &[]);
+                pass.draw(range.clone(), 0..1);
+            }
+        }
+        if !draw.transparent_batches.is_empty() {
+            pass.set_pipeline(&self.transparent_pipeline);
+            for (range, binding) in &draw.transparent_batches {
                 pass.set_bind_group(0, &draw.bindings[*binding], &[]);
                 pass.draw(range.clone(), 0..1);
             }
@@ -672,6 +767,8 @@ fn pack_vertex(
         .iter()
         .all(|c| c.is_finite() && (0.0..=1.0).contains(c))
         || !uv.iter().all(|v| v.is_finite())
+        || !material.alpha.is_finite()
+        || !(0.0..=1.0).contains(&material.alpha)
     {
         return Err(RenderError::InvalidFrame);
     }
@@ -681,6 +778,7 @@ fn pack_vertex(
         .chain(material.base_color)
         .chain(uv)
         .chain([if material.unlit { 1.0 } else { 0.0 }])
+        .chain([material.alpha])
     {
         data.extend_from_slice(&v.to_le_bytes());
     }
@@ -691,6 +789,7 @@ struct GpuFrame {
     buffer: wgpu::Buffer,
     bindings: Vec<wgpu::BindGroup>,
     batches: Vec<(std::ops::Range<u32>, usize)>,
+    transparent_batches: Vec<(std::ops::Range<u32>, usize)>,
     line_batches: Vec<(std::ops::Range<u32>, usize)>,
 }
 #[cfg(target_arch = "wasm32")]

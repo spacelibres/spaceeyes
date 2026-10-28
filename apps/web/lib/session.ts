@@ -131,6 +131,28 @@ export async function validateProjectFile(bytes: Uint8Array): Promise<boolean> {
     return false;
   }
 }
+/** Flat annulus in the planet's local XZ plane; display-only geometry. */
+function ringMesh(inner: number, outer: number, segments: number) {
+  const vertices = [];
+  const indices: number[] = [];
+  for (let index = 0; index <= segments; index += 1) {
+    const angle = (index / segments) * Math.PI * 2;
+    const x = Math.cos(angle);
+    const z = Math.sin(angle);
+    for (const radius of [inner, outer]) {
+      vertices.push({
+        positionM: { x: x * radius, y: 0, z: z * radius },
+        normal: { x: 0, y: 1, z: 0 },
+        uv: { x: index / segments, y: radius === inner ? 0 : 1 },
+      });
+    }
+  }
+  for (let index = 0; index < segments; index += 1) {
+    const a = index * 2;
+    indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+  }
+  return { vertices, indices };
+}
 /** Detect the DYN-backed scene from persisted provider labels. */
 function projectUsesDynamo(bytes: Uint8Array): boolean {
   try {
@@ -339,6 +361,18 @@ export class BrowserSession {
         revision = response.payload.value.frameGraphRevision;
       }
       this.solarLoader = await this.enableDynamo();
+      await this.command({
+        case: "resource",
+        value: {
+          action: {
+            case: "registerMesh",
+            value: {
+              resourceId: { value: "solar:saturn-ring" },
+              mesh: ringMesh(2.4, 3.9, 96),
+            },
+          },
+        },
+      });
     }
     const pixels = new Uint8Array(
       Array.from({ length: 16 }, (_, i) =>
@@ -497,6 +531,29 @@ export class BrowserSession {
                   visible: true,
                   lifecycle: ObjectLifecycle.ACTIVE,
                   camera: this.camera(0),
+                },
+              },
+            },
+          },
+          {
+            action: {
+              case: "create" as const,
+              value: {
+                object: {
+                  objectId: { value: "solar:saturn-ring" },
+                  frameId: { value: "solar:saturn" },
+                  visible: true,
+                  lifecycle: ObjectLifecycle.ACTIVE,
+                  mesh: {
+                    geometry: { value: "solar:saturn-ring" },
+                    material: {
+                      baseColor: { r: 0.82, g: 0.75, b: 0.6 },
+                      filter: SamplingFilter.NEAREST,
+                      address: SamplingAddress.CLAMP,
+                      unlit: true,
+                      alpha: 0.8,
+                    },
+                  },
                 },
               },
             },

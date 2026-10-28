@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 材质透明度与土星环（C13 切片）
+- `Material` 新增 0–1 的 `alpha`（默认 1），Proto `Material.alpha=6`；渲染新增透明管线（AlphaBlending、关闭深度写入、在 opaque/线之后绘制，顶点携带 alpha）。
+- 浏览器太阳系新增土星环网格对象 `solar:saturn-ring`（unlit、alpha=0.8）与中文名称。
+- 验证：scene 1 项材质、rendering GPU 透明混合+线图元、Web 10 项 Chromium（对象数≥21）通过。
+
+
 ### 核心线图元（C13 切片）
 - Scene 新增 `LinePrimitive`（2–4096 点、有限坐标、RGB）与 `SetLine`；渲染生成相机空间线段，不可拾取；GPU 新增 LineList 管线并共享材质布局与深度状态。
 - Proto 新增 `LinePrimitive`、`SetLine`、SceneObject.line=11；能力新增 `scene.set_line`（总数 40）。

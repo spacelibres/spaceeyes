@@ -177,6 +177,7 @@ export const SOLAR_NAMES: Readonly<Record<string, string>> = {
   "solar:mars": "火星",
   "solar:jupiter": "木星",
   "solar:saturn": "土星",
+  "solar:saturn-ring": "土星环",
   "solar:uranus": "天王星",
   "solar:neptune": "海王星",
 };

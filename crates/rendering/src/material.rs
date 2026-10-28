@@ -12,6 +12,7 @@ pub struct DrawMaterial {
     pub texture: Option<Arc<TextureData>>,
     pub sampling: Sampling,
     pub unlit: bool,
+    pub alpha: f32,
 }
 impl DrawMaterial {
     pub fn plain(base_color: [f32; 3]) -> Self {
@@ -20,6 +21,7 @@ impl DrawMaterial {
             texture: None,
             sampling: Default::default(),
             unlit: false,
+            alpha: 1.0,
         }
     }
     pub(crate) fn prepare(
@@ -28,6 +30,7 @@ impl DrawMaterial {
         texture: Option<&ResourceId>,
         sampling: Sampling,
         unlit: bool,
+        alpha: f32,
     ) -> Result<Self, RenderError> {
         let texture = texture
             .map(|id| {
@@ -44,6 +47,7 @@ impl DrawMaterial {
             texture,
             sampling,
             unlit,
+            alpha,
         })
     }
 }

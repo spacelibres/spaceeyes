@@ -696,12 +696,14 @@ pub fn decode_material(material: p::Material) -> Result<Material, ProtocolError>
         _ => return Err(ProtocolError::InvalidContext),
     };
     let color = material.base_color.ok_or(ProtocolError::MissingField)?;
+    let alpha = material.alpha.unwrap_or(1.0);
     Material::new(
         [color.r, color.g, color.b],
         material.texture.map(decode_resource_id).transpose()?,
         Sampling { filter, address },
         material.unlit,
     )
+    .and_then(|material| material.with_alpha(alpha))
     .map_err(|_| ProtocolError::InvalidContext)
 }
 pub fn encode_material(material: &Material) -> p::Material {
@@ -721,6 +723,7 @@ pub fn encode_material(material: &Material) -> p::Material {
             TextureAddress::Repeat => p::SamplingAddress::Repeat as i32,
         },
         unlit: material.unlit(),
+        alpha: (material.alpha() != 1.0).then_some(material.alpha()),
     }
 }
 

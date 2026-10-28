@@ -22,6 +22,6 @@ message MeshInstance { spaceeyes.core.v1.ResourceId geometry=1; ColorRgb base_co
 message Vector2f { float x=1; float y=2; }
 enum SamplingFilter { SAMPLING_FILTER_UNSPECIFIED=0; SAMPLING_FILTER_NEAREST=1; SAMPLING_FILTER_LINEAR=2; }
 enum SamplingAddress { SAMPLING_ADDRESS_UNSPECIFIED=0; SAMPLING_ADDRESS_CLAMP=1; SAMPLING_ADDRESS_REPEAT=2; }
-message Material { ColorRgb base_color=1; optional ResourceId texture=2; SamplingFilter filter=3; SamplingAddress address=4; bool unlit=5; }
+message Material { ColorRgb base_color=1; optional ResourceId texture=2; SamplingFilter filter=3; SamplingAddress address=4; bool unlit=5; optional float alpha=6; }
 enum TextureColorSpace { TEXTURE_COLOR_SPACE_UNSPECIFIED=0; TEXTURE_COLOR_SPACE_LINEAR=1; TEXTURE_COLOR_SPACE_SRGB=2; }
 message TextureData { uint32 width=1; uint32 height=2; bytes rgba8=3; TextureColorSpace color_space=4; }

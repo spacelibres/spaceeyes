@@ -119,3 +119,6 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 ## C13 核心线图元（0.0.1增量）
 Scene新增`LinePrimitive`（局部坐标2–4096点、有限坐标、RGB颜色），作为独立组件而非资源引用；`SceneCommand::SetLine`参与同一原子事务。快照随SceneObject携带线段；渲染准备阶段把点变换到相机空间并生成`LineDraw`，线对象不产生marker且不可拾取（没有可拾取表面）。GPU使用独立`LineList`管线、与三角形共享材质BindGroupLayout/深度状态，顶点预算与对象数上限一并计入；线段颜色按unlit纯色。Proto新增`LinePrimitive`、`SetLine`与SceneObject.line=11，能力新增`scene.set_line`（总数40）。
 尚未实现：线宽（固定1px）、虚线/衰减、可拾取线段、批量线资源与科学传播轨道。
+
+## C13 材质透明度与土星环（0.0.1增量）
+`Material`新增显示用`alpha`（默认1.0，0–1有限校验；不改变资源所有权或科学状态）。Proto `Material.alpha=6`为可选字段，缺省视为不透明；渲染Batches按alpha<1分流到透明管线，使用`ALPHA_BLENDING`且关闭深度写入，在opaque与线图元之后绘制；顶点 stride 由52扩展为56并携带alpha，shader输出alpha。透明对象暂按场景顺序绘制，尚未做逐对象深度排序。浏览器太阳系场景新增土星环：局部XZ平面环带网格（内2.4/外3.9，96段）、unlit米色alpha=0.8，对象`"solar:saturn-ring"`挂在土星参考系并显示名称“土星环”。

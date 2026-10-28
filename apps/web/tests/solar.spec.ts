@@ -69,7 +69,7 @@ test("solar scene loads provider samples through the host proxy", async ({
   });
   await expect
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
-    .toBeGreaterThanOrEqual(20);
+    .toBeGreaterThanOrEqual(21);
   await page.getByTestId("time-axis").fill("1");
   await expect
     .poll(async () => (await page.getByTestId("clock").textContent()) ?? "")
@@ -91,7 +91,7 @@ test("solar scene loads provider samples through the host proxy", async ({
   });
   await expect
     .poll(async () => Number(await page.getByTestId("objects").textContent()))
-    .toBeGreaterThanOrEqual(20);
+    .toBeGreaterThanOrEqual(21);
   await expect(page.getByText("太阳系星历")).toBeVisible();
   const tampered = new Uint8Array(project);
   tampered[tampered.length - 1] ^= 0xff;
