@@ -20,16 +20,19 @@ export interface PluginManifest {
 }
 export type Activate = (context: PluginContext) => void | Dispose | Promise<void | Dispose>;
 type Session = { controller: AbortController; live: boolean; disposers: Dispose[] };
-type Entry = { manifest: PluginManifest; activate: Activate; state: PluginStatus; busy: boolean; session?: Session };
+type Entry = { manifest: PluginManifest; activate: Activate; state: PluginStatus; busy: boolean; session?: Session; pending?: Promise<void> };
 const capabilities = new Set<string>(['data.publish', 'camera.control', 'time.control']);
 
 export class PluginHost {
   #entries = new Map<string, Entry>();
   #core: CorePort | undefined;
+  #closed = false;
+  #shutdownTask: Promise<void> | undefined;
 
   constructor(core?: CorePort) { this.#core = core; }
 
   register(manifest: PluginManifest, activate: Activate): void {
+    if (this.#closed) throw new Error('plugin host closed');
     if (!manifest || typeof manifest.id !== 'string' || !/^[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)+$/.test(manifest.id) ||
       manifest.apiVersion !== 1 || !Array.isArray(manifest.capabilities) ||
       !manifest.capabilities.every(value => capabilities.has(value)) ||
@@ -44,6 +47,15 @@ export class PluginHost {
   status(id: string): PluginStatus { return this.#entry(id).state; }
 
   async enable(id: string, approved: readonly Capability[]): Promise<void> {
+    if (this.#closed) throw new Error('plugin host closed');
+    const entry = this.#entry(id);
+    if (entry.busy) throw new Error('plugin lifecycle busy');
+    const operation = this.#enable(id, approved);
+    entry.pending = operation;
+    try { await operation; } finally { entry.pending = undefined; }
+  }
+
+  async #enable(id: string, approved: readonly Capability[]): Promise<void> {
     const entry = this.#entry(id);
     if (entry.busy) throw new Error('plugin lifecycle busy');
     if (entry.state === 'active') return;
@@ -58,7 +70,7 @@ export class PluginHost {
     const core = this.#core;
     if (core) session.disposers.push(() => core.releaseSession(sessionId));
     entry.session = session;
-    const live = () => { if (!session.live) throw new Error('plugin session inactive'); };
+    const live = () => { if (!session.live || this.#closed) throw new Error('plugin session inactive'); };
     const requireCapability = (capability: Capability) => {
       live();
       if (!entry.manifest.capabilities.includes(capability) || !granted.has(capability)) {
@@ -133,6 +145,14 @@ export class PluginHost {
   async disable(id: string): Promise<void> {
     const entry = this.#entry(id);
     if (entry.busy) throw new Error('plugin lifecycle busy');
+    const operation = this.#disable(id);
+    entry.pending = operation;
+    try { await operation; } finally { entry.pending = undefined; }
+  }
+
+  async #disable(id: string): Promise<void> {
+    const entry = this.#entry(id);
+    if (entry.busy) throw new Error('plugin lifecycle busy');
     if (!entry.session) return;
     entry.busy = true;
     entry.state = 'stopping';
@@ -148,6 +168,30 @@ export class PluginHost {
     const entry = this.#entries.get(id);
     if (!entry) throw new Error(`unknown plugin: ${id}`);
     return entry;
+  }
+
+  shutdown(): Promise<void> {
+    if (this.#shutdownTask) return this.#shutdownTask;
+    this.#closed = true;
+    this.#shutdownTask = this.#shutdown();
+    return this.#shutdownTask;
+  }
+
+  async #shutdown(): Promise<void> {
+    const pending: Promise<void>[] = [];
+    for (const entry of this.#entries.values()) {
+      if (entry.pending) pending.push(entry.pending);
+      if (entry.session) {
+        entry.session.live = false;
+        entry.session.controller.abort();
+      }
+    }
+    const completed = await Promise.allSettled(pending);
+    const errors = completed.flatMap(result => result.status === 'rejected' ? [result.reason] : []);
+    for (const id of this.#entries.keys()) {
+      try { await this.disable(id); } catch (error) { errors.push(error); }
+    }
+    if (errors.length) throw new AggregateError(errors, 'plugin host shutdown failed');
   }
 
   async #release(session: Session): Promise<unknown[]> {

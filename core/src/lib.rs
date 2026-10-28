@@ -1,6 +1,13 @@
 //! Core-owned lifecycle and object identity. No rendering or scientific computation here.
 use std::collections::{HashMap, HashSet};
+pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
+#[cfg(feature = "bevy-runtime")]
+mod runtime;
+#[cfg(feature = "bevy-runtime")]
+pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
 mod clock;
+#[cfg(feature = "browser-render")]
+mod renderer;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
@@ -20,6 +27,7 @@ pub enum CoreError {
     InvalidTime,
     OutsideCoverage,
     StaleState,
+    CapacityExceeded,
 }
 
 struct Session {
@@ -34,8 +42,27 @@ pub struct SessionPermissions {
     pub time_control: bool,
 }
 
+/// Configurable resource budgets, not a limit on the platform's scientific scope.
+#[derive(Debug, Clone, Copy)]
+pub struct CoreLimits {
+    pub active_sessions: usize,
+    pub session_history: usize,
+    pub objects: usize,
+}
+
+impl Default for CoreLimits {
+    fn default() -> Self {
+        Self {
+            active_sessions: 256,
+            session_history: 65_536,
+            objects: 100_000,
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct Core {
+    limits: CoreLimits,
     sessions: HashMap<String, Session>,
     // Retired session IDs stay invalid for this core instance's lifetime.
     used_sessions: HashSet<String>,
@@ -56,6 +83,15 @@ fn valid_id(id: &str) -> bool {
 }
 
 impl Core {
+    pub fn object_ids(&self) -> impl Iterator<Item = &str> {
+        self.objects.keys().map(String::as_str)
+    }
+    pub fn with_limits(limits: CoreLimits) -> Self {
+        Self {
+            limits,
+            ..Self::default()
+        }
+    }
     fn authorize(
         &self,
         session_id: &str,
@@ -89,6 +125,9 @@ impl Core {
             && owner != session_id
         {
             return Err(CoreError::WrongOwner);
+        }
+        if !self.objects.contains_key(object_id) && self.objects.len() >= self.limits.objects {
+            return Err(CoreError::CapacityExceeded);
         }
         self.objects
             .insert(object_id.to_owned(), session_id.to_owned());
@@ -213,9 +252,15 @@ impl Core {
         if !valid_id(id) || !valid_id(plugin_id) {
             return Err(CoreError::InvalidId);
         }
-        if !self.used_sessions.insert(id.to_owned()) {
+        if self.used_sessions.contains(id) {
             return Err(CoreError::DuplicateSession);
         }
+        if self.used_sessions.len() >= self.limits.session_history
+            || self.sessions.len() >= self.limits.active_sessions
+        {
+            return Err(CoreError::CapacityExceeded);
+        }
+        self.used_sessions.insert(id.to_owned());
         self.sessions.insert(
             id.to_owned(),
             Session {
@@ -236,6 +281,9 @@ impl Core {
         }
         if self.objects.contains_key(object_id) {
             return Err(CoreError::DuplicateObject);
+        }
+        if self.objects.len() >= self.limits.objects {
+            return Err(CoreError::CapacityExceeded);
         }
         self.objects
             .insert(object_id.to_owned(), session_id.to_owned());

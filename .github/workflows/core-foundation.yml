@@ -20,4 +20,4 @@ jobs:
       - run: npm ci --prefix platform --ignore-scripts
       - name: Core and real WASM integration
         shell: pwsh
-        run: ./tools/check-core.ps1
+        run: ./tools/check-core.ps1 -Renderer

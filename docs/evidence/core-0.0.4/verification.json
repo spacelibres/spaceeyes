@@ -1,0 +1,19 @@
+{
+  "version": "0.0.4",
+  "capturedAt": "2026-10-28T09:01:26.5656071Z",
+  "browserBackend": "WebGL2 / ANGLE / Intel Arc B390",
+  "browserScope": "synthetic geometry, focus, zoom, orbit, play/pause, session removal",
+  "wasmSha256": "34435f40ab9dc04bae6fbd43c39ee44d35187feae3b2aaedfc09b623f5a05f92",
+  "typescriptTests": 22,
+  "rustTests": 10,
+  "resourceSamples": 7,
+  "wasmBytes": 136747913,
+  "realWasmTests": 2,
+  "limits": [
+    "reload reliability unresolved",
+    "WebGPU untested",
+    "GPU memory disposal not quantified",
+    "NASA assets/effects not integrated"
+  ],
+  "command": "pwsh -File tools/check-core.ps1 -Renderer -Samples validation/.cache"
+}

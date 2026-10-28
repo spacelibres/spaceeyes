@@ -1,0 +1,77 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Core browser verification fixture</title>
+<p>Technical verification only: synthetic sphere, not a NASA Eyes scene.</p>
+<button id="start">Start renderer</button>
+<button id="play" disabled>Play fixture time</button>
+<button id="remove" disabled>Release fixture session</button>
+<button id="stop" disabled>Stop renderer</button>
+<pre id="status">Loading WASM module</pre>
+<div style="width:800px;height:600px"><canvas id="core-canvas"></canvas></div>
+<script type="module">
+import init, { WasmCore } from '/spaceeyes_core.js';
+const status = document.querySelector('#status');
+const start = document.querySelector('#start');
+const play = document.querySelector('#play');
+const remove = document.querySelector('#remove');
+const stop = document.querySelector('#stop');
+let failed = false;
+window.addEventListener('error', event => { failed = true; status.textContent = `ERROR: ${event.message}`; });
+window.addEventListener('unhandledrejection', event => { failed = true; status.textContent = `ERROR: ${String(event.reason)}`; });
+await init();
+status.textContent = 'WASM loaded; renderer not started';
+const core = new WasmCore();
+let active = false, frameId, lastTime;
+const reportError = error => { failed = true; status.textContent = `ERROR: ${String(error)}`; };
+function publishFixture(epoch) {
+  core.publish_object('browser-fixture', 'verification.fixture', 'fixture:sphere', JSON.stringify({
+    positionKm: [1e12, 0, 0], radiusKm: 1000, epochTdbSeconds: epoch,
+    coverageTdbSeconds: [0, 1e9], frame: 'ICRF', source: 'synthetic browser verification',
+  }));
+}
+function frame(now) {
+  if (!active || failed) return;
+  try {
+    core.tick(lastTime === undefined ? 0 : (now - lastTime) / 1000);
+    lastTime = now;
+    const epoch = core.epoch();
+    publishFixture(epoch);
+    status.textContent = `Core TDB seconds: ${epoch.toFixed(3)} | playing: ${core.playing()}`;
+    frameId = requestAnimationFrame(frame);
+  } catch (error) { reportError(error); }
+}
+start.onclick = () => {
+  start.disabled = true;
+  core.open_session('browser-fixture', 'verification.fixture', true, true, true);
+  publishFixture(0);
+  core.focus('browser-fixture', 'verification.fixture', 'fixture:sphere');
+  remove.disabled = false;
+  stop.disabled = false;
+  play.disabled = false;
+  active = true;
+  status.textContent = 'Starting Bevy; inspect the canvas for the lit sphere';
+  core.start_renderer('#core-canvas');
+  frameId = requestAnimationFrame(frame);
+};
+play.onclick = () => {
+  core.set_playback('browser-fixture', 'verification.fixture', !core.playing(), 1);
+  play.textContent = core.playing() ? 'Pause fixture time' : 'Play fixture time';
+};
+remove.onclick = () => {
+  active = false;
+  cancelAnimationFrame(frameId);
+  core.release_session('browser-fixture');
+  remove.disabled = true;
+  play.disabled = true;
+  status.textContent = 'Session released; sphere must disappear';
+};
+stop.onclick = () => {
+  active = false;
+  cancelAnimationFrame(frameId);
+  core.stop_renderer();
+  stop.disabled = true;
+  play.disabled = true;
+  status.textContent = 'Renderer stop requested';
+};
+window.addEventListener('pagehide', () => { active = false; cancelAnimationFrame(frameId); core.stop_renderer(); core.free(); });
+</script>

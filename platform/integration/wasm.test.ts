@@ -24,7 +24,7 @@ test('TS plugin drives real Rust WASM state, clock, focus and session cleanup', 
     core.tick(1);
     assert.equal(core.epoch(), 2);
     assert.throws(() => core.state_at('body:test', 2), /StaleState/);
-    await host.disable('integration.source');
+    await host.shutdown();
     assert.equal(core.focused_object(), undefined);
     assert.equal(core.playing(), false);
     assert.throws(() => core.state_at('body:test', 0), /UnknownObject/);

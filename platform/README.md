@@ -16,4 +16,6 @@ node --test platform/tests/*.test.ts
 
 已提供 `data.publish/remove` 和 `time.seek/setPlayback`。`WasmCorePort` 将调用转发到实际 Rust WASM；核心再次验证权限和归属。运行集中验证见 `core/README.md`，跨语言测试位于 `integration/wasm.test.ts`。
 
-尚无真实 Bevy 显示、Next.js 页面、市场或不可信代码隔离；不能据此宣称画面已可控制。`CorePort` 为内部接口，不决定最终 Proto 或其他传输协议。
+已接入基础 Bevy 显示与浏览器验证，见 `core/README.md`。`host.shutdown()` 先撤销并中止全部会话、等待在途启停，再尝试清理所有插件；失败聚合上报，重复关闭不会重复清理。关闭后禁止注册和启用。忽略取消信号、永不结束的同进程激活仍可能阻塞关闭，不应将其当作沙箱终止能力。
+
+Next.js 页面、真实 NASA 资源效果、市场和不可信代码隔离仍未实现。`CorePort` 为内部接口，不决定最终 Proto 或其他传输协议。

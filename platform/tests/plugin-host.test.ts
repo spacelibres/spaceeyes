@@ -132,3 +132,38 @@ test('camera SDK refuses undeclared authority and absent core adapters', async (
   assert.throws(() => context.camera.focus('body:saturn'), /unavailable/);
   await detached.disable('example.detached');
 });
+
+test('host shutdown cleans all plugins, continues after failures and closes registration', async () => {
+  const host = new PluginHost();
+  const cleaned: string[] = [];
+  host.register({ id: 'one.plugin', apiVersion: 1, capabilities: [] }, () => () => { cleaned.push('one'); throw new Error('failed cleanup'); });
+  host.register({ id: 'two.plugin', apiVersion: 1, capabilities: [] }, () => () => { cleaned.push('two'); });
+  await host.enable('one.plugin', []);
+  await host.enable('two.plugin', []);
+  await assert.rejects(host.shutdown(), /shutdown/);
+  assert.deepEqual(cleaned, ['one', 'two']);
+  await assert.rejects(host.enable('two.plugin', []), /closed/);
+  assert.throws(() => host.register({ id: 'three.plugin', apiVersion: 1, capabilities: [] }, () => {}), /closed/);
+  await assert.rejects(host.shutdown(), /shutdown/);
+  assert.deepEqual(cleaned, ['one', 'two']);
+});
+
+test('shutdown invalidates and drains pending activation before releasing its core session', async () => {
+  let finish!: () => void;
+  let sdk!: PluginContext;
+  let cleaned = 0;
+  const host = new PluginHost();
+  host.register({ id: 'async.plugin', apiVersion: 1, capabilities: [] }, async context => {
+    sdk = context;
+    await new Promise<void>(resolve => { finish = resolve; });
+    return () => { cleaned++; };
+  });
+  const activation = host.enable('async.plugin', []);
+  const shutdown = host.shutdown();
+  assert.equal(sdk.signal.aborted, true);
+  finish();
+  await activation;
+  await shutdown;
+  assert.equal(cleaned, 1);
+  assert.equal(host.status('async.plugin'), 'disabled');
+});
