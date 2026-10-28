@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/rendering.proto.
  */
 export const file_spaceeyes_core_v1_rendering: GenFile = /*@__PURE__*/
-  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZW5kZXJpbmcucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxIlQKFVBlcnNwZWN0aXZlUHJvamVjdGlvbhIcChR2ZXJ0aWNhbF9mb3ZfcmFkaWFucxgBIAEoARIOCgZuZWFyX20YAiABKAESDQoFZmFyX20YAyABKAEiTgoWT3J0aG9ncmFwaGljUHJvamVjdGlvbhIVCg1oYWxmX2hlaWdodF9tGAEgASgBEg4KBm5lYXJfbRgCIAEoARINCgVmYXJfbRgDIAEoASKYAQoKUHJvamVjdGlvbhI/CgtwZXJzcGVjdGl2ZRgBIAEoCzIoLnNwYWNlZXllcy5jb3JlLnYxLlBlcnNwZWN0aXZlUHJvamVjdGlvbkgAEkEKDG9ydGhvZ3JhcGhpYxgCIAEoCzIpLnNwYWNlZXllcy5jb3JlLnYxLk9ydGhvZ3JhcGhpY1Byb2plY3Rpb25IAEIGCgRraW5kItsBCgtDYW1lcmFTdGF0ZRIvCgpwb3NpdGlvbl9tGAQgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSMwoLb3JpZW50YXRpb24YBSABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5RdWF0ZXJuaW9uZBIxCgpwcm9qZWN0aW9uGAYgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUHJvamVjdGlvbhIzCgh0cmFja2luZxgHIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVRyYWNraW5nIlEKDkNhbWVyYVRyYWNraW5nEisKBnRhcmdldBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEhIKCmRpc3RhbmNlX20YAiABKAEiKwoIQ29sb3JSZ2ISCQoBchgBIAEoAhIJCgFnGAIgASgCEgkKAWIYAyABKAIilQEKD1NwaGVyZVByaW1pdGl2ZRIQCghyYWRpdXNfbRgBIAEoARIvCgpiYXNlX2NvbG9yGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuQ29sb3JSZ2ISMgoIbWF0ZXJpYWwYAyABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5NYXRlcmlhbEgAiAEBQgsKCV9tYXRlcmlhbCKfAQoKTWVzaFZlcnRleBIvCgpwb3NpdGlvbl9tGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSKwoGbm9ybWFsGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSLAoCdXYYAyABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5WZWN0b3IyZkgAiAEBQgUKA191diJQCgxUcmlhbmdsZU1lc2gSLwoIdmVydGljZXMYASADKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5NZXNoVmVydGV4Eg8KB2luZGljZXMYAiADKA0isQEKDE1lc2hJbnN0YW5jZRIvCghnZW9tZXRyeRgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSLwoKYmFzZV9jb2xvchgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLkNvbG9yUmdiEjIKCG1hdGVyaWFsGAMgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuTWF0ZXJpYWxIAIgBAUILCglfbWF0ZXJpYWwiIAoIVmVjdG9yMmYSCQoBeBgBIAEoAhIJCgF5GAIgASgCIvMBCghNYXRlcmlhbBIvCgpiYXNlX2NvbG9yGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuQ29sb3JSZ2ISMwoHdGV4dHVyZRgCIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWRIAIgBARIxCgZmaWx0ZXIYAyABKA4yIS5zcGFjZWV5ZXMuY29yZS52MS5TYW1wbGluZ0ZpbHRlchIzCgdhZGRyZXNzGAQgASgOMiIuc3BhY2VleWVzLmNvcmUudjEuU2FtcGxpbmdBZGRyZXNzEg0KBXVubGl0GAUgASgIQgoKCF90ZXh0dXJlInYKC1RleHR1cmVEYXRhEg0KBXdpZHRoGAEgASgNEg4KBmhlaWdodBgCIAEoDRINCgVyZ2JhOBgDIAEoDBI5Cgtjb2xvcl9zcGFjZRgEIAEoDjIkLnNwYWNlZXllcy5jb3JlLnYxLlRleHR1cmVDb2xvclNwYWNlKmoKDlNhbXBsaW5nRmlsdGVyEh8KG1NBTVBMSU5HX0ZJTFRFUl9VTlNQRUNJRklFRBAAEhsKF1NBTVBMSU5HX0ZJTFRFUl9ORUFSRVNUEAESGgoWU0FNUExJTkdfRklMVEVSX0xJTkVBUhACKmwKD1NhbXBsaW5nQWRkcmVzcxIgChxTQU1QTElOR19BRERSRVNTX1VOU1BFQ0lGSUVEEAASGgoWU0FNUExJTkdfQUREUkVTU19DTEFNUBABEhsKF1NBTVBMSU5HX0FERFJFU1NfUkVQRUFUEAIqdgoRVGV4dHVyZUNvbG9yU3BhY2USIwofVEVYVFVSRV9DT0xPUl9TUEFDRV9VTlNQRUNJRklFRBAAEh4KGlRFWFRVUkVfQ09MT1JfU1BBQ0VfTElORUFSEAESHAoYVEVYVFVSRV9DT0xPUl9TUEFDRV9TUkdCEAJiBnByb3RvMw", [file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_common]);
+  fileDesc("CiFzcGFjZWV5ZXMvY29yZS92MS9yZW5kZXJpbmcucHJvdG8SEXNwYWNlZXllcy5jb3JlLnYxIlQKFVBlcnNwZWN0aXZlUHJvamVjdGlvbhIcChR2ZXJ0aWNhbF9mb3ZfcmFkaWFucxgBIAEoARIOCgZuZWFyX20YAiABKAESDQoFZmFyX20YAyABKAEiTgoWT3J0aG9ncmFwaGljUHJvamVjdGlvbhIVCg1oYWxmX2hlaWdodF9tGAEgASgBEg4KBm5lYXJfbRgCIAEoARINCgVmYXJfbRgDIAEoASKYAQoKUHJvamVjdGlvbhI/CgtwZXJzcGVjdGl2ZRgBIAEoCzIoLnNwYWNlZXllcy5jb3JlLnYxLlBlcnNwZWN0aXZlUHJvamVjdGlvbkgAEkEKDG9ydGhvZ3JhcGhpYxgCIAEoCzIpLnNwYWNlZXllcy5jb3JlLnYxLk9ydGhvZ3JhcGhpY1Byb2plY3Rpb25IAEIGCgRraW5kItsBCgtDYW1lcmFTdGF0ZRIvCgpwb3NpdGlvbl9tGAQgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSMwoLb3JpZW50YXRpb24YBSABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5RdWF0ZXJuaW9uZBIxCgpwcm9qZWN0aW9uGAYgASgLMh0uc3BhY2VleWVzLmNvcmUudjEuUHJvamVjdGlvbhIzCgh0cmFja2luZxgHIAEoCzIhLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVRyYWNraW5nIlEKDkNhbWVyYVRyYWNraW5nEisKBnRhcmdldBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEhIKCmRpc3RhbmNlX20YAiABKAEiKwoIQ29sb3JSZ2ISCQoBchgBIAEoAhIJCgFnGAIgASgCEgkKAWIYAyABKAIiagoNTGluZVByaW1pdGl2ZRItCghwb2ludHNfbRgBIAMoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlZlY3RvcjNkEioKBWNvbG9yGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuQ29sb3JSZ2IilQEKD1NwaGVyZVByaW1pdGl2ZRIQCghyYWRpdXNfbRgBIAEoARIvCgpiYXNlX2NvbG9yGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuQ29sb3JSZ2ISMgoIbWF0ZXJpYWwYAyABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5NYXRlcmlhbEgAiAEBQgsKCV9tYXRlcmlhbCKfAQoKTWVzaFZlcnRleBIvCgpwb3NpdGlvbl9tGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSKwoGbm9ybWFsGAIgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuVmVjdG9yM2QSLAoCdXYYAyABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5WZWN0b3IyZkgAiAEBQgUKA191diJQCgxUcmlhbmdsZU1lc2gSLwoIdmVydGljZXMYASADKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5NZXNoVmVydGV4Eg8KB2luZGljZXMYAiADKA0isQEKDE1lc2hJbnN0YW5jZRIvCghnZW9tZXRyeRgBIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWQSLwoKYmFzZV9jb2xvchgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLkNvbG9yUmdiEjIKCG1hdGVyaWFsGAMgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuTWF0ZXJpYWxIAIgBAUILCglfbWF0ZXJpYWwiIAoIVmVjdG9yMmYSCQoBeBgBIAEoAhIJCgF5GAIgASgCIvMBCghNYXRlcmlhbBIvCgpiYXNlX2NvbG9yGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuQ29sb3JSZ2ISMwoHdGV4dHVyZRgCIAEoCzIdLnNwYWNlZXllcy5jb3JlLnYxLlJlc291cmNlSWRIAIgBARIxCgZmaWx0ZXIYAyABKA4yIS5zcGFjZWV5ZXMuY29yZS52MS5TYW1wbGluZ0ZpbHRlchIzCgdhZGRyZXNzGAQgASgOMiIuc3BhY2VleWVzLmNvcmUudjEuU2FtcGxpbmdBZGRyZXNzEg0KBXVubGl0GAUgASgIQgoKCF90ZXh0dXJlInYKC1RleHR1cmVEYXRhEg0KBXdpZHRoGAEgASgNEg4KBmhlaWdodBgCIAEoDRINCgVyZ2JhOBgDIAEoDBI5Cgtjb2xvcl9zcGFjZRgEIAEoDjIkLnNwYWNlZXllcy5jb3JlLnYxLlRleHR1cmVDb2xvclNwYWNlKmoKDlNhbXBsaW5nRmlsdGVyEh8KG1NBTVBMSU5HX0ZJTFRFUl9VTlNQRUNJRklFRBAAEhsKF1NBTVBMSU5HX0ZJTFRFUl9ORUFSRVNUEAESGgoWU0FNUExJTkdfRklMVEVSX0xJTkVBUhACKmwKD1NhbXBsaW5nQWRkcmVzcxIgChxTQU1QTElOR19BRERSRVNTX1VOU1BFQ0lGSUVEEAASGgoWU0FNUExJTkdfQUREUkVTU19DTEFNUBABEhsKF1NBTVBMSU5HX0FERFJFU1NfUkVQRUFUEAIqdgoRVGV4dHVyZUNvbG9yU3BhY2USIwofVEVYVFVSRV9DT0xPUl9TUEFDRV9VTlNQRUNJRklFRBAAEh4KGlRFWFRVUkVfQ09MT1JfU1BBQ0VfTElORUFSEAESHAoYVEVYVFVSRV9DT0xPUl9TUEFDRV9TUkdCEAJiBnByb3RvMw", [file_spaceeyes_core_v1_spatial, file_spaceeyes_core_v1_common]);
 
 /**
  * @generated from message spaceeyes.core.v1.PerspectiveProjection
@@ -188,6 +188,30 @@ export const ColorRgbSchema: GenMessage<ColorRgb> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_rendering, 5);
 
 /**
+ * Solid-colour local-frame polyline; not pickable and not textured.
+ *
+ * @generated from message spaceeyes.core.v1.LinePrimitive
+ */
+export type LinePrimitive = Message<"spaceeyes.core.v1.LinePrimitive"> & {
+  /**
+   * @generated from field: repeated spaceeyes.core.v1.Vector3d points_m = 1;
+   */
+  pointsM: Vector3d[];
+
+  /**
+   * @generated from field: spaceeyes.core.v1.ColorRgb color = 2;
+   */
+  color?: ColorRgb | undefined;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.LinePrimitive.
+ * Use `create(LinePrimitiveSchema)` to create a new message.
+ */
+export const LinePrimitiveSchema: GenMessage<LinePrimitive> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_rendering, 6);
+
+/**
  * @generated from message spaceeyes.core.v1.SpherePrimitive
  */
 export type SpherePrimitive = Message<"spaceeyes.core.v1.SpherePrimitive"> & {
@@ -212,7 +236,7 @@ export type SpherePrimitive = Message<"spaceeyes.core.v1.SpherePrimitive"> & {
  * Use `create(SpherePrimitiveSchema)` to create a new message.
  */
 export const SpherePrimitiveSchema: GenMessage<SpherePrimitive> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 6);
+  messageDesc(file_spaceeyes_core_v1_rendering, 7);
 
 /**
  * @generated from message spaceeyes.core.v1.MeshVertex
@@ -239,7 +263,7 @@ export type MeshVertex = Message<"spaceeyes.core.v1.MeshVertex"> & {
  * Use `create(MeshVertexSchema)` to create a new message.
  */
 export const MeshVertexSchema: GenMessage<MeshVertex> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 7);
+  messageDesc(file_spaceeyes_core_v1_rendering, 8);
 
 /**
  * @generated from message spaceeyes.core.v1.TriangleMesh
@@ -261,7 +285,7 @@ export type TriangleMesh = Message<"spaceeyes.core.v1.TriangleMesh"> & {
  * Use `create(TriangleMeshSchema)` to create a new message.
  */
 export const TriangleMeshSchema: GenMessage<TriangleMesh> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 8);
+  messageDesc(file_spaceeyes_core_v1_rendering, 9);
 
 /**
  * @generated from message spaceeyes.core.v1.MeshInstance
@@ -288,7 +312,7 @@ export type MeshInstance = Message<"spaceeyes.core.v1.MeshInstance"> & {
  * Use `create(MeshInstanceSchema)` to create a new message.
  */
 export const MeshInstanceSchema: GenMessage<MeshInstance> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 9);
+  messageDesc(file_spaceeyes_core_v1_rendering, 10);
 
 /**
  * @generated from message spaceeyes.core.v1.Vector2f
@@ -310,7 +334,7 @@ export type Vector2f = Message<"spaceeyes.core.v1.Vector2f"> & {
  * Use `create(Vector2fSchema)` to create a new message.
  */
 export const Vector2fSchema: GenMessage<Vector2f> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 10);
+  messageDesc(file_spaceeyes_core_v1_rendering, 11);
 
 /**
  * @generated from message spaceeyes.core.v1.Material
@@ -347,7 +371,7 @@ export type Material = Message<"spaceeyes.core.v1.Material"> & {
  * Use `create(MaterialSchema)` to create a new message.
  */
 export const MaterialSchema: GenMessage<Material> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 11);
+  messageDesc(file_spaceeyes_core_v1_rendering, 12);
 
 /**
  * @generated from message spaceeyes.core.v1.TextureData
@@ -379,7 +403,7 @@ export type TextureData = Message<"spaceeyes.core.v1.TextureData"> & {
  * Use `create(TextureDataSchema)` to create a new message.
  */
 export const TextureDataSchema: GenMessage<TextureData> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_rendering, 12);
+  messageDesc(file_spaceeyes_core_v1_rendering, 13);
 
 /**
  * @generated from enum spaceeyes.core.v1.SamplingFilter

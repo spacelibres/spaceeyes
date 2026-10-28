@@ -995,6 +995,7 @@ impl Engine {
                 | SceneCommand::SetResources { object, .. }
                 | SceneCommand::SetFrame { object, .. }
                 | SceneCommand::SetVisibility { object, .. }
+                | SceneCommand::SetLine { object, .. }
                 | SceneCommand::Delete { object } => (object, None),
             };
             if !handles.contains_key(object)

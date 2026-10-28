@@ -5,6 +5,12 @@
 ## [0.0.1] — 2026-10-27
 
 
+### 核心线图元（C13 切片）
+- Scene 新增 `LinePrimitive`（2–4096 点、有限坐标、RGB）与 `SetLine`；渲染生成相机空间线段，不可拾取；GPU 新增 LineList 管线并共享材质布局与深度状态。
+- Proto 新增 `LinePrimitive`、`SetLine`、SceneObject.line=11；能力新增 `scene.set_line`（总数 40）。
+- 验证：scene 2 项、rendering CPU+GPU 真实像素、protocol-adapter 线往返边界测试通过。
+
+
 ### 权限扩大重授（P03/P08 切片）
 - `PluginHost.expandGrant` 仅在插件停用时可用；请求必须是现有授权的超集，每项仍受宿主策略与上限约束，拒绝时保留原授权。
 - 成功后需重新启用；撤权插件拒绝扩大；仍为同进程宿主，不构成沙箱隔离。

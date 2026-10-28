@@ -13,6 +13,8 @@ pub struct GpuRenderer {
     device: wgpu::Device,
     queue: wgpu::Queue,
     pipeline: wgpu::RenderPipeline,
+    line_pipeline: wgpu::RenderPipeline,
+    material_layout: wgpu::BindGroupLayout,
     pub adapter_name: String,
 }
 impl GpuRenderer {
@@ -36,9 +38,35 @@ impl GpuRenderer {
             label: Some("SpaceEyes opaque geometry"),
             source: wgpu::ShaderSource::Wgsl(include_str!("opaque.wgsl").into()),
         });
+        let material_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("SpaceEyes material layout"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
+        });
+        let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+            label: Some("SpaceEyes pipeline layout"),
+            bind_group_layouts: &[Some(&material_layout)],
+            immediate_size: 0,
+        });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("SpaceEyes depth-tested opaque pipeline"),
-            layout: None,
+            layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Some("vs_main"),
@@ -97,10 +125,76 @@ impl GpuRenderer {
             multiview_mask: None,
             cache: None,
         });
+        let line_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+            label: Some("SpaceEyes depth-tested line pipeline"),
+            layout: Some(&pipeline_layout),
+            vertex: wgpu::VertexState {
+                module: &shader,
+                entry_point: Some("vs_main"),
+                compilation_options: Default::default(),
+                buffers: &[Some(wgpu::VertexBufferLayout {
+                    array_stride: 52,
+                    step_mode: wgpu::VertexStepMode::Vertex,
+                    attributes: &[
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x4,
+                            offset: 0,
+                            shader_location: 0,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x3,
+                            offset: 16,
+                            shader_location: 1,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x3,
+                            offset: 28,
+                            shader_location: 2,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32x2,
+                            offset: 40,
+                            shader_location: 3,
+                        },
+                        wgpu::VertexAttribute {
+                            format: wgpu::VertexFormat::Float32,
+                            offset: 48,
+                            shader_location: 4,
+                        },
+                    ],
+                })],
+            },
+            primitive: wgpu::PrimitiveState {
+                topology: wgpu::PrimitiveTopology::LineList,
+                ..Default::default()
+            },
+            depth_stencil: Some(wgpu::DepthStencilState {
+                format: wgpu::TextureFormat::Depth32Float,
+                depth_write_enabled: Some(true),
+                depth_compare: Some(wgpu::CompareFunction::LessEqual),
+                stencil: Default::default(),
+                bias: Default::default(),
+            }),
+            multisample: Default::default(),
+            fragment: Some(wgpu::FragmentState {
+                module: &shader,
+                entry_point: Some("fs_main"),
+                compilation_options: Default::default(),
+                targets: &[Some(wgpu::ColorTargetState {
+                    format,
+                    blend: None,
+                    write_mask: wgpu::ColorWrites::ALL,
+                })],
+            }),
+            multiview_mask: None,
+            cache: None,
+        });
         Self {
             device,
             queue,
             pipeline,
+            line_pipeline,
+            material_layout,
             adapter_name: String::new(),
         }
     }
@@ -120,15 +214,24 @@ impl GpuRenderer {
                 n.checked_add(u32::try_from(draw.geometry.indices().len()).ok()?)
             })
             .ok_or(RenderError::Budget)?;
+        let line_vertices = frame
+            .lines
+            .iter()
+            .try_fold(0u32, |n, line| {
+                let segments = u32::try_from(line.points.len().saturating_sub(1)).ok()?;
+                n.checked_add(segments.checked_mul(2)?)
+            })
+            .ok_or(RenderError::Budget)?;
         let vertices = marker_vertices
             .checked_add(sphere_vertices)
             .and_then(|n| n.checked_add(mesh_vertices))
+            .and_then(|n| n.checked_add(line_vertices))
             .ok_or(RenderError::Budget)?;
         let vertex_bytes = u64::from(vertices.max(1)) * 52;
         if vertex_bytes > self.device.limits().max_buffer_size {
             return Err(RenderError::Budget);
         }
-        if frame.spheres.len() + frame.meshes.len() > 4096 {
+        if frame.spheres.len() + frame.meshes.len() + frame.lines.len() > 4096 {
             return Err(RenderError::Budget);
         }
         let texture_bytes = texture_assets(frame)
@@ -156,6 +259,7 @@ impl GpuRenderer {
         }
         let mut bindings = vec![self.bind_texture(&gpu_textures[0], Sampling::default())];
         let mut batches = Vec::new();
+        let mut line_batches = Vec::new();
         let mut cursor = 0u32;
         let mut marker_material = DrawMaterial::plain([1.0, 0.5, 0.0]);
         marker_material.unlit = true;
@@ -234,6 +338,28 @@ impl GpuRenderer {
                 self.material_binding(&draw.material, &assets, &gpu_textures, &mut bindings);
             batches.push((start..cursor, binding));
         }
+        for line in &frame.lines {
+            if line.points.len() < 2 {
+                continue;
+            }
+            let start = cursor;
+            let mut material = crate::DrawMaterial::plain(line.color);
+            material.unlit = true;
+            for pair in line.points.windows(2) {
+                for point in pair {
+                    pack_vertex(
+                        &mut data,
+                        frame.projection.clip(*point)?,
+                        [0.0; 3],
+                        [0.0; 2],
+                        &material,
+                    )?;
+                    cursor += 1;
+                }
+            }
+            let binding = self.material_binding(&material, &assets, &gpu_textures, &mut bindings);
+            line_batches.push((start..cursor, binding));
+        }
         debug_assert_eq!(cursor, vertices);
         if data.is_empty() {
             data.resize(52, 0);
@@ -261,6 +387,7 @@ impl GpuRenderer {
             buffer,
             bindings,
             batches,
+            line_batches,
         })
     }
     fn encode_frame(
@@ -295,6 +422,13 @@ impl GpuRenderer {
         for (range, binding) in &draw.batches {
             pass.set_bind_group(0, &draw.bindings[*binding], &[]);
             pass.draw(range.clone(), 0..1);
+        }
+        if !draw.line_batches.is_empty() {
+            pass.set_pipeline(&self.line_pipeline);
+            for (range, binding) in &draw.line_batches {
+                pass.set_bind_group(0, &draw.bindings[*binding], &[]);
+                pass.draw(range.clone(), 0..1);
+            }
         }
     }
     /// Native readback path; browser presentation needs its async surface adapter.
@@ -474,7 +608,7 @@ impl GpuRenderer {
         });
         self.device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("frame material binding"),
-            layout: &self.pipeline.get_bind_group_layout(0),
+            layout: &self.material_layout,
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
@@ -557,6 +691,7 @@ struct GpuFrame {
     buffer: wgpu::Buffer,
     bindings: Vec<wgpu::BindGroup>,
     batches: Vec<(std::ops::Range<u32>, usize)>,
+    line_batches: Vec<(std::ops::Range<u32>, usize)>,
 }
 #[cfg(target_arch = "wasm32")]
 mod surface;

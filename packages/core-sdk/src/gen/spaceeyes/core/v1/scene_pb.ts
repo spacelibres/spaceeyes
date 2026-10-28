@@ -11,7 +11,7 @@ import type { FrameId, ObjectId, ResourceId } from "./common_pb.js";
 import { file_spaceeyes_core_v1_common } from "./common_pb.js";
 import type { TimeInstant } from "./time_pb.js";
 import { file_spaceeyes_core_v1_time } from "./time_pb.js";
-import type { CameraState, MeshInstance, SpherePrimitive } from "./rendering_pb.js";
+import type { CameraState, LinePrimitive, MeshInstance, SpherePrimitive } from "./rendering_pb.js";
 import { file_spaceeyes_core_v1_rendering } from "./rendering_pb.js";
 import type { Message } from "@bufbuild/protobuf";
 
@@ -19,7 +19,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file spaceeyes/core/v1/scene.proto.
  */
 export const file_spaceeyes_core_v1_scene: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zcGFjZWV5ZXMvY29yZS92MS9zY2VuZS5wcm90bxIRc3BhY2VleWVzLmNvcmUudjEijwQKC1NjZW5lT2JqZWN0Ei4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEjMKCXBhcmVudF9pZBgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkSACIAQESMQoIZnJhbWVfaWQYAyABKAsyGi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZUlkSAGIAQESDwoHdmlzaWJsZRgEIAEoCBI1CglsaWZlY3ljbGUYBSABKA4yIi5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RMaWZlY3ljbGUSMAoJcmVzb3VyY2VzGAYgAygLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBISCgp1bnJlc29sdmVkGAcgASgIEjMKBmNhbWVyYRgIIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVN0YXRlSAKIAQESNwoGc3BoZXJlGAkgASgLMiIuc3BhY2VleWVzLmNvcmUudjEuU3BoZXJlUHJpbWl0aXZlSAOIAQESMgoEbWVzaBgKIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLk1lc2hJbnN0YW5jZUgEiAEBQgwKCl9wYXJlbnRfaWRCCwoJX2ZyYW1lX2lkQgkKB19jYW1lcmFCCQoHX3NwaGVyZUIHCgVfbWVzaCI+CgxDcmVhdGVPYmplY3QSLgoGb2JqZWN0GAEgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuU2NlbmVPYmplY3QiPgoMUmVtb3ZlT2JqZWN0Ei4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkIn4KCVNldFBhcmVudBIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIzCglwYXJlbnRfaWQYAiABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZEgAiAEBQgwKCl9wYXJlbnRfaWQiUAoNU2V0VmlzaWJpbGl0eRIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIPCgd2aXNpYmxlGAIgASgIInoKCFNldEZyYW1lEi4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEjEKCGZyYW1lX2lkGAIgASgLMhouc3BhY2VleWVzLmNvcmUudjEuRnJhbWVJZEgAiAEBQgsKCV9mcmFtZV9pZCJwCgxTZXRSZXNvdXJjZXMSLgoJb2JqZWN0X2lkGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQSMAoJcmVzb3VyY2VzGAIgAygLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZCKAAQoOU2V0Q2FtZXJhU3RhdGUSLgoJb2JqZWN0X2lkGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQSMwoGY2FtZXJhGAIgASgLMh4uc3BhY2VleWVzLmNvcmUudjEuQ2FtZXJhU3RhdGVIAIgBAUIJCgdfY2FtZXJhIn8KCVNldFNwaGVyZRIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBI3CgZzcGhlcmUYAiABKAsyIi5zcGFjZWV5ZXMuY29yZS52MS5TcGhlcmVQcmltaXRpdmVIAIgBAUIJCgdfc3BoZXJlInYKB1NldE1lc2gSLgoJb2JqZWN0X2lkGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQSMgoEbWVzaBgCIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLk1lc2hJbnN0YW5jZUgAiAEBQgcKBV9tZXNoIvcDCgxTY2VuZUNvbW1hbmQSMQoGY3JlYXRlGAEgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuQ3JlYXRlT2JqZWN0SAASMQoGcmVtb3ZlGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuUmVtb3ZlT2JqZWN0SAASMgoKc2V0X3BhcmVudBgDIAEoCzIcLnNwYWNlZXllcy5jb3JlLnYxLlNldFBhcmVudEgAEjoKDnNldF92aXNpYmlsaXR5GAQgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuU2V0VmlzaWJpbGl0eUgAEjcKCnNldF9jYW1lcmEYBiABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5TZXRDYW1lcmFTdGF0ZUgAEjAKCXNldF9mcmFtZRgHIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlNldEZyYW1lSAASOAoNc2V0X3Jlc291cmNlcxgIIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNldFJlc291cmNlc0gAEjIKCnNldF9zcGhlcmUYCSABKAsyHC5zcGFjZWV5ZXMuY29yZS52MS5TZXRTcGhlcmVIABIuCghzZXRfbWVzaBgKIAEoCzIaLnNwYWNlZXllcy5jb3JlLnYxLlNldE1lc2hIAEIICgZhY3Rpb24iewoQU2NlbmVUcmFuc2FjdGlvbhIxCghjb21tYW5kcxgBIAMoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNjZW5lQ29tbWFuZBIeChFleHBlY3RlZF9yZXZpc2lvbhgCIAEoBEgAiAEBQhQKEl9leHBlY3RlZF9yZXZpc2lvbiKGAQoNU2NlbmVTbmFwc2hvdBIWCg5zY2VuZV9yZXZpc2lvbhgBIAEoBBIvCgdvYmplY3RzGAIgAygLMh4uc3BhY2VleWVzLmNvcmUudjEuU2NlbmVPYmplY3QSLAoEdGltZRgDIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50KlAKD09iamVjdExpZmVjeWNsZRIgChxPQkpFQ1RfTElGRUNZQ0xFX1VOU1BFQ0lGSUVEEAASGwoXT0JKRUNUX0xJRkVDWUNMRV9BQ1RJVkUQAWIGcHJvdG8z", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_time, file_spaceeyes_core_v1_rendering]);
+  fileDesc("Ch1zcGFjZWV5ZXMvY29yZS92MS9zY2VuZS5wcm90bxIRc3BhY2VleWVzLmNvcmUudjEizQQKC1NjZW5lT2JqZWN0Ei4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEjMKCXBhcmVudF9pZBgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkSACIAQESMQoIZnJhbWVfaWQYAyABKAsyGi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZUlkSAGIAQESDwoHdmlzaWJsZRgEIAEoCBI1CglsaWZlY3ljbGUYBSABKA4yIi5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RMaWZlY3ljbGUSMAoJcmVzb3VyY2VzGAYgAygLMh0uc3BhY2VleWVzLmNvcmUudjEuUmVzb3VyY2VJZBISCgp1bnJlc29sdmVkGAcgASgIEjMKBmNhbWVyYRgIIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLkNhbWVyYVN0YXRlSAKIAQESNwoGc3BoZXJlGAkgASgLMiIuc3BhY2VleWVzLmNvcmUudjEuU3BoZXJlUHJpbWl0aXZlSAOIAQESMgoEbWVzaBgKIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLk1lc2hJbnN0YW5jZUgEiAEBEjMKBGxpbmUYCyABKAsyIC5zcGFjZWV5ZXMuY29yZS52MS5MaW5lUHJpbWl0aXZlSAWIAQFCDAoKX3BhcmVudF9pZEILCglfZnJhbWVfaWRCCQoHX2NhbWVyYUIJCgdfc3BoZXJlQgcKBV9tZXNoQgcKBV9saW5lIj4KDENyZWF0ZU9iamVjdBIuCgZvYmplY3QYASABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5TY2VuZU9iamVjdCI+CgxSZW1vdmVPYmplY3QSLgoJb2JqZWN0X2lkGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQifgoJU2V0UGFyZW50Ei4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEjMKCXBhcmVudF9pZBgCIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkSACIAQFCDAoKX3BhcmVudF9pZCJQCg1TZXRWaXNpYmlsaXR5Ei4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEg8KB3Zpc2libGUYAiABKAgiegoIU2V0RnJhbWUSLgoJb2JqZWN0X2lkGAEgASgLMhsuc3BhY2VleWVzLmNvcmUudjEuT2JqZWN0SWQSMQoIZnJhbWVfaWQYAiABKAsyGi5zcGFjZWV5ZXMuY29yZS52MS5GcmFtZUlkSACIAQFCCwoJX2ZyYW1lX2lkInAKDFNldFJlc291cmNlcxIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIwCglyZXNvdXJjZXMYAiADKAsyHS5zcGFjZWV5ZXMuY29yZS52MS5SZXNvdXJjZUlkIoABCg5TZXRDYW1lcmFTdGF0ZRIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIzCgZjYW1lcmEYAiABKAsyHi5zcGFjZWV5ZXMuY29yZS52MS5DYW1lcmFTdGF0ZUgAiAEBQgkKB19jYW1lcmEifwoJU2V0U3BoZXJlEi4KCW9iamVjdF9pZBgBIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLk9iamVjdElkEjcKBnNwaGVyZRgCIAEoCzIiLnNwYWNlZXllcy5jb3JlLnYxLlNwaGVyZVByaW1pdGl2ZUgAiAEBQgkKB19zcGhlcmUidgoHU2V0TWVzaBIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIyCgRtZXNoGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuTWVzaEluc3RhbmNlSACIAQFCBwoFX21lc2gidwoHU2V0TGluZRIuCglvYmplY3RfaWQYASABKAsyGy5zcGFjZWV5ZXMuY29yZS52MS5PYmplY3RJZBIzCgRsaW5lGAIgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuTGluZVByaW1pdGl2ZUgAiAEBQgcKBV9saW5lIqcECgxTY2VuZUNvbW1hbmQSMQoGY3JlYXRlGAEgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuQ3JlYXRlT2JqZWN0SAASMQoGcmVtb3ZlGAIgASgLMh8uc3BhY2VleWVzLmNvcmUudjEuUmVtb3ZlT2JqZWN0SAASMgoKc2V0X3BhcmVudBgDIAEoCzIcLnNwYWNlZXllcy5jb3JlLnYxLlNldFBhcmVudEgAEjoKDnNldF92aXNpYmlsaXR5GAQgASgLMiAuc3BhY2VleWVzLmNvcmUudjEuU2V0VmlzaWJpbGl0eUgAEjcKCnNldF9jYW1lcmEYBiABKAsyIS5zcGFjZWV5ZXMuY29yZS52MS5TZXRDYW1lcmFTdGF0ZUgAEjAKCXNldF9mcmFtZRgHIAEoCzIbLnNwYWNlZXllcy5jb3JlLnYxLlNldEZyYW1lSAASOAoNc2V0X3Jlc291cmNlcxgIIAEoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNldFJlc291cmNlc0gAEjIKCnNldF9zcGhlcmUYCSABKAsyHC5zcGFjZWV5ZXMuY29yZS52MS5TZXRTcGhlcmVIABIuCghzZXRfbWVzaBgKIAEoCzIaLnNwYWNlZXllcy5jb3JlLnYxLlNldE1lc2hIABIuCghzZXRfbGluZRgLIAEoCzIaLnNwYWNlZXllcy5jb3JlLnYxLlNldExpbmVIAEIICgZhY3Rpb24iewoQU2NlbmVUcmFuc2FjdGlvbhIxCghjb21tYW5kcxgBIAMoCzIfLnNwYWNlZXllcy5jb3JlLnYxLlNjZW5lQ29tbWFuZBIeChFleHBlY3RlZF9yZXZpc2lvbhgCIAEoBEgAiAEBQhQKEl9leHBlY3RlZF9yZXZpc2lvbiKGAQoNU2NlbmVTbmFwc2hvdBIWCg5zY2VuZV9yZXZpc2lvbhgBIAEoBBIvCgdvYmplY3RzGAIgAygLMh4uc3BhY2VleWVzLmNvcmUudjEuU2NlbmVPYmplY3QSLAoEdGltZRgDIAEoCzIeLnNwYWNlZXllcy5jb3JlLnYxLlRpbWVJbnN0YW50KlAKD09iamVjdExpZmVjeWNsZRIgChxPQkpFQ1RfTElGRUNZQ0xFX1VOU1BFQ0lGSUVEEAASGwoXT0JKRUNUX0xJRkVDWUNMRV9BQ1RJVkUQAWIGcHJvdG8z", [file_spaceeyes_core_v1_common, file_spaceeyes_core_v1_time, file_spaceeyes_core_v1_rendering]);
 
 /**
  * @generated from message spaceeyes.core.v1.SceneObject
@@ -74,6 +74,11 @@ export type SceneObject = Message<"spaceeyes.core.v1.SceneObject"> & {
    * @generated from field: optional spaceeyes.core.v1.MeshInstance mesh = 10;
    */
   mesh?: MeshInstance | undefined;
+
+  /**
+   * @generated from field: optional spaceeyes.core.v1.LinePrimitive line = 11;
+   */
+  line?: LinePrimitive | undefined;
 };
 
 /**
@@ -272,6 +277,28 @@ export const SetMeshSchema: GenMessage<SetMesh> = /*@__PURE__*/
   messageDesc(file_spaceeyes_core_v1_scene, 9);
 
 /**
+ * @generated from message spaceeyes.core.v1.SetLine
+ */
+export type SetLine = Message<"spaceeyes.core.v1.SetLine"> & {
+  /**
+   * @generated from field: spaceeyes.core.v1.ObjectId object_id = 1;
+   */
+  objectId?: ObjectId | undefined;
+
+  /**
+   * @generated from field: optional spaceeyes.core.v1.LinePrimitive line = 2;
+   */
+  line?: LinePrimitive | undefined;
+};
+
+/**
+ * Describes the message spaceeyes.core.v1.SetLine.
+ * Use `create(SetLineSchema)` to create a new message.
+ */
+export const SetLineSchema: GenMessage<SetLine> = /*@__PURE__*/
+  messageDesc(file_spaceeyes_core_v1_scene, 10);
+
+/**
  * @generated from message spaceeyes.core.v1.SceneCommand
  */
 export type SceneCommand = Message<"spaceeyes.core.v1.SceneCommand"> & {
@@ -332,6 +359,12 @@ export type SceneCommand = Message<"spaceeyes.core.v1.SceneCommand"> & {
      */
     value: SetMesh;
     case: "setMesh";
+  } | {
+    /**
+     * @generated from field: spaceeyes.core.v1.SetLine set_line = 11;
+     */
+    value: SetLine;
+    case: "setLine";
   } | { case: undefined; value?: undefined };
 };
 
@@ -340,7 +373,7 @@ export type SceneCommand = Message<"spaceeyes.core.v1.SceneCommand"> & {
  * Use `create(SceneCommandSchema)` to create a new message.
  */
 export const SceneCommandSchema: GenMessage<SceneCommand> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_scene, 10);
+  messageDesc(file_spaceeyes_core_v1_scene, 11);
 
 /**
  * @generated from message spaceeyes.core.v1.SceneTransaction
@@ -362,7 +395,7 @@ export type SceneTransaction = Message<"spaceeyes.core.v1.SceneTransaction"> & {
  * Use `create(SceneTransactionSchema)` to create a new message.
  */
 export const SceneTransactionSchema: GenMessage<SceneTransaction> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_scene, 11);
+  messageDesc(file_spaceeyes_core_v1_scene, 12);
 
 /**
  * @generated from message spaceeyes.core.v1.SceneSnapshot
@@ -389,7 +422,7 @@ export type SceneSnapshot = Message<"spaceeyes.core.v1.SceneSnapshot"> & {
  * Use `create(SceneSnapshotSchema)` to create a new message.
  */
 export const SceneSnapshotSchema: GenMessage<SceneSnapshot> = /*@__PURE__*/
-  messageDesc(file_spaceeyes_core_v1_scene, 12);
+  messageDesc(file_spaceeyes_core_v1_scene, 13);
 
 /**
  * @generated from enum spaceeyes.core.v1.ObjectLifecycle

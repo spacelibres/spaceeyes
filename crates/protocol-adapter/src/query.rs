@@ -298,6 +298,7 @@ impl ProtocolAdapter {
                             camera: o.camera().map(crate::dispatch::encode_camera),
                             sphere: o.sphere().map(crate::dispatch::encode_sphere),
                             mesh: o.mesh().map(crate::dispatch::encode_mesh_instance),
+                            line: o.line().map(crate::dispatch::encode_line),
                             unresolved: false,
                         })
                     }),

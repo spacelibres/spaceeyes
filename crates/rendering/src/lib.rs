@@ -72,6 +72,13 @@ pub struct Marker {
     pub object: ObjectId,
     pub ndc: [f32; 3],
 }
+/// Camera-space polyline; lines are unlit and not pickable.
+#[derive(Clone, Debug)]
+pub struct LineDraw {
+    pub object: ObjectId,
+    pub points: Vec<[f64; 3]>,
+    pub color: [f32; 3],
+}
 #[derive(Clone, Debug)]
 pub struct PreparedFrame {
     pub sequence: u64,
@@ -80,6 +87,7 @@ pub struct PreparedFrame {
     pub markers: Vec<Marker>,
     pub spheres: Vec<SphereDraw>,
     pub meshes: Vec<MeshDraw>,
+    pub lines: Vec<LineDraw>,
     pub projection: Perspective,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -236,6 +244,7 @@ fn prepare_oriented(
     let mut markers = Vec::new();
     let mut spheres = Vec::new();
     let mut meshes = Vec::new();
+    let mut lines = Vec::new();
     for pose in &frame.poses {
         let object = frame
             .scene
@@ -262,6 +271,33 @@ fn prepare_oriented(
         }
         if !visible || object.camera().is_some() {
             continue;
+        }
+        if let Some(line) = object.line() {
+            let mut points = Vec::with_capacity(line.points_m().len());
+            for point in line.points_m() {
+                let world = pose.transform.apply(Vec3d {
+                    x: point[0],
+                    y: point[1],
+                    z: point[2],
+                });
+                let relative = reference_to_camera_rotation.apply(Vec3d {
+                    x: world.x - view.origin_m[0],
+                    y: world.y - view.origin_m[1],
+                    z: world.z - view.origin_m[2],
+                });
+                if ![relative.x, relative.y, relative.z]
+                    .iter()
+                    .all(|value| value.is_finite())
+                {
+                    return Err(RenderError::InvalidFrame);
+                }
+                points.push([relative.x, relative.y, relative.z]);
+            }
+            lines.push(LineDraw {
+                object: object.id().clone(),
+                points,
+                color: line.color(),
+            });
         }
         let p = pose.transform.translation_m;
         let relative = reference_to_camera_rotation.apply(Vec3d {
@@ -330,6 +366,10 @@ fn prepare_oriented(
         if z < view.near_m || z > view.far_m {
             continue;
         }
+        if object.line().is_some() {
+            // A line has no pickable surface and no marker triangle.
+            continue;
+        }
         let [x, y] = projection.ndc(relative.x, relative.y, z);
         if ![x, y, z].iter().all(|v| v.is_finite()) {
             return Err(RenderError::InvalidFrame);
@@ -354,6 +394,7 @@ fn prepare_oriented(
         markers,
         spheres,
         meshes,
+        lines,
         projection,
     })
 }

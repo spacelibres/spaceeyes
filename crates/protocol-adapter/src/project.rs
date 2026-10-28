@@ -112,6 +112,7 @@ pub(crate) fn encode_scene_object(object: &SceneObject) -> Result<p::SceneObject
         camera: object.camera().map(crate::dispatch::encode_camera),
         sphere: object.sphere().map(crate::dispatch::encode_sphere),
         mesh: object.mesh().map(crate::dispatch::encode_mesh_instance),
+        line: object.line().map(crate::dispatch::encode_line),
     })
 }
 
@@ -168,6 +169,12 @@ fn decode_scene(objects: &[p::SceneObject]) -> Result<SceneSnapshot, ProtocolErr
                 commands.push(SceneCommand::SetCamera {
                     object: id.clone(),
                     camera: Some(crate::dispatch::decode_camera(camera)?),
+                });
+            }
+            if let Some(line) = object.line {
+                commands.push(SceneCommand::SetLine {
+                    object: id.clone(),
+                    line: Some(crate::dispatch::decode_line(line)?),
                 });
             }
             commands.push(SceneCommand::SetResources {
@@ -391,6 +398,7 @@ mod tests {
             camera: None,
             sphere: None,
             mesh: None,
+            line: None,
         }
     }
 

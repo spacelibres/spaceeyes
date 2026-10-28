@@ -26,6 +26,7 @@ pub const OPERATIONS: &[&str] = &[
     "scene.set_camera",
     "scene.set_sphere",
     "scene.set_mesh",
+    "scene.set_line",
     "scene.transaction",
     "resources.register_mesh",
     "resources.register_texture",

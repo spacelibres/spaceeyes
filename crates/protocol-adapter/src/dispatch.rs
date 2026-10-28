@@ -8,7 +8,10 @@ use crate::{
 use prost::Message;
 use spaceeyes_engine::{Command, CommandDispatcher, DispatchError};
 use spaceeyes_foundation::{CoreError, Revision};
-use spaceeyes_scene::{CameraState, Material, MeshInstance, SceneCommand, SceneObject, Sphere};
+use spaceeyes_scene::{
+    CameraState, LinePrimitive, Material, MeshInstance, SceneCommand, SceneObject, Sphere,
+    MAX_LINE_POINTS,
+};
 
 pub struct ProtocolAdapter {
     pub(crate) dispatcher: CommandDispatcher,
@@ -394,6 +397,12 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
                         camera: Some(decode_camera(camera)?),
                     });
                 }
+                if let Some(line) = object.line {
+                    output.push(SceneCommand::SetLine {
+                        object: id.clone(),
+                        line: Some(decode_line(line)?),
+                    });
+                }
                 output.push(SceneCommand::SetResources {
                     object: id,
                     resources: object
@@ -414,6 +423,10 @@ fn scene_commands(commands: Vec<p::SceneCommand>) -> Result<Vec<SceneCommand>, P
             Action::SetMesh(c) => output.push(SceneCommand::SetMesh {
                 object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
                 mesh: c.mesh.map(decode_mesh_instance).transpose()?,
+            }),
+            Action::SetLine(c) => output.push(SceneCommand::SetLine {
+                object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
+                line: c.line.map(decode_line).transpose()?,
             }),
             Action::Remove(c) => output.push(SceneCommand::Delete {
                 object: checked_object(c.object_id.ok_or(ProtocolError::MissingField)?)?,
@@ -525,6 +538,34 @@ pub fn encode_camera(camera: &CameraState) -> p::CameraState {
     }
 }
 
+pub fn decode_line(line: p::LinePrimitive) -> Result<LinePrimitive, ProtocolError> {
+    if line.points_m.len() > MAX_LINE_POINTS {
+        return Err(ProtocolError::MessageTooLarge);
+    }
+    let points: Vec<[f64; 3]> = line
+        .points_m
+        .into_iter()
+        .map(|point| [point.x, point.y, point.z])
+        .collect();
+    let color = line.color.ok_or(ProtocolError::MissingField)?;
+    LinePrimitive::new(points, [color.r, color.g, color.b])
+        .map_err(|_| ProtocolError::InvalidContext)
+}
+pub fn encode_line(line: &LinePrimitive) -> p::LinePrimitive {
+    let [r, g, b] = line.color();
+    p::LinePrimitive {
+        points_m: line
+            .points_m()
+            .iter()
+            .map(|[x, y, z]| p::Vector3d {
+                x: *x,
+                y: *y,
+                z: *z,
+            })
+            .collect(),
+        color: Some(p::ColorRgb { r, g, b }),
+    }
+}
 pub fn decode_sphere(sphere: p::SpherePrimitive) -> Result<Sphere, ProtocolError> {
     Sphere::with_material(
         sphere.radius_m,
@@ -742,5 +783,47 @@ pub(crate) fn dispatch_error_code(error: &DispatchError) -> p::ErrorCode {
         | DispatchError::Domain(CoreError::AlreadyStopped) => p::ErrorCode::EngineUnavailable,
         DispatchError::HistoryFull => p::ErrorCode::ResourceExceeded,
         _ => p::ErrorCode::InvalidArgument,
+    }
+}
+
+#[cfg(test)]
+mod line_tests {
+    use super::*;
+
+    fn point(x: f64, y: f64, z: f64) -> p::Vector3d {
+        p::Vector3d { x, y, z }
+    }
+
+    #[test]
+    fn line_primitives_roundtrip_and_reject_invalid_shapes() {
+        let line =
+            LinePrimitive::new(vec![[0.0, 0.0, 0.0], [1.0, 2.0, 3.0]], [0.1, 0.2, 0.3]).unwrap();
+        assert_eq!(decode_line(encode_line(&line)).unwrap(), line);
+
+        let single = p::LinePrimitive {
+            points_m: vec![point(0.0, 0.0, 0.0)],
+            color: Some(p::ColorRgb {
+                r: 1.0,
+                g: 1.0,
+                b: 1.0,
+            }),
+        };
+        assert_eq!(decode_line(single), Err(ProtocolError::InvalidContext));
+
+        let missing_color = p::LinePrimitive {
+            points_m: vec![point(0.0, 0.0, 0.0), point(1.0, 0.0, 0.0)],
+            color: None,
+        };
+        assert_eq!(decode_line(missing_color), Err(ProtocolError::MissingField));
+
+        let too_many = p::LinePrimitive {
+            points_m: vec![point(0.0, 0.0, 0.0); MAX_LINE_POINTS + 1],
+            color: Some(p::ColorRgb {
+                r: 1.0,
+                g: 1.0,
+                b: 1.0,
+            }),
+        };
+        assert_eq!(decode_line(too_many), Err(ProtocolError::MessageTooLarge));
     }
 }

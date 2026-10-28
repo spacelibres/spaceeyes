@@ -115,3 +115,7 @@ ResourceManager为唯一总额及Cpu/Gpu/Staging类别额度权威，申请须�
 ## C13 正交投影相机（0.0.1增量）
 `CameraState`新增`CameraProjection`（Perspective/Orthographic）：正交相机使用米制`half_height_m`，与距离无关，near/far仍显式校验；`new_orthographic`与`new_with_projection`为唯一构造入口，`focus_camera`保留原投影类型。Proto `Projection`新增`OrthographicProjection{half_height_m,near_m,far_m}`（kind=2），旧perspective编码不变。
 渲染侧`ViewProjection`驱动NDC、深度与拾取：正交投影的clip使用w=1且z等于同一深度函数，标记NDC按固定半高计算，拾取射线从相机平面偏移出发、方向沿-Z并复用同一三角形求交，因此屏幕尺寸与遮挡顺序不受距离影响。验证覆盖场景校验、CPU拾取、GPU clip公式与Proto往返。尚未实现线图元、多视口、PBR/透明/mipmap与科学传播轨道。
+
+## C13 核心线图元（0.0.1增量）
+Scene新增`LinePrimitive`（局部坐标2–4096点、有限坐标、RGB颜色），作为独立组件而非资源引用；`SceneCommand::SetLine`参与同一原子事务。快照随SceneObject携带线段；渲染准备阶段把点变换到相机空间并生成`LineDraw`，线对象不产生marker且不可拾取（没有可拾取表面）。GPU使用独立`LineList`管线、与三角形共享材质BindGroupLayout/深度状态，顶点预算与对象数上限一并计入；线段颜色按unlit纯色。Proto新增`LinePrimitive`、`SetLine`与SceneObject.line=11，能力新增`scene.set_line`（总数40）。
+尚未实现：线宽（固定1px）、虚线/衰减、可拾取线段、批量线资源与科学传播轨道。

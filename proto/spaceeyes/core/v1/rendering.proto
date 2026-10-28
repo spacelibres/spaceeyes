@@ -12,6 +12,8 @@ message CameraState { Vector3d position_m=4; Quaterniond orientation=5; Projecti
 // Target-reference-relative +Z offset; derived each frame, not integrated by the host.
 message CameraTracking { ObjectId target=1; double distance_m=2; }
 message ColorRgb { float r=1; float g=2; float b=3; }
+// Solid-colour local-frame polyline; not pickable and not textured.
+message LinePrimitive { repeated Vector3d points_m=1; ColorRgb color=2; }
 message SpherePrimitive { double radius_m=1; ColorRgb base_color=2; optional Material material=3; }
 message MeshVertex { Vector3d position_m=1; Vector3d normal=2; optional Vector2f uv=3; }
 message TriangleMesh { repeated MeshVertex vertices=1; repeated uint32 indices=2; }

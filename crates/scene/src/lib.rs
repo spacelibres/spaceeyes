@@ -14,6 +14,33 @@ pub use mesh::MeshInstance;
 mod material;
 pub use material::Material;
 static NEXT_REGISTRY: AtomicU64 = AtomicU64::new(1);
+pub const MAX_LINE_POINTS: usize = 4096;
+
+/// Polyline in the object's local frame. Lines are solid-colour and unlit;
+/// they do not participate in picking (a line has no pickable surface).
+#[derive(Clone, Debug, PartialEq)]
+pub struct LinePrimitive {
+    points_m: Vec<[f64; 3]>,
+    color: [f32; 3],
+}
+impl Eq for LinePrimitive {}
+impl LinePrimitive {
+    pub fn new(points_m: Vec<[f64; 3]>, color: [f32; 3]) -> Result<Self, CoreError> {
+        if !(2..=MAX_LINE_POINTS).contains(&points_m.len())
+            || !points_m.iter().flatten().all(|value| value.is_finite())
+            || !color.iter().all(|value| value.is_finite())
+        {
+            return Err(CoreError::InvalidState);
+        }
+        Ok(Self { points_m, color })
+    }
+    pub fn points_m(&self) -> &[[f64; 3]] {
+        &self.points_m
+    }
+    pub fn color(&self) -> [f32; 3] {
+        self.color
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObjectHandle {
@@ -32,6 +59,7 @@ pub struct SceneObject {
     camera: Option<CameraState>,
     sphere: Option<Sphere>,
     mesh: Option<MeshInstance>,
+    line: Option<LinePrimitive>,
 }
 impl SceneObject {
     pub fn new(id: ObjectId) -> Self {
@@ -44,6 +72,7 @@ impl SceneObject {
             camera: None,
             sphere: None,
             mesh: None,
+            line: None,
         }
     }
     pub fn id(&self) -> &ObjectId {
@@ -92,11 +121,15 @@ impl SceneObject {
     pub fn camera(&self) -> Option<&CameraState> {
         self.camera.as_ref()
     }
+    pub fn line(&self) -> Option<&LinePrimitive> {
+        self.line.as_ref()
+    }
     pub fn visible(&self) -> bool {
         self.visible
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SceneCommand {
     SetMesh {
@@ -110,6 +143,10 @@ pub enum SceneCommand {
     SetCamera {
         object: ObjectId,
         camera: Option<CameraState>,
+    },
+    SetLine {
+        object: ObjectId,
+        line: Option<LinePrimitive>,
     },
     SetResources {
         object: ObjectId,
@@ -238,6 +275,12 @@ impl Scene {
                         .get_mut(object)
                         .ok_or(CoreError::UnknownObject)?
                         .camera = camera.clone();
+                }
+                SceneCommand::SetLine { object, line } => {
+                    proposed
+                        .get_mut(object)
+                        .ok_or(CoreError::UnknownObject)?
+                        .line = line.clone();
                 }
                 SceneCommand::SetResources { object, resources } => {
                     let mut unique = resources.clone();
