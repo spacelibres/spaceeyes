@@ -3,6 +3,13 @@ use bevy::math::DVec3;
 use bevy::prelude::*;
 use std::collections::{HashMap, HashSet};
 
+/// Conjugate the scientific body-local -> ICRF rotation by the display basis B(x,y,z)=(x,z,-y).
+pub(crate) fn display_rotation(orientation_wxyz: Option<[f64; 4]>) -> Quat {
+    orientation_wxyz
+        .map(|[w, x, y, z]| Quat::from_xyzw(x as f32, z as f32, -y as f32, w as f32))
+        .unwrap_or(Quat::IDENTITY)
+}
+
 #[derive(Resource)]
 pub struct CoreStore(pub SharedCore);
 
@@ -112,7 +119,10 @@ pub(crate) fn sync_scene(
                 .push((id.to_owned(), CoreError::InvalidState));
             continue;
         }
-        let transform = Transform::from_translation(translation).with_scale(Vec3::splat(radius));
+        let rotation = display_rotation(state.orientation_wxyz);
+        let transform = Transform::from_translation(translation)
+            .with_rotation(rotation)
+            .with_scale(Vec3::splat(radius));
         if let Some(entity) = existing.get(id) {
             if let Ok((_, _, mut current)) = query.get_mut(*entity) {
                 *current = transform;

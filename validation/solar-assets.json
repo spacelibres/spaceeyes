@@ -1,0 +1,501 @@
+{
+  "schemaVersion": 1,
+  "source": "NASA Eyes static maps; six independent cube faces",
+  "size": 512,
+  "bodies": {
+    "earth": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_0.png",
+          "bytes": 241810,
+          "sha256": "14ac05f381a03556db4926bbd662bc553879c26d56801323eacf6dd30ed6a553",
+          "path": "assets/planets/earth/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_1.png",
+          "bytes": 268527,
+          "sha256": "093411dbcaa8671a55fac2356ab2bb1761d7c7fd26f741e59f18a85335eb8f21",
+          "path": "assets/planets/earth/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_2.png",
+          "bytes": 81974,
+          "sha256": "e0eb0ffbc5ba6794862234854b4e7ae3c5e87050a4a3f7293c3189ade47481f5",
+          "path": "assets/planets/earth/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_3.png",
+          "bytes": 193079,
+          "sha256": "fb1393a3283940960cc24574147abdc5a099c07970b4abe793bc6949e3ae0166",
+          "path": "assets/planets/earth/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_4.png",
+          "bytes": 395645,
+          "sha256": "5e6ed12a3392926fb1ca8f666773efdd9996d269e9a8a01c3c392679030ee463",
+          "path": "assets/planets/earth/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/earth/color_512_5.png",
+          "bytes": 77616,
+          "sha256": "aaad51621607e3237d74f6718d671e07a35df2cb1c18d126b2eb43b9957b1fec",
+          "path": "assets/planets/earth/color_512_5.png"
+        }
+      ]
+    },
+    "jupiter": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_0.jpg",
+          "bytes": 32257,
+          "sha256": "fe4dd70d7e5ec88d92a27515f94379cadfebf47274ed44f10849466439b87304",
+          "path": "assets/planets/jupiter/color_512_0.jpg"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_1.jpg",
+          "bytes": 31125,
+          "sha256": "dccb3cfbac041b20dd3289628b53e6302b76be70caa5fa37eafcedb163eadbc0",
+          "path": "assets/planets/jupiter/color_512_1.jpg"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_2.jpg",
+          "bytes": 29682,
+          "sha256": "1c927526c582bb1411dc867056789ad7ca23cf4f2796d40812de915ca3383a4e",
+          "path": "assets/planets/jupiter/color_512_2.jpg"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_3.jpg",
+          "bytes": 30470,
+          "sha256": "c72bcbcf9347fbfa1b9dfad359b307728d83ee1c122a616d1b45b3b99e88656e",
+          "path": "assets/planets/jupiter/color_512_3.jpg"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_4.jpg",
+          "bytes": 29783,
+          "sha256": "a723b52c53ffa1f17f4a3d478afa59b23fbc9e542c69539723186790f0a5c07a",
+          "path": "assets/planets/jupiter/color_512_4.jpg"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_512_5.jpg",
+          "bytes": 30137,
+          "sha256": "abde46c9489392ac08937c1209002c5dc5dd7bc1856c5d269abef37c1db54fdb",
+          "path": "assets/planets/jupiter/color_512_5.jpg"
+        }
+      ]
+    },
+    "mars": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_0.png",
+          "bytes": 330595,
+          "sha256": "8bc85d8333fb5d750e93aa5ab13887dcc6f5f25cbb48049f04fee3245f871b39",
+          "path": "assets/planets/mars/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_1.png",
+          "bytes": 309286,
+          "sha256": "cfa8bf0d7630a86365be9ccca732f5801b24bc58fe6615535d58c63cc25bd1f3",
+          "path": "assets/planets/mars/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_2.png",
+          "bytes": 309425,
+          "sha256": "8814f9e41e8a18508ad0e475338f4be949fc532d2b617bbf703587910cda6fd1",
+          "path": "assets/planets/mars/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_3.png",
+          "bytes": 315962,
+          "sha256": "b81e72cdaacd229c2c514d3fd1fa7877046b268eb9e91faaf270127624fb18fc",
+          "path": "assets/planets/mars/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_4.png",
+          "bytes": 311889,
+          "sha256": "324b8ac710522ed0b2af1d20566d8241819a4cc3f5ee57b1bcedde07850cd34f",
+          "path": "assets/planets/mars/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mars/color_512_5.png",
+          "bytes": 402588,
+          "sha256": "32b3dfe7899f693a5eb6739244adffbdbd1d62d6299944c8edc0c2489d08c815",
+          "path": "assets/planets/mars/color_512_5.png"
+        }
+      ]
+    },
+    "mercury": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_0.png",
+          "bytes": 507368,
+          "sha256": "e85d99a0f7cf41feb827d6ab0cd61001217b9df715778a0b6493ebe87cb20120",
+          "path": "assets/planets/mercury/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_1.png",
+          "bytes": 471147,
+          "sha256": "f9b342487c08075137c0c8e0243bfca002cefa7b6d5a734c6758410a1f17cc7c",
+          "path": "assets/planets/mercury/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_2.png",
+          "bytes": 482372,
+          "sha256": "ceeb105752e4e9f137988b5d8aacbd6d65d8f0e8ffc3f226286d2d9f72518cea",
+          "path": "assets/planets/mercury/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_3.png",
+          "bytes": 466028,
+          "sha256": "d49caecd3afc57996719949320576ef85ac0451aa346ca02bc00c046bd1f99be",
+          "path": "assets/planets/mercury/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_4.png",
+          "bytes": 486288,
+          "sha256": "b973c3b8e0ba3236828cf931b4614fb71c11f8d889888429af22d8b3815e9d54",
+          "path": "assets/planets/mercury/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/mercury/color_512_5.png",
+          "bytes": 503246,
+          "sha256": "1dc0cca357bb8f18c6aa5e53958aeaceb2eb97263b20a8050706fa222bc1544e",
+          "path": "assets/planets/mercury/color_512_5.png"
+        }
+      ]
+    },
+    "moon": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_0.png",
+          "bytes": 366098,
+          "sha256": "c7f996946ffca5fca8611177648579ce4d5991c81ef2af527619c2b232144135",
+          "path": "assets/planets/moon/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_1.png",
+          "bytes": 435730,
+          "sha256": "c6c324191f0d1978b6e9a5c5e281409231d6d98f44924c628fc8a161cc8b8462",
+          "path": "assets/planets/moon/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_2.png",
+          "bytes": 476913,
+          "sha256": "f45ccb5ac3dddfd2fd1743f74c4bf88f38693e51e16f75dd3e0700337e76feae",
+          "path": "assets/planets/moon/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_3.png",
+          "bytes": 414428,
+          "sha256": "138111f42473ca1bebaddd17912259208a9ca90fb61df94bc89e924a617ccac2",
+          "path": "assets/planets/moon/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_4.png",
+          "bytes": 521475,
+          "sha256": "897c2150200e4ed356976bf8aa932fe446f741bc79abe5ef8caae1e485597e5f",
+          "path": "assets/planets/moon/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/moon/color_512_5.png",
+          "bytes": 539122,
+          "sha256": "5aae382a67c75d937a42c94c683f70b20d0c0ed39f79a02882fcca473a55378a",
+          "path": "assets/planets/moon/color_512_5.png"
+        }
+      ]
+    },
+    "neptune": {
+      "size": 256,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_0.png",
+          "bytes": 58904,
+          "sha256": "b729e92fcb216fd69290b93ecdedd89660f59657994cb14459dba8b6970d6332",
+          "path": "assets/planets/neptune/color_256_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_1.png",
+          "bytes": 56614,
+          "sha256": "8b34f49b25ae024c4926b860c984aeaefcdaf37cae3f1092f5d7e1c59c57c517",
+          "path": "assets/planets/neptune/color_256_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_2.png",
+          "bytes": 55250,
+          "sha256": "764b4e6c447585d25eaf4bc1cad7f77df5028a0fbb351440b6cac311a29bdc1e",
+          "path": "assets/planets/neptune/color_256_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_3.png",
+          "bytes": 55732,
+          "sha256": "506132601d396f569aa65a895e15250e2a38ec0a1fce38e671de5c51bef6291d",
+          "path": "assets/planets/neptune/color_256_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_4.png",
+          "bytes": 70174,
+          "sha256": "56d25a5ffb64fe842ebcfea90dcf78b541b836165392be3e1d00a40eca4d0eca",
+          "path": "assets/planets/neptune/color_256_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/neptune/color_256_5.png",
+          "bytes": 69348,
+          "sha256": "f3649a4d36d8f1419653af898290f913b9dd1ffa911de90237f06229cecda6e7",
+          "path": "assets/planets/neptune/color_256_5.png"
+        }
+      ]
+    },
+    "saturn": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_0.png",
+          "bytes": 260429,
+          "sha256": "ea22c2cbef132d5c91b1665014de0aba519f56a6d57959620c3657744ab1101e",
+          "path": "assets/planets/saturn/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_1.png",
+          "bytes": 258663,
+          "sha256": "d8981a69fa2ff5a3a49d555563c9d1dad0006fbb5c4085bc728e155bedba19bf",
+          "path": "assets/planets/saturn/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_2.png",
+          "bytes": 257008,
+          "sha256": "cb684c181012c4f0f724c5a2a1ae3a256e6ee0dd42046d962d47a14c9cad8f14",
+          "path": "assets/planets/saturn/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_3.png",
+          "bytes": 264595,
+          "sha256": "9727b59ebae9faf7968904dc9d683cd98391b5c879d3ddbcbf36d87983dc8474",
+          "path": "assets/planets/saturn/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_4.png",
+          "bytes": 344632,
+          "sha256": "359920fb4840b1da7b08c8302b2b7cd1a973e37e69e2e4a68525fa1782dfdc48",
+          "path": "assets/planets/saturn/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/saturn/color_512_5.png",
+          "bytes": 268233,
+          "sha256": "9218568f707762ae82ce544350aa880967d7bc5ad7a2de2011c369ba4cf92c28",
+          "path": "assets/planets/saturn/color_512_5.png"
+        }
+      ]
+    },
+    "sun": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_0.png",
+          "bytes": 403557,
+          "sha256": "257310545adba4ed436beddff7b392093ab06685f6e36d13866501cf5ebd8926",
+          "path": "assets/planets/sun/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_1.png",
+          "bytes": 371025,
+          "sha256": "e209ef8704f800cb3475a5d895c3883a21b3118bc96505ec1da7810282e10f0d",
+          "path": "assets/planets/sun/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_2.png",
+          "bytes": 359811,
+          "sha256": "b7488e142968358dff0dd221846db3468de5b23fc866e7765c7c7a35030b79e2",
+          "path": "assets/planets/sun/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_3.png",
+          "bytes": 386588,
+          "sha256": "7af334cac6fd0a342681fcc1006f64619d51b7d69e2cadc74cac7a1b0763c3ad",
+          "path": "assets/planets/sun/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_4.png",
+          "bytes": 395260,
+          "sha256": "72c9597514a26e90c06b768a34dfee7b7aad53e21cc33d793727cfa00cc03ef2",
+          "path": "assets/planets/sun/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/sun/color_512_5.png",
+          "bytes": 405836,
+          "sha256": "f64a250533bdb2e9048770bb6bfdfd1e2debaeba642176a5769034b49043d5a3",
+          "path": "assets/planets/sun/color_512_5.png"
+        }
+      ]
+    },
+    "uranus": {
+      "size": 256,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_0.png",
+          "bytes": 5393,
+          "sha256": "5c6e8682e569fa8138bb7f378203758353b1aaa807a92c9a298ba9ac9969afe7",
+          "path": "assets/planets/uranus/color_256_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_1.png",
+          "bytes": 6596,
+          "sha256": "8634cd1fc031bc344eac3ef257428a26b87f6d2b4f9fc70c2b60c457e6779d84",
+          "path": "assets/planets/uranus/color_256_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_2.png",
+          "bytes": 6714,
+          "sha256": "fe8153381d881028f7e5a2f717a482c01ef3231b9b7c50e3f8ed925e43e34628",
+          "path": "assets/planets/uranus/color_256_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_3.png",
+          "bytes": 6961,
+          "sha256": "6f6fb12dd844643e97cbea82c4d9ac420ce24999261cf4c4b65914764d9d3972",
+          "path": "assets/planets/uranus/color_256_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_4.png",
+          "bytes": 17257,
+          "sha256": "870eb6b14d4db070c8367201509e8d5e95689bd195dd60696ca6d1c17cf8543a",
+          "path": "assets/planets/uranus/color_256_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/uranus/color_256_5.png",
+          "bytes": 18542,
+          "sha256": "aa457a72fabcc406c175780239f4682a8bba3dd5cd3497fd17d1dc602fe2e8ce",
+          "path": "assets/planets/uranus/color_256_5.png"
+        }
+      ]
+    },
+    "venus": {
+      "size": 512,
+      "faces": [
+        {
+          "face": 0,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_0.png",
+          "bytes": 72086,
+          "sha256": "00da85a979d8f4f23a014952cc3bd252f5f75ebf79a06594a6fb26e5c9c98f01",
+          "path": "assets/planets/venus/color_512_0.png"
+        },
+        {
+          "face": 1,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_1.png",
+          "bytes": 73421,
+          "sha256": "7c633722ea4e262c9a57855e5ad4063002835bbc7ff3f972df8870282e4e1fef",
+          "path": "assets/planets/venus/color_512_1.png"
+        },
+        {
+          "face": 2,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_2.png",
+          "bytes": 78072,
+          "sha256": "e991ce0b2fcb9737716585017cd0f52afd5e2b683ce4a8a486ead85e4a6cc2d7",
+          "path": "assets/planets/venus/color_512_2.png"
+        },
+        {
+          "face": 3,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_3.png",
+          "bytes": 74850,
+          "sha256": "a22aac1ee1909d0bb5af8cf82dd2bea9277ff729556dbe8a7312458833803aa5",
+          "path": "assets/planets/venus/color_512_3.png"
+        },
+        {
+          "face": 4,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_4.png",
+          "bytes": 117324,
+          "sha256": "0738866ca7dd8796414b18ead353892969c9f3ca60d0b162ad97f475d7af84ea",
+          "path": "assets/planets/venus/color_512_4.png"
+        },
+        {
+          "face": 5,
+          "source": "https://eyes.nasa.gov/assets/static/maps/venus/color_512_5.png",
+          "bytes": 124230,
+          "sha256": "c848f11f8fe549d1981f6db7372abe1cb2c942eafec81434373c9c01b3ef1d75",
+          "path": "assets/planets/venus/color_512_5.png"
+        }
+      ]
+    }
+  },
+  "failures": [],
+  "rings": [
+    {
+      "name": "top",
+      "source": "https://eyes.nasa.gov/assets/static/sprites/saturn_rings_top.png",
+      "bytes": 3588,
+      "sha256": "252cb62b178d13061b4b8657fc78e3c7abdadcb028b681188a02df764f1f230d",
+      "path": "assets/planet-rings/saturn_rings_top.png"
+    },
+    {
+      "name": "bottom",
+      "source": "https://eyes.nasa.gov/assets/static/sprites/saturn_rings_bottom.png",
+      "bytes": 1066,
+      "sha256": "b591976e3f456bb4f29a20f8547a71e3581be9f839fa73bd2a99f6dce9869ea0",
+      "path": "assets/planet-rings/saturn_rings_bottom.png"
+    }
+  ],
+  "ringGeometry": {
+    "saturn": {
+      "innerRadiusKm": 74270.580913,
+      "outerRadiusKm": 140478.924731,
+      "source": "NASA Eyes recovered catalog.generated.json:59117"
+    }
+  }
+}

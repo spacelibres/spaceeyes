@@ -56,6 +56,12 @@ fn visual_changes_require_ownership_permission_and_registered_assets() {
     );
     let missing = VisualSpec::Sphere {
         texture_asset: Some("missing:image".into()),
+        face_assets: None,
+        ring_assets: None,
+        ring_inner_radius_ratio: None,
+        ring_outer_radius_ratio: None,
+        color_rgba: None,
+        emissive_rgba: None,
     };
     assert_eq!(
         core.set_visual("owner", "one.plugin", "object:test", Some(missing)),
@@ -81,6 +87,12 @@ fn stale_load_completions_cannot_resurrect_replaced_or_removed_visuals() {
         "object:test",
         Some(VisualSpec::Sphere {
             texture_asset: None,
+            face_assets: None,
+            ring_assets: None,
+            ring_inner_radius_ratio: None,
+            ring_outer_radius_ratio: None,
+            color_rgba: None,
+            emissive_rgba: None,
         }),
     )
     .unwrap();
@@ -139,5 +151,93 @@ fn catalog_rejects_remote_escaping_and_incompatible_resource_paths() {
             }
         ),
         Err(CoreError::DuplicateAsset)
+    );
+}
+
+#[test]
+fn rings_require_registered_textures_and_ordered_physical_ratios() {
+    let mut core = setup();
+    for id in ["ring:top", "ring:bottom"] {
+        core.register_asset(
+            id,
+            AssetDescriptor {
+                kind: AssetKind::Texture,
+                path: format!("{}.png", id.replace(':', "-")),
+            },
+        )
+        .unwrap();
+    }
+    let make = |inner, outer| VisualSpec::Sphere {
+        texture_asset: None,
+        face_assets: None,
+        ring_assets: Some(["ring:top".into(), "ring:bottom".into()]),
+        ring_inner_radius_ratio: Some(inner),
+        ring_outer_radius_ratio: Some(outer),
+        color_rgba: None,
+        emissive_rgba: None,
+    };
+    assert_eq!(
+        core.set_visual("owner", "one.plugin", "object:test", Some(make(2., 1.))),
+        Err(CoreError::InvalidVisual)
+    );
+    assert_eq!(
+        core.set_visual("owner", "one.plugin", "object:test", Some(make(1., 11.))),
+        Err(CoreError::InvalidVisual)
+    );
+    assert!(
+        core.set_visual("owner", "one.plugin", "object:test", Some(make(1.2, 2.3)))
+            .is_ok()
+    );
+}
+
+#[test]
+fn multipart_visual_ready_waits_for_both_rings_and_failure_is_terminal() {
+    let mut core = setup();
+    for id in ["ring:top", "ring:bottom"] {
+        core.register_asset(
+            id,
+            AssetDescriptor {
+                kind: AssetKind::Texture,
+                path: format!("{}.png", id.replace(':', "-")),
+            },
+        )
+        .unwrap();
+    }
+    let spec: VisualSpec=serde_json::from_value(serde_json::json!({"kind":"sphere","ringAssets":["ring:top","ring:bottom"],"ringInnerRadiusRatio":1.2,"ringOuterRadiusRatio":2.3})).unwrap();
+    core.set_visual("owner", "one.plugin", "object:test", Some(spec.clone()))
+        .unwrap();
+    let rev = core.visual_assignment("object:test").unwrap().revision;
+    core.record_visual_status("object:test", rev, VisualPhase::Ready, None);
+    assert_eq!(
+        core.visual_status("object:test").unwrap().unwrap().phase,
+        VisualPhase::Loading
+    );
+    core.record_visual_part_ready("object:test", rev, "ring-top");
+    assert_eq!(
+        core.visual_status("object:test").unwrap().unwrap().phase,
+        VisualPhase::Loading
+    );
+    core.record_visual_part_ready("object:test", rev, "ring-bottom");
+    assert_eq!(
+        core.visual_status("object:test").unwrap().unwrap().phase,
+        VisualPhase::Ready
+    );
+    core.record_visual_status(
+        "object:test",
+        rev,
+        VisualPhase::Failed,
+        Some("part failed".into()),
+    );
+    assert!(!core.record_visual_status("object:test", rev, VisualPhase::Ready, None));
+    assert!(!core.record_visual_part_ready("object:test", rev, "ring-bottom"));
+    assert_eq!(
+        core.visual_status("object:test").unwrap().unwrap().phase,
+        VisualPhase::Failed
+    );
+    core.set_visual("owner", "one.plugin", "object:test", Some(spec))
+        .unwrap();
+    assert_eq!(
+        core.visual_status("object:test").unwrap().unwrap().phase,
+        VisualPhase::Pending
     );
 }

@@ -2,6 +2,7 @@ use spaceeyes_core::{Core, CoreError, ObjectState, SessionPermissions};
 
 fn sample() -> ObjectState {
     ObjectState {
+        orientation_wxyz: None,
         position_km: [0.0; 3],
         radius_km: 1.0,
         epoch_tdb_seconds: 0.0,

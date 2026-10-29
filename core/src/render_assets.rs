@@ -8,7 +8,6 @@ use bevy::world_serialization::WorldInstanceReady;
 #[derive(Resource)]
 pub(crate) struct SharedVisuals {
     pub mesh: Handle<Mesh>,
-    pub material: Handle<StandardMaterial>,
 }
 #[derive(Component)]
 pub(crate) struct AppliedVisual {
@@ -58,11 +57,68 @@ pub(crate) fn attach_visuals(
         let spec = assignment.map_or(
             VisualSpec::Sphere {
                 texture_asset: None,
+                face_assets: None,
+                ring_assets: None,
+                ring_inner_radius_ratio: None,
+                ring_outer_radius_ratio: None,
+                color_rgba: None,
+                emissive_rgba: None,
             },
             |visual| visual.spec,
         );
         core.record_visual_status(&object.id, revision, VisualPhase::Loading, None);
+        let ring = match &spec {
+            VisualSpec::Sphere {
+                ring_assets: Some(ids),
+                ring_inner_radius_ratio: Some(inner),
+                ring_outer_radius_ratio: Some(outer),
+                ..
+            } => Some((ids.clone(), *inner as f32, *outer as f32)),
+            _ => None,
+        };
         let root = match spec {
+            VisualSpec::Sphere {
+                face_assets: Some(face_assets),
+                color_rgba,
+                emissive_rgba,
+                ..
+            } => {
+                let paths: Option<Vec<_>> = face_assets
+                    .iter()
+                    .map(|id| core.asset_descriptor(id).map(|asset| asset.path.clone()))
+                    .collect();
+                let Some(paths) = paths else {
+                    continue;
+                };
+                let handles = std::array::from_fn(|i| assets.load::<Image>(paths[i].clone()));
+                let material = materials.add(StandardMaterial {
+                    base_color: color_rgba
+                        .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
+                        .unwrap_or(Color::WHITE),
+                    emissive: emissive_rgba
+                        .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                        .unwrap_or(LinearRgba::BLACK),
+                    ..default()
+                });
+                commands
+                    .spawn((
+                        Mesh3d(shared.mesh.clone()),
+                        MeshMaterial3d(material.clone()),
+                        Transform::default(),
+                        Visibility::Hidden,
+                        ChildOf(parent),
+                        crate::face_texture::PendingFaces {
+                            pixels: Vec::new(),
+                            next_row: 0,
+                            object: object.id.clone(),
+                            revision,
+                            handles,
+                            material,
+                        },
+                    ))
+                    .id()
+            }
+
             VisualSpec::Model {
                 asset_id, scene, ..
             } => {
@@ -95,6 +151,12 @@ pub(crate) fn attach_visuals(
             }
             VisualSpec::Sphere {
                 texture_asset: Some(asset_id),
+                face_assets: _,
+                ring_assets: _,
+                ring_inner_radius_ratio: _,
+                ring_outer_radius_ratio: _,
+                color_rgba,
+                emissive_rgba,
             } => {
                 let Some(descriptor) = core.asset_descriptor(&asset_id) else {
                     continue;
@@ -102,6 +164,13 @@ pub(crate) fn attach_visuals(
                 let image: Handle<Image> = assets.load(descriptor.path.clone());
                 let material = materials.add(StandardMaterial {
                     base_color_texture: Some(image.clone()),
+                    emissive_texture: Some(image.clone()),
+                    base_color: color_rgba
+                        .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
+                        .unwrap_or(Color::WHITE),
+                    emissive: emissive_rgba
+                        .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                        .unwrap_or(LinearRgba::BLACK),
                     perceptual_roughness: 0.9,
                     ..default()
                 });
@@ -123,18 +192,55 @@ pub(crate) fn attach_visuals(
             }
             VisualSpec::Sphere {
                 texture_asset: None,
+                face_assets: None,
+                ring_assets: _,
+                ring_inner_radius_ratio: _,
+                ring_outer_radius_ratio: _,
+                color_rgba,
+                emissive_rgba,
             } => {
                 core.record_visual_status(&object.id, revision, VisualPhase::Ready, None);
                 commands
                     .spawn((
                         Mesh3d(shared.mesh.clone()),
-                        MeshMaterial3d(shared.material.clone()),
+                        MeshMaterial3d(
+                            materials.add(StandardMaterial {
+                                base_color: color_rgba
+                                    .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
+                                    .unwrap_or(Color::WHITE),
+                                emissive: emissive_rgba
+                                    .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                                    .unwrap_or(LinearRgba::BLACK),
+                                ..default()
+                            }),
+                        ),
                         Transform::default(),
                         ChildOf(parent),
                     ))
                     .id()
             }
         };
+        if let Some((ids, inner, outer)) = ring {
+            for (side, id) in ids.iter().enumerate() {
+                let Some(asset) = core.asset_descriptor(id) else {
+                    continue;
+                };
+                let image = assets.load::<Image>(asset.path.clone());
+                commands.spawn((
+                    ChildOf(root),
+                    crate::ring_texture::PendingRing {
+                        pixels: Vec::new(),
+                        next_row: 0,
+                        object: object.id.clone(),
+                        revision,
+                        image,
+                        inner,
+                        outer,
+                        bottom: side == 1,
+                    },
+                ));
+            }
+        }
         commands
             .entity(parent)
             .insert((Visibility::Inherited, AppliedVisual { revision, root }));

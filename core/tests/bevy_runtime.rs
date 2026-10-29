@@ -25,6 +25,7 @@ fn real_bevy_entities_follow_core_and_use_double_precision_local_origin() {
             "a",
             "body:test",
             ObjectState {
+                orientation_wxyz: None,
                 position_km: [1e12 + 1.0, 2.0, 3.0],
                 radius_km: 1.0,
                 epoch_tdb_seconds: 0.0,
@@ -134,6 +135,7 @@ fn clock_epoch_survives_json_publication_without_respawning_scene() {
             core.tick(0.016666666666666666).unwrap();
             let epoch = core.clock().epoch();
             let sample = ObjectState {
+                orientation_wxyz: None,
                 position_km: [0.0; 3],
                 radius_km: 1.0,
                 epoch_tdb_seconds: epoch,

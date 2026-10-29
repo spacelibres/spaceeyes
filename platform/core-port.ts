@@ -1,21 +1,55 @@
 // Internal host-to-core adapter boundary, not a public wire protocol.
 // An implementation must forward to Rust/Bevy and validate target existence there.
-import type { ObjectState } from './state-contract.ts';
-import type { VisualSpec, VisualStatus } from './visual-contract.ts';
+import type { ObjectState } from "./state-contract.ts";
+import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 export interface FocusRequest {
   readonly pluginId: string;
   readonly sessionId: string;
   readonly targetId: string;
 }
 export interface CorePort {
-  openSession(request: { readonly pluginId: string; readonly sessionId: string; readonly cameraControl: boolean;
-    readonly dataPublish: boolean; readonly timeControl: boolean; readonly visualControl: boolean }): void;
+  openSession(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly cameraControl: boolean;
+    readonly dataPublish: boolean;
+    readonly timeControl: boolean;
+    readonly visualControl: boolean;
+  }): void;
+  trajectory?(
+    request: FocusRequest & { points: readonly (readonly number[])[] },
+  ): void;
+  label?(request: FocusRequest & { text: string }): void;
+  layers?(request: {
+    pluginId: string;
+    sessionId: string;
+    labels: boolean;
+    trajectories: boolean;
+  }): void;
+  cameraView?(request: {
+    pluginId: string;
+    sessionId: string;
+    mode: "overview" | "top" | "front" | "side" | "orbit";
+  }): void;
   focus(request: FocusRequest): void;
-  publishObject?(request: FocusRequest & { readonly state: Readonly<ObjectState> }): void;
+  publishObject?(
+    request: FocusRequest & { readonly state: Readonly<ObjectState> },
+  ): void;
   removeObject?(request: FocusRequest): void;
-  setVisual?(request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null }): void;
+  setVisual?(
+    request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null },
+  ): void;
   visualStatus?(request: FocusRequest): VisualStatus | null;
-  seek?(request: { readonly pluginId: string; readonly sessionId: string; readonly epochTdbSeconds: number }): void;
-  setPlayback?(request: { readonly pluginId: string; readonly sessionId: string; readonly playing: boolean; readonly rate: number }): void;
+  seek?(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly epochTdbSeconds: number;
+  }): void;
+  setPlayback?(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly playing: boolean;
+    readonly rate: number;
+  }): void;
   releaseSession(sessionId: string): void | Promise<void>;
 }

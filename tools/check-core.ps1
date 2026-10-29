@@ -1,4 +1,4 @@
-param([string]$Samples, [switch]$Renderer, [switch]$JunoAssets, [switch]$Workspace, [switch]$NativeCamera)
+param([string]$Samples, [switch]$Renderer, [switch]$JunoAssets, [switch]$Workspace, [switch]$NativeCamera, [switch]$SolarAssets)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 function Invoke-Check([string]$Executable, [string[]]$Arguments) {
@@ -7,12 +7,10 @@ function Invoke-Check([string]$Executable, [string[]]$Arguments) {
 }
 Push-Location $projectRoot
 try {
+    if ($Workspace -and -not $Renderer) { throw '-Workspace requires -Renderer.' }
     Invoke-Check cargo @('fmt', '--manifest-path', 'core/Cargo.toml', '--check')
     Invoke-Check cargo @('test', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'bevy-runtime')
     Invoke-Check cargo @('clippy', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'bevy-runtime', '--all-targets', '--', '-D', 'warnings')
-    if ($NativeCamera) {
-        Invoke-Check cargo @('test', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--lib', 'renderer::')
-    }
     Invoke-Check node @('--test', 'platform/tests/*.test.ts', 'validation/tests/*.test.ts')
     # Requires npm ci --prefix platform; never silently use a compiler from old code.
     Invoke-Check node @('platform/node_modules/typescript/bin/tsc', '--project', 'platform/tsconfig.json')
@@ -24,8 +22,9 @@ try {
         Invoke-Check cargo @('build', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--target', 'wasm32-unknown-unknown', '--jobs', '2')
         Invoke-Check cargo @('clippy', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--target', 'wasm32-unknown-unknown', '--lib', '--', '-D', 'warnings')
         Invoke-Check wasm-bindgen @('core/target/wasm32-unknown-unknown/debug/spaceeyes_core.wasm', '--target', 'web', '--out-dir', 'core/pkg-web')
-        Invoke-Check wasm-bindgen @('core/target/wasm32-unknown-unknown/debug/spaceeyes_core.wasm', '--target', 'nodejs', '--out-dir', 'core/pkg')
-        Invoke-Check node @('--test', 'platform/integration/wasm.test.ts')
+        # Node tests exercise the real foundation WASM; they cannot run a GPU renderer.
+        # Keep that Node binding and verify rendering with Web bindings, native tests and browser evidence.
+        Write-Output 'Renderer Web WASM exported. Headless Node tests retain the foundation WASM; GPU checks remain separate.'
     }
     if ($Samples) {
         Invoke-Check node @('validation/verify.ts', '--samples', $Samples, '--output', 'validation/results/latest.json')
@@ -41,12 +40,17 @@ try {
         Invoke-Check pwsh @('-NoProfile', '-File', 'tools/prepare-juno.ps1', '-Offline')
     }
     if ($Workspace) {
+        Invoke-Check node @('web/scripts/prepare-runtime.mjs')
         Invoke-Check node @('--test', 'web/lib/*.test.ts')
+        Invoke-Check node @('--test', 'web/integration/*.test.ts')
         Invoke-Check node @('web/node_modules/typescript/bin/tsc', '--project', 'web/tsconfig.json', '--noEmit')
-        if ($JunoAssets) { Invoke-Check node @('web/scripts/prepare-assets.mjs') }
         Push-Location (Join-Path $projectRoot 'web')
         try { Invoke-Check node @('node_modules/next/dist/bin/next', 'build', '--webpack') }
         finally { Pop-Location }
+    }
+    if ($SolarAssets) { Invoke-Check pwsh @('-NoProfile', '-File', 'tools/prepare-solar-assets.ps1', '-Offline') }
+    if ($NativeCamera) {
+        Invoke-Check cargo @('test', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--lib')
     }
     Write-Output 'Core checks passed. Renderer switch checks build/export, not GPU pixels; browser evidence must be recorded separately.'
 } finally { Pop-Location }

@@ -66,3 +66,19 @@ host.register({
 ## 验证
 
 运行 `node --test platform/tests/*.test.ts` 检查 SDK 逻辑；完整集中验证执行 `pwsh -File tools/check-core.ps1`，会重新生成 WASM 并执行 `platform/integration/wasm.test.ts`。测试包括无权限、核心缺失、无效目标、旧会话、重启隔离、释放和真实 Rust 再验证。真实 WASM 集成不代表 Bevy 聚焦、GPU 画面或不可信插件隔离通过。技能书行为测试尚未单独验收。
+
+## 第一版整体显示控制扩展
+
+- `camera.view('overview' | 'top' | 'front' | 'side' | 'orbit')` 需要 `camera.control`。overview 使用当前有效对象的科学位置与半径包围范围计算总览；`camera.focus(id)` 随仿真状态持续跟随。显示原点和缩放不修改科学状态。
+- `ObjectState.orientationWxyz?: [w,x,y,z]` 是单位四元数，body-local 到 ICRF；平方模误差不得超过 `1e-6`。省略时视为无额外旋转。Bevy 显示使用既有 `(x,z,-y)` 基变换。
+- `visual.trajectory(targetId, points)` 接收 ICRF km 三元组数组；每会话最多 4096 点、有限数值，空数组清除。Bevy 内置 Gizmos 绘制。
+- `visual.label(targetId, text)` 最多 256 Unicode 字符，不接受控制字符，空串清除；Bevy 原生 UI Text 经 Camera world_to_viewport 投影显示。
+- 字符校验不代表字形覆盖。当前默认字库未配置中文字形，内置标签使用 ASCII 对象标识；完整多语言标签不属于本版已验收能力。
+- `visual.layers({ labels, trajectories })` 仅控制调用会话自有对象对应显示层。以上均需 `scene.visual`，Rust 再次验证权限与对象归属；移除对象/释放会话清理附属状态。
+- sphere `VisualSpec` 可选 `colorRgba`、`emissiveRgba`，均为 `[r,g,b,a]`，各通道有限且 `[0,1]`。由 Bevy `StandardMaterial` 执行；纹理仍通过宿主资源目录 `textureAsset`，不得虚构 NASA 资源。
+- 宿主 `WasmCore.utc_to_tdb(unixSeconds)` 使用独立 Hifitime 4.3.1 转换 UTC Unix 秒为 J2000 TDB 秒，不改变 clock；不链接 Nyx。闰秒依据库内表，未来闰秒需随资料维护。
+
+- sphere `faceAssets?: [string,string,string,string,string,string]` 与 `textureAsset` 互斥，六个资源均须在Rust目录登记为texture。按恢复CubeMap原面号 +X,+Y,-X,-Y,+Z,-Z，以及其U/V面基重采样；输出2048x1024，64组有界缓存。使用Bevy原生Image、UV Sphere和StandardMaterial，不替换PBR渲染器。载入/解码失败报告failed，不呈现未完成纹理。GPU地标、极向和接缝验收独立于编译通过。
+- 宿主 `WasmCore.tdb_to_utc(tdbSeconds)` 是同一Hifitime的反向换算纯函数，返回Unix秒。
+
+- sphere环：`ringAssets: [topId,bottomId]`，同时必填`ringInnerRadiusRatio`、`ringOuterRadiusRatio`，满足1<=inner<outer<=10。NASA原环图是径向条带，按恢复RingsComponent的u=(r-inner)/(outer-inner)展开1024二维透明纹理；两片Bevy Plane3d各背面剔除，跟随父对象姿态。相机按outer展示范围取景，不改变科学radiusKm。

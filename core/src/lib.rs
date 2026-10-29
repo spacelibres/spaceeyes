@@ -1,5 +1,6 @@
 //! Core-owned state, lifecycle and resource contracts, with optional Bevy display adapters.
 use std::collections::{HashMap, HashSet};
+pub type AnnotationRef<'a> = (&'a str, Option<&'a str>, Option<&'a [[f64; 3]]>);
 pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
 #[cfg(feature = "bevy-runtime")]
 mod runtime;
@@ -7,9 +8,13 @@ mod runtime;
 pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
 mod clock;
 #[cfg(feature = "browser-render")]
+mod face_texture;
+#[cfg(feature = "browser-render")]
 mod render_assets;
 #[cfg(feature = "browser-render")]
 mod renderer;
+#[cfg(feature = "browser-render")]
+mod ring_texture;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
@@ -76,6 +81,7 @@ pub struct Core {
     assets: HashMap<String, AssetDescriptor>,
     visuals: HashMap<String, VisualAssignment>,
     visual_statuses: HashMap<String, VisualStatus>,
+    visual_parts: HashMap<String, HashSet<String>>,
     next_visual_revision: u64,
     limits: CoreLimits,
     sessions: HashMap<String, Session>,
@@ -84,6 +90,11 @@ pub struct Core {
     objects: HashMap<String, String>,
     states: HashMap<String, ObjectState>,
     focus: Option<(String, String)>,
+    camera_view: String,
+    focus_revision: u64,
+    trajectories: HashMap<String, Vec<[f64; 3]>>,
+    labels: HashMap<String, String>,
+    layers: HashMap<String, (bool, bool)>,
     clock: SimulationClock,
     time_owner: Option<String>,
 }
@@ -167,9 +178,12 @@ impl Core {
             return Err(CoreError::WrongOwner);
         }
         self.objects.remove(object_id);
+        self.trajectories.remove(object_id);
+        self.labels.remove(object_id);
         self.states.remove(object_id);
         self.visuals.remove(object_id);
         self.visual_statuses.remove(object_id);
+        self.visual_parts.remove(object_id);
         if self.focused_object() == Some(object_id) {
             self.focus = None;
         }
@@ -330,7 +344,115 @@ impl Core {
         if !self.objects.contains_key(target_id) {
             return Err(CoreError::UnknownObject);
         }
+        self.focus_revision = self
+            .focus_revision
+            .checked_add(1)
+            .ok_or(CoreError::CapacityExceeded)?;
         self.focus = Some((session_id.to_owned(), target_id.to_owned()));
+        Ok(())
+    }
+
+    pub fn set_annotation(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Option<Vec<[f64; 3]>>,
+        label: Option<String>,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session, plugin)?.visual_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if self.objects.get(id).ok_or(CoreError::UnknownObject)? != session {
+            return Err(CoreError::WrongOwner);
+        }
+        if let Some(points) = points {
+            let used: usize = self
+                .trajectories
+                .iter()
+                .filter(|(key, _)| {
+                    key.as_str() != id
+                        && self.objects.get(*key).is_some_and(|owner| owner == session)
+                })
+                .map(|(_, points)| points.len())
+                .sum();
+            if used.saturating_add(points.len()) > 4096
+                || points.iter().flatten().any(|n| !n.is_finite())
+            {
+                return Err(CoreError::InvalidVisual);
+            }
+            self.trajectories.insert(id.to_owned(), points);
+        }
+        if let Some(label) = label {
+            if label.chars().count() > 256 || label.chars().any(|c| c.is_control()) {
+                return Err(CoreError::InvalidVisual);
+            }
+            self.labels.insert(id.to_owned(), label);
+        }
+        Ok(())
+    }
+    pub fn set_layers(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        labels: bool,
+        trajectories: bool,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session, plugin)?.visual_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        self.layers
+            .insert(session.to_owned(), (labels, trajectories));
+        Ok(())
+    }
+    pub fn annotations(&self) -> impl Iterator<Item = AnnotationRef<'_>> {
+        self.objects.iter().map(|(id, owner)| {
+            let (labels, trajectories) = self.layers.get(owner).copied().unwrap_or((true, true));
+            (
+                id.as_str(),
+                if labels {
+                    self.labels.get(id).map(String::as_str)
+                } else {
+                    None
+                },
+                if trajectories {
+                    self.trajectories.get(id).map(Vec::as_slice)
+                } else {
+                    None
+                },
+            )
+        })
+    }
+
+    pub fn focus_revision(&self) -> u64 {
+        self.focus_revision
+    }
+    pub fn camera_view(&self) -> &str {
+        &self.camera_view
+    }
+    pub fn set_camera_view(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        mode: &str,
+    ) -> Result<(), CoreError> {
+        let session = self
+            .sessions
+            .get(session_id)
+            .ok_or(CoreError::InactiveSession)?;
+        if session.plugin_id != plugin_id {
+            return Err(CoreError::WrongOwner);
+        }
+        if !session.permissions.camera_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !["overview", "top", "front", "side", "orbit"].contains(&mode) {
+            return Err(CoreError::InvalidState);
+        }
+        if mode == "overview" {
+            self.focus = None;
+        }
+        self.camera_view = mode.to_owned();
         Ok(())
     }
 
@@ -339,6 +461,11 @@ impl Core {
     }
 
     pub fn release_session(&mut self, id: &str) {
+        self.layers.remove(id);
+        self.trajectories
+            .retain(|object, _| self.objects.get(object).is_some_and(|owner| owner != id));
+        self.labels
+            .retain(|object, _| self.objects.get(object).is_some_and(|owner| owner != id));
         if self.time_owner.as_deref() == Some(id) {
             self.clock.set_playing(false);
             self.time_owner = None;
@@ -351,6 +478,8 @@ impl Core {
             .retain(|object_id, _| self.objects.contains_key(object_id));
         self.visual_statuses
             .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visual_parts
+            .retain(|object_id, _| self.objects.contains_key(object_id));
         if self
             .focus
             .as_ref()
@@ -358,5 +487,41 @@ impl Core {
         {
             self.focus = None;
         }
+    }
+}
+
+#[cfg(test)]
+mod annotation_tests {
+    use super::*;
+    #[test]
+    fn annotations_enforce_owner_budget_layers_and_cleanup() {
+        let mut c = Core::default();
+        for session in ["a", "b"] {
+            c.open_session_with_permissions(
+                session,
+                session,
+                SessionPermissions {
+                    visual_control: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            c.register_object(session, session).unwrap();
+        }
+        assert_eq!(
+            c.set_annotation("a", "a", "b", None, Some("bad".into())),
+            Err(CoreError::WrongOwner)
+        );
+        assert_eq!(
+            c.set_annotation("a", "a", "a", Some(vec![[0.; 3]; 4097]), None),
+            Err(CoreError::InvalidVisual)
+        );
+        c.set_annotation("a", "a", "a", Some(vec![[0.; 3]; 2]), Some("Earth".into()))
+            .unwrap();
+        c.set_layers("a", "a", false, false).unwrap();
+        let (_, label, trajectory) = c.annotations().find(|(id, _, _)| *id == "a").unwrap();
+        assert!(label.is_none() && trajectory.is_none());
+        c.release_session("a");
+        assert!(!c.labels.contains_key("a") && !c.trajectories.contains_key("a"));
     }
 }

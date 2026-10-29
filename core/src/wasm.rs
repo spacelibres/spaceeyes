@@ -76,6 +76,58 @@ impl WasmCore {
             .map_err(|e| format!("{e:?}"))
     }
 
+    pub fn tdb_to_utc(&self, tdb_seconds: f64) -> Result<f64, String> {
+        if !tdb_seconds.is_finite() || tdb_seconds.abs() > 1e12 {
+            return Err("InvalidTime".into());
+        }
+        Ok(hifitime::Epoch::from_tdb_seconds(tdb_seconds).to_unix_seconds())
+    }
+    pub fn utc_to_tdb(&self, unix_seconds: f64) -> Result<f64, String> {
+        if !unix_seconds.is_finite() || unix_seconds.abs() > 1e12 {
+            return Err("InvalidTime".into());
+        }
+        Ok(hifitime::Epoch::from_unix_seconds(unix_seconds).to_tdb_seconds())
+    }
+    pub fn trajectory(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        target: &str,
+        points_json: &str,
+    ) -> Result<(), String> {
+        let points = serde_json::from_str(points_json).map_err(|_| "InvalidVisual".to_owned())?;
+        self.lock()?
+            .set_annotation(session, plugin, target, Some(points), None)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn label(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        target: &str,
+        text: &str,
+    ) -> Result<(), String> {
+        self.lock()?
+            .set_annotation(session, plugin, target, None, Some(text.to_owned()))
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn layers(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        labels: bool,
+        trajectories: bool,
+    ) -> Result<(), String> {
+        self.lock()?
+            .set_layers(session, plugin, labels, trajectories)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn camera_view(&mut self, session: &str, plugin: &str, mode: &str) -> Result<(), String> {
+        self.lock()?
+            .set_camera_view(session, plugin, mode)
+            .map_err(|e| format!("{e:?}"))
+    }
+
     pub fn register_asset(&mut self, id: &str, path: &str, kind: &str) -> Result<(), String> {
         let kind = match kind {
             "model" => AssetKind::Model,

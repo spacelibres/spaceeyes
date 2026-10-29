@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-10-29T09:36:47.5734476Z",
+  "epochTdbSeconds": 0,
+  "service": "Next production localhost:3007",
+  "results": [
+    {
+      "id": "mercury",
+      "status": 200,
+      "bytes": 2692,
+      "error": ""
+    },
+    {
+      "id": "venus",
+      "status": 502,
+      "bytes": 49,
+      "error": "sample times must increase"
+    },
+    {
+      "id": "earth",
+      "status": 200,
+      "bytes": 30916,
+      "error": ""
+    },
+    {
+      "id": "jupiter",
+      "status": 200,
+      "bytes": 2548,
+      "error": ""
+    },
+    {
+      "id": "mars",
+      "status": 502,
+      "bytes": 49,
+      "error": "sample times must increase"
+    },
+    {
+      "id": "moon",
+      "status": 200,
+      "bytes": 3268,
+      "error": ""
+    },
+    {
+      "id": "uranus",
+      "status": 200,
+      "bytes": 2692,
+      "error": ""
+    },
+    {
+      "id": "neptune",
+      "status": 200,
+      "bytes": 1900,
+      "error": ""
+    },
+    {
+      "id": "saturn",
+      "status": 200,
+      "bytes": 4708,
+      "error": ""
+    }
+  ]
+}

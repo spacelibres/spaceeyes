@@ -30,6 +30,18 @@ pub enum VisualSpec {
     Sphere {
         #[serde(default)]
         texture_asset: Option<String>,
+        #[serde(default)]
+        ring_assets: Option<[String; 2]>,
+        #[serde(default)]
+        ring_inner_radius_ratio: Option<f64>,
+        #[serde(default)]
+        ring_outer_radius_ratio: Option<f64>,
+        #[serde(default)]
+        face_assets: Option<Box<[String; 6]>>,
+        #[serde(default)]
+        color_rgba: Option<[f32; 4]>,
+        #[serde(default)]
+        emissive_rgba: Option<[f32; 4]>,
     },
 }
 
@@ -144,6 +156,7 @@ impl Core {
         let Some(spec) = spec else {
             self.visuals.remove(id);
             self.visual_statuses.remove(id);
+            self.visual_parts.remove(id);
             return Ok(());
         };
         let expected = match &spec {
@@ -157,9 +170,64 @@ impl Core {
                 }
                 Some((asset_id, AssetKind::Model))
             }
-            VisualSpec::Sphere { texture_asset } => texture_asset
-                .as_ref()
-                .map(|asset| (asset, AssetKind::Texture)),
+            VisualSpec::Sphere {
+                texture_asset,
+                face_assets,
+                ring_assets,
+                ring_inner_radius_ratio,
+                ring_outer_radius_ratio,
+                color_rgba,
+                emissive_rgba,
+            } => {
+                if color_rgba
+                    .iter()
+                    .chain(emissive_rgba.iter())
+                    .flatten()
+                    .any(|n| !n.is_finite() || *n < 0.0 || *n > 1.0)
+                {
+                    return Err(CoreError::InvalidVisual);
+                }
+                if let Some(rings) = ring_assets {
+                    let inner = ring_inner_radius_ratio.ok_or(CoreError::InvalidVisual)?;
+                    let outer = ring_outer_radius_ratio.ok_or(CoreError::InvalidVisual)?;
+                    if !inner.is_finite()
+                        || !outer.is_finite()
+                        || inner < 1.0
+                        || inner >= outer
+                        || outer > 10.0
+                    {
+                        return Err(CoreError::InvalidVisual);
+                    }
+                    for id in rings {
+                        if self
+                            .assets
+                            .get(id)
+                            .is_none_or(|a| a.kind != AssetKind::Texture)
+                        {
+                            return Err(CoreError::UnknownAsset);
+                        }
+                    }
+                } else if ring_inner_radius_ratio.is_some() || ring_outer_radius_ratio.is_some() {
+                    return Err(CoreError::InvalidVisual);
+                }
+                if let Some(faces) = face_assets {
+                    if texture_asset.is_some() {
+                        return Err(CoreError::InvalidVisual);
+                    }
+                    for id in faces.iter() {
+                        if self
+                            .assets
+                            .get(id)
+                            .is_none_or(|a| a.kind != AssetKind::Texture)
+                        {
+                            return Err(CoreError::UnknownAsset);
+                        }
+                    }
+                }
+                texture_asset
+                    .as_ref()
+                    .map(|asset| (asset, AssetKind::Texture))
+            }
         };
         if let Some((asset_id, kind)) = expected {
             let descriptor = self.assets.get(asset_id).ok_or(CoreError::UnknownAsset)?;
@@ -172,6 +240,18 @@ impl Core {
             .checked_add(1)
             .ok_or(CoreError::CapacityExceeded)?;
         self.next_visual_revision = revision;
+        let mut parts = std::collections::HashSet::from(["surface".to_owned()]);
+        if matches!(
+            &spec,
+            VisualSpec::Sphere {
+                ring_assets: Some(_),
+                ..
+            }
+        ) {
+            parts.insert("ring-top".into());
+            parts.insert("ring-bottom".into());
+        }
+        self.visual_parts.insert(id.to_owned(), parts);
         self.visuals
             .insert(id.to_owned(), VisualAssignment { revision, spec });
         self.visual_statuses.insert(
@@ -207,6 +287,27 @@ impl Core {
         {
             return false;
         }
+        if self.visual_statuses.get(id).is_some_and(|status| {
+            status.revision == revision && status.phase == VisualPhase::Failed
+        }) {
+            return false;
+        }
+        let phase = if phase == VisualPhase::Ready {
+            if let Some(parts) = self.visual_parts.get_mut(id) {
+                parts.remove("surface");
+            }
+            if self
+                .visual_parts
+                .get(id)
+                .is_some_and(|parts| !parts.is_empty())
+            {
+                VisualPhase::Loading
+            } else {
+                VisualPhase::Ready
+            }
+        } else {
+            phase
+        };
         self.visual_statuses.insert(
             id.to_owned(),
             VisualStatus {
@@ -216,6 +317,29 @@ impl Core {
             },
         );
         true
+    }
+
+    pub fn record_visual_part_ready(&mut self, id: &str, revision: u64, part: &str) -> bool {
+        if self.visuals.get(id).is_none_or(|v| v.revision != revision)
+            || self
+                .visual_statuses
+                .get(id)
+                .is_some_and(|s| s.phase == VisualPhase::Failed)
+        {
+            return false;
+        }
+        if let Some(parts) = self.visual_parts.get_mut(id) {
+            parts.remove(part);
+        }
+        if self
+            .visual_parts
+            .get(id)
+            .is_some_and(|parts| parts.is_empty())
+        {
+            self.record_visual_status(id, revision, VisualPhase::Ready, None)
+        } else {
+            true
+        }
     }
 
     #[cfg(feature = "bevy-runtime")]

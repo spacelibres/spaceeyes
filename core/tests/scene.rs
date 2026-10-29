@@ -2,6 +2,7 @@ use spaceeyes_core::{Core, CoreError, ObjectState, SimulationClock};
 
 fn state(x: f64) -> ObjectState {
     ObjectState {
+        orientation_wxyz: None,
         position_km: [x, 0.0, 0.0],
         radius_km: 6378.0,
         epoch_tdb_seconds: 10.0,

@@ -1,6 +1,6 @@
 [package]
 name = "spaceeyes-core"
-version = "0.0.6"
+version = "0.0.7"
 edition = "2024"
 license = "MIT"
 
@@ -9,6 +9,7 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+hifitime = "=4.3.1"
 serde = { version = "=1.0.229", features = ["derive"] }
 serde_json = { version = "=1.0.154", features = ["float_roundtrip"] }
 wasm-bindgen = "=0.2.129"
@@ -16,4 +17,4 @@ bevy = { version = "=0.19.1", default-features = false, features = ["std"], opti
 
 [features]
 bevy-runtime = ["dep:bevy"]
-browser-render = ["bevy-runtime", "bevy/default_app", "bevy/3d_bevy_render", "bevy/bevy_winit", "bevy/scene", "bevy/webgl2", "bevy/x11", "bevy/jpeg", "bevy/webp"]
+browser-render = ["bevy-runtime", "bevy/default_app", "bevy/3d_bevy_render", "bevy/bevy_winit", "bevy/scene", "bevy/webgl2", "bevy/x11", "bevy/ui", "bevy/default_font", "bevy/jpeg", "bevy/webp"]

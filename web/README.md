@@ -1,11 +1,24 @@
 # 太空之眼网页工作区
 
-设计：Next.js仅承载工作区；宿主拥有WasmCore，通过PluginHost批准的SDK操作合成验证对象、时间、视觉与相机。Bevy拥有场景。明确点击启动，防止React StrictMode挂载触发双重run；退出先关闭插件再停止和释放核心。一次页面只启动一次渲染，停止后刷新重新进入。
+0.0.7 的 Next.js 主入口承载太阳系完整用户流程：总览、目录搜索和关联对象选择、聚焦/跟随与视角切换、统一时间暂停/正负倍速/跳时/返回当前时间、科学来源与覆盖信息、轨迹与标签图层、退出和重新进入。宿主持有 WasmCore，经 PluginHost 批准的 SDK 发出意图；Rust/Bevy 保持场景权威，不用 TS 渲染器替代。
 
-实际限制：对象位置与时间是合成夹具，不是真实Juno轨道。NASA Juno模型仅用于资源接线验证，完整DYN、姿态、轨迹及NASA Eyes基线尚未实现。TDB秒以J2000起算，不进行虚假UTC换算。资源ready不等于GPU验收。
+真实 DYN 数据源插件负责获取、解码和求值位置/姿态并经 SDK 发布。目录、对象来源、覆盖和加载失败在界面反馈。近似星历科学精度尚未验收；Mars/Venus 当前源时间逆序明确 unsupported。旧 Juno 合成验证与独立 DYN 格式诊断位于 `/diagnostics`，不冒充任务轨道。
 
-先运行集中核心构建及tools/prepare-juno.ps1，再运行npm --prefix web run prepare:assets；仅复制固定WASM入口和校验散列的11文件Juno包。生成资源及node_modules不提交。npm --prefix web run dev启动；test、typecheck、build分别验证交互控制逻辑、类型和生产构建。浏览器GPU和响应式视觉须另行实测。
+## 启动
 
-真实DYN检查：/api/dyn/earth-orb与earth-ori仅转发manifest固定端点，服务端no-store/拒绝重定向/16MiB预算/长度及SHA256固定校验，支持取消；样本变化明确失败，构建不请求网络、不保存raw。客户端独立ResourceClient与AbortController解码并显示type/count/source和原始ET覆盖。参考系、科学求值未验收，绝不向Rust发布这些未求值记录。
+从仓库根目录执行：
 
-DYN服务端使用15秒总deadline，与请求AbortSignal合并；获取及流读取全过程响应取消，超时丢弃已接收字节并明确报错。
+```powershell
+pwsh -File tools/prepare-juno.ps1
+pwsh -File tools/prepare-solar-assets.ps1
+pwsh -File tools/check-core.ps1 -Renderer -Workspace -NativeCamera -JunoAssets -SolarAssets
+npm --prefix web run dev -- --hostname 127.0.0.1
+```
+
+先安装根 README 列出的锁定工具和 npm 依赖。准备脚本下载十个天体共六十个真实面纹理与两张土星环纹理到 `validation/.cache/solar-assets`，元数据见 `validation/solar-assets.json`。动态资源服务优先读取并验证缓存；缺缓存时按固定 NASA 地址获取，验证长度与 SHA256。资源只使用这条服务路径，无需 public 导出。生成资源和 node_modules 不提交。
+
+用户明确点击启动；退出和路由卸载撤销数据请求、插件会话与渲染资源。重新进入创建新会话，旧请求不得恢复已释放对象。资源 ready 仅表示加载状态，不能代替 GPU 效果验收。
+
+DYN 服务端采用固定白名单、拒绝重定向、16 MiB 大小限制与格式/覆盖校验；每次获取有 20 秒超时，最多递归 8 层并传递请求取消，客户端单次读取有 25 秒超时。动态 DYN 的响应散列用于来源记录；固定表面资源才按已提交散列校验身份。格式变化或上游失败明确反馈，不以伪造状态继续显示。
+
+`test`、`typecheck`、`build` 分别检查逻辑、类型与生产构建。核心集中脚本还检查 Rust、WASM 与资源完整性。本轮浏览器 GPU、响应式视觉、科学精度与完整流程仍在集中验证；不将编译通过或资源可加载视为这些验收已经通过。
