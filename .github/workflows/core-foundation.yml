@@ -11,13 +11,16 @@ jobs:
         with:
           node-version: '24.15.0'
           cache: npm
-          cache-dependency-path: platform/package-lock.json
+          cache-dependency-path: |
+            platform/package-lock.json
+            web/package-lock.json
       - name: Install Rust tools
         run: |
           rustup toolchain install 1.96.0 --profile minimal --component clippy,rustfmt --target wasm32-unknown-unknown
           rustup override set 1.96.0
           cargo install wasm-bindgen-cli --version 0.2.129 --locked
       - run: npm ci --prefix platform --ignore-scripts
+      - run: npm ci --prefix web --ignore-scripts
       - name: Core and real WASM integration
         shell: pwsh
-        run: ./tools/check-core.ps1 -Renderer
+        run: ./tools/check-core.ps1 -Renderer -Workspace

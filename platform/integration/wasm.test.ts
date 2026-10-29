@@ -70,3 +70,20 @@ test('real WASM visual API enforces registered resources, ownership and revision
     assert.throws(() => core.visual_status('object:test'), /UnknownObject/);
   } finally { core.free(); }
 });
+
+test('clock epochs survive 1000 JSON publications without stale state', () => {
+  const core = new WasmCore();
+  try {
+    core.open_session('roundtrip', 'roundtrip.plugin', true, true, true, false);
+    core.set_playback('roundtrip', 'roundtrip.plugin', true, 1);
+    for (let i = 0; i < 1000; i++) {
+      core.tick(1 / 60);
+      const epoch = core.epoch();
+      core.publish_object('roundtrip', 'roundtrip.plugin', 'body:roundtrip', JSON.stringify({
+        positionKm: [0, 0, 0], radiusKm: 1, epochTdbSeconds: epoch,
+        coverageTdbSeconds: [0, 10000], frame: 'ICRF', source: 'roundtrip fixture',
+      }));
+      assert.equal(JSON.parse(core.state_at('body:roundtrip', epoch)).epochTdbSeconds, epoch);
+    }
+  } finally { core.free(); }
+});
