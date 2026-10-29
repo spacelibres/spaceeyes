@@ -10,7 +10,16 @@ fn real_bevy_entities_follow_core_and_use_double_precision_local_origin() {
     let shared: SharedCore = Arc::new(Mutex::new(Core::default()));
     {
         let mut core = shared.lock().unwrap();
-        core.open_session("a", "one.plugin", true).unwrap();
+        core.open_session_with_permissions(
+            "a",
+            "one.plugin",
+            spaceeyes_core::SessionPermissions {
+                camera_control: true,
+                visual_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
         core.register_object("a", "body:test").unwrap();
         core.set_object_state(
             "a",
@@ -48,6 +57,32 @@ fn real_bevy_entities_follow_core_and_use_double_precision_local_origin() {
         query.single(world).unwrap().1.translation,
         Vec3::new(2.0, 3.0, -2.0)
     );
+    {
+        let mut core = shared.lock().unwrap();
+        core.register_asset(
+            "model:test",
+            spaceeyes_core::AssetDescriptor {
+                kind: spaceeyes_core::AssetKind::Model,
+                path: "models/test.glb".into(),
+            },
+        )
+        .unwrap();
+        core.set_visual(
+            "a",
+            "one.plugin",
+            "body:test",
+            Some(spaceeyes_core::VisualSpec::Model {
+                asset_id: "model:test".into(),
+                scene: 0,
+                scale_km_per_unit: 0.001,
+            }),
+        )
+        .unwrap();
+    }
+    app.update();
+    let world = app.world_mut();
+    let mut query = world.query::<(&SceneObject, &Transform)>();
+    assert_eq!(query.single(world).unwrap().1.scale, Vec3::splat(0.001));
     shared.lock().unwrap().release_session("a");
     app.update();
     assert_eq!(

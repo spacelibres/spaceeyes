@@ -1,4 +1,4 @@
-param([string]$Samples, [switch]$Renderer)
+param([string]$Samples, [switch]$Renderer, [switch]$JunoAssets)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 function Invoke-Check([string]$Executable, [string[]]$Arguments) {
@@ -28,6 +28,9 @@ try {
         Invoke-Check node @('validation/verify.ts', '--samples', $Samples, '--output', 'validation/results/latest.json')
     } else {
         Write-Output 'Real resource samples not checked: supply -Samples DIRECTORY.'
+    }
+    if ($JunoAssets) {
+        Invoke-Check pwsh @('-NoProfile', '-File', 'tools/prepare-juno.ps1', '-Offline')
     }
     Write-Output 'Core checks passed. Renderer switch checks build/export, not GPU pixels; browser evidence must be recorded separately.'
 } finally { Pop-Location }

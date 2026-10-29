@@ -1,13 +1,15 @@
 // Original SPACEEYES code, MIT. Trusted in-process plugin lifecycle only.
 import type { CorePort } from './core-port.ts';
 import { snapshotState, targetId as validateTargetId, type ObjectState } from './state-contract.ts';
-export type Capability = 'data.publish' | 'camera.control' | 'time.control';
+import { snapshotVisual, type VisualSpec, type VisualStatus } from './visual-contract.ts';
+export type Capability = 'data.publish' | 'camera.control' | 'time.control' | 'scene.visual';
 export type PluginStatus = 'registered' | 'starting' | 'active' | 'stopping' | 'disabled' | 'failed';
 type Dispose = () => void | Promise<void>;
 export interface PluginContext {
   readonly pluginId: string;
   readonly signal: AbortSignal;
   readonly camera: { focus(targetId: string): void };
+  readonly visual: { set(targetId: string, spec: VisualSpec): void; clear(targetId: string): void; status(targetId: string): Readonly<VisualStatus> | null };
   readonly data: { publish(targetId: string, state: ObjectState): void; remove(targetId: string): void };
   readonly time: { seek(epochTdbSeconds: number): void; setPlayback(playing: boolean, rate: number): void };
   requireCapability(capability: Capability): void;
@@ -21,7 +23,7 @@ export interface PluginManifest {
 export type Activate = (context: PluginContext) => void | Dispose | Promise<void | Dispose>;
 type Session = { controller: AbortController; live: boolean; disposers: Dispose[] };
 type Entry = { manifest: PluginManifest; activate: Activate; state: PluginStatus; busy: boolean; session?: Session; pending?: Promise<void> };
-const capabilities = new Set<string>(['data.publish', 'camera.control', 'time.control']);
+const capabilities = new Set<string>(['data.publish', 'camera.control', 'time.control', 'scene.visual']);
 
 export class PluginHost {
   #entries = new Map<string, Entry>();
@@ -80,6 +82,25 @@ export class PluginHost {
     const context: PluginContext = Object.freeze({
       pluginId: id,
       signal: session.controller.signal,
+      visual: Object.freeze({
+        set(targetId: string, spec: VisualSpec) {
+          requireCapability('scene.visual'); validateTargetId(targetId);
+          const snapshot = snapshotVisual(spec);
+          if (!core?.setVisual) throw new Error('visual core unavailable');
+          core.setVisual(Object.freeze({ pluginId: id, sessionId, targetId, spec: snapshot }));
+        },
+        clear(targetId: string) {
+          requireCapability('scene.visual'); validateTargetId(targetId);
+          if (!core?.setVisual) throw new Error('visual core unavailable');
+          core.setVisual(Object.freeze({ pluginId: id, sessionId, targetId, spec: null }));
+        },
+        status(targetId: string) {
+          requireCapability('scene.visual'); validateTargetId(targetId);
+          if (!core?.visualStatus) throw new Error('visual core unavailable');
+          const result = core.visualStatus(Object.freeze({ pluginId: id, sessionId, targetId }));
+          return result ? Object.freeze({ ...result }) : null;
+        },
+      }),
       camera: Object.freeze({ focus(targetId: string) {
         requireCapability('camera.control');
         validateTargetId(targetId);
@@ -126,7 +147,8 @@ export class PluginHost {
       core?.openSession(Object.freeze({ pluginId: id, sessionId,
         cameraControl: entry.manifest.capabilities.includes('camera.control') && granted.has('camera.control'),
         dataPublish: entry.manifest.capabilities.includes('data.publish') && granted.has('data.publish'),
-        timeControl: entry.manifest.capabilities.includes('time.control') && granted.has('time.control') }));
+        timeControl: entry.manifest.capabilities.includes('time.control') && granted.has('time.control'),
+        visualControl: entry.manifest.capabilities.includes('scene.visual') && granted.has('scene.visual') }));
       const dispose = await entry.activate(context);
       if (dispose !== undefined) {
         if (typeof dispose !== 'function') throw new Error('invalid activation cleanup');

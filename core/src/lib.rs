@@ -1,4 +1,4 @@
-//! Core-owned lifecycle and object identity. No rendering or scientific computation here.
+//! Core-owned state, lifecycle and resource contracts, with optional Bevy display adapters.
 use std::collections::{HashMap, HashSet};
 pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
 #[cfg(feature = "bevy-runtime")]
@@ -7,10 +7,16 @@ mod runtime;
 pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
 mod clock;
 #[cfg(feature = "browser-render")]
+mod render_assets;
+#[cfg(feature = "browser-render")]
 mod renderer;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
+mod visuals;
+pub use visuals::{
+    AssetDescriptor, AssetKind, VisualAssignment, VisualPhase, VisualSpec, VisualStatus,
+};
 mod wasm;
 pub use wasm::WasmCore;
 
@@ -28,6 +34,10 @@ pub enum CoreError {
     OutsideCoverage,
     StaleState,
     CapacityExceeded,
+    UnknownAsset,
+    InvalidAsset,
+    DuplicateAsset,
+    InvalidVisual,
 }
 
 struct Session {
@@ -40,6 +50,7 @@ pub struct SessionPermissions {
     pub camera_control: bool,
     pub data_publish: bool,
     pub time_control: bool,
+    pub visual_control: bool,
 }
 
 /// Configurable resource budgets, not a limit on the platform's scientific scope.
@@ -62,6 +73,10 @@ impl Default for CoreLimits {
 
 #[derive(Default)]
 pub struct Core {
+    assets: HashMap<String, AssetDescriptor>,
+    visuals: HashMap<String, VisualAssignment>,
+    visual_statuses: HashMap<String, VisualStatus>,
+    next_visual_revision: u64,
     limits: CoreLimits,
     sessions: HashMap<String, Session>,
     // Retired session IDs stay invalid for this core instance's lifetime.
@@ -153,6 +168,8 @@ impl Core {
         }
         self.objects.remove(object_id);
         self.states.remove(object_id);
+        self.visuals.remove(object_id);
+        self.visual_statuses.remove(object_id);
         if self.focused_object() == Some(object_id) {
             self.focus = None;
         }
@@ -329,6 +346,10 @@ impl Core {
         self.sessions.remove(id);
         self.objects.retain(|_, owner| owner != id);
         self.states
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visuals
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visual_statuses
             .retain(|object_id, _| self.objects.contains_key(object_id));
         if self
             .focus

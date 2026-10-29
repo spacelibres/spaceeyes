@@ -1,6 +1,6 @@
 [package]
 name = "spaceeyes-core"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2024"
 license = "MIT"
 
@@ -16,4 +16,4 @@ bevy = { version = "=0.19.1", default-features = false, features = ["std"], opti
 
 [features]
 bevy-runtime = ["dep:bevy"]
-browser-render = ["bevy-runtime", "bevy/default_app", "bevy/3d_bevy_render", "bevy/bevy_winit", "bevy/scene", "bevy/webgl2", "bevy/x11"]
+browser-render = ["bevy-runtime", "bevy/default_app", "bevy/3d_bevy_render", "bevy/bevy_winit", "bevy/scene", "bevy/webgl2", "bevy/x11", "bevy/jpeg", "bevy/webp"]

@@ -1,4 +1,4 @@
-use crate::{Core, SessionPermissions, SharedCore};
+use crate::{AssetDescriptor, AssetKind, Core, SessionPermissions, SharedCore};
 use wasm_bindgen::prelude::*;
 
 /// Host-only bridge. Plugins receive the TS SDK, never this binding.
@@ -60,6 +60,7 @@ impl WasmCore {
         camera: bool,
         data: bool,
         time: bool,
+        visual: bool,
     ) -> Result<(), String> {
         self.lock()?
             .open_session_with_permissions(
@@ -69,9 +70,62 @@ impl WasmCore {
                     camera_control: camera,
                     data_publish: data,
                     time_control: time,
+                    visual_control: visual,
                 },
             )
             .map_err(|e| format!("{e:?}"))
+    }
+
+    pub fn register_asset(&mut self, id: &str, path: &str, kind: &str) -> Result<(), String> {
+        let kind = match kind {
+            "model" => AssetKind::Model,
+            "texture" => AssetKind::Texture,
+            _ => return Err("InvalidAsset".into()),
+        };
+        self.lock()?
+            .register_asset(
+                id,
+                AssetDescriptor {
+                    kind,
+                    path: path.to_owned(),
+                },
+            )
+            .map_err(|e| format!("{e:?}"))
+    }
+
+    pub fn set_visual(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        target: &str,
+        spec_json: &str,
+    ) -> Result<(), String> {
+        if spec_json.len() > 4096 {
+            return Err("InvalidVisual".into());
+        }
+        let spec = serde_json::from_str(spec_json).map_err(|_| "InvalidVisual".to_owned())?;
+        self.lock()?
+            .set_visual(session, plugin, target, spec)
+            .map_err(|e| format!("{e:?}"))
+    }
+
+    pub fn visual_status(&self, target: &str) -> Result<String, String> {
+        let core = self.lock()?;
+        let status = core.visual_status(target).map_err(|e| format!("{e:?}"))?;
+        serde_json::to_string(&status).map_err(|_| "InvalidVisual".to_owned())
+    }
+
+    pub fn owned_visual_status(
+        &self,
+        session: &str,
+        plugin: &str,
+        target: &str,
+    ) -> Result<String, String> {
+        let core = self.lock()?;
+        let status = core
+            .owned_visual_status(session, plugin, target)
+            .map_err(|e| format!("{e:?}"))?;
+        serde_json::to_string(&status).map_err(|_| "InvalidVisual".to_owned())
     }
 
     pub fn publish_object(

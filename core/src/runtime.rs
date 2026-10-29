@@ -1,4 +1,4 @@
-use crate::{CoreError, SharedCore};
+use crate::{CoreError, SharedCore, VisualSpec};
 use bevy::math::DVec3;
 use bevy::prelude::*;
 use std::collections::{HashMap, HashSet};
@@ -73,7 +73,7 @@ pub(crate) fn sync_scene(
     report.visible = 0;
     report.unavailable.clear();
     report.core_unavailable = false;
-    let Ok(core) = store.0.lock() else {
+    let Ok(mut core) = store.0.lock() else {
         report.core_unavailable = true;
         for (entity, _, _) in &query {
             commands.entity(entity).despawn();
@@ -85,10 +85,12 @@ pub(crate) fn sync_scene(
         .map(|(entity, object, _)| (object.id.clone(), entity))
         .collect();
     let mut visible = HashSet::new();
-    for id in core.object_ids() {
+    let ids: Vec<String> = core.object_ids().map(str::to_owned).collect();
+    for id in &ids {
         let state = match core.object_state_at(id, core.clock().epoch()) {
             Ok(state) => state,
             Err(error) => {
+                core.suspend_visual(id, format!("{error:?}"));
                 report.unavailable.push((id.to_owned(), error));
                 continue;
             }
@@ -96,8 +98,15 @@ pub(crate) fn sync_scene(
         let relative =
             (DVec3::from_array(state.position_km) - settings.origin_km) * settings.units_per_km;
         let translation = DVec3::new(relative.x, relative.z, -relative.y).as_vec3();
-        let radius = (state.radius_km * settings.units_per_km) as f32;
+        let scale_km = match core.visual_assignment(id).map(|visual| &visual.spec) {
+            Some(VisualSpec::Model {
+                scale_km_per_unit, ..
+            }) => *scale_km_per_unit,
+            _ => state.radius_km,
+        };
+        let radius = (scale_km * settings.units_per_km) as f32;
         if !translation.is_finite() || !radius.is_finite() || radius <= 0.0 {
+            core.suspend_visual(id, "InvalidState: display transform".into());
             report
                 .unavailable
                 .push((id.to_owned(), CoreError::InvalidState));

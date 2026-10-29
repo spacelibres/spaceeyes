@@ -44,3 +44,29 @@ test('actual WASM boundary independently rejects spoofed identity and invalid JS
     assert.throws(() => core.focus('session-a', 'one.plugin', 'body:test'), /InactiveSession/);
   } finally { core.free(); }
 });
+
+test('real WASM visual API enforces registered resources, ownership and revisions', async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  try {
+    core.register_asset('model:juno', 'models/juno/Juno.gltf', 'model');
+    host.register({ id: 'integration.visual', apiVersion: 1, capabilities: ['data.publish', 'scene.visual'] }, context => { sdk = context; });
+    await host.enable('integration.visual', ['data.publish', 'scene.visual']);
+    sdk.data.publish('object:test', { positionKm: [0, 0, 0], radiusKm: 0.02, epochTdbSeconds: 0,
+      coverageTdbSeconds: [0, 1], frame: 'ICRF', source: 'test' });
+    sdk.visual.set('object:test', { kind: 'model', assetId: 'model:juno', scene: 0, scaleKmPerUnit: 0.001 });
+    const first = sdk.visual.status('object:test');
+    assert.equal(first?.phase, 'pending');
+    assert.equal(typeof first?.revision, 'string');
+    assert.throws(() => sdk.visual.set('object:test', { kind: 'model', assetId: 'model:unknown', scene: 0, scaleKmPerUnit: 1 }), /UnknownAsset/);
+    assert.equal(sdk.visual.status('object:test')?.revision, first?.revision);
+    core.open_session('another', 'another.plugin', false, false, false, true);
+    assert.throws(() => core.set_visual('another', 'another.plugin', 'object:test', 'null'), /WrongOwner/);
+    assert.throws(() => core.owned_visual_status('another', 'another.plugin', 'object:test'), /WrongOwner/);
+    sdk.visual.clear('object:test');
+    assert.equal(sdk.visual.status('object:test'), null);
+    await host.shutdown();
+    assert.throws(() => core.visual_status('object:test'), /UnknownObject/);
+  } finally { core.free(); }
+});

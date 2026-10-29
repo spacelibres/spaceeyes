@@ -1,6 +1,6 @@
 ---
 name: spaceeyes-platform-sdk
-description: Use when authoring or reviewing SPACEEYES TypeScript plugins against the current plugin host and camera SDK, including capability approval and lifecycle cleanup.
+description: Use when authoring or reviewing SPACEEYES TypeScript plugins using controlled data, time, camera and visual asset APIs, including capability approval and lifecycle cleanup.
 ---
 
 # 太空之眼平台 SDK 技能书（基础实现草案）
@@ -9,7 +9,7 @@ description: Use when authoring or reviewing SPACEEYES TypeScript plugins agains
 
 ## 当前能做什么
 
-插件提供清单与激活函数，由宿主调用 `PluginHost.register`。清单含 `id`、`apiVersion: 1` 和 `capabilities`。标识采用 `vendor.plugin` 形式，每段以小写字母开头，后续为小写字母、数字或连字符。当前识别 `camera.control`、`data.publish`、`time.control`。
+插件提供清单与激活函数，由宿主调用 `PluginHost.register`。清单含 `id`、`apiVersion: 1` 和 `capabilities`。标识采用 `vendor.plugin` 形式，每段以小写字母开头，后续为小写字母、数字或连字符。当前识别 `camera.control`、`data.publish`、`time.control`、`scene.visual`。
 
 插件在激活时得到 `PluginContext`：
 
@@ -20,6 +20,22 @@ description: Use when authoring or reviewing SPACEEYES TypeScript plugins agains
 - `requireCapability(name)`：检查当前会话及能力，不能用它推断尚未实现的 API 可用。
 - `data.publish(targetId, state)`、`data.remove(targetId)`：需 `data.publish`。状态包含 positionKm 三元数组、正数 radiusKm、epochTdbSeconds、coverageTdbSeconds 二元数组、frame 固定 ICRF、非空 source。时间为 J2000 起算 TDB 秒，数值必须有限，采样时刻在覆盖内。发布时复制并冻结数据；Rust 再校验权限与归属。当前不提交姿态或轨迹。
 - `time.seek(epochTdbSeconds)`、`time.setPlayback(playing, rate)`：需 `time.control`，时间与倍率必须有限，支持负倍率反向播放。不得自行用 UTC Date 数值冒充 TDB。没有当前时刻样本时显示端须报告缺失，不擅自外推。控制时间的会话停用后暂停播放。
+- `visual.set(targetId, spec)`、`visual.clear(targetId)`、`visual.status(targetId)`：需 `scene.visual`，只能操作或读取本会话所属对象。`data.publish` 不包含此权限。资源只能引用宿主已登记的 assetId，不能把 URL 或文件路径传给插件接口。
+
+视觉参数严格采用以下两种结构，不接受额外字段：
+
+```ts
+sdk.visual.set('object:spacecraft', {
+  kind: 'model', assetId: 'model:juno', scene: 0, scaleKmPerUnit: 0.001,
+});
+sdk.visual.set('object:body', { kind: 'sphere', textureAsset: 'texture:surface' });
+```
+
+assetId 为 1～256 个 ASCII 字符，首位字母或数字，其余允许字母、数字、冒号、点、下划线和连字符。scene 是 0～1023 的整数，实际存在性由加载器检查；scaleKmPerUnit 是有限正数，表示模型单位到千米的比例，不是科学对象半径。球体贴图作为基色图使用，不能借此传任意材质或 shader。未提供 textureAsset 时使用中性球体。
+
+`clear` 清除资源表示并恢复默认验证几何体，不删除科学对象；删除对象使用 `data.remove`。设置资源表示不是逐帧发布数据的步骤，只在表示变化时调用；重复设置会创建新修订并重新绑定资源。
+
+`status` 返回只读 `{ revision, phase, detail }` 或 null。revision 为不透明十进制字符串；phase 是 pending/loading/ready/failed/suspended。ready 表示图像或模型实例及依赖已加载，不是 GPU 像素、科学姿态或 NASA 效果认证。failed 时对象隐藏，不用默认球体冒充已加载模型；suspended 表示没有当前时刻有效显示状态。清除或替换后，旧修订的完成结果不再生效。
 
 ```ts
 host.register({
@@ -33,7 +49,11 @@ host.register({
 
 ## 边界与失败处理
 
-插件只能表达公开 SDK 意图，不获得 CorePort、sessionId、Bevy World、相机内部对象或服务器模块。不得访问冻结分支作为默认实现来源；不得把自建 TS 场景状态当作 Rust 核心权威状态。不得从本接口推导 Nyx、市场或任意命令执行能力已可用。WasmCorePort 已连接实际 Rust WASM；启用 browser-render 后可使用基础 Bevy 显示，未注入对应适配方法时调用仍明确失败。真实 NASA 模型与特效尚未接入。
+插件只能表达公开 SDK 意图，不获得 CorePort、sessionId、Bevy World、相机内部对象或服务器模块。不得访问冻结分支作为默认实现来源；不得把自建 TS 场景状态当作 Rust 核心权威状态。不得从本接口推导 Nyx、市场或任意命令执行能力已可用。WasmCorePort 已连接实际 Rust WASM；browser-render 提供 Bevy 显示与受控模型/贴图入口，未注入对应适配方法时调用明确失败。
+
+资源登记是宿主职责，不向插件开放。宿主必须审查资源包及 glTF 外部依赖，固定来源、长度和散列，登记相对资产根目录的路径。当前目录接受 glTF/GLB 模型与 PNG/JPEG/WebP 贴图，最多 4096 项，实例内不可覆盖同名资源。KTX2 转码、完整 glTF 扩展、各贴图 UV 变换及 NASA 材质一致性尚未验收，不自行宣称支持。
+
+模型加载禁用 glTF 内置摄像机与灯光导入，scene.visual 不授予相机或照明控制权。当前资源是同源受控根目录下的已审查文件；不能将测试资源服务当作市场沙箱或通用任意 URL 代理。
 
 缺少声明或批准时拒绝调用；停用后调用旧 SDK 会得到 inactive 错误；目标语法不合法会被拒绝；未连接核心得到 unavailable 错误，不能以静默成功或自建替代渲染冒充执行成功。核心适配器的失败继续抛给调用者。本批错误仍为 Error，不依赖其文字作为稳定机器协议。
 

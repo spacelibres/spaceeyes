@@ -8,9 +8,19 @@
 
 通过可选 `bevy-runtime` 功能接入 Bevy 0.19.1 的 ECS、Transform 和数学库，不自行实现渲染引擎。显示状态由核心采样推导：先在 f64 中减局部原点并缩放，再转 f32，轴向按 ICRF x/y/z → 显示 x/z/-y 显式映射。缺少当前时刻样本时移除显示实体并写入 SyncReport，拒绝以旧值冒充有效状态。
 
-`browser-render` 启用 Bevy 内置三维渲染、共享球体网格/材质、方向光、聚焦、拖动环绕和滚轮缩放。当前球体是中性验证几何体，没有真实模型/贴图/轨迹/大气等 NASA Eyes 资源效果。选择的是 WebGL2 路径，其能力限制与浏览器证据见 `docs/evidence/core-0.0.4/README.md`；WebGPU 尚未验收。
+`browser-render` 启用 Bevy 内置三维渲染、共享球体网格/材质、方向光、聚焦、拖动环绕和滚轮缩放。未设置资源表示时使用中性验证几何体；真实模型和贴图通过下述受控目录加载。选择的是 WebGL2 路径，其能力限制见 `docs/evidence/core-0.0.4/README.md`；WebGPU 尚未验收。
 
 `register_object`、`set_object_state` 为宿主内部入口；插件适配器必须调用会核验授权的 `publish_object` 和 `remove_object`，不能绕过它们。
+
+## 受控模型和贴图
+
+宿主通过 register_asset 登记固定资源标识、种类及相对资产根目录的路径；目录最多 4096 项，实例内不覆盖同名项。路径拒绝远程 URI、绝对地址、目录越界和标签。宿主还必须验证文件内容及 glTF 依赖图，目录检查不代替不可信资源包审计。
+
+插件通过 scene.visual 权限给所属对象设置模型或球体基色贴图；Rust 再检查归属、资源种类和参数。模型单位到千米的比例与科学半径分离，前者决定几何缩放，后者仍供相机取景。Bevy AssetServer/WorldAssetRoot 负责加载与实例化，不自写 glTF 或图像解码器。加载器禁用 glTF 摄像机和灯光导入，模型资源不能改变平台相机或照明控制权。
+
+对象表示带独立递增修订，替换、清除和会话释放后，旧完成结果无效。加载期间隐藏该表示，失败明确上报并保持隐藏；ready 需要资源及依赖就绪，模型还需收到 WorldInstanceReady。此状态不代表最终 GPU 像素或材料还原准确。晚到请求可能继续填充 Bevy 缓存，当前不保证底层网络请求全部中止或 GPU 字节数即时回收。
+
+Juno 资源验证先运行 `pwsh -File tools/prepare-juno.ps1`，固定来源清单为 `validation/juno-assets.json`。缓存不提交。集中检查加 `-JunoAssets` 只验证现有缓存，不隐式下载；之后运行测试服务并使用模型/贴图/失败/延迟加载按钮。模型坐标为合成夹具，轨道和姿态并未接入。各贴图 UV 变换等材质兼容性仍需逐项校准。
 
 验证：
 

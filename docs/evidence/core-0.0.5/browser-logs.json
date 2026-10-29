@@ -1,0 +1,8 @@
+[
+  {
+    "level": "log",
+    "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Path not found: assets/models/missing/absent.glb color: red; background: #444 color: gray; font-style: italic color: inherit",
+    "timestamp": "2026-10-28T09:50:25.427Z",
+    "url": "http://127.0.0.1:4173/spaceeyes_core.js"
+  }
+]

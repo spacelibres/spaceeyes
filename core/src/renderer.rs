@@ -1,6 +1,8 @@
-//! Built-in Bevy rendering; neutral spheres are integration fixtures, not NASA assets.
+//! Built-in Bevy rendering with resources resolved through the host catalog.
 use crate::SharedCore;
-use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, SceneObject, sync_scene};
+use crate::render_assets::{SharedVisuals, attach_visuals, poll_visuals, world_ready};
+use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, sync_scene};
+use bevy::asset::AssetMetaCheck;
 use bevy::input::mouse::{AccumulatedMouseMotion, MouseScrollUnit, MouseWheel};
 use bevy::math::DVec3;
 use bevy::prelude::*;
@@ -30,23 +32,26 @@ impl Default for OrbitView {
         }
     }
 }
-#[derive(Resource)]
-struct SharedVisuals {
-    mesh: Handle<Mesh>,
-    material: Handle<StandardMaterial>,
-}
 
 pub(crate) fn create_browser_app(core: SharedCore, stop: Arc<AtomicBool>, canvas: &str) -> App {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "SpaceEyes core verification — synthetic geometry".into(),
-            canvas: Some(canvas.into()),
-            fit_canvas_to_parent: true,
-            ..default()
-        }),
-        ..default()
-    }))
+    app.add_plugins(
+        DefaultPlugins
+            .set(AssetPlugin {
+                // Host catalogs contain source assets, not Bevy processor sidecars.
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            })
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "SpaceEyes core verification — synthetic geometry".into(),
+                    canvas: Some(canvas.into()),
+                    fit_canvas_to_parent: true,
+                    ..default()
+                }),
+                ..default()
+            }),
+    )
     .add_plugins(CoreScenePlugin(core))
     .insert_resource(RendererStop(stop))
     .init_resource::<OrbitView>()
@@ -55,7 +60,11 @@ pub(crate) fn create_browser_app(core: SharedCore, stop: Arc<AtomicBool>, canvas
         Update,
         (orbit_input, update_focus).chain().before(sync_scene),
     )
-    .add_systems(Update, attach_visuals.after(sync_scene))
+    .add_systems(
+        Update,
+        (attach_visuals, poll_visuals).chain().after(sync_scene),
+    )
+    .add_observer(world_ready)
     .add_systems(Update, stop_renderer);
     app
 }
@@ -85,19 +94,6 @@ fn setup(
         },
         Transform::from_xyz(4.0, 4.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
-}
-
-fn attach_visuals(
-    mut commands: Commands,
-    visuals: Res<SharedVisuals>,
-    query: Query<Entity, (With<SceneObject>, Without<Mesh3d>)>,
-) {
-    for entity in &query {
-        commands.entity(entity).insert((
-            Mesh3d(visuals.mesh.clone()),
-            MeshMaterial3d(visuals.material.clone()),
-        ));
-    }
 }
 
 fn update_focus(

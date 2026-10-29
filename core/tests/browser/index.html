@@ -1,9 +1,16 @@
 <!doctype html>
 <meta charset="utf-8">
 <title>Core browser verification fixture</title>
-<p>Technical verification only: synthetic sphere, not a NASA Eyes scene.</p>
+<p>Technical verification: NASA Juno assets at a synthetic position/time; not a mission simulation.</p>
 <button id="start">Start renderer</button>
 <button id="play" disabled>Play fixture time</button>
+<button id="model" disabled>Load NASA Juno model</button>
+<button id="texture" disabled>Texture fixture sphere</button>
+<button id="missing" disabled>Test missing model (expected error)</button>
+<button id="invalid-scene" disabled>Test missing scene (expected error)</button>
+<button id="slow" disabled>Load delayed model</button>
+<button id="slow-release" disabled>Load delayed release model</button>
+<button id="clear" disabled>Clear visual</button>
 <button id="remove" disabled>Release fixture session</button>
 <button id="stop" disabled>Stop renderer</button>
 <pre id="status">Loading WASM module</pre>
@@ -21,11 +28,17 @@ window.addEventListener('unhandledrejection', event => { failed = true; status.t
 await init();
 status.textContent = 'WASM loaded; renderer not started';
 const core = new WasmCore();
+core.register_asset('model:juno', 'models/juno/Juno.gltf', 'model');
+core.register_asset('model:slow', 'models/juno-slow/Juno.gltf', 'model');
+core.register_asset('model:slow-release', 'models/juno-slow-release/Juno.gltf', 'model');
+core.register_asset('model:missing', 'models/missing/absent.glb', 'model');
+core.register_asset('texture:array', 'models/juno/juno_array_albedo.jpg', 'texture');
+const visualButtons = [...document.querySelectorAll('#model,#texture,#missing,#invalid-scene,#slow,#slow-release,#clear')];
 let active = false, frameId, lastTime;
 const reportError = error => { failed = true; status.textContent = `ERROR: ${String(error)}`; };
 function publishFixture(epoch) {
   core.publish_object('browser-fixture', 'verification.fixture', 'fixture:sphere', JSON.stringify({
-    positionKm: [1e12, 0, 0], radiusKm: 1000, epochTdbSeconds: epoch,
+    positionKm: [1e12, 0, 0], radiusKm: 0.02, epochTdbSeconds: epoch,
     coverageTdbSeconds: [0, 1e9], frame: 'ICRF', source: 'synthetic browser verification',
   }));
 }
@@ -36,19 +49,21 @@ function frame(now) {
     lastTime = now;
     const epoch = core.epoch();
     publishFixture(epoch);
-    status.textContent = `Core TDB seconds: ${epoch.toFixed(3)} | playing: ${core.playing()}`;
+    const visual = JSON.parse(core.visual_status('fixture:sphere'));
+    status.textContent = `Core TDB seconds: ${epoch.toFixed(3)} | playing: ${core.playing()} | visual: ${visual?.phase ?? 'default'}${visual?.detail ? '\n'+visual.detail : ''}`;
     frameId = requestAnimationFrame(frame);
   } catch (error) { reportError(error); }
 }
 start.onclick = () => {
   start.disabled = true;
-  core.open_session('browser-fixture', 'verification.fixture', true, true, true);
+  core.open_session('browser-fixture', 'verification.fixture', true, true, true, true);
   publishFixture(0);
   core.focus('browser-fixture', 'verification.fixture', 'fixture:sphere');
   remove.disabled = false;
   stop.disabled = false;
   play.disabled = false;
   active = true;
+  for (const button of visualButtons) button.disabled = false;
   status.textContent = 'Starting Bevy; inspect the canvas for the lit sphere';
   core.start_renderer('#core-canvas');
   frameId = requestAnimationFrame(frame);
@@ -57,12 +72,21 @@ play.onclick = () => {
   core.set_playback('browser-fixture', 'verification.fixture', !core.playing(), 1);
   play.textContent = core.playing() ? 'Pause fixture time' : 'Play fixture time';
 };
+const selectModel = (assetId, scene = 0) => core.set_visual('browser-fixture', 'verification.fixture', 'fixture:sphere', JSON.stringify({ kind: 'model', assetId, scene, scaleKmPerUnit: 0.001 }));
+document.querySelector('#model').onclick = () => selectModel('model:juno');
+document.querySelector('#slow').onclick = () => selectModel('model:slow');
+document.querySelector('#slow-release').onclick = () => selectModel('model:slow-release');
+document.querySelector('#missing').onclick = () => selectModel('model:missing');
+document.querySelector('#invalid-scene').onclick = () => selectModel('model:juno', 999);
+document.querySelector('#texture').onclick = () => core.set_visual('browser-fixture', 'verification.fixture', 'fixture:sphere', JSON.stringify({ kind: 'sphere', textureAsset: 'texture:array' }));
+document.querySelector('#clear').onclick = () => core.set_visual('browser-fixture', 'verification.fixture', 'fixture:sphere', 'null');
 remove.onclick = () => {
   active = false;
   cancelAnimationFrame(frameId);
   core.release_session('browser-fixture');
   remove.disabled = true;
   play.disabled = true;
+  for (const button of visualButtons) button.disabled = true;
   status.textContent = 'Session released; sphere must disappear';
 };
 stop.onclick = () => {
