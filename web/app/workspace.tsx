@@ -84,7 +84,6 @@ export default function Workspace() {
     }
   };
   useEffect(() => {
-    if (new URL(window.location.href).searchParams.get("enter") !== "1") return;
     const timer = window.setTimeout(() => {
       const next = new URL(window.location.href);
       next.searchParams.delete("enter");

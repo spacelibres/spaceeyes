@@ -1,6 +1,6 @@
 {
   "name": "@spaceeyes/resource-validation",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "type": "module",
   "license": "MIT",
