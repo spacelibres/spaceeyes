@@ -1,0 +1,388 @@
+/* Full-window observation shell. Scientific state remains in the existing runtime. */
+.immersive {
+  --overlay: color-mix(in srgb, var(--deep) 94%, transparent);
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.immersive::before {
+  display: none;
+}
+.immersive [hidden] {
+  display: none !important;
+}
+.immersive > header {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 4;
+  min-height: 100px;
+  padding: 12px 24px;
+  gap: 16px;
+  background: linear-gradient(var(--deep), transparent);
+  pointer-events: none;
+}
+.immersive header > div {
+  pointer-events: auto;
+}
+.immersive header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.immersive header img {
+  margin: 0 0 8px;
+  width: 240px;
+}
+.immersive h1 {
+  font-size: 16px;
+}
+.immersive h1 small {
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+.immersive .header-actions {
+  gap: 8px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.immersive button {
+  font-size: 13px;
+  margin: 0;
+  padding: 10px 12px;
+}
+.immersive .header-actions button,
+.immersive .timeline button,
+.immersive .close-panel {
+  background: var(--overlay);
+  border-color: var(--muted);
+  color: var(--surface);
+}
+.immersive button[aria-expanded="true"] {
+  border-color: var(--primaryOnDark);
+  background: var(--primaryOnLight);
+}
+.immersive .header-actions a {
+  font-size: 12px;
+  margin-left: 8px;
+}
+.immersive .workspace {
+  display: block;
+}
+.immersive .viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  z-index: -1;
+}
+.immersive .viewport-heading {
+  top: 116px;
+  left: 24px;
+  right: 24px;
+}
+.immersive .viewport-heading > span:first-child {
+  font-size: 18px;
+}
+.immersive .view-controls {
+  bottom: 116px;
+  right: 24px;
+}
+.immersive .view-controls label {
+  padding: 6px;
+  border-radius: 4px;
+  background: var(--overlay);
+}
+.immersive .caption {
+  bottom: 120px;
+  left: 24px;
+  font-size: 11px;
+}
+.immersive .workspace-status {
+  position: absolute;
+  z-index: 4;
+  top: 78px;
+  left: 24px;
+  right: 24px;
+  margin: 0;
+  gap: 8px;
+  font-size: 12px;
+  pointer-events: none;
+}
+.immersive .workspace-status button {
+  pointer-events: auto;
+  margin-left: auto;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+.immersive .workspace-status small {
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.immersive .tool-panel {
+  position: absolute;
+  z-index: 5;
+  top: 148px;
+  bottom: 156px;
+  width: 296px;
+  padding: 20px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--deep) 45%, transparent);
+}
+.immersive .catalog {
+  left: 24px;
+}
+.immersive .object-details {
+  right: 24px;
+}
+.immersive .tool-panel h2 {
+  margin-top: 0;
+  padding-right: 28px;
+}
+.immersive .close-panel {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  font-size: 20px;
+}
+.immersive .catalog nav {
+  max-height: none;
+  flex-direction: column;
+  overflow: visible;
+}
+.immersive .catalog-object {
+  flex-shrink: 1;
+  gap: 8px;
+}
+.immersive .catalog-object.child {
+  padding-left: 24px;
+}
+.immersive .object-details dl {
+  display: block;
+}
+.immersive .object-details dt {
+  margin-top: 16px;
+}
+.immersive .object-details section button {
+  margin-right: 8px;
+}
+.immersive .timeline {
+  position: absolute;
+  z-index: 4;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--overlay);
+  color: var(--surface);
+  border: 1px solid var(--muted);
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+.immersive .timeline > div:first-child {
+  margin-right: auto;
+  min-width: 0;
+}
+.immersive .timeline output {
+  font-size: 16px;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.immersive .timeline small {
+  color: var(--line);
+  margin-top: 4px;
+}
+.immersive .timeline .eyebrow,
+.immersive .timeline label {
+  color: var(--line);
+  letter-spacing: 0;
+}
+.immersive .timeline .eyebrow {
+  margin-bottom: 4px;
+}
+.immersive .timeline label {
+  gap: 4px;
+  flex-shrink: 0;
+}
+.immersive .time-panel {
+  background: var(--surface);
+  color: var(--ink);
+  top: auto;
+  bottom: calc(100% + 12px);
+  right: 0;
+  max-height: calc(100dvh - 200px);
+}
+.immersive .time-panel label {
+  color: var(--muted);
+  margin: 12px 0 8px;
+}
+.immersive .time-panel label input {
+  width: 100%;
+}
+.immersive .time-panel button:not(.close-panel) {
+  background: var(--primaryOnLight);
+}
+.immersive > .error {
+  position: absolute;
+  z-index: 2;
+  left: 24px;
+  bottom: 136px;
+  max-width: min(640px, calc(100% - 48px));
+  max-height: 80px;
+  overflow: auto;
+  font-size: 12px;
+  padding: 8px 12px;
+  margin: 0;
+}
+.immersive > footer {
+  position: absolute;
+  bottom: 4px;
+  left: 24px;
+  font-size: 10px;
+  padding: 0;
+}
+@media (max-width: 760px) {
+  .immersive > header {
+    padding: 12px 16px;
+    align-items: flex-start;
+  }
+  .immersive .header-actions {
+    max-width: 50%;
+    gap: 4px;
+  }
+  .immersive .header-actions button {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .immersive .header-actions a {
+    margin: 0;
+  }
+  .immersive .workspace-status {
+    left: 16px;
+    right: 16px;
+    top: 108px;
+  }
+  .immersive .workspace-status small {
+    display: none;
+  }
+  .immersive .phase-text {
+    max-width: 65%;
+  }
+  .immersive .viewport-heading {
+    top: 144px;
+    left: 16px;
+    right: 16px;
+  }
+  .immersive .tool-panel {
+    top: 180px;
+    bottom: 184px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+  .immersive .timeline {
+    left: 8px;
+    right: 8px;
+    bottom: 20px;
+    padding: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .immersive .timeline > div:first-child {
+    width: 100%;
+  }
+  .immersive .timeline output {
+    font-size: 14px;
+  }
+  .immersive .timeline label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 10px;
+  }
+  .immersive .timeline label select {
+    padding: 6px;
+    width: 80px;
+  }
+  .immersive .timeline button {
+    padding: 8px;
+    font-size: 12px;
+  }
+  .immersive .time-panel {
+    top: auto;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - 320px);
+  }
+  .immersive .time-panel label {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .immersive .view-controls {
+    bottom: 188px;
+    right: 8px;
+  }
+  .immersive .caption {
+    bottom: 172px;
+    left: 16px;
+    font-size: 10px;
+  }
+  .immersive > .error {
+    bottom: 224px;
+    left: 16px;
+    max-width: calc(100% - 32px);
+    max-height: 48px;
+  }
+  .immersive > footer {
+    left: 8px;
+    font-size: 9px;
+    white-space: nowrap;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+  }
+}
+@media (max-width: 600px) {
+  .immersive header > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .immersive header img {
+    width: 48px;
+    margin: 0;
+  }
+  .immersive h1 {
+    font-size: 16px;
+    width: 80px;
+  }
+  .immersive h1 small {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+}
+@media (max-height: 540px) and (min-width: 761px) {
+  .immersive .tool-panel {
+    top: 136px;
+    bottom: 130px;
+  }
+  .immersive .time-panel {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
+}

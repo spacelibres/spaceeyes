@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 export type CatalogEntry = {
   id: string;
   name: string;
@@ -45,6 +46,24 @@ export type WorkspaceViewProps = {
   onTrajectories: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
+  const [panel, setPanel] = useState<"catalog" | "info" | "time" | null>(null);
+  useEffect(() => {
+    if (panel)
+      document
+        .getElementById(`${panel}-panel`)
+        ?.querySelector<HTMLButtonElement>(".close-panel")
+        ?.focus();
+  }, [panel]);
+  const closePanel = () => {
+    document
+      .querySelector<HTMLButtonElement>(`[data-panel="${panel}"]`)
+      ?.focus();
+    setPanel(null);
+  };
+  const select = (id: string) => {
+    setPanel("info");
+    p.onSelect(id);
+  };
   const object = p.catalog.find((o) => o.id === p.selected);
   const canObserve =
     p.active && Boolean(object) && p.dataStatus.startsWith("ready");
@@ -52,22 +71,51 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     `${o.name} ${o.id}`.toLowerCase().includes(p.search.toLowerCase()),
   );
   return (
-    <main>
+    <main
+      className="immersive"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && panel) {
+          event.stopPropagation();
+          closePanel();
+        }
+      }}
+    >
       <header>
         <div>
-          <img src="/spacelibre.svg" alt="spacelibre" width="240" />
+          <picture>
+            <source media="(max-width: 600px)" srcSet="/icon.svg" />
+            <img src="/spacelibre.svg" alt="spacelibre" width="240" />
+          </picture>
           <h1>
             太空之眼 <small>SPACE EYES</small>
           </h1>
         </div>
         <div className="header-actions">
-          <span className="badge">太阳系工作区</span>
+          <button
+            data-panel="catalog"
+            aria-expanded={panel === "catalog"}
+            aria-controls="catalog-panel"
+            onClick={() => setPanel(panel === "catalog" ? null : "catalog")}
+          >
+            探索天体
+          </button>
+          <button
+            data-panel="info"
+            aria-expanded={panel === "info"}
+            aria-controls="info-panel"
+            onClick={() => setPanel(panel === "info" ? null : "info")}
+          >
+            对象与图层
+          </button>
+          <button disabled={!p.active} onClick={p.onOverview}>
+            太阳系总览
+          </button>
           <a href="/diagnostics">数据诊断</a>
         </div>
       </header>
       <div className="workspace-status" role="status">
         <span className={p.active ? "status-dot live" : "status-dot"} />
-        {p.phase}
+        <span className="phase-text">{p.phase}</span>
         {p.active && p.startupMs !== undefined && (
           <small>
             本次初始化 {(p.startupMs / 1000).toFixed(2)}{" "}
@@ -79,7 +127,19 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         </button>
       </div>
       <div className="workspace">
-        <aside className="catalog">
+        <aside
+          id="catalog-panel"
+          className="catalog tool-panel"
+          hidden={panel !== "catalog"}
+          aria-label="探索天体面板"
+        >
+          <button
+            className="close-panel"
+            aria-label="关闭天体目录"
+            onClick={closePanel}
+          >
+            ×
+          </button>
           <h2>探索太阳系</h2>
           <label className="search-label">
             对象目录
@@ -106,7 +166,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 className={
                   o.parentId ? "catalog-object child" : "catalog-object"
                 }
-                onClick={() => p.onSelect(o.id)}
+                onClick={() => select(o.id)}
               >
                 <span>{o.name}</span>
                 <small>{o.id}</small>
@@ -169,9 +229,23 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               </select>
             </label>
           </div>
-          <span className="caption">拖动环绕 · 滚轮缩放 · BEVY / WASM</span>
+          <span className="caption">
+            拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+          </span>
         </section>
-        <aside className="object-details">
+        <aside
+          id="info-panel"
+          className="object-details tool-panel"
+          hidden={panel !== "info"}
+          aria-label="对象与图层面板"
+        >
+          <button
+            className="close-panel"
+            aria-label="关闭对象信息"
+            onClick={closePanel}
+          >
+            ×
+          </button>
           <p className="eyebrow">对象信息</p>
           <h2>{object?.name ?? "太阳系"}</h2>
           <p className="metadata">{object?.id ?? "SOLAR SYSTEM"}</p>
@@ -208,7 +282,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                   <button
                     key={o.id}
                     disabled={!p.active}
-                    onClick={() => p.onSelect(o.id)}
+                    onClick={() => select(o.id)}
                   >
                     {o.name} →
                   </button>
@@ -264,28 +338,50 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             )}
           </select>
         </label>
-        <label>
-          UTC日期
-          <input
-            type="datetime-local"
-            value={p.utcJump}
-            onChange={(e) => p.onUtcInput(e.target.value)}
-          />
-        </label>
-        <button disabled={!p.active || p.busy} onClick={p.onUtcJump}>
-          跳转日期
+        <button
+          data-panel="time"
+          aria-expanded={panel === "time"}
+          aria-controls="time-panel"
+          onClick={() => setPanel(panel === "time" ? null : "time")}
+        >
+          日期与跳转
         </button>
-        <label>
-          跳转到 TDB 秒
-          <input
-            value={p.jump}
-            onChange={(e) => p.onJumpInput(e.target.value)}
-            inputMode="decimal"
-          />
-        </label>
-        <button disabled={!p.active} onClick={p.onJump}>
-          跳转
-        </button>
+        <div
+          id="time-panel"
+          className="time-panel tool-panel"
+          hidden={panel !== "time"}
+        >
+          <button
+            className="close-panel"
+            aria-label="关闭日期跳转"
+            onClick={closePanel}
+          >
+            ×
+          </button>
+          <h2>日期与跳转</h2>
+          <label>
+            UTC日期
+            <input
+              type="datetime-local"
+              value={p.utcJump}
+              onChange={(e) => p.onUtcInput(e.target.value)}
+            />
+          </label>
+          <button disabled={!p.active || p.busy} onClick={p.onUtcJump}>
+            跳转日期
+          </button>
+          <label>
+            跳转到 TDB 秒
+            <input
+              value={p.jump}
+              onChange={(e) => p.onJumpInput(e.target.value)}
+              inputMode="decimal"
+            />
+          </label>
+          <button disabled={!p.active} onClick={p.onJump}>
+            跳转
+          </button>
+        </div>
         <button disabled={!p.active} onClick={p.onNow}>
           当前时间
         </button>
