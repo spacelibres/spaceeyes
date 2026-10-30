@@ -19,9 +19,14 @@ fn noise(v:vec3<f32>)->f32 {
 }
 struct Out { @builtin(position) clip:vec4<f32>, @location(0) local:vec3<f32>, @location(1) world_position:vec4<f32>, @location(2) world_normal:vec3<f32>, }
 @vertex fn vertex(v:Vertex)->Out { let m=mesh_functions::get_world_from_local(v.instance_index); var o:Out; o.world_position=m*vec4<f32>(v.position,1.0); o.clip=view.clip_from_world*o.world_position; o.local=v.position; o.world_normal=normalize((m*vec4<f32>(v.normal,0.0)).xyz); return o; }
+fn linear_color(c:vec3<f32>)->vec3<f32>{return select(c/12.92,pow((c+vec3<f32>(0.055))/1.055,vec3<f32>(2.4)),c>vec3<f32>(0.04045));}
 @fragment fn fragment(v:Out)->@location(0) vec4<f32> {
  // Recover body coordinates; texture and active regions remain anchored during orbiting.
 
+ let color=u32(p(4u));let baseline=vec3<f32>(f32((color>>16u)&255u),f32((color>>8u)&255u),f32(color&255u))/255.0;
+ // One material at every distance: expensive detail fades out before the far branch.
+ let detail=1.0-smoothstep(p(57u),p(56u),parameters.y);
+ if(detail<=0.0){return vec4<f32>(linear_color(baseline)*p(3u),1.0);}
  let n=normalize(v.local);
  let t=parameters.x*p(60u)*3.0;
  // Camera-independent analytic swirl guides the four bounded noise samples.
@@ -42,7 +47,7 @@ struct Out { @builtin(position) clip:vec4<f32>, @location(0) local:vec3<f32>, @l
  // Broad dark channels, then narrow curved ridges and fine grain; avoid uniform salt noise.
  let grain=a*0.20+b*0.25+c*0.35+d*0.20;
  let intensity=clamp((grain-0.48)*p(58u)*1.6+0.42+activity*p(61u)*0.36,0.0,1.0);
- let color=u32(p(4u));let baseline=vec3<f32>(f32((color>>16u)&255u),f32((color>>8u)&255u),f32(color&255u))/255.0;
+
  let dark=baseline*vec3<f32>(0.32,0.14,0.08);
  let orange=mix(baseline,vec3<f32>(1.0,0.22,0.008),0.25);
  let gold=mix(baseline,vec3<f32>(1.0,0.67,0.055),0.82);
@@ -53,6 +58,6 @@ struct Out { @builtin(position) clip:vec4<f32>, @location(0) local:vec3<f32>, @l
  let facing=abs(dot(normalize(v.world_normal),normalize(view.world_position-v.world_position.xyz)));
  let limb=1.0+pow(1.0-facing,5.0)*p(63u)*0.25*(0.5+grain);
  // Palette values are sRGB; the render target expects linear emission.
- let linear=select(radiance/12.92,pow((radiance+vec3<f32>(0.055))/1.055,vec3<f32>(2.4)),radiance>vec3<f32>(0.04045));
+ let linear=linear_color(mix(baseline,radiance,detail));
  return vec4<f32>(linear*p(3u)*limb,1.0);
 }

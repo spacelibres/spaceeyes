@@ -25,8 +25,8 @@ impl Material for SolarSurfaceMaterial {
 pub(crate) struct SolarSurfaceLod {
     entries: HashMap<Entity, (Entity, Handle<SolarSurfaceMaterial>)>,
 }
-fn near(distance: f32, active: bool, enter: f32, exit: f32) -> bool {
-    distance.is_finite() && distance >= 0. && distance < if active { exit } else { enter }
+fn valid_distance(distance: f32) -> bool {
+    distance.is_finite() && distance >= 0.
 }
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn sync_solar_surface(
@@ -58,9 +58,7 @@ pub(crate) fn sync_solar_surface(
             .map_or(f32::INFINITY, |c| {
                 c.distance(transform.translation()) / radius
             });
-        let active = p(72) > 0.5
-            && p(0) > 0.5
-            && near(distance, state.entries.contains_key(&root), p(55), p(56));
+        let active = p(72) > 0.5 && p(0) > 0.5 && valid_distance(distance);
         // Mask only the root's pixels: Visibility would also suppress its plasma children.
         if let Ok(handle) = originals.get(root)
             && let Some(mut m) = standard.get_mut(&handle.0)
@@ -107,13 +105,13 @@ pub(crate) fn sync_solar_surface(
 mod tests {
     use super::*;
     #[test]
-    fn distance_hysteresis_rejects_invalid_camera() {
-        assert!(near(8., false, 9., 11.));
-        assert!(near(10., true, 9., 11.));
-        assert!(!near(10., false, 9., 11.));
-        assert!(!near(f32::INFINITY, true, 9., 11.));
-        assert!(!near(f32::NAN, true, 9., 11.));
-        assert!(!near(-1., true, 9., 11.));
+    fn surface_does_not_change_material_at_plasma_distance_thresholds() {
+        for distance in [0., 7.9, 8., 9., 10., 12., 1000.] {
+            assert!(valid_distance(distance));
+        }
+        assert!(!valid_distance(f32::INFINITY));
+        assert!(!valid_distance(f32::NAN));
+        assert!(!valid_distance(-1.));
     }
     fn fixture() -> (App, Entity, Entity, Handle<StandardMaterial>, Handle<Mesh>) {
         let mut app = App::new();
@@ -180,13 +178,22 @@ mod tests {
         *app.world_mut().get_mut::<GlobalTransform>(camera).unwrap() =
             GlobalTransform::from_translation(Vec3::Z * 12.);
         app.update();
-        assert!(app.world().resource::<SolarSurfaceLod>().entries.is_empty());
-        assert!(app.world().get_entity(child).is_err());
-        assert!(
+        assert_eq!(
+            app.world().resource::<SolarSurfaceLod>().entries[&root].0,
+            child
+        );
+        assert_eq!(
+            app.world().resource::<SolarSurfaceLod>().entries[&root].1,
+            material
+        );
+        assert_eq!(
             app.world()
                 .resource::<Assets<SolarSurfaceMaterial>>()
                 .get(&material)
-                .is_none()
+                .unwrap()
+                .parameters
+                .y,
+            12.
         );
         assert!(app.world().resource::<Assets<Mesh>>().get(&mesh).is_some());
         assert_eq!(
@@ -196,7 +203,7 @@ mod tests {
                 .unwrap()
                 .base_color
                 .alpha(),
-            1.
+            0.
         );
         *app.world_mut().get_mut::<GlobalTransform>(camera).unwrap() =
             GlobalTransform::from_translation(Vec3::Z * 4.);

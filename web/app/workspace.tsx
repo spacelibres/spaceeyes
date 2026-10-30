@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {stellarDefaults,snapshotSettings} from "../../platform/stellar-tuning";
+import {solarWorkspaceSettings,restoreSolarWorkspaceSettings} from "../lib/solar-settings";
 import WorkspaceView from "./workspace-view";
 import {
   createWorkspace,
@@ -11,13 +11,7 @@ import {
 
 export default function Workspace() {
   const [state, setState] = useState(initialSnapshot);
-  const [stellarSettings,setStellarSettings]=useState(stellarDefaults);
-  useEffect(()=>{
-    try {
-      const saved=localStorage.getItem("spaceeyes.solar-tuning.v1");
-      if(saved){const parsed=JSON.parse(saved);if(![1,2].includes(parsed.version))throw Error("太阳配置版本不支持");setStellarSettings({...snapshotSettings(parsed.settings)});}
-    }catch(error){setActionError(`恢复太阳配置失败：${String(error)}`);}
-  },[]);
+  const [stellarSettings,setStellarSettings]=useState(solarWorkspaceSettings);
   const [actionError, setActionError] = useState("");
   const actionRevision = useRef(0);
   const [search, setSearch] = useState("");
@@ -81,6 +75,10 @@ export default function Workspace() {
       phase: "正在进入太阳系工作区",
     }));
     try {
+      let initialSolar=solarWorkspaceSettings();
+      try {initialSolar=restoreSolarWorkspaceSettings(localStorage.getItem("spaceeyes.solar-tuning.v1"));}
+      catch(error){setActionError(`本机太阳配置无效，已采用推荐参数：${String(error)}`);}
+      setStellarSettings(initialSolar);
       runtime.current = await createWorkspace(
         "#spaceeyes-canvas",
         (value) => {
@@ -88,6 +86,7 @@ export default function Workspace() {
         },
         controller.current.signal,
         {
+          stellarSettings: initialSolar,
           onStartup: (phase) => {
             if (mounted.current && !controller.current?.signal.aborted)
               setState((current) => ({ ...current, busy: true, phase }));
@@ -119,7 +118,7 @@ export default function Workspace() {
   return (
     <WorkspaceView
       stellarSettings={stellarSettings}
-      onStellar={(settings)=>{void action(value=>{value.tuneStellar(settings);setStellarSettings(settings);});}}
+      onStellar={(settings)=>{void action(value=>{const next=solarWorkspaceSettings(settings);value.tuneStellar(next);setStellarSettings(next);});}}
       galaxy={state.galaxy}
       onGalaxy={() => action((value) => value.galaxy(!state.galaxy.enabled))}
       onRetryGalaxy={() => action((value) => value.galaxy(true))}

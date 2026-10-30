@@ -1,3 +1,4 @@
+import {solarWorkspaceSettings} from "../lib/solar-settings.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -43,6 +44,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 function harness() {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
   const focusCalls: string[] = [];
+  const solar:Record<string,number>[]=[];
   const trails: {
     id: string;
     epochs: number[];
@@ -89,6 +91,7 @@ function harness() {
               });
               return result;
             };
+          if(property==="tune_stellar") return (...args:any[])=>{solar.push(JSON.parse(args[3]).settings);return Reflect.apply(value,target,args);};
           if (property === "set_visual")
             return (...args: any[]) => {
               visuals.push({ id: args[2], spec: JSON.parse(args[3]) });
@@ -126,6 +129,7 @@ function harness() {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    solar:()=>solar,
     focusCalls: () => focusCalls,
     trails: () => trails,
     setPick: (id: string | undefined) => {
@@ -606,4 +610,20 @@ test("cancelled module loading does not initialize WASM or start a renderer", as
   );
   assert.equal(init, 0);
   assert.deepEqual(phases, ["加载三维核心模块"]);
+});
+
+
+test("solar configuration is published on startup and survives selection, overview and visual upgrades",async()=>{
+ for(const custom of [undefined,{...solarWorkspaceSettings(),surfaceGain:.8,temperatureMK:2,observationStyle:0}]){
+  const fixtures=harness();
+  const app=await createWorkspace('#test',()=>{},new AbortController().signal,{...fixtures,stellarSettings:custom,fetch:async input=>new Response(sample(String(input).includes('type=ori')))});
+  try{
+   const expected=solarWorkspaceSettings(custom);
+   assert.ok(fixtures.solar().length>0,'startup must publish solar settings before selection');
+   assert.deepEqual(fixtures.solar().at(-1),expected);
+   await app.select('sun');app.overview();await app.select('earth');await app.select('sun');
+   for(const settings of fixtures.solar())assert.deepEqual(settings,expected);
+   assert.ok(fixtures.visuals().filter(v=>v.id==='sun').every(v=>!v.spec.faceAssets),'Sun never switches to NASA photograph faces');
+  }finally{await app.dispose();}
+ }
 });

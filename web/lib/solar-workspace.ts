@@ -1,4 +1,5 @@
-import {buildStellarTuning,snapshotSettings} from '../../platform/stellar-tuning.ts';
+import {solarWorkspaceSettings} from './solar-settings.ts';
+import {buildStellarTuning} from '../../platform/stellar-tuning.ts';
 import { PluginHost, type PluginContext } from "../../platform/plugin-host.ts";
 import {
   WasmCorePort,
@@ -117,6 +118,7 @@ export async function createWorkspace(
   signal: AbortSignal,
   options: {
     onStartup?: (phase: string) => void;
+    stellarSettings?: Record<string,number>;
     backgroundStars?: boolean;
     backgroundGalaxy?: boolean;
     loadCore?: () => Promise<{
@@ -220,7 +222,7 @@ export async function createWorkspace(
     lastEmit = 0;
   let queue: Promise<void> = Promise.resolve(),
     disposal: Promise<void> | undefined;
-  let stellarSettings:Readonly<Record<string,number>>|undefined;
+  let stellarSettings = solarWorkspaceSettings(options.stellarSettings);
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
   let lastTrajectoryRefresh = 0;
@@ -402,10 +404,10 @@ export async function createWorkspace(
             sdk.visual.set(body.id, {
               kind: "sphere",
               colorRgba:
-                detailed && surfaceAssets.has(body.id)
+                detailed && body.id !== "sun" && surfaceAssets.has(body.id)
                   ? [1, 1, 1, 1]
                   : body.color,
-              ...(detailed && surfaceAssets.has(body.id)
+              ...(detailed && body.id !== "sun" && surfaceAssets.has(body.id)
                 ? { faceAssets: surfaceAssets.get(body.id)! }
                 : {}),
               ...(detailed && body.id === "saturn"
@@ -566,9 +568,10 @@ export async function createWorkspace(
   const runtime: WorkspaceRuntime = {
     tuneStellar(settings) {
       assertLive();
-      const tuning=buildStellarTuning(settings);
+      const next=solarWorkspaceSettings(settings);
+      const tuning=buildStellarTuning(next);
       sdk.visual.stellar("sun",tuning);
-      stellarSettings=snapshotSettings(settings);
+      stellarSettings=next;
     },
     galaxy(enabled) {
       assertLive();
