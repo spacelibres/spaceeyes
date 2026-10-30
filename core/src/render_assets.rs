@@ -107,6 +107,7 @@ pub(crate) fn attach_visuals(
                 };
                 let handles = std::array::from_fn(|i| assets.load::<Image>(paths[i].clone()));
                 let material = materials.add(StandardMaterial {
+                    unlit: stellar.is_some(),
                     base_color: color_rgba
                         .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
                         .unwrap_or(Color::WHITE),
@@ -186,6 +187,7 @@ pub(crate) fn attach_visuals(
                 };
                 let image: Handle<Image> = assets.load(descriptor.path.clone());
                 let material = materials.add(StandardMaterial {
+                    unlit: stellar.is_some(),
                     base_color_texture: Some(image.clone()),
                     emissive_texture: Some(image.clone()),
                     base_color: color_rgba
@@ -236,6 +238,7 @@ pub(crate) fn attach_visuals(
                         Mesh3d(shared.mesh.clone()),
                         MeshMaterial3d(
                             materials.add(StandardMaterial {
+                                unlit: stellar.is_some(),
                                 base_color: color_rgba
                                     .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
                                     .unwrap_or(Color::WHITE),
@@ -281,7 +284,7 @@ pub(crate) fn attach_visuals(
                         ),
                     }),
                 ),
-                Transform::from_scale(Vec3::splat(1.65)),
+                Transform::from_scale(Vec3::splat(2.8)),
                 ChildOf(root),
             ));
         }
