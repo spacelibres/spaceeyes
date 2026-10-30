@@ -18,3 +18,4 @@ for (const file of ['spaceeyes_core.js', 'spaceeyes_core_bg.wasm']) {
   await copyFile(new URL(`../../core/pkg-web/${file}`, import.meta.url), new URL(file, output));
 }
 console.log('Prepared renderer WASM runtime; external font verified absent from WASM, surfaces load on selection.');
+await copyFile(new URL('../resources/shaders/starfield.wgsl', import.meta.url), new URL('starfield.wgsl', shaders));

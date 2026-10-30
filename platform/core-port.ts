@@ -1,3 +1,4 @@
+import type { StarfieldSpec } from "./starfield-contract.ts";
 // Internal host-to-core adapter boundary, not a public wire protocol.
 // An implementation must forward to Rust/Bevy and validate target existence there.
 import type { ObjectState } from "./state-contract.ts";
@@ -56,5 +57,6 @@ export interface CorePort {
     readonly playing: boolean;
     readonly rate: number;
   }): void;
+  starfield?(request: { readonly pluginId: string; readonly sessionId: string; readonly layerId: string; readonly spec: Readonly<StarfieldSpec> | null }): void;
   releaseSession(sessionId: string): void | Promise<void>;
 }

@@ -15,6 +15,10 @@ import {
 } from "../../platform/eyes-catalog.ts";
 import planetAssets from "../../validation/solar-assets.json" with { type: "json" };
 import observationTimes from "../../platform/eyes-observation-times.json" with { type: "json" };
+import {
+  StarfieldSource,
+  type StarfieldProgress,
+} from "../../platform/starfield-source.ts";
 
 export interface HostCore extends WasmCoreBinding {
   pick_object(u: number, v: number): string | undefined;
@@ -31,6 +35,7 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  starfield: StarfieldProgress;
   startupMs?: number;
   parentId?: string;
   active: boolean;
@@ -50,6 +55,14 @@ export type SolarSnapshot = {
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
+  starfield: {
+    enabled: false,
+    loading: false,
+    readyLayers: 0,
+    totalLayers: 7,
+    pointCount: 0,
+    error: "",
+  },
   active: false,
   busy: false,
   phase: "准备探索太阳系",
@@ -77,6 +90,8 @@ export const workspaceCatalog = solarCatalog
     parentId: body.parentId ?? undefined,
   }));
 export interface WorkspaceRuntime {
+  starfield(enabled: boolean): Promise<void>;
+  retryStarfield(): Promise<void>;
   observeAvailable(): Promise<void>;
   pick(u: number, v: number): Promise<boolean>;
   select(id: string): Promise<void>;
@@ -97,6 +112,7 @@ export async function createWorkspace(
   signal: AbortSignal,
   options: {
     onStartup?: (phase: string) => void;
+    backgroundStars?: boolean;
     loadCore?: () => Promise<{
       default(): Promise<unknown>;
       WasmCore: new () => HostCore;
@@ -182,6 +198,7 @@ export async function createWorkspace(
     );
   }
   let sdk!: PluginContext, data!: SolarSystemData;
+  let stars!: StarfieldSource;
   let frame = 0,
     closed = false,
     revision = 0,
@@ -261,6 +278,14 @@ export async function createWorkspace(
           active: false,
           busy: false,
           playing: false,
+          starfield: {
+            ...state.starfield,
+            enabled: false,
+            loading: false,
+            readyLayers: 0,
+            pointCount: 0,
+            error: "",
+          },
           phase: "工作区已释放，可重新进入",
         });
       }
@@ -506,6 +531,14 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    starfield(enabled) {
+      assertLive();
+      return stars.enable(enabled);
+    },
+    retryStarfield() {
+      assertLive();
+      return stars.retry();
+    },
     async observeAvailable() {
       assertLive();
       const id = state.selected;
@@ -657,6 +690,24 @@ export async function createWorkspace(
       "time.control",
       "scene.visual",
     ]);
+    host.register(
+      {
+        id: "spaceeyes.background-stars",
+        apiVersion: 1,
+        capabilities: ["scene.visual"],
+      },
+      (context) => {
+        stars = new StarfieldSource(
+          context,
+          (progress) => {
+            state.starfield = progress;
+            emit();
+          },
+          options.fetch ? { fetch: options.fetch } : {},
+        );
+      },
+    );
+    await host.enable("spaceeyes.background-stars", ["scene.visual"]);
     assertLive();
     options.onStartup?.("加载总览所需轨道数据");
     await reload(core.utc_to_tdb(Date.now() / 1000));
@@ -667,6 +718,17 @@ export async function createWorkspace(
     state.startupMs = Math.max(0, performance.now() - startupAt);
     state.active = true;
     emit();
+    if (options.backgroundStars !== false)
+      void stars.enable(true).catch((error) => {
+        if (!closed) {
+          state.starfield = {
+            ...state.starfield,
+            loading: false,
+            error: String(error),
+          };
+          emit();
+        }
+      });
     const tick = (now: number) => {
       if (closed) return;
       try {

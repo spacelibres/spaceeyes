@@ -4,6 +4,7 @@ import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
+  set_starfield?(plugin: string, session: string, layer: string, specJson?: string): void;
   tdb_to_utc?(tdbSeconds: number): number;
   utc_to_tdb?(unixSeconds: number): number;
   open_session(
@@ -67,6 +68,10 @@ export class WasmCorePort implements CorePort {
       request.timeControl,
       request.visualControl,
     );
+  }
+  starfield(request: Parameters<NonNullable<CorePort["starfield"]>>[0]): void {
+    if (!this.#binding.set_starfield) throw new Error("starfield unavailable");
+    this.#binding.set_starfield(request.pluginId, request.sessionId, request.layerId, request.spec === null ? undefined : JSON.stringify(request.spec));
   }
   releaseSession(sessionId: string): void {
     this.#binding.release_session(sessionId);

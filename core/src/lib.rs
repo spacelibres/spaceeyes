@@ -13,6 +13,8 @@ mod runtime;
 #[cfg(feature = "bevy-runtime")]
 pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
 mod clock;
+mod starfield;
+pub use starfield::StarfieldSpec;
 #[cfg(feature = "browser-render")]
 mod face_texture;
 mod orbit_lines;
@@ -25,6 +27,8 @@ mod renderer;
 mod ring_texture;
 #[cfg(feature = "browser-render")]
 mod screen_layout;
+#[cfg(feature = "browser-render")]
+mod sky_render;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
@@ -88,6 +92,8 @@ impl Default for CoreLimits {
 
 #[derive(Default)]
 pub struct Core {
+    starfields: HashMap<(String, String), starfield::StarfieldLayer>,
+    starfield_revision: u64,
     assets: HashMap<String, AssetDescriptor>,
     visuals: HashMap<String, VisualAssignment>,
     visual_statuses: HashMap<String, VisualStatus>,
@@ -540,6 +546,7 @@ impl Core {
     }
 
     pub fn release_session(&mut self, id: &str) {
+        self.starfields.retain(|(session, _), _| session != id);
         self.layers.remove(id);
         self.trajectories
             .retain(|object, _| self.objects.get(object).is_some_and(|owner| owner != id));

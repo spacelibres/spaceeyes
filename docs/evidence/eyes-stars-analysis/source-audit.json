@@ -1,0 +1,737 @@
+{
+  "files": [
+    {
+      "file": "galaxies.0.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "bytes": 27857,
+      "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05",
+      "count": 1211,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          13.899999618530273,
+          39.279998779296875
+        ],
+        "absMag": [
+          -1.4578509330749512,
+          7.997710227966309
+        ],
+        "raw0": [
+          -1.2944046764704768e+22,
+          7.956856801796716e+21
+        ],
+        "raw1": [
+          -1.0162729469431993e+22,
+          1.9210520793514382e+22
+        ],
+        "raw2": [
+          -1.4396106363760819e+22,
+          1.0920801254408853e+22
+        ]
+      },
+      "distance": [
+        2.931396236273512e+17,
+        2.104433992770646e+22
+      ],
+      "samples": [
+        {
+          "mag": 23.950000762939453,
+          "absMag": 0.02050485834479332,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "rawPosition": [
+            -7.545734996170899e+18,
+            1.2075220425794126e+19,
+            1.234799496699419e+19
+          ],
+          "distance": 1.884733521399956e+19,
+          "photometricDistanceParsec": 610800.2145275208
+        },
+        {
+          "mag": 26.389999389648438,
+          "absMag": -0.015166835859417915,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "rawPosition": [
+            9.852818254500725e+18,
+            4.117208371528152e+19,
+            -4.1003559369069036e+19
+          ],
+          "distance": 5.8936494516955636e+19,
+          "photometricDistanceParsec": 1909999.4628089094
+        }
+      ],
+      "first32Hex": "bb 04 00 00 9a 99 bf 41 ce f9 a7 3c ff ff ff ac 6f d1 de cd 93 27 5f e4 5c 2b 5f b8 1e d3 41 52"
+    },
+    {
+      "file": "stars.0.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.0.bin",
+      "bytes": 116545,
+      "sha256": "abca5a8997e52adaa4aac9121ba747071383dce182de15c08f0ffb46e46aa5a5",
+      "count": 5067,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          -0.6200000047683716,
+          6.0
+        ],
+        "absMag": [
+          -11.0600004196167,
+          7.490392684936523
+        ],
+        "raw0": [
+          -3.08328252438806e+20,
+          3.0853858461515304e+20
+        ],
+        "raw1": [
+          -2.6496303885029736e+20,
+          2.5458864526492854e+20
+        ],
+        "raw2": [
+          -1.8451680441113615e+20,
+          1.9733466467714413e+20
+        ]
+      },
+      "distance": [
+        41578928012066.57,
+        3.0856803355702297e+20
+      ],
+      "samples": [
+        {
+          "mag": 5.710000038146973,
+          "absMag": -0.4101283550262451,
+          "rgb": [
+            255,
+            244,
+            234
+          ],
+          "rawPosition": [
+            1532502850142208.0,
+            -3574953341353984.0,
+            3403824127541248.0
+          ],
+          "distance": 5168643445797354.0,
+          "photometricDistanceParsec": 167.5041913705981
+        },
+        {
+          "mag": 5.53000020980835,
+          "absMag": -0.6379357576370239,
+          "rgb": [
+            255,
+            204,
+            111
+          ],
+          "rawPosition": [
+            1599923099271168.0,
+            -3739653257560064.0,
+            3372345238487040.0
+          ],
+          "distance": 5283698781905273.0,
+          "photometricDistanceParsec": 171.23289272060842
+        }
+      ],
+      "first32Hex": "cb 13 00 00 52 b8 b6 40 58 fc d1 be ff f4 ea b4 39 ae 58 6b 36 4b d9 29 7c 41 59 c3 f5 b0 40 c2"
+    },
+    {
+      "file": "stars.1.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.1.bin",
+      "bytes": 170618,
+      "sha256": "4890118e7293ba2d2d76b156250dcc50a614a3218cb773219c2f13f64c7a536f",
+      "count": 7418,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          6.010000228881836,
+          6.800000190734863
+        ],
+        "absMag": [
+          -8.970000267028809,
+          8.708775520324707
+        ],
+        "raw0": [
+          -3.085140962921792e+20,
+          3.085208165072482e+20
+        ],
+        "raw1": [
+          -2.620584985656201e+20,
+          2.8701952357846064e+20
+        ],
+        "raw2": [
+          -2.6789095915022765e+20,
+          2.322907253754917e+20
+        ]
+      },
+      "distance": [
+        108109701184361.3,
+        3.085680410005154e+20
+      ],
+      "samples": [
+        {
+          "mag": 6.610000133514404,
+          "absMag": -1.1464684009552002,
+          "rgb": [
+            170,
+            191,
+            255
+          ],
+          "rawPosition": [
+            -2741222342918144.0,
+            6320815859564544.0,
+            8550839115317248.0
+          ],
+          "distance": 1.0981068374246458e+16,
+          "photometricDistanceParsec": 355.87190808077645
+        },
+        {
+          "mag": 6.53000020980835,
+          "absMag": -0.3955139219760895,
+          "rgb": [
+            255,
+            244,
+            234
+          ],
+          "rawPosition": [
+            -1851603350978560.0,
+            4257018307149824.0,
+            5877260628262912.0
+          ],
+          "distance": 7489514826027995.0,
+          "photometricDistanceParsec": 242.71847029287332
+        }
+      ],
+      "first32Hex": "fa 1c 00 00 1f 85 d3 40 7a bf 92 bf aa bf ff 09 d2 1b d9 fd a5 b3 59 8b 07 f3 59 c3 f5 d0 40 cd"
+    },
+    {
+      "file": "stars.2.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.2.bin",
+      "bytes": 175448,
+      "sha256": "ec8775d677e4436f5ab1591eaabd9045329ec84b2add9b3796f1e9b031d8ff8c",
+      "count": 7628,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          6.809999942779541,
+          7.25
+        ],
+        "absMag": [
+          -8.1899995803833,
+          7.9835028648376465
+        ],
+        "raw0": [
+          -3.0821260140775e+20,
+          3.0854614925515214e+20
+        ],
+        "raw1": [
+          -2.7732575407896422e+20,
+          2.956655728458958e+20
+        ],
+        "raw2": [
+          -3.005293548903397e+20,
+          3.0058297587340306e+20
+        ]
+      },
+      "distance": [
+        206731721958175.12,
+        3.085680411198973e+20
+      ],
+      "samples": [
+        {
+          "mag": 7.25,
+          "absMag": 0.7921044826507568,
+          "rgb": [
+            255,
+            210,
+            161
+          ],
+          "rawPosition": [
+            10442292330496.0,
+            -36874101981184.0,
+            6038391695081472.0
+          ],
+          "distance": 6038513310749172.0,
+          "photometricDistanceParsec": 195.6947178668903
+        },
+        {
+          "mag": 7.050000190734863,
+          "absMag": 4.129871845245361,
+          "rgb": [
+            255,
+            244,
+            234
+          ],
+          "rawPosition": [
+            -418078559043584.0,
+            960095177408512.0,
+            552669076783104.0
+          ],
+          "distance": 1184067371245120.5,
+          "photometricDistanceParsec": 38.372992528753784
+        }
+      ],
+      "first32Hex": "cc 1d 00 00 00 00 e8 40 5c c7 4a 3f ff d2 a1 92 f4 17 55 af 25 06 d6 15 9f ab 59 9a 99 e1 40 e9"
+    },
+    {
+      "file": "stars.3.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.3.bin",
+      "bytes": 178185,
+      "sha256": "268b335750935d98ad43c4ac9582f3b7dc53c896f323f71e56d51eaa4683b67c",
+      "count": 7747,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          7.260000228881836,
+          7.579999923706055
+        ],
+        "absMag": [
+          -7.739999771118164,
+          10.45864486694336
+        ],
+        "raw0": [
+          -3.081430419041304e+20,
+          3.07677095264558e+20
+        ],
+        "raw1": [
+          -2.745578347111079e+20,
+          2.96353638426465e+20
+        ],
+        "raw2": [
+          -3.061409807635317e+20,
+          2.7966489909636e+20
+        ]
+      },
+      "distance": [
+        78635819040459.55,
+        3.0856804113545134e+20
+      ],
+      "samples": [
+        {
+          "mag": 7.340000152587891,
+          "absMag": 0.502286434173584,
+          "rgb": [
+            202,
+            215,
+            255
+          ],
+          "rawPosition": [
+            -2093365852110848.0,
+            4820361518514176.0,
+            4910933251981312.0
+          ],
+          "distance": 7192727658223396.0,
+          "photometricDistanceParsec": 233.10025235155507
+        },
+        {
+          "mag": 7.550000190734863,
+          "absMag": 1.3820642232894897,
+          "rgb": [
+            255,
+            210,
+            161
+          ],
+          "rawPosition": [
+            -298317053427712.0,
+            672869507923968.0,
+            5232181773336576.0
+          ],
+          "distance": 5283698756391692.0,
+          "photometricDistanceParsec": 171.23289272060842
+        }
+      ],
+      "first32Hex": "43 1e 00 00 48 e1 ea 40 d8 95 00 3f ca d7 ff f7 fc ed d8 bf 00 89 59 be 93 8b 59 9a 99 f1 40 7b"
+    },
+    {
+      "file": "stars.4.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.4.bin",
+      "bytes": 167398,
+      "sha256": "840bf58b5c518ae08f6e4a1d5180b7d83c4aaab3918a9e37288800cb5db5509f",
+      "count": 7278,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          7.590000152587891,
+          7.820000171661377
+        ],
+        "absMag": [
+          -7.409999847412109,
+          8.713531494140625
+        ],
+        "raw0": [
+          -3.08003078471961e+20,
+          3.082129532514709e+20
+        ],
+        "raw1": [
+          -2.8586936404706276e+20,
+          2.6996075020709737e+20
+        ],
+        "raw2": [
+          -2.881033781606571e+20,
+          3.0171848111382594e+20
+        ]
+      },
+      "distance": [
+        190957140764335.03,
+        3.0856804174559714e+20
+      ],
+      "samples": [
+        {
+          "mag": 7.630000114440918,
+          "absMag": -1.0459108352661133,
+          "rgb": [
+            255,
+            210,
+            161
+          ],
+          "rawPosition": [
+            -337695326863360.0,
+            706801964154880.0,
+            1.6751696378068992e+16
+          ],
+          "distance": 1.6770001153647198e+16,
+          "photometricDistanceParsec": 543.4782770764391
+        },
+        {
+          "mag": 7.679999828338623,
+          "absMag": 1.6767027378082275,
+          "rgb": [
+            255,
+            210,
+            161
+          ],
+          "rawPosition": [
+            -421862894993408.0,
+            951349684469760.0,
+            4786067278397440.0
+          ],
+          "distance": 4897905115216056.0,
+          "photometricDistanceParsec": 158.7301468735494
+        }
+      ],
+      "first32Hex": "6e 1c 00 00 f6 28 f4 40 68 e0 85 bf ff d2 a1 e9 90 99 d7 4a b5 20 58 51 0e 6e 5a 8f c2 f5 40 32"
+    },
+    {
+      "file": "stars.5.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.5.bin",
+      "bytes": 173171,
+      "sha256": "6fd37f1dcb54777162f188db815b35c12d4dffb8e4a62a53564ee71f356646c1",
+      "count": 7529,
+      "recordBytes": 23,
+      "invalidRecords": 0,
+      "blackColors": 0,
+      "ranges": {
+        "mag": [
+          7.829999923706055,
+          8.029999732971191
+        ],
+        "absMag": [
+          -7.170000076293945,
+          9.194106101989746
+        ],
+        "raw0": [
+          -3.075558499183399e+20,
+          3.0830066789108836e+20
+        ],
+        "raw1": [
+          -2.812350368851962e+20,
+          2.709519115610258e+20
+        ],
+        "raw2": [
+          -3.072193113993102e+20,
+          2.963451238084195e+20
+        ]
+      },
+      "distance": [
+        175601891642435.8,
+        3.085680418872308e+20
+      ],
+      "samples": [
+        {
+          "mag": 7.909999847412109,
+          "absMag": -0.17991478741168976,
+          "rgb": [
+            255,
+            210,
+            161
+          ],
+          "rawPosition": [
+            266572027396096.0,
+            -689291583815680.0,
+            1.27823058567168e+16
+          ],
+          "distance": 1.2803652859554018e+16,
+          "photometricDistanceParsec": 414.9377302333627
+        },
+        {
+          "mag": 7.829999923706055,
+          "absMag": 2.19950795173645,
+          "rgb": [
+            248,
+            247,
+            255
+          ],
+          "rawPosition": [
+            -667379868631040.0,
+            1506288383033344.0,
+            3781971838763008.0
+          ],
+          "distance": 4125240789470554.0,
+          "photometricDistanceParsec": 133.68983718907307
+        }
+      ],
+      "first32Hex": "69 1d 00 00 b8 1e fd 40 95 3b 38 be ff d2 a1 23 72 72 57 0d ba 1c d8 c2 a5 35 5a 5c 8f fa 40 bd"
+    }
+  ],
+  "totalRecords": 43878,
+  "totalBytes": 1009222,
+  "photometryCrossCheck": {
+    "parsecKmUsed": 30856775814913.67,
+    "byFile": [
+      {
+        "file": "galaxies.0.bin",
+        "range": [
+          0.9999999717307144,
+          1.0000017402862766
+        ],
+        "consistentWithin0_1Percent": 1211,
+        "rows": 1211,
+        "exceptions": []
+      },
+      {
+        "file": "stars.0.bin",
+        "range": [
+          0.9999927857781805,
+          1000.0011021130268
+        ],
+        "consistentWithin0_1Percent": 5041,
+        "rows": 5067,
+        "exceptions": [
+          {
+            "index": 443,
+            "mag": 5.380000114440918,
+            "absMag": -9.619999885559082,
+            "distance": 3.0856802868626555e+20,
+            "distanceRatio": 1000.0008767511242
+          },
+          {
+            "index": 860,
+            "mag": 5.78000020980835,
+            "absMag": -9.220000267028809,
+            "distance": 3.085680250411413e+20,
+            "distanceRatio": 1000.0006453462896
+          },
+          {
+            "index": 1120,
+            "mag": 4.980000019073486,
+            "absMag": -10.020000457763672,
+            "distance": 3.085680210527687e+20,
+            "distanceRatio": 1000.0006324208572
+          }
+        ]
+      },
+      {
+        "file": "stars.1.bin",
+        "range": [
+          0.999996573746716,
+          1000.0011107254952
+        ],
+        "consistentWithin0_1Percent": 7344,
+        "rows": 7418,
+        "exceptions": [
+          {
+            "index": 177,
+            "mag": 6.769999980926514,
+            "absMag": -8.229999542236328,
+            "distance": 3.085680331242489e+20,
+            "distanceRatio": 1000.0011107254952
+          },
+          {
+            "index": 209,
+            "mag": 6.409999847412109,
+            "absMag": -8.59000015258789,
+            "distance": 3.085680207597939e+20,
+            "distanceRatio": 1000.000851063179
+          },
+          {
+            "index": 487,
+            "mag": 6.539999961853027,
+            "absMag": -8.460000038146973,
+            "distance": 1.5428401353222205e+18,
+            "distanceRatio": 5.000004357475794
+          }
+        ]
+      },
+      {
+        "file": "stars.2.bin",
+        "range": [
+          0.9999995074959609,
+          1000.001108499251
+        ],
+        "consistentWithin0_1Percent": 7533,
+        "rows": 7628,
+        "exceptions": [
+          {
+            "index": 14,
+            "mag": 7.199999809265137,
+            "absMag": -7.800000190734863,
+            "distance": 3.08568019164476e+20,
+            "distanceRatio": 1000.0008458931059
+          },
+          {
+            "index": 248,
+            "mag": 6.869999885559082,
+            "absMag": -8.130000114440918,
+            "distance": 3.0856802366564e+20,
+            "distanceRatio": 1000.000860480385
+          },
+          {
+            "index": 271,
+            "mag": 6.980000019073486,
+            "absMag": -8.020000457763672,
+            "distance": 3.08568025968253e+20,
+            "distanceRatio": 1000.0006483508535
+          }
+        ]
+      },
+      {
+        "file": "stars.3.bin",
+        "range": [
+          0.9999972349733607,
+          1000.0009170961877
+        ],
+        "consistentWithin0_1Percent": 7644,
+        "rows": 7747,
+        "exceptions": [
+          {
+            "index": 32,
+            "mag": 7.360000133514404,
+            "absMag": -7.639999866485596,
+            "distance": 3.857100343623999e+17,
+            "distanceRatio": 1.2500010910925399
+          },
+          {
+            "index": 68,
+            "mag": 7.440000057220459,
+            "absMag": -7.559999942779541,
+            "distance": 4.408114531076198e+17,
+            "distanceRatio": 1.4285726277810502
+          },
+          {
+            "index": 88,
+            "mag": 7.449999809265137,
+            "absMag": -7.550000190734863,
+            "distance": 3.0856802215828154e+20,
+            "distanceRatio": 1000.0008555953688
+          }
+        ]
+      },
+      {
+        "file": "stars.4.bin",
+        "range": [
+          0.9999997988730922,
+          1000.0009190735356
+        ],
+        "consistentWithin0_1Percent": 7158,
+        "rows": 7278,
+        "exceptions": [
+          {
+            "index": 87,
+            "mag": 7.630000114440918,
+            "absMag": -7.369999885559082,
+            "distance": 3.085680172598418e+20,
+            "distanceRatio": 1000.0008397206067
+          },
+          {
+            "index": 94,
+            "mag": 7.75,
+            "absMag": -7.25,
+            "distance": 5.142800282668109e+17,
+            "distanceRatio": 1.6666680645819434
+          },
+          {
+            "index": 129,
+            "mag": 7.670000076293945,
+            "absMag": -7.329999923706055,
+            "distance": 3.857100387471537e+17,
+            "distanceRatio": 1.2500011053025595
+          }
+        ]
+      },
+      {
+        "file": "stars.5.bin",
+        "range": [
+          0.9999991643022007,
+          1000.0011120822885
+        ],
+        "consistentWithin0_1Percent": 7404,
+        "rows": 7529,
+        "exceptions": [
+          {
+            "index": 51,
+            "mag": 7.949999809265137,
+            "absMag": -7.050000190734863,
+            "distance": 3.085680258402376e+20,
+            "distanceRatio": 1000.0008675277758
+          },
+          {
+            "index": 73,
+            "mag": 7.880000114440918,
+            "absMag": -7.119999885559082,
+            "distance": 3.0856802166308595e+20,
+            "distanceRatio": 1000.0008539905492
+          },
+          {
+            "index": 271,
+            "mag": 7.960000038146973,
+            "absMag": -7.039999961853027,
+            "distance": 3.0856804160486624e+20,
+            "distanceRatio": 1000.0009186174577
+          }
+        ]
+      }
+    ],
+    "interpretation": "km is supported by source renderer and most records. Source contains distance versus magnitude inconsistencies; retain both original fields, never repair or label as independent scientific certification."
+  },
+  "sourceReader": {
+    "header": "little endian int32 count",
+    "recordBytes": 23,
+    "fields": [
+      {
+        "offset": 0,
+        "type": "float32",
+        "name": "apparentMagnitude"
+      },
+      {
+        "offset": 4,
+        "type": "float32",
+        "name": "absoluteMagnitude"
+      },
+      {
+        "offset": 8,
+        "type": "uint8[3]",
+        "name": "rgb"
+      },
+      {
+        "offset": 11,
+        "type": "float32[3]",
+        "name": "rawPosition"
+      }
+    ]
+  }
+}

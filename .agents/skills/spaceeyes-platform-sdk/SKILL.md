@@ -21,6 +21,7 @@ description: Use when authoring or reviewing SPACEEYES TypeScript plugins using 
 - `data.publish(targetId, state)`、`data.remove(targetId)`：需 `data.publish`。状态包含 positionKm 三元数组、正数 radiusKm、epochTdbSeconds、coverageTdbSeconds 二元数组、frame 固定 ICRF、非空 source。时间为 J2000 起算 TDB 秒，数值必须有限，采样时刻在覆盖内。发布时复制并冻结数据；Rust 再校验权限与归属。当前不提交姿态或轨迹。
 - `time.seek(epochTdbSeconds)`、`time.setPlayback(playing, rate)`：需 `time.control`，时间与倍率必须有限，支持负倍率反向播放。不得自行用 UTC Date 数值冒充 TDB。没有当前时刻样本时显示端须报告缺失，不擅自外推。控制时间的会话停用后暂停播放。
 - `visual.set(targetId, spec)`、`visual.clear(targetId)`、`visual.status(targetId)`：需 `scene.visual`，只能操作或读取本会话所属对象。`data.publish` 不包含此权限。资源只能引用宿主已登记的 assetId，不能把 URL 或文件路径传给插件接口。
+- `visual.starfield(layerId, spec|null)`：需 `scene.visual`，发布或清除本会话的独立背景点层，不创建科学对象，不占用轨迹点预算。layerId 使用 assetId 的 ASCII 语法；同名层在不同会话隔离。spec 仅接受 frame 固定 ICRF、非空 source（最多 1024 字符）、平铺 positionsKm/colorsRgb、magnitudes/absoluteMagnitudes。N 个点分别要求 3N/3N/N/N 个有限数值，1≤N≤50000；RGB 在 [0,1] 且每点非全黑，位置非零且每分量绝对值≤1e30 km。每会话最多八层、合计五万点，替换原子校验；传 null 清除，停用释放全部层。SDK 复制并冻结数组，Rust 再验证；不能借此操作相机、材质或任意 shader。
 
 视觉参数严格采用以下两种结构，不接受额外字段：
 
@@ -72,6 +73,12 @@ host.register({
 模型、依赖和表面在服务器按 URL 白名单及 SHA256 固定；局部源变换和单位由资源转换器标准化为 km，已转换模型使用 `scaleKmPerUnit: 1`。不得再次按 0.001 缩放，不得将用于相机取景的模型 extents 标为物理半径。源提供的通用小卫星模型是示意几何。
 
 插件只引用宿主登记的 assetId；服务器 `/assets/eyes/` 路径、转换库、缓存和源 URL 不构成新 SDK 权限。数据读取最多四并发，模型转换最多二并发，磁盘缓存预算 3 GiB；切换、取消、退出后的旧结果不得重新发布。模型 ready、科学状态 ready 与 GPU 检查分别记录。不能将本批资源接入宣称为任务部件动画、所有姿态或完整 NASA Eyes 视觉验收。
+
+### NASA Eyes 背景星空
+
+独立 `spaceeyes.background-stars` 数据插件只申请 scene.visual。按固定白名单、字节和 SHA256 读取七份星表，TS 解码 23 字节记录并按 wxyz 四元数转换至赤道 J2000，核心只做统一显示基转换。进入工作区即触发需求，先亮星层再两并发补齐；不阻塞太阳系初始化。关闭取消未完成工作并清除表示，已验证的解析数据在五万点缓存预算内复用；退出清空缓存。
+
+背景表没有名称、唯一星表 ID、自行或速度，不用于生成可选择天体或动态科学状态。保留源绝对星等与位置，543 条源距离/星等不一致不擅改。Bevy 按层合批，不逐星创建实体；源亮度、像素尺寸和径向衰减是显示参数，逐点数值接收不等同 GPU 或外部天文精度认证。原始二进制和星点 WGSL 均由服务器提供，不放入 WASM。
 
 模型加载禁用 glTF 内置摄像机与灯光导入，scene.visual 不授予相机或照明控制权。当前资源是同源受控根目录下的已审查文件；不能将测试资源服务当作市场沙箱或通用任意 URL 代理。
 

@@ -1,3 +1,4 @@
+import { snapshotStarfield, type StarfieldSpec } from "./starfield-contract.ts";
 // Original SPACEEYES code, MIT. Trusted in-process plugin lifecycle only.
 import type { CorePort } from "./core-port.ts";
 import {
@@ -31,6 +32,7 @@ export interface PluginContext {
     focus(targetId: string): void;
   };
   readonly visual: {
+    starfield(layerId: string, spec: StarfieldSpec | null): void;
     trajectory(
       targetId: string,
       points: [number, number, number][],
@@ -175,10 +177,23 @@ export class PluginHost {
         throw new Error("plugin permission denied");
       }
     };
+    const starfieldCounts = new Map<string, number>();
     const context: PluginContext = Object.freeze({
       pluginId: id,
       signal: session.controller.signal,
       visual: Object.freeze({
+        starfield(layerId: string, spec: StarfieldSpec | null) {
+          requireCapability("scene.visual");
+          if (typeof layerId !== "string" || !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,255}$/.test(layerId)) throw new Error("invalid starfield layer id");
+          const snapshot = spec === null ? null : snapshotStarfield(spec);
+          const next = new Map(starfieldCounts);
+          if (snapshot) next.set(layerId, snapshot.magnitudes.length); else next.delete(layerId);
+          if (next.size > 8 || [...next.values()].reduce((a,b)=>a+b,0) > 50000) throw new Error("starfield budget exceeded");
+          if (!core?.starfield) throw new Error("starfield unavailable");
+          core.starfield(Object.freeze({pluginId:id, sessionId, layerId, spec:snapshot}));
+          starfieldCounts.clear();
+          for (const [key,count] of next) starfieldCounts.set(key,count);
+        },
         trajectory(
           targetId: string,
           points: [number, number, number][],

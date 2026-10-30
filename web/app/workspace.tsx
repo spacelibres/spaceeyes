@@ -103,6 +103,11 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      starfield={state.starfield}
+      onStarfield={() =>
+        action((value) => value.starfield(!state.starfield.enabled))
+      }
+      onRetryStarfield={() => action((value) => value.retryStarfield())}
       catalog={workspaceCatalog}
       selected={state.selected}
       search={search}

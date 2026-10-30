@@ -339,6 +339,24 @@ impl WasmCore {
     pub fn playing(&self) -> Result<bool, String> {
         Ok(self.lock()?.clock().is_playing())
     }
+    pub fn set_starfield(
+        &mut self,
+        plugin: &str,
+        session: &str,
+        layer: &str,
+        payload: Option<String>,
+    ) -> Result<(), String> {
+        let spec = payload
+            .map(|json| serde_json::from_str::<crate::StarfieldSpec>(&json))
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        self.lock()?
+            .set_starfield(plugin, session, layer, spec)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn starfield_count(&self) -> Result<usize, String> {
+        Ok(self.lock()?.starfield_count())
+    }
     pub fn release_session(&mut self, session: &str) -> Result<(), String> {
         self.lock()?.release_session(session);
         Ok(())

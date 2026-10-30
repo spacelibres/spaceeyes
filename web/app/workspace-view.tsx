@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { SceneGesture } from "../lib/scene-gesture";
+import type { StarfieldProgress } from "../../platform/starfield-source";
 export type CatalogEntry = {
   id: string;
   name: string;
@@ -12,6 +13,9 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  starfield: StarfieldProgress;
+  onStarfield: () => void;
+  onRetryStarfield: () => void;
   catalog: CatalogEntry[];
   selected: string;
   search: string;
@@ -368,6 +372,31 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </section>
           )}
           <h3>显示图层</h3>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={p.starfield.enabled}
+              disabled={!p.active}
+              onChange={p.onStarfield}
+            />
+            背景星空
+          </label>
+          <p className="muted" role="status" aria-label="背景星空状态">
+            {!p.starfield.enabled
+              ? "星空已关闭"
+              : `${p.starfield.loading ? "星空加载中" : "星空数据"}：${p.starfield.readyLayers}/${p.starfield.totalLayers} 层 · ${p.starfield.pointCount.toLocaleString()} 点`}
+          </p>
+          {p.starfield.error && (
+            <div role="alert">
+              <p>星空部分资源未就绪：{p.starfield.error}</p>
+              <button
+                disabled={!p.active || p.starfield.loading}
+                onClick={p.onRetryStarfield}
+              >
+                重试星空
+              </button>
+            </div>
+          )}
           <label className="toggle">
             <input
               type="checkbox"

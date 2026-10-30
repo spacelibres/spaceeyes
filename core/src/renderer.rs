@@ -19,7 +19,7 @@ struct RendererStop(Arc<AtomicBool>);
 #[derive(Resource)]
 struct RendererPicks(SharedPickFrame);
 #[derive(Component)]
-struct DisplayCamera;
+pub(crate) struct DisplayCamera;
 // IAU 2012 B1: one astronomical unit is exactly 149597870700 metres.
 const AU_KM: f64 = 149_597_870.7;
 #[derive(Component)]
@@ -87,6 +87,8 @@ pub(crate) fn create_browser_app(
     )
     .add_plugins(CoreScenePlugin(core))
     .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
+    .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
+    .add_systems(Update, crate::sky_render::sync_sky.after(sync_scene))
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
     .init_resource::<OrbitView>()
