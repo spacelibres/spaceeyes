@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {stellarDefaults,snapshotSettings,buildStellarTuning,snapshotStellarTuning,describeStellarWind} from '../stellar-tuning.ts';
+import {stellarDefaults,snapshotSettings,buildStellarTuning,snapshotStellarTuning,describeStellarWind,applySolarReferencePalette} from '../stellar-tuning.ts';
 import {PluginHost,type PluginContext} from '../plugin-host.ts';
 test('stellar settings validate strict fields, pairs, geometry and finite values',()=>{
  const defaults=stellarDefaults(); assert.ok(Object.keys(defaults).length>50);
@@ -20,4 +20,12 @@ test('stellar tuning SDK requires capability, freezes data and revokes old gener
  const host=new PluginHost({openSession(){},focus(){},releaseSession(){},tuneStellar:r=>calls.push(r)});
  host.register({id:'test.solar',apiVersion:1,capabilities:['scene.visual']},ctx=>{sdk=ctx});await host.enable('test.solar',['scene.visual']);
  sdk.visual.stellar('sun',buildStellarTuning(stellarDefaults()));assert.equal(calls.length,1);assert.ok(Object.isFrozen(calls[0].tuning.settings));await host.shutdown();assert.throws(()=>sdk.visual.stellar('sun',buildStellarTuning(stellarDefaults())),/inactive/);
+});
+
+test('reference palette preserves user switches, dynamics and physical inputs',()=>{
+ const custom:Record<string,number>={...stellarDefaults(),surfaceEnabled:0,volumeEnabled:0,archesEnabled:0,flowSpeed:.7,temperatureMK:2,densityCm3:10,archCount:12,surfaceColor:0,hotColor:0};
+ const result=applySolarReferencePalette(custom);
+ assert.equal(result.surfaceColor,0xff4400);assert.equal(result.hotColor,0xff7a0a);
+ for(const key of ['surfaceEnabled','volumeEnabled','archesEnabled','flowSpeed','temperatureMK','densityCm3','archCount'])assert.equal(result[key],custom[key]);
+ assert.equal(custom.surfaceColor,0);assert.ok(Object.isFrozen(result));
 });

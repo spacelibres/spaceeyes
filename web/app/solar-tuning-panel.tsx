@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import controls from "../../platform/stellar-controls.json";
-import { stellarDefaults, snapshotSettings, describeStellarWind } from "../../platform/stellar-tuning";
+import { stellarDefaults, snapshotSettings, describeStellarWind, applySolarReferencePalette } from "../../platform/stellar-tuning";
 
 const storageKey = "spaceeyes.solar-tuning.v1";
 const switches = new Set(["surfaceEnabled", "volumeEnabled", "archesEnabled", "paused"]);
@@ -75,7 +75,7 @@ export function SolarTuningPanel({ active, onApply, initial }: { active: boolean
         </div>)}
       </details>)}
       <p className="solar-tuning-note">积分最多 24 步；提高步数会增加 GPU 成本。几何参数松开后更新。</p>
-      <div className="solar-tuning-actions"><button type="button" onClick={() => accept(stellarDefaults())}>全部恢复默认</button><button type="button" onClick={() => accept({ ...valid.current, surfaceEnabled:0,volumeEnabled:0,archesEnabled:0 })}>关闭特效</button><button type="button" onClick={() => { try { localStorage.setItem(storageKey,JSON.stringify({ version:1,settings:valid.current })); setNotice("已保存到本机"); } catch(e) { setError(`保存失败：${String(e)}`); } }}>本机保存</button></div>
+      <div className="solar-tuning-actions"><button type="button" onClick={() => accept(applySolarReferencePalette(valid.current))}>应用参考图配色</button><button type="button" onClick={() => accept(stellarDefaults())}>全部恢复默认</button><button type="button" onClick={() => accept({ ...valid.current, surfaceEnabled:0,volumeEnabled:0,archesEnabled:0 })}>关闭特效</button><button type="button" onClick={() => { try { localStorage.setItem(storageKey,JSON.stringify({ version:1,settings:valid.current })); setNotice("已保存到本机"); } catch(e) { setError(`保存失败：${String(e)}`); } }}>本机保存</button></div>
       <details><summary>配置 JSON</summary><textarea aria-label="太阳特效配置 JSON" value={json} onChange={e => setJson(e.target.value)} /><div className="solar-tuning-actions"><button type="button" onClick={() => setJson(JSON.stringify({version:1,settings:valid.current},null,2))}>导出 JSON</button><button type="button" onClick={() => { try { const parsed = JSON.parse(json); if(parsed.version !== 1) throw new Error("仅支持 version: 1"); accept(parsed.settings); } catch(e) { setError(`导入失败：${String(e)}`); } }}>导入 JSON</button></div></details>
     </fieldset>
     {error && <p role="alert" className="solar-tuning-error">{error}</p>}{notice && <p role="status">{notice}</p>}

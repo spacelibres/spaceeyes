@@ -163,3 +163,6 @@ Bevy 着色器、运行时生成的基础网格及程序常量属于核心程序
 profile含density/travel各64个有限值，density相对根部且>0、<=1.00001，首点1；travel首点0且严格递增，不超过1e12秒。范围固定1..12R对数半径；不能塞任意shader、URL或Core指针。TS冻结副本，Rust再次校验字段、数值范围、配对关系、顶点预算和归属。采样步数4..24，日珥顶点<=50000；fullDistance<=enterDistance<exitDistance，fadeStart<outerRadius，各阈值低<高。
 
 更新不增加视觉资源修订，不重载贴图；普通字段进入现有uniform，日珥几何字段替换同一专用Mesh资产内容。源对象移除、清空表示或释放会话清除调参；旧会话不可再更新。宿主关闭面板保留本次配置，本机保存/恢复及JSON导入导出由宿主管理，导入仍必须走同样校验。Parker温度和密度为示例边界，不是实测日期；日珥网格/体积噪声不是离散粒子或完整MHD。
+
+
+网页0.0.30 / SDK0.0.23的`applySolarReferencePalette(settings)`仅返回参考照片的光球亮度与五项颜色覆盖，仍通过snapshotSettings校验；不修改开关、形态、速度、Parker输入或采样预算。宿主随后沿用visual.stellar发布并可自行保存配置。默认光球#FF4400/1.05，外流#650400→#FF7A0A，日珥#930A00→#FFD05A。

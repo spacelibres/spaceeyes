@@ -43,3 +43,10 @@ export function buildStellarTuning(input:unknown):StellarTuning {
  }
  return snapshotStellarTuning({settings,profile:cachedWind.profile});
 }
+
+/** Reference-photo palette only: keep the user's geometry, physics and switches. */
+export function applySolarReferencePalette(input:unknown):Readonly<Record<string,number>> {
+ const settings=snapshotSettings(input), defaults=stellarDefaults();
+ const keys=['surfaceGain','surfaceColor','coolColor','hotColor','archCoolColor','archHotColor'];
+ return snapshotSettings({...settings,...Object.fromEntries(keys.map(key=>[key,defaults[key]]))});
+}

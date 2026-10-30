@@ -35,7 +35,7 @@
   {
     "key": "surfaceGain",
     "label": "光球亮度",
-    "value": 1.6,
+    "value": 1.05,
     "min": 0,
     "max": 4,
     "step": 0.05,
@@ -46,7 +46,7 @@
   {
     "key": "surfaceColor",
     "label": "光球颜色",
-    "value": 16777215,
+    "value": 16729088,
     "min": 0,
     "max": 16777215,
     "step": 1,
@@ -167,7 +167,7 @@
   {
     "key": "coolColor",
     "label": "外流低温颜色",
-    "value": 5833216,
+    "value": 6620160,
     "min": 0,
     "max": 16777215,
     "step": 1,
@@ -178,7 +178,7 @@
   {
     "key": "hotColor",
     "label": "外流高温颜色",
-    "value": 16755727,
+    "value": 16742922,
     "min": 0,
     "max": 16777215,
     "step": 1,
@@ -530,7 +530,7 @@
   {
     "key": "archCoolColor",
     "label": "日珥低温颜色",
-    "value": 9241088,
+    "value": 9636352,
     "min": 0,
     "max": 16777215,
     "step": 1,
@@ -541,7 +541,7 @@
   {
     "key": "archHotColor",
     "label": "日珥高温颜色",
-    "value": 16757516,
+    "value": 16765018,
     "min": 0,
     "max": 16777215,
     "step": 1,
