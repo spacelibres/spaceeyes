@@ -17,6 +17,10 @@ use std::sync::{
 struct RendererStop(Arc<AtomicBool>);
 #[derive(Component)]
 struct DisplayCamera;
+#[derive(Component)]
+struct BodyMarker {
+    key: String,
+}
 type FramingNodes<'w, 's> = Query<
     'w,
     's,
@@ -92,6 +96,7 @@ pub(crate) fn create_browser_app(core: SharedCore, stop: Arc<AtomicBool>, canvas
             .after(sync_scene),
     )
     .add_observer(world_ready)
+    .add_systems(Update, update_illumination.after(sync_scene))
     .add_systems(Update, stop_renderer)
     .add_systems(
         PostUpdate,
@@ -114,7 +119,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     commands.spawn((
         DirectionalLight {
             illuminance: 10_000.0,
-            shadow_maps_enabled: true,
+            shadow_maps_enabled: false,
             ..default()
         },
         Transform::from_xyz(4.0, 4.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -618,6 +623,7 @@ type AnnotationLabels<'w, 's> = Query<
         &'static mut Text,
         &'static mut Node,
     ),
+    Without<BodyMarker>,
 >;
 fn maintain_labels(
     commands: &mut Commands,
@@ -668,6 +674,10 @@ fn draw_annotations(
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
     mut label_font: Local<Option<Handle<Font>>>,
+    mut markers: Query<
+        (Entity, &BodyMarker, &mut Node, &mut BackgroundColor),
+        Without<AnnotationLabel>,
+    >,
     camera: Query<(&Camera, &GlobalTransform), With<DisplayCamera>>,
 ) {
     let mut desired_labels = Vec::new();
@@ -683,6 +693,71 @@ fn draw_annotations(
         let p = (DVec3::from_array(p) - settings.origin_km) * settings.units_per_km;
         Vec3::new(p.x as f32, p.z as f32, -p.y as f32)
     };
+    let viewport = camera.logical_viewport_size().unwrap_or(Vec2::ZERO);
+    let mut marker_nodes = std::collections::HashMap::new();
+    for id in core.object_ids() {
+        let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
+            continue;
+        };
+        let position = to_display(state.position_km);
+        let Ok(pixel) = camera.world_to_viewport(camera_transform, position) else {
+            continue;
+        };
+        if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
+            continue;
+        }
+        let offset =
+            position + camera_transform.right() * (state.radius_km * settings.units_per_km) as f32;
+        let projected_radius = camera
+            .world_to_viewport(camera_transform, offset)
+            .map_or(0., |p| p.distance(pixel));
+        if projected_radius >= 6. {
+            continue;
+        }
+        let emissive = core.visual_assignment(id).and_then(|v| match v.spec {
+            VisualSpec::Sphere { emissive_rgba, .. } => emissive_rgba,
+            _ => None,
+        });
+        let opacity = ((6. - projected_radius) / 3.).clamp(0., 1.);
+        let (size, color) = if let Some(c) = emissive {
+            (14., Color::srgba(c[0], c[1], c[2], opacity))
+        } else {
+            (5., Color::srgba(0.8, 0.88, 0.96, opacity))
+        };
+        marker_nodes.insert(id.to_owned(), (pixel, size, color));
+        if emissive.is_some() {
+            marker_nodes.insert(
+                format!("{id}:halo"),
+                (pixel, 30., Color::srgba(1., 0.65, 0.2, 0.12 * opacity)),
+            );
+        }
+    }
+    for (entity, marker, mut node, mut color) in &mut markers {
+        if let Some((pixel, size, tint)) = marker_nodes.remove(&marker.key) {
+            node.left = Val::Px(pixel.x - size * 0.5);
+            node.top = Val::Px(pixel.y - size * 0.5);
+            node.width = Val::Px(size);
+            node.height = Val::Px(size);
+            color.0 = tint;
+        } else {
+            commands.entity(entity).despawn();
+        }
+    }
+    for (key, (pixel, size, color)) in marker_nodes {
+        commands.spawn((
+            BodyMarker { key },
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Px(pixel.x - size * 0.5),
+                top: Val::Px(pixel.y - size * 0.5),
+                width: Val::Px(size),
+                height: Val::Px(size),
+                border_radius: BorderRadius::MAX,
+                ..default()
+            },
+            BackgroundColor(color),
+        ));
+    }
     for (id, label, points) in core.annotations() {
         if core.object_state_at(id, core.clock().epoch()).is_err() {
             continue;
@@ -692,7 +767,23 @@ fn draw_annotations(
                 let a = to_display(pair[0]);
                 let b = to_display(pair[1]);
                 if a.is_finite() && b.is_finite() {
-                    gizmos.line(a, b, Color::srgb(0.3, 0.65, 0.95));
+                    let selected = core.focused_object() == Some(id);
+                    gizmos.line(
+                        a,
+                        b,
+                        Color::srgba(
+                            0.35,
+                            0.55,
+                            0.7,
+                            if selected {
+                                0.65
+                            } else if core.focused_object().is_some() {
+                                0.12
+                            } else {
+                                0.32
+                            },
+                        ),
+                    );
                 }
             }
         }
@@ -706,6 +797,20 @@ fn draw_annotations(
             }
         }
     }
+    let priority = core.focused_object().or_else(|| {
+        core.object_ids().find(|id| {
+            core.visual_assignment(id).is_some_and(|v| {
+                matches!(
+                    v.spec,
+                    VisualSpec::Sphere {
+                        emissive_rgba: Some(_),
+                        ..
+                    }
+                )
+            })
+        })
+    });
+    let desired_labels = crate::screen_layout::place_labels(desired_labels, viewport, priority);
     let font = if desired_labels.is_empty() {
         label_font.clone().unwrap_or_default()
     } else {
@@ -948,5 +1053,22 @@ mod repeated_focus_tests {
                 .radius_km,
             1.
         );
+    }
+}
+
+// Current host scene uses a central light at its ICRF origin. This does not
+// grant plugins an environment-light API through emissive material settings.
+fn update_illumination(
+    settings: Res<DisplaySettings>,
+    mut lights: Query<&mut Transform, With<DirectionalLight>>,
+) {
+    let toward = -settings.origin_km;
+    if toward.length_squared() < 1e-12 {
+        return;
+    }
+    let d = toward.normalize();
+    let d = Vec3::new(d.x as f32, d.z as f32, -d.y as f32);
+    for mut transform in &mut lights {
+        *transform = Transform::from_translation(d * 10.).looking_at(Vec3::ZERO, Vec3::Y);
     }
 }

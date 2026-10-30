@@ -15,6 +15,8 @@ mod render_assets;
 mod renderer;
 #[cfg(feature = "browser-render")]
 mod ring_texture;
+#[cfg(feature = "browser-render")]
+mod screen_layout;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
