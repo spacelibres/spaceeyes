@@ -44,6 +44,7 @@ function harness() {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
   let core: HostCore;
   let freed = 0;
+  let picked: string | undefined;
   let callback: FrameRequestCallback | undefined;
   let pauseSignal: (() => void) | undefined;
   class TestCore {
@@ -51,6 +52,8 @@ function harness() {
       const actual = new WasmCore();
       core = new Proxy(actual, {
         get(target, property) {
+          // Rendering is replaced in this harness; GPU projection is checked separately.
+          if (property === "pick_object") return () => picked;
           if (property === "start_renderer" || property === "stop_renderer")
             return () => {};
           if (property === "free")
@@ -94,6 +97,9 @@ function harness() {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    setPick: (id: string | undefined) => {
+      picked = id;
+    },
     freed: () => freed,
     core: () => core!,
     focused: () =>
@@ -106,6 +112,49 @@ function harness() {
       }),
   };
 }
+
+test("scene hit reuses real WASM selection while empty hits do not load and stale hits do not refocus", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let requests = 0;
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        requests++;
+        return new Response(sample(String(input).includes("type=ori")));
+      },
+    },
+  );
+  try {
+    const before = requests;
+    assert.equal(await app.pick(0.5, 0.5), false);
+    assert.equal(requests, before);
+    fixtures.setPick("earth");
+    assert.equal(await app.pick(0.5, 0.5), true);
+    assert.equal(states.at(-1)!.selected, "earth");
+    assert.equal(fixtures.focused(), "earth");
+    assert.deepEqual(
+      fixtures
+        .visuals()
+        .filter(({ spec }) => spec.faceAssets)
+        .map(({ id }) => id),
+      ["earth"],
+    );
+    fixtures.setPick("moon");
+    const pending = app.pick(0.5, 0.5);
+    app.overview();
+    assert.equal(await pending, false);
+    assert.equal(fixtures.focused(), undefined);
+    assert.equal(states.at(-1)!.selected, "");
+  } finally {
+    await app.dispose();
+  }
+  await assert.rejects(app.pick(0.5, 0.5), /关闭/);
+});
 
 test("complete host flow uses real Rust WASM for selection, time, layers and release", async () => {
   const fixtures = harness();

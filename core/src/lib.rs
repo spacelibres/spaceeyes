@@ -9,6 +9,7 @@ pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app}
 mod clock;
 #[cfg(feature = "browser-render")]
 mod face_texture;
+mod picking;
 #[cfg(feature = "browser-render")]
 mod render_assets;
 #[cfg(feature = "browser-render")]

@@ -1,6 +1,10 @@
 //! Screen-space presentation never changes scientific positions or radii.
 use bevy::prelude::*;
 
+pub(crate) fn label_size(text: &str) -> Vec2 {
+    Vec2::new((text.chars().count() as f32 * 8.5).clamp(24., 220.), 22.)
+}
+
 pub(crate) fn place_labels(
     mut items: Vec<(String, String, Vec2)>,
     viewport: Vec2,
@@ -14,7 +18,7 @@ pub(crate) fn place_labels(
     let mut boxes: Vec<(Vec2, Vec2)> = Vec::new();
     let mut placed = Vec::new();
     for (id, text, anchor) in items {
-        let size = Vec2::new((text.chars().count() as f32 * 8.5).clamp(24., 220.), 22.);
+        let size = label_size(&text);
         for offset in [
             Vec2::new(12., -11.),
             Vec2::new(12., 16.),

@@ -32,16 +32,19 @@ export default function Workspace() {
       leave();
     };
   }, []);
-  const action = (run: (value: WorkspaceRuntime) => unknown) => {
+  const action = <T,>(
+    run: (value: WorkspaceRuntime) => T | Promise<T>,
+  ): Promise<T | undefined> => {
     const revision = ++actionRevision.current;
     setActionError("");
     const currentRuntime = runtime.current;
-    if (!currentRuntime) return;
-    Promise.resolve()
+    if (!currentRuntime) return Promise.resolve(undefined);
+    return Promise.resolve()
       .then(() => run(currentRuntime))
       .catch((error) => {
         if (mounted.current && revision === actionRevision.current)
           setActionError(String(error));
+        return undefined;
       });
   };
   const start = async () => {
@@ -130,6 +133,9 @@ export default function Workspace() {
         action((value) => value.dispose());
       }}
       onSelect={(id) => action((value) => value.select(id))}
+      onPick={async (u, v) =>
+        Boolean(await action((value) => value.pick(u, v)))
+      }
       onFocus={() => action((value) => value.focus())}
       onFollow={() => action((value) => value.follow())}
       onOverview={() => action((value) => value.overview())}

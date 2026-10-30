@@ -1,4 +1,5 @@
 //! Built-in Bevy rendering with resources resolved through the host catalog.
+use crate::picking::{PickFrame, PickShape, PickTarget, SharedPickFrame};
 use crate::render_assets::{SharedVisuals, attach_visuals, poll_visuals, world_ready};
 use crate::runtime::SceneObject;
 use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, sync_scene};
@@ -15,6 +16,8 @@ use std::sync::{
 
 #[derive(Resource)]
 struct RendererStop(Arc<AtomicBool>);
+#[derive(Resource)]
+struct RendererPicks(SharedPickFrame);
 #[derive(Component)]
 struct DisplayCamera;
 #[derive(Component)]
@@ -51,7 +54,12 @@ impl Default for OrbitView {
     }
 }
 
-pub(crate) fn create_browser_app(core: SharedCore, stop: Arc<AtomicBool>, canvas: &str) -> App {
+pub(crate) fn create_browser_app(
+    core: SharedCore,
+    stop: Arc<AtomicBool>,
+    canvas: &str,
+    picks: SharedPickFrame,
+) -> App {
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::srgb(
         13.0 / 255.0,
@@ -77,6 +85,7 @@ pub(crate) fn create_browser_app(core: SharedCore, stop: Arc<AtomicBool>, canvas
     )
     .add_plugins(CoreScenePlugin(core))
     .insert_resource(RendererStop(stop))
+    .insert_resource(RendererPicks(picks))
     .init_resource::<OrbitView>()
     .init_resource::<crate::face_texture::FaceCache>()
     .add_systems(Startup, setup)
@@ -670,6 +679,7 @@ fn draw_annotations(
     mut commands: Commands,
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
+    picks: Res<RendererPicks>,
     mut gizmos: Gizmos,
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
@@ -680,6 +690,9 @@ fn draw_annotations(
     >,
     camera: Query<(&Camera, &GlobalTransform), With<DisplayCamera>>,
 ) {
+    if let Ok(mut frame) = picks.0.lock() {
+        *frame = PickFrame::default();
+    }
     let mut desired_labels = Vec::new();
     let Ok(core) = store.0.lock() else {
         maintain_labels(&mut commands, &mut labels, Vec::new(), Handle::default());
@@ -694,6 +707,11 @@ fn draw_annotations(
         Vec3::new(p.x as f32, p.z as f32, -p.y as f32)
     };
     let viewport = camera.logical_viewport_size().unwrap_or(Vec2::ZERO);
+    let mut pick_frame = PickFrame {
+        viewport: viewport.to_array(),
+        targets: Vec::new(),
+    };
+    let mut depths = std::collections::HashMap::new();
     let mut marker_nodes = std::collections::HashMap::new();
     for id in core.object_ids() {
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
@@ -703,14 +721,28 @@ fn draw_annotations(
         let Ok(pixel) = camera.world_to_viewport(camera_transform, position) else {
             continue;
         };
-        if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
-            continue;
-        }
         let offset =
             position + camera_transform.right() * (state.radius_km * settings.units_per_km) as f32;
         let projected_radius = camera
             .world_to_viewport(camera_transform, offset)
             .map_or(0., |p| p.distance(pixel));
+        if !core.visual_status(id).ok().flatten().is_some_and(|status| {
+            matches!(status.phase, VisualPhase::Failed | VisualPhase::Suspended)
+        }) {
+            let depth = camera_transform.translation().distance(position);
+            depths.insert(id.to_owned(), depth);
+            pick_frame.targets.push(PickTarget {
+                id: id.to_owned(),
+                depth,
+                shape: PickShape::Disc {
+                    center: pixel.to_array(),
+                    radius: projected_radius.max(12.),
+                },
+            });
+        }
+        if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
+            continue;
+        }
         if projected_radius >= 6. {
             continue;
         }
@@ -811,6 +843,21 @@ fn draw_annotations(
         })
     });
     let desired_labels = crate::screen_layout::place_labels(desired_labels, viewport, priority);
+    for (id, text, anchor) in &desired_labels {
+        if let Some(&depth) = depths.get(id) {
+            pick_frame.targets.push(PickTarget {
+                id: id.clone(),
+                depth,
+                shape: PickShape::Label {
+                    min: (*anchor + Vec2::new(8., -8.)).to_array(),
+                    size: crate::screen_layout::label_size(text).to_array(),
+                },
+            });
+        }
+    }
+    if let Ok(mut frame) = picks.0.lock() {
+        *frame = pick_frame;
+    }
     let font = if desired_labels.is_empty() {
         label_font.clone().unwrap_or_default()
     } else {

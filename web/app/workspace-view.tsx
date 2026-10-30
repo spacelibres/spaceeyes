@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SceneGesture } from "../lib/scene-gesture";
 export type CatalogEntry = {
   id: string;
   name: string;
@@ -28,6 +29,7 @@ export type WorkspaceViewProps = {
   onStart: () => void;
   onStop: () => void;
   onSelect: (id: string) => void;
+  onPick: (u: number, v: number) => Promise<boolean>;
   onFocus: () => void;
   onFollow: () => void;
   onOverview: () => void;
@@ -46,6 +48,15 @@ export type WorkspaceViewProps = {
   onTrajectories: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
+  const gesture = useRef(new SceneGesture());
+  const pickRevision = useRef(0);
+  useEffect(
+    () => () => {
+      pickRevision.current++;
+      gesture.current.cancel();
+    },
+    [p.active],
+  );
   const [panel, setPanel] = useState<"catalog" | "info" | "time" | null>(null);
   useEffect(() => {
     if (panel)
@@ -55,14 +66,20 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         ?.focus();
   }, [panel]);
   const closePanel = () => {
+    pickRevision.current++;
     document
       .querySelector<HTMLButtonElement>(`[data-panel="${panel}"]`)
       ?.focus();
     setPanel(null);
   };
   const select = (id: string) => {
+    pickRevision.current++;
     setPanel("info");
     p.onSelect(id);
+  };
+  const togglePanel = (next: "catalog" | "info" | "time") => {
+    pickRevision.current++;
+    setPanel(panel === next ? null : next);
   };
   const object = p.catalog.find((o) => o.id === p.selected);
   const canObserve =
@@ -95,7 +112,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             data-panel="catalog"
             aria-expanded={panel === "catalog"}
             aria-controls="catalog-panel"
-            onClick={() => setPanel(panel === "catalog" ? null : "catalog")}
+            onClick={() => togglePanel("catalog")}
           >
             探索天体
           </button>
@@ -103,7 +120,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             data-panel="info"
             aria-expanded={panel === "info"}
             aria-controls="info-panel"
-            onClick={() => setPanel(panel === "info" ? null : "info")}
+            onClick={() => togglePanel("info")}
           >
             对象与图层
           </button>
@@ -179,6 +196,26 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           <canvas
             id="spaceeyes-canvas"
             style={{ visibility: p.active ? "visible" : "hidden" }}
+            onPointerDown={(event) => gesture.current.begin(event)}
+            onPointerMove={(event) => gesture.current.move(event)}
+            onPointerCancel={() => gesture.current.cancel()}
+            onPointerLeave={() => gesture.current.cancel()}
+            onPointerUp={(event) => {
+              const point = gesture.current.end(event);
+              if (!p.active || !point) return;
+              const rect = event.currentTarget.getBoundingClientRect();
+              if (rect.width <= 0 || rect.height <= 0) return;
+              const revision = ++pickRevision.current;
+              void p
+                .onPick(
+                  (point[0] - rect.left) / rect.width,
+                  (point[1] - rect.top) / rect.height,
+                )
+                .then((hit) => {
+                  if (hit && revision === pickRevision.current)
+                    setPanel("info");
+                });
+            }}
           />
           <div className="viewport-heading">
             <span>
@@ -230,7 +267,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </label>
           </div>
           <span className="caption">
-            拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+            点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
           </span>
         </section>
         <aside
@@ -342,7 +379,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           data-panel="time"
           aria-expanded={panel === "time"}
           aria-controls="time-panel"
-          onClick={() => setPanel(panel === "time" ? null : "time")}
+          onClick={() => togglePanel("time")}
         >
           日期与跳转
         </button>

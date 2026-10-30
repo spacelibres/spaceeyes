@@ -6,6 +6,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Default)]
 pub struct WasmCore {
     core: SharedCore,
+    picks: crate::picking::SharedPickFrame,
     #[cfg(feature = "browser-render")]
     renderer_stop: Option<std::sync::Arc<std::sync::atomic::AtomicBool>>,
 }
@@ -42,7 +43,8 @@ impl WasmCore {
         }
         let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         self.renderer_stop = Some(stop.clone());
-        crate::renderer::create_browser_app(self.core.clone(), stop, canvas).run();
+        crate::renderer::create_browser_app(self.core.clone(), stop, canvas, self.picks.clone())
+            .run();
         Ok(())
     }
 
@@ -51,6 +53,53 @@ impl WasmCore {
         if let Some(stop) = &self.renderer_stop {
             stop.store(true, std::sync::atomic::Ordering::Release);
         }
+        if let Ok(mut frame) = self.picks.lock() {
+            *frame = Default::default();
+        }
+    }
+
+    /// Host input only: normalized canvas coordinates, not a plugin capability.
+    pub fn pick_object(&self, u: f64, v: f64) -> Result<Option<String>, String> {
+        if !u.is_finite()
+            || !v.is_finite()
+            || !(0.0..=1.0).contains(&u)
+            || !(0.0..=1.0).contains(&v)
+        {
+            return Err("InvalidViewportPoint".into());
+        }
+        #[cfg(feature = "browser-render")]
+        if self
+            .renderer_stop
+            .as_ref()
+            .is_none_or(|stop| stop.load(std::sync::atomic::Ordering::Acquire))
+        {
+            return Ok(None);
+        }
+        let candidate = self
+            .picks
+            .lock()
+            .map_err(|_| "RendererUnavailable".to_owned())?
+            .pick(u as f32, v as f32)
+            .map(str::to_owned);
+        let Some(id) = candidate else {
+            return Ok(None);
+        };
+        let core = self.lock()?;
+        if core.object_state_at(&id, core.clock().epoch()).is_err()
+            || core
+                .visual_status(&id)
+                .ok()
+                .flatten()
+                .is_some_and(|status| {
+                    matches!(
+                        status.phase,
+                        crate::VisualPhase::Failed | crate::VisualPhase::Suspended
+                    )
+                })
+        {
+            return Ok(None);
+        }
+        Ok(Some(id))
     }
 
     pub fn open_session(
@@ -256,5 +305,58 @@ impl WasmCore {
     pub fn release_session(&mut self, session: &str) -> Result<(), String> {
         self.lock()?.release_session(session);
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod picking_tests {
+    use super::*;
+    use crate::picking::{PickFrame, PickShape, PickTarget};
+    #[test]
+    fn host_pick_revalidates_failed_removed_objects_and_stopped_renderer() {
+        let mut bridge = WasmCore::new();
+        #[cfg(feature = "browser-render")]
+        {
+            bridge.renderer_stop = Some(std::sync::Arc::new(std::sync::atomic::AtomicBool::new(
+                false,
+            )));
+        }
+        bridge
+            .open_session("s", "source.test", false, true, false, true)
+            .unwrap();
+        bridge.publish_object("s", "source.test", "earth", r#"{"positionKm":[0,0,0],"radiusKm":1,"epochTdbSeconds":0,"coverageTdbSeconds":[0,1],"frame":"ICRF","source":"test"}"#).unwrap();
+        *bridge.picks.lock().unwrap() = PickFrame {
+            viewport: [100., 100.],
+            targets: vec![PickTarget {
+                id: "earth".into(),
+                depth: 1.,
+                shape: PickShape::Disc {
+                    center: [50., 50.],
+                    radius: 10.,
+                },
+            }],
+        };
+        assert_eq!(
+            bridge.pick_object(0.5, 0.5).unwrap().as_deref(),
+            Some("earth")
+        );
+        assert!(bridge.pick_object(f64::NAN, 0.5).is_err());
+        bridge
+            .set_visual("s", "source.test", "earth", r#"{"kind":"sphere"}"#)
+            .unwrap();
+        {
+            let mut core = bridge.lock().unwrap();
+            let revision = core.visual_assignment("earth").unwrap().revision;
+            core.record_visual_status("earth", revision, crate::VisualPhase::Failed, None);
+        }
+        assert_eq!(bridge.pick_object(0.5, 0.5).unwrap(), None);
+        bridge.release_session("s").unwrap();
+        assert_eq!(bridge.pick_object(0.5, 0.5).unwrap(), None);
+        #[cfg(feature = "browser-render")]
+        {
+            bridge.stop_renderer();
+            assert_eq!(bridge.pick_object(0.5, 0.5).unwrap(), None);
+            assert!(bridge.picks.lock().unwrap().targets.is_empty());
+        }
     }
 }

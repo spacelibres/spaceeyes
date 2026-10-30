@@ -7,6 +7,15 @@ import { WasmCorePort } from '../wasm-core-port.ts';
 // Intentionally requires a freshly built real Rust WASM artifact, with no stub fallback.
 const { WasmCore } = createRequire(import.meta.url)('../../core/pkg/spaceeyes_core.js');
 
+test('host pick query validates normalized input and empty headless frames never select', () => {
+  const core = new WasmCore();
+  try {
+    assert.equal(core.pick_object(0.5,0.5),undefined);
+    assert.throws(()=>core.pick_object(NaN,0.5),/InvalidViewportPoint/);
+    assert.throws(()=>core.pick_object(1.01,0.5),/InvalidViewportPoint/);
+  } finally { core.free(); }
+});
+
 test('TS plugin drives real Rust WASM state, clock, focus and session cleanup', async () => {
   const core = new WasmCore();
   const host = new PluginHost(new WasmCorePort(core));

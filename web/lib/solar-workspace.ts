@@ -7,6 +7,7 @@ import { SolarSystemData, solarCatalog } from "../../platform/solar-system.ts";
 import planetAssets from "../../validation/solar-assets.json" with { type: "json" };
 
 export interface HostCore extends WasmCoreBinding {
+  pick_object(u: number, v: number): string | undefined;
   start_renderer(canvas: string): void;
   stop_renderer(): void;
   free(): void;
@@ -58,6 +59,7 @@ export const workspaceCatalog = solarCatalog.map((body) => ({
   parentId: body.parentId ?? undefined,
 }));
 export interface WorkspaceRuntime {
+  pick(u: number, v: number): Promise<boolean>;
   select(id: string): Promise<void>;
   focus(): void;
   follow(): void;
@@ -384,6 +386,13 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    async pick(u, v) {
+      assertLive();
+      const id = core.pick_object(u, v);
+      if (!id) return false;
+      await runtime.select(id);
+      return !closed && state.selected === id;
+    },
     async select(id) {
       assertLive();
       if (!solarCatalog.some((body) => body.id === id))
