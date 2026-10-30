@@ -1,5 +1,11 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import {
+  TIME_RATES,
+  rateToSliderIndex,
+  adjacentRate,
+  formatRate,
+} from "../lib/time-controls";
 import SolarTuningPanel from "./solar-tuning-panel";
 import { TouchCamera } from "../lib/touch-camera";
 import { SceneGesture } from "../lib/scene-gesture";
@@ -47,6 +53,7 @@ export type WorkspaceViewProps = {
   error: string;
   epoch: number;
   playing: boolean;
+  live?: boolean;
   rate: string;
   source: string;
   coverage: string;
@@ -90,6 +97,7 @@ export type WorkspaceViewProps = {
   onTrails: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
+  const [timeExpanded, setTimeExpanded] = useState(true);
   const touch = useRef(new TouchCamera());
   const gesture = useRef(new SceneGesture());
   const pickRevision = useRef(0);
@@ -141,7 +149,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   );
   return (
     <main
-      className="immersive"
+      className={`immersive ${timeExpanded ? "time-expanded" : "time-collapsed"}`}
       onKeyDown={(event) => {
         if (event.key === "Escape" && panel) {
           event.stopPropagation();
@@ -692,28 +700,68 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         <div>
           <p className="eyebrow">统一仿真时间</p>
           <output>{p.utc || "尚未设置时间"}</output>
-          <small>{p.epoch.toFixed(3)} J2000 TDB s</small>
+          <small className="time-diagnostic">
+            {p.epoch.toFixed(3)} J2000 TDB s
+          </small>
         </div>
-        <button disabled={!p.active || p.busy} onClick={p.onPlay}>
-          {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
-        </button>
-        <label>
-          播放速率
-          <select
-            disabled={!p.active || p.busy}
-            value={p.rate}
-            onChange={(e) => p.onRate(e.target.value)}
-          >
-            {["-86400", "-3600", "-60", "-1", "1", "60", "3600", "86400"].map(
-              (v) => (
-                <option key={v} value={v}>
-                  {Number(v).toLocaleString()} ×
-                </option>
-              ),
-            )}
-          </select>
-        </label>
+        <div className="time-summary" aria-live="off">
+          <span>{p.playing ? formatRate(Number(p.rate)) : "已暂停"}</span>
+          <span className={p.live ? "live-badge is-live" : "live-badge"}>
+            {p.live ? "● LIVE" : "历史 / 仿真"}
+          </span>
+        </div>
         <button
+          className="time-toggle"
+          aria-expanded={timeExpanded}
+          aria-controls="rate-controls"
+          onClick={() => setTimeExpanded(!timeExpanded)}
+        >
+          {timeExpanded ? "收起时间栏 ▾" : "展开时间栏 ▴"}
+        </button>
+        <div
+          id="rate-controls"
+          className="rate-controls"
+          hidden={!timeExpanded}
+        >
+          <button disabled={!p.active || p.busy} onClick={p.onPlay}>
+            {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
+          </button>
+          <button
+            aria-label="降低播放倍率"
+            disabled={!p.active || p.busy || Number(p.rate) <= TIME_RATES[0]}
+            onClick={() => p.onRate(String(adjacentRate(Number(p.rate), -1)))}
+          >
+            −
+          </button>
+          <label className="rate-slider">
+            播放速率 · {formatRate(Number(p.rate))}
+            <input
+              aria-label="播放速率"
+              aria-valuetext={formatRate(Number(p.rate))}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              disabled={!p.active || p.busy}
+              value={rateToSliderIndex(Number(p.rate))}
+              onChange={(e) =>
+                p.onRate(String(TIME_RATES[Number(e.target.value)]))
+              }
+            />
+          </label>
+          <button
+            aria-label="提高播放倍率"
+            disabled={!p.active || p.busy || Number(p.rate) >= TIME_RATES[100]}
+            onClick={() => p.onRate(String(adjacentRate(Number(p.rate), 1)))}
+          >
+            +
+          </button>
+          <button disabled={!p.active || p.busy} onClick={() => p.onRate("1")}>
+            1× 速度
+          </button>
+        </div>
+        <button
+          className="time-detail-toggle"
           data-panel="time"
           aria-expanded={panel === "time"}
           aria-controls="time-panel"

@@ -2,6 +2,7 @@ import {
   snapshotEnvironment,
   type EnvironmentSpec,
 } from "../../platform/environment-contract.ts";
+import { isLive } from "./time-controls.ts";
 import { solarWorkspaceSettings } from "./solar-settings.ts";
 import { buildStellarTuning } from "../../platform/stellar-tuning.ts";
 import { PluginHost, type PluginContext } from "../../platform/plugin-host.ts";
@@ -43,6 +44,7 @@ export interface HostCore extends WasmCoreBinding {
 export type SolarSnapshot = {
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
+  live: boolean;
   fovDegrees: number;
   galaxy: {
     enabled: boolean;
@@ -79,6 +81,7 @@ export type SolarSnapshot = {
 };
 export const initialSnapshot: SolarSnapshot = {
   observationMode: "nearby",
+  live: false,
   fovDegrees: 45,
   galaxy: { enabled: false, phase: "disabled" },
   starfield: {
@@ -386,6 +389,12 @@ export async function createWorkspace(
     }
     state.epoch = core.epoch();
     state.playing = core.playing();
+    state.live = isLive(
+      core.tdb_to_utc(state.epoch),
+      Date.now(),
+      state.playing,
+      state.rate,
+    );
     state.utc = new Date(core.tdb_to_utc(state.epoch) * 1000).toISOString();
     if (state.selected && data) {
       state.parentId = data.parentAt(state.selected, state.epoch) ?? undefined;
@@ -445,6 +454,7 @@ export async function createWorkspace(
         update({
           ...state,
           active: false,
+          live: false,
           busy: false,
           playing: false,
           galaxy: { enabled: false, phase: "disabled" },
@@ -1005,9 +1015,39 @@ export async function createWorkspace(
       if (!Number.isFinite(unix)) throw new Error("请输入有效 UTC 日期");
       return reload(core.utc_to_tdb(unix));
     },
-    now() {
+    async now() {
       assertLive();
-      return reload(core.utc_to_tdb(Date.now() / 1000));
+      const catchUp = desiredPlaying && state.rate === 1;
+      const pending = reload(core.utc_to_tdb(Date.now() / 1000));
+      const ownedRevision = revision;
+      await pending;
+      assertLive();
+      if (
+        !catchUp ||
+        revision !== ownedRevision ||
+        !desiredPlaying ||
+        state.rate !== 1
+      )
+        return;
+      const latest = core.utc_to_tdb(Date.now() / 1000);
+      const ready = data
+        .status()
+        .filter((item) => item.id !== "sun" && item.status === "ready");
+      if (
+        !ready.length ||
+        ready.some(
+          (item) =>
+            !item.coverage ||
+            latest < item.coverage[0] ||
+            latest > item.coverage[1],
+        )
+      )
+        return;
+      sdk.time.seek(latest);
+      data.publishAt(latest);
+      lastPublishedEpoch = core.epoch();
+      validateFollow();
+      emit();
     },
     async groups(moons, spacecraft) {
       assertLive();
@@ -1089,6 +1129,13 @@ export async function createWorkspace(
     options.onStartup?.("加载总览所需轨道数据");
     await reload(core.utc_to_tdb(Date.now() / 1000));
     assertLive();
+    if (
+      data.status().some((item) => item.id !== "sun" && item.status === "ready")
+    ) {
+      runtime.play(true, 1);
+      await runtime.now();
+      assertLive();
+    }
     sdk.camera.view("overview");
     options.onStartup?.("启动三维渲染器");
     core.start_renderer(canvas);

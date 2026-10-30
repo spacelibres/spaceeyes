@@ -397,3 +397,193 @@
 .view-controls {
   flex-wrap: wrap;
 }
+
+/* The summary remains readable when the rate controls are folded. */
+.immersive .timeline {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto auto auto;
+  gap: 8px 16px;
+}
+.immersive .rate-controls {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.immersive .rate-slider {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 560px;
+  min-width: 100px;
+}
+.immersive .rate-slider input {
+  width: 100%;
+  padding: 0;
+  accent-color: var(--primaryOnDark);
+}
+.immersive .time-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.immersive .live-badge {
+  color: var(--line);
+}
+.immersive .live-badge.is-live {
+  color: var(--success);
+}
+.immersive.time-collapsed .time-diagnostic {
+  display: none;
+}
+.immersive.time-expanded .view-controls {
+  bottom: 190px;
+}
+.immersive.time-expanded .caption {
+  bottom: 184px;
+}
+.immersive > .error {
+  left: 24px;
+  right: auto;
+  bottom: 194px;
+  max-width: min(400px, 38vw);
+  max-height: 96px;
+  background: var(--overlay);
+}
+.immersive.time-collapsed > .error {
+  bottom: 128px;
+}
+@media (max-width: 760px) {
+  .immersive .timeline {
+    grid-template-columns: minmax(120px, 1fr) auto auto;
+    gap: 6px;
+  }
+  .immersive .timeline > div:first-child {
+    width: auto;
+  }
+  .immersive .timeline .time-detail-toggle {
+    grid-column: 2;
+  }
+  .immersive .time-summary {
+    font-size: 10px;
+  }
+  .immersive .rate-controls {
+    grid-row: 3;
+    gap: 6px;
+  }
+  .immersive .timeline .rate-slider {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .immersive.time-expanded .view-controls {
+    bottom: 212px;
+  }
+  .immersive.time-expanded .caption {
+    bottom: 200px;
+  }
+  .immersive > .error {
+    left: 8px;
+    max-width: 38vw;
+    bottom: 216px;
+  }
+}
+@media (max-height: 440px) {
+  .immersive > header {
+    min-height: 56px;
+    padding: 6px 12px;
+  }
+  .immersive header img {
+    width: 160px;
+  }
+  .immersive h1 {
+    display: none;
+  }
+  .immersive .header-actions {
+    max-width: none;
+  }
+  .immersive .workspace-status {
+    top: 54px;
+    left: 12px;
+    right: 12px;
+  }
+  .immersive .viewport-heading {
+    top: 84px;
+    left: 12px;
+  }
+  .immersive .viewport-heading > span:first-child {
+    font-size: 14px;
+  }
+  .immersive .timeline {
+    bottom: 16px;
+    left: 8px;
+    right: 8px;
+    padding: 6px 10px;
+    grid-template-columns: minmax(140px, 1fr) auto auto auto auto;
+    gap: 4px 8px;
+  }
+  .immersive .timeline output {
+    font-size: 12px;
+  }
+  .immersive .timeline .eyebrow,
+  .immersive .time-diagnostic {
+    display: none;
+  }
+  .immersive .timeline button {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .immersive .timeline .time-detail-toggle {
+    grid-column: auto;
+  }
+  .immersive .rate-controls {
+    grid-row: 2;
+    gap: 8px;
+  }
+  .immersive .view-controls,
+  .immersive.time-expanded .view-controls {
+    right: 8px;
+    bottom: 116px;
+    max-width: 55%;
+    gap: 4px;
+  }
+  .immersive .view-controls label {
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+  .immersive .view-controls select {
+    padding: 3px;
+    max-width: 124px;
+    font-size: 11px;
+  }
+  .immersive .view-controls input {
+    max-width: 100px;
+  }
+  .immersive .caption,
+  .immersive.time-expanded .caption {
+    left: 12px;
+    bottom: 118px;
+    max-width: 38%;
+    font-size: 9px;
+  }
+  .immersive > .error,
+  .immersive.time-collapsed > .error {
+    left: 12px;
+    top: 116px;
+    bottom: auto;
+    max-width: 37%;
+    max-height: 92px;
+  }
+  .immersive .tool-panel {
+    top: 108px;
+    bottom: 116px;
+    padding: 12px;
+  }
+  .immersive .time-panel {
+    top: auto;
+    bottom: calc(100% + 6px);
+    max-height: calc(100dvh - 132px);
+  }
+}

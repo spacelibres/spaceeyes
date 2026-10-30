@@ -58,7 +58,15 @@ export default function Workspace() {
     const currentRuntime = runtime.current;
     if (!currentRuntime) return Promise.resolve(undefined);
     return Promise.resolve()
-      .then(() => run(currentRuntime))
+      .then(() => {
+        if (
+          !mounted.current ||
+          controller.current?.signal.aborted ||
+          runtime.current !== currentRuntime
+        )
+          return undefined;
+        return run(currentRuntime);
+      })
       .catch((error) => {
         if (mounted.current && revision === actionRevision.current)
           setActionError(String(error));
@@ -161,6 +169,7 @@ export default function Workspace() {
       error={actionError || state.error}
       epoch={state.epoch}
       playing={state.playing}
+      live={state.live}
       rate={String(state.rate)}
       source={state.source}
       coverage={state.coverage}
@@ -184,7 +193,9 @@ export default function Workspace() {
       onStart={() => void start()}
       onStop={() => {
         controller.current?.abort();
-        action((value) => value.dispose());
+        const current = runtime.current;
+        runtime.current = null;
+        void current?.dispose();
       }}
       onSelect={(id) => action((value) => value.select(id))}
       onPick={async (u, v) =>
@@ -207,7 +218,7 @@ export default function Workspace() {
       }
       onPlay={() => action((value) => value.play(!state.playing, state.rate))}
       onRate={(rate) =>
-        action((value) => value.play(state.playing, Number(rate)))
+        action((value) => value.play(true, Number(rate)))
       }
       onJump={() =>
         action((value) => {

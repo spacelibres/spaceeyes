@@ -992,3 +992,95 @@ test("follow reference dependencies stop at the solar scene root", async () => {
     await app.dispose();
   }
 });
+
+test("LIVE distinguishes wall time, history, pause and reverse now semantics", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (value) => states.push(value),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    app.play(true, 1);
+    await app.now();
+    assert.equal(states.at(-1)!.live, true);
+    await app.seek(0);
+    assert.equal(states.at(-1)!.live, false);
+    app.play(false, 1);
+    await app.now();
+    assert.equal(states.at(-1)!.live, false);
+    assert.equal(states.at(-1)!.playing, false);
+    app.play(true, -60);
+    await app.now();
+    assert.equal(states.at(-1)!.live, false);
+    assert.equal(states.at(-1)!.rate, -60);
+    assert.equal(states.at(-1)!.playing, true);
+  } finally {
+    await app.dispose();
+  }
+  assert.equal(states.at(-1)!.live, false);
+});
+
+test("now catches up after loading only inside ready coverage", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const originalNow = Date.now;
+  let clock = originalNow();
+  let loading = false;
+  Date.now = () => clock;
+  let app: Awaited<ReturnType<typeof createWorkspace>> | undefined;
+  try {
+    app = await createWorkspace(
+      "#test",
+      (value) => states.push(value),
+      new AbortController().signal,
+      {
+        ...fixtures,
+        fetch: async (input) => {
+          if (loading) clock += 2000;
+          return new Response(sample(String(input).includes("type=ori")));
+        },
+      },
+    );
+    app.play(true, 1);
+    loading = true;
+    await app.now();
+    assert.equal(states.at(-1)!.live, true);
+    assert.ok(
+      Math.abs(
+        fixtures.core().tdb_to_utc(states.at(-1)!.epoch) * 1000 - clock,
+      ) < 1,
+    );
+  } finally {
+    Date.now = originalNow;
+    await app?.dispose();
+  }
+});
+
+test("workspace starts at real rate with LIVE when current coverage is available", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    assert.equal(states.at(-1)!.playing, true);
+    assert.equal(states.at(-1)!.rate, 1);
+    assert.equal(states.at(-1)!.live, true);
+  } finally {
+    await app.dispose();
+  }
+});
