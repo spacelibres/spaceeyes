@@ -24,6 +24,7 @@ mod clock;
 mod deep_space;
 #[cfg(feature = "browser-render")]
 mod label_visibility;
+pub mod time_conversion;
 pub use deep_space::EnvironmentSpec;
 mod starfield;
 pub use starfield::StarfieldSpec;

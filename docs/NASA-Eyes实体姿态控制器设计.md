@@ -1,0 +1,22 @@
+# NASA Eyes实体姿态控制器设计
+
+第八批依据全局审查：现有目录167实体含194条align，其中169实体级（166实体）、25关节级；501定义有fixed Quaternion。实体级属于当前可由源规则求值的能力，不能统一标记NASA未提供。恢复源AlignController.js为算法参考；TS数据插件求值后经既有orientationWxyz提交，Bevy不推算领域姿态。
+
+本批范围：fixed Quaternion、DYN ORI及实体级align按原控制器顺序和coverage组合。point使用目标减自身世界位置；velocity依源语义使用目标实体相对父体的轨道速度（方向以ICRF轴表达）；align使用目标姿态旋转targetAxis。模型局部轴仅白名单±XYZ、有限Vector3及实际两处±sqrt(.5)表达式，禁止eval。无secondary保留输入姿态滚转约定，结果注明源控制器推导、非实测或独立认证姿态。
+
+主轴：当前姿态旋转local axis至世界后，求到目标方向的最短旋转，左乘当前四元数。次轴：将当前次轴与目标次方向投影到垂直主轴平面，atan2求绕主轴修正角，左乘并归一化。固定四元数先验证有限非零、归一化。源未声明初始姿态时按源实体identity约定起算但状态明确derived；不声称roll可从单向量唯一观测确定。
+
+对齐规则的源速度优先orb/pos/lin现有解析求值，不叠加父体速度；如需世界速度使用独立接口明确叠加；旋转参考或无可计算速度的控制器必须明确报不可用，不能以随意差分伪造高精度。位置/姿态引用依赖加入活动场景闭包，递归检测循环并报告路径。零向量、反向旋转退化轴、共线次轴、未知表达式、缺参考及覆盖外明示原因，位置可用不必被姿态失败一起丢弃。
+
+25条关节级align与部件动画需要模型节点局部层级另行设计，本批不把它们错误套到实体整体。UI区分DYN、固定源、控制器推导、未请求和不可用；来源不能全部仍写DYN。
+
+测试固定真实发布、point/velocity/align、双轴/反向/无次轴、coverage边界、多控制器组合、父子速度语义隔离、缺引用/共线/循环及同epoch确定性；真实WASM发布标准四元数与显示边界、Rumba/ISS/Juno代表GPU。重新集中完整检查、版本CHANGELOG提交推送gh。
+
+
+补充约束：纯固定辅助参考系（如j2000_ecliptic）仅参与求值，不注册/发布成可见天体；活动场景retain仍精确保留宿主当前epoch依赖闭包，不能扩展太阳之外的银河祖先。源固定控制器的无限覆盖截到平台可求值域[-1e12,1e12]以满足有限数据契约，明确不是任务观测终点。静态位置姿态异步准备后仍重新核验世代/取消，不能复活退出对象。
+
+反向主轴退化分支采用稳定正交轴：恢复源固定绕X半周不能适配任意主轴，当前实现不逐字复制该缺陷。NASA Settings默认shadow补光已在宿主显式设置，核心释放仍恢复natural。
+
+速度语义原始证据：AlignController._getAxis调用Entity.getVelocityAtTime；Entity-62.getVelocityAtTime仅求本entity控制器，getVelocityRelativeToEntity才独立累加祖先，DynamoController.__updateVelocityAtTime直接输出轨道_pCalc.velocity。源轨道速度不能误当作世界速度，否则ISS的对齐会被地球公转速度改变。
+
+加载语义：只有明确/ori、/quat、/quat_v2的Dynamo才执行姿态轨道；位置Dynamo不阻塞后续align。有效缓存姿态不会被一次position-only依赖读取降级丢弃。父体姿态在首次升级表面前准备；历史任务当前覆盖外作为信息计数，与HTTP/未知格式失败区分，选中不可用仍明确拒绝。

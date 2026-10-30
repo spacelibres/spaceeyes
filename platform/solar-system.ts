@@ -1,4 +1,12 @@
 import {
+  normalizeOrientation,
+  applyEntityAlign,
+  entityAlignDependencies,
+  isEntityAlign,
+  type Quat,
+  type Vec3,
+} from "./eyes-orientation.ts";
+import {
   staticPosition,
   staticCoverage,
   activeController,
@@ -15,6 +23,7 @@ import {
   evaluateOrb,
   evaluateOrbVelocity,
   evaluateOri,
+  propagateState,
 } from "./dyn-evaluator.ts";
 import { osculatingOrbit } from "./osculating-orbit.ts";
 import type { PluginContext } from "./plugin-host.ts";
@@ -75,8 +84,21 @@ export type SolarStatus = {
   error?: string;
   orientationStatus?: "ready" | "unavailable" | "not-requested";
   orientationError?: string;
+  orientationSource?: "dyn" | "fixed" | "derived";
+  positionSource?: "dyn" | "fixed" | "orbital-elements";
   coverage?: [number, number];
 };
+/** Reference frames are resolvable definitions, not display bodies. */
+export function hasDisplayCatalog(id: string): boolean {
+  return solarCatalog.some((item) => item.id === id);
+}
+function isOrientationDynamo(c: { type?: unknown; url?: unknown }): boolean {
+  return (
+    c.type === "dynamo" &&
+    typeof c.url === "string" &&
+    /(?:^|\/)(?:ori|quat|quat_v2)$/.test(c.url)
+  );
+}
 export class SolarSystemData {
   #maxCachedRecords: number;
   #ctx: PluginContext;
@@ -403,6 +425,22 @@ export class SolarSystemData {
           return;
         }
         const currentParent = this.parentAt(id, epoch);
+        if (
+          currentParent &&
+          currentParent !== "sun" &&
+          (eyesDefinitions[id]?.controllers ?? []).some(
+            (c) =>
+              (c.type === "fixed" && (c.llaOnSpheroid || c.relativeToEntity)) ||
+              c.type === "rotateByEntityOrientation",
+          )
+        )
+          await this.load([currentParent], epoch, [currentParent]);
+        if (
+          generation !== this.#loadGeneration ||
+          this.#abort.signal.aborted ||
+          (this.#retained && !this.#retained.has(id))
+        )
+          return;
         const fixedCoverage = staticCoverage(id, epoch);
         if (fixedCoverage && id !== "sun") {
           if (currentParent && currentParent !== "sun")
@@ -416,9 +454,34 @@ export class SolarSystemData {
             (this.#retained && !this.#retained.has(id))
           )
             return;
+          let orientationStatus: "ready" | "unavailable" | "not-requested" =
+              "not-requested",
+            orientationError: string | undefined;
+          if (orientationIds.includes(id))
+            try {
+              await this.#prepareOrientation(
+                id,
+                epoch,
+                orientationIds,
+                generation,
+              );
+              orientationStatus = "ready";
+            } catch (error) {
+              orientationStatus = "unavailable";
+              orientationError = String(error);
+            }
+          if (
+            generation !== this.#loadGeneration ||
+            this.#abort.signal.aborted ||
+            (this.#retained && !this.#retained.has(id))
+          )
+            return;
           this.#states.set(id, {
             id,
             status: "ready",
+            orientationStatus,
+            orientationError,
+            positionSource: this.#positionSource(id, epoch),
             coverage: this.#phaseCoverage(id, epoch, ...fixedCoverage),
           });
           return;
@@ -457,7 +520,14 @@ export class SolarSystemData {
         }
         this.#states.set(id, { id, status: "loading" });
         try {
-          if (currentParent && currentParent !== "sun")
+          if (
+            currentParent &&
+            currentParent !== "sun" &&
+            !(
+              this.#data.get(currentParent)?.coverage.start! <= epoch &&
+              this.#data.get(currentParent)?.coverage.end! >= epoch
+            )
+          )
             await this.load([currentParent], epoch, orientationIds);
           for (const controller of activeController(
             id,
@@ -499,32 +569,12 @@ export class SolarSystemData {
           let orientationError: string | undefined;
           if (orientationIds.includes(id))
             try {
-              let ori = this.#ori.get(id);
-              if (
-                !ori ||
-                epoch < ori.coverage.start ||
-                epoch > ori.coverage.end
-              ) {
-                const result = await this.#read(
-                  `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
-                );
-                ori = decodeDyn(result.bytes);
-                if (ori.kind !== "inline" || ori.type !== "ori")
-                  throw Error("Invalid orientation payload");
-                if (epoch < ori.coverage.start || epoch > ori.coverage.end)
-                  throw Error("Outside orientation source coverage");
-                if (
-                  generation !== this.#loadGeneration ||
-                  this.#abort.signal.aborted ||
-                  (this.#retained && !this.#retained.has(id))
-                )
-                  return;
-                this.#cache(this.#ori, id, ori);
-                this.#provenance.set(id + ":ori", {
-                  url: result.url,
-                  ...result.evidence,
-                });
-              }
+              await this.#prepareOrientation(
+                id,
+                epoch,
+                orientationIds,
+                generation,
+              );
               orientationStatus = "ready";
             } catch (error) {
               orientationStatus = "unavailable";
@@ -549,6 +599,7 @@ export class SolarSystemData {
             id,
             status: "ready",
             orientationStatus,
+            positionSource: this.#positionSource(id, epoch),
             ...(orientationError ? { orientationError } : {}),
             coverage: this.#phaseCoverage(
               id,
@@ -575,6 +626,102 @@ export class SolarSystemData {
       }),
     );
   }
+  #checkOrientationDependencies(id: string, t: number) {
+    const visit = (ref: string, state: string, path: string[]) => {
+      const key = ref + ":" + state;
+      if (path.includes(key))
+        throw Error(
+          "Orientation dependency cycle: " + [...path, key].join(" -> "),
+        );
+      if (!eyesDefinitions[ref])
+        throw Error("Orientation reference unavailable: " + ref);
+      const next = [...path, key],
+        parent = this.parentAt(ref, t);
+      if (state === "orientation")
+        for (const c of eyesDefinitions[ref].controllers ?? []) {
+          if (
+            c.coverage &&
+            (t < Number(c.coverage[0]) || t > Number(c.coverage[1]))
+          )
+            continue;
+          if (isEntityAlign(c)) {
+            visit(ref, "position", next);
+            for (const d of entityAlignDependencies(c))
+              visit(d.id, d.state, next);
+          }
+        }
+      else {
+        if (state === "position" && parent && parent !== "sun")
+          visit(parent, state, next);
+        if (
+          activeController(ref, t, "rotateByEntityOrientation").length ||
+          activeController(ref, t, "fixed").some(
+            (c) => c.llaOnSpheroid || c.relativeToEntity,
+          )
+        ) {
+          if (parent) visit(parent, "orientation", next);
+        }
+      }
+    };
+    visit(id, "orientation", []);
+  }
+  async #prepareOrientation(
+    id: string,
+    epoch: number,
+    orientationIds: readonly string[],
+    generation: number,
+  ) {
+    if (!orientationIds.includes(id)) return;
+    this.#checkOrientationDependencies(id, epoch);
+    const controllers = eyesDefinitions[id]?.controllers ?? [];
+    for (const c of controllers.filter(
+      (c) =>
+        !c.coverage ||
+        (epoch >= Number(c.coverage[0]) && epoch <= Number(c.coverage[1])),
+    )) {
+      if (isEntityAlign(c))
+        for (const dependency of entityAlignDependencies(c)) {
+          if (dependency.id !== id && !hasDisplayCatalog(dependency.id)) {
+            const refs = eyesDefinitions[dependency.id]?.controllers ?? [];
+            if (!refs.length || refs.some((c) => c.type !== "fixed"))
+              throw Error("Unsupported reference-only frame: " + dependency.id);
+            continue;
+          }
+          if (dependency.id !== id)
+            await this.load(
+              [dependency.id],
+              epoch,
+              dependency.state === "orientation" ? [dependency.id] : [],
+            );
+        }
+    }
+    if (!orientationIds.includes(id)) return;
+    if (controllers.some(isOrientationDynamo)) {
+      let ori = this.#ori.get(id);
+      if (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) {
+        const result = await this.#read(
+          `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
+        );
+        ori = decodeDyn(result.bytes);
+        if (ori.kind !== "inline" || ori.type !== "ori")
+          throw Error("Invalid orientation payload");
+        if (epoch < ori.coverage.start || epoch > ori.coverage.end)
+          throw Error("Outside orientation source coverage");
+        if (
+          generation !== this.#loadGeneration ||
+          this.#abort.signal.aborted ||
+          (this.#retained && !this.#retained.has(id))
+        )
+          return;
+        this.#cache(this.#ori, id, ori);
+        this.#provenance.set(id + ":ori", {
+          url: result.url,
+          ...result.evidence,
+        });
+      }
+    }
+    this.#orientationAt(id, epoch);
+  }
   #phaseCoverage(
     id: string,
     t: number,
@@ -590,17 +737,56 @@ export class SolarSystemData {
         break;
       }
     }
-    return [start, end];
+    // Finite platform evaluation domain, not an observed mission end date.
+    return [Math.max(-1e12, start), Math.min(1e12, end)];
   }
+  #positionSource(id: string, t: number): "dyn" | "fixed" | "orbital-elements" {
+    if (
+      activeController(id, t, "fixed").some(
+        (c) => c.position || c.llaOnSpheroid,
+      )
+    )
+      return "fixed";
+    if (activeController(id, t, "orbitalElements").length)
+      return "orbital-elements";
+    return "dyn";
+  }
+  #positionStack: string[] = [];
   position(id: string, t: number): [number, number, number] {
+    if (this.#positionStack.includes(id))
+      throw Error(
+        "Position dependency cycle: " +
+          [...this.#positionStack, id].join(" -> "),
+      );
+    this.#positionStack.push(id);
+    try {
+      return this.#positionAt(id, t);
+    } finally {
+      this.#positionStack.pop();
+    }
+  }
+  #positionAt(id: string, t: number): [number, number, number] {
     if (id === "sun") return [0, 0, 0];
     const item = solarCatalog.find((x) => x.id === id),
       d = this.#data.get(id);
-    if (!item) throw Error("Object unavailable");
+    if (!item) {
+      const controllers = eyesDefinitions[id]?.controllers ?? [];
+      if (!controllers.length || controllers.some((c) => c.type !== "fixed"))
+        throw Error("Reference-only position unavailable: " + id);
+      const fixed = staticPosition(id, t);
+      if (!fixed) throw Error("Reference-only position unavailable: " + id);
+      return fixed;
+    }
+
     const parentForOrientation = this.parentAt(id, t);
-    const ori = parentForOrientation
-      ? this.#orientationAt(parentForOrientation, t)
-      : undefined;
+    const needsParentOrientation =
+      activeController(id, t, "fixed").some(
+        (c) => c.llaOnSpheroid || c.relativeToEntity,
+      ) || activeController(id, t, "rotateByEntityOrientation").length > 0;
+    const ori =
+      parentForOrientation && needsParentOrientation
+        ? this.#orientationAt(parentForOrientation, t)
+        : undefined;
     const fixed = staticPosition(id, t, ori);
     if (!fixed && !d) throw Error("Object unavailable");
     const body = (eyesDefinitions[id]?.controllers ?? []).find(
@@ -633,14 +819,145 @@ export class SolarSystemData {
     }
     return p;
   }
-  #orientationAt(id: string, t: number): readonly number[] | undefined {
-    const dynamic = this.#ori.get(id);
-    if (dynamic && t >= dynamic.coverage.start && t <= dynamic.coverage.end)
-      return evaluateOri(dynamic, t);
-    const fixed = activeController(id, t, "fixed")
-      .filter((c) => c.orientation?.constructor === "Quaternion")
-      .at(-1);
-    return fixed?.orientation.values;
+  #orientationStack: string[] = [];
+
+  #orientationAt(id: string, t: number): Quat {
+    if (this.#orientationStack.includes(id))
+      throw Error(
+        "Orientation dependency cycle: " +
+          [...this.#orientationStack, id].join(" -> "),
+      );
+    this.#orientationStack.push(id);
+    try {
+      let q: Quat = [1, 0, 0, 0];
+      let found = false;
+      for (const c of eyesDefinitions[id]?.controllers ?? []) {
+        if (
+          c.coverage &&
+          (t < Number(c.coverage[0]) || t > Number(c.coverage[1]))
+        )
+          continue;
+        if (c.type === "fixed" && c.orientation?.constructor === "Quaternion") {
+          q = normalizeOrientation(c.orientation.values);
+          found = true;
+        }
+        if (isOrientationDynamo(c)) {
+          const d = this.#ori.get(id);
+          if (!d || t < d.coverage.start || t > d.coverage.end)
+            throw Error("DYN orientation unavailable or outside coverage");
+          q = normalizeOrientation(evaluateOri(d, t));
+          found = true;
+        }
+        if (isEntityAlign(c)) {
+          q = applyEntityAlign(q, c, this.position(id, t), {
+            position: (ref) => this.position(ref, t),
+            velocity: (ref) => this.sourceVelocity(ref, t),
+            orientation: (ref) => this.#orientationAt(ref, t),
+          });
+          found = true;
+        }
+      }
+      if (!found) throw Error("Source orientation unavailable");
+      return q;
+    } finally {
+      this.#orientationStack.pop();
+    }
+  }
+  #orientationSource(id: string, t: number): "dyn" | "fixed" | "derived" {
+    let source: "dyn" | "fixed" | "derived" = "fixed";
+    for (const c of eyesDefinitions[id]?.controllers ?? []) {
+      if (
+        c.coverage &&
+        (t < Number(c.coverage[0]) || t > Number(c.coverage[1]))
+      )
+        continue;
+      if (isOrientationDynamo(c)) source = "dyn";
+      if (c.type === "fixed" && c.orientation) source = "fixed";
+      if (isEntityAlign(c)) source = "derived";
+    }
+    return source;
+  }
+  velocity(id: string, t: number, stack: string[] = []): Vec3 {
+    if (stack.includes(id))
+      throw Error("Velocity dependency cycle: " + [...stack, id].join(" -> "));
+    const local = this.sourceVelocity(id, t),
+      parent = this.parentAt(id, t);
+    if (!parent || parent === "sun") return local;
+    const inherited = this.velocity(parent, t, [...stack, id]);
+    return local.map((x, i) => x + inherited[i]) as unknown as Vec3;
+  }
+  /** Recovered Entity.getVelocityAtTime: controller-local velocity, no ancestor sum. */
+  sourceVelocity(id: string, t: number): Vec3 {
+    if (id === "sun") return [0, 0, 0];
+    if (!hasDisplayCatalog(id))
+      throw Error("Reference-only world velocity unavailable: " + id);
+    if (
+      activeController(id, t, "rotateByEntityOrientation").length ||
+      activeController(id, t, "fixed").some(
+        (c) => c.relativeToEntity || c.llaOnSpheroid,
+      )
+    )
+      throw Error("Rotating reference world velocity unavailable");
+    const d = this.#data.get(id);
+    let v: Vec3;
+    const orbital = activeController(id, t, "orbitalElements").at(-1);
+    if (d?.kind === "inline" && d.type === "orb") {
+      v = evaluateOrbVelocity(d, t);
+      if (
+        (eyesDefinitions[id]?.controllers ?? []).some(
+          (c) => c.type === "dynamo" && c.parentIsBarycenter,
+        )
+      ) {
+        const scale =
+          (d.gravitationalParameter2 ?? 0) /
+          ((d.gravitationalParameter1 ?? 0) + (d.gravitationalParameter2 ?? 0));
+        v = v.map((x) => x * scale) as unknown as Vec3;
+      }
+    } else if (d?.kind === "inline" && (d.type === "pos" || d.type === "lin")) {
+      if (t < d.coverage.start || t > d.coverage.end)
+        throw Error("Velocity outside coverage");
+      let i = 0;
+      while (i < d.records.length - 2 && d.records[i + 1].time <= t) i++;
+      const a = d.records[i],
+        b = d.records[i + 1],
+        dt = b.time - a.time,
+        u = (t - a.time) / dt;
+      v = a.position.map((x, j) =>
+        d.type === "lin"
+          ? (b.position[j] - x) / dt
+          : ((6 * u * u - 6 * u) * x + (-6 * u * u + 6 * u) * b.position[j]) /
+              dt +
+            (3 * u * u - 4 * u + 1) * a.velocity[j] +
+            (3 * u * u - 2 * u) * b.velocity[j],
+      ) as unknown as Vec3;
+    } else if (activeController(id, t, "fixed").some((c) => c.position))
+      v = [0, 0, 0];
+    else if (orbital) {
+      let q = orbital.orientation?.values;
+      if (!q) {
+        const O = orbital.longitudeOfAscendingNode / 2,
+          i = orbital.inclination / 2,
+          w = orbital.argumentOfPeriapsis / 2;
+        q = [
+          Math.cos(i) * Math.cos(O + w),
+          Math.sin(i) * Math.cos(O - w),
+          Math.sin(i) * Math.sin(O - w),
+          Math.cos(i) * Math.sin(O + w),
+        ];
+      }
+      v = propagateState(
+        {
+          time: orbital.epoch,
+          semiMajorAxis: orbital.semiMajorAxis,
+          eccentricity: orbital.eccentricity,
+          meanAngularMotion: orbital.meanAngularMotion,
+          meanAnomalyAtEpoch: orbital.meanAnomalyAtEpoch,
+          orientation: q,
+        },
+        t,
+      ).velocity;
+    } else throw Error("World velocity unavailable");
+    return v;
   }
   publishAt(epoch: number) {
     for (const item of solarCatalog) {
@@ -655,12 +972,30 @@ export class SolarSystemData {
       try {
         if (item.id === "sun") s.coverage = [epoch, epoch];
         const p = this.position(item.id, epoch);
+        s.positionSource = this.#positionSource(item.id, epoch);
+        let orientation:
+          | {}
+          | { orientationWxyz: [number, number, number, number] } = {};
+        const orientationRequested = s.orientationStatus !== "not-requested";
+        try {
+          orientation = {
+            orientationWxyz: [...this.#orientationAt(item.id, epoch)],
+          };
+          s.orientationStatus = "ready";
+          s.orientationSource = this.#orientationSource(item.id, epoch);
+          delete s.orientationError;
+        } catch (error) {
+          delete s.orientationSource;
+          if (orientationRequested) {
+            s.orientationStatus = "unavailable";
+            s.orientationError = String(error);
+          } else {
+            s.orientationStatus = "not-requested";
+            delete s.orientationError;
+          }
+        }
         this.#ctx.data.publish(item.id, {
-          ...(this.#ori.has(item.id) &&
-          epoch >= this.#ori.get(item.id)!.coverage.start &&
-          epoch <= this.#ori.get(item.id)!.coverage.end
-            ? { orientationWxyz: evaluateOri(this.#ori.get(item.id)!, epoch) }
-            : {}),
+          ...orientation,
           positionKm: p,
           radiusKm: item.radiusKm,
           epochTdbSeconds: epoch,
@@ -669,8 +1004,13 @@ export class SolarSystemData {
           source:
             item.id === "sun"
               ? "Local heliocentric origin: zero position defines this scene; not a NASA solar ephemeris"
-              : JSON.stringify(this.provenance(item.id).slice(-2)) +
-                " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification",
+              : s.positionSource !== "dyn"
+                ? "NASA Eyes recovered " +
+                  s.positionSource +
+                  " position controller; finite coverage bounded by platform evaluation domain, not observation end; orientation " +
+                  (s.orientationSource ?? "unavailable")
+                : JSON.stringify(this.provenance(item.id).slice(-2)) +
+                  " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification",
         });
         this.#published.add(item.id);
         s.status = "ready";
@@ -685,6 +1025,20 @@ export class SolarSystemData {
         } catch {}
       }
     }
+  }
+  /** Only active position dynamics define a path; landed/static phases have none. */
+  hasTrajectory(id: string, epoch: number): boolean {
+    if (!Number.isFinite(epoch)) return false;
+    if (
+      activeController(id, epoch, "fixed").some(
+        (c) => c.position || c.llaOnSpheroid,
+      )
+    )
+      return false;
+    return (
+      activeController(id, epoch, "orbitalElements").length > 0 ||
+      activeController(id, epoch, "dynamo").some((c) => !isOrientationDynamo(c))
+    );
   }
   trajectoryRange(id: string, epoch: number): [number, number] {
     const d = this.#data.get(id);

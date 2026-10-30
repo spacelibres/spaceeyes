@@ -129,7 +129,7 @@ impl WasmCore {
         if !tdb_seconds.is_finite() || tdb_seconds.abs() > 1e12 {
             return Err("InvalidTime".into());
         }
-        Ok(hifitime::Epoch::from_tdb_seconds(tdb_seconds).to_unix_seconds())
+        crate::time_conversion::tdb_to_utc_unix(tdb_seconds).map_err(|e| format!("{e:?}"))
     }
     pub fn utc_to_tdb(&self, unix_seconds: f64) -> Result<f64, String> {
         if !unix_seconds.is_finite() || unix_seconds.abs() > 1e12 {

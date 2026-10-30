@@ -799,3 +799,26 @@ test("render camera diagnostics remain null without a renderer", () => {
     core.free();
   }
 });
+
+test("real WASM ordinary Unix UTC roundtrips across pre-leap-second fractions", () => {
+  const core = new WasmCore();
+  try {
+    // These are ordinary Unix instants, not the unrepresentable leap second itself.
+    const unixSeconds = [
+      1136073599.5, // 2005-12-31T23:59:59.500Z
+      1483228799.5, // 2016-12-31T23:59:59.500Z
+      Date.parse("2025-06-15T12:34:56.500Z") / 1000,
+    ];
+    for (const utc of unixSeconds) {
+      const tdb = core.utc_to_tdb(utc);
+      assert(Number.isFinite(tdb));
+      const restored = core.tdb_to_utc(tdb);
+      assert(
+        Math.abs(restored - utc) <= 1e-6,
+        `UTC roundtrip ${utc}: ${restored}`,
+      );
+    }
+  } finally {
+    core.free();
+  }
+});

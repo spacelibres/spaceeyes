@@ -1,0 +1,120 @@
+{
+  "source": "User reference solarsystem/eyes/src/engine/core/TimeUtils.js + TimeManager momentToET millisecond rounding",
+  "sourceSha256": "05c9a74bad19a502307f0a9a458811c45abc351800963ae60b173cbcf80745c6",
+  "scope": "UI ET conversion reference, not proof of DYN file time scale or physical orbit accuracy",
+  "tolerances": {
+    "ttSeconds": 0.000001,
+    "tdbMilliseconds": 2.2,
+    "utcRoundtripSeconds": 0.000001
+  },
+  "rows": [
+    {
+      "utc": "2000-01-01T12:00:00Z",
+      "unixSeconds": 946728000,
+      "eyesEtSeconds": 64.18400001525879,
+      "eyesEtMilliseconds": 64.184
+    },
+    {
+      "utc": "2000-03-20T12:00:00.123Z",
+      "unixSeconds": 953553600.123,
+      "eyesEtSeconds": 6825664.307000041,
+      "eyesEtMilliseconds": 6825664.307
+    },
+    {
+      "utc": "2000-06-21T12:00:00Z",
+      "unixSeconds": 961588800,
+      "eyesEtSeconds": 14860864.184000015,
+      "eyesEtMilliseconds": 14860864.184
+    },
+    {
+      "utc": "2000-09-22T12:00:00Z",
+      "unixSeconds": 969624000,
+      "eyesEtSeconds": 22896064.184000015,
+      "eyesEtMilliseconds": 22896064.184
+    },
+    {
+      "utc": "2005-12-31T23:59:59.500Z",
+      "unixSeconds": 1136073599.5,
+      "eyesEtSeconds": 189345663.68400002,
+      "eyesEtMilliseconds": 189345663.684
+    },
+    {
+      "utc": "2006-01-01T00:00:00Z",
+      "unixSeconds": 1136073600,
+      "eyesEtSeconds": 189345665.18400002,
+      "eyesEtMilliseconds": 189345665.184
+    },
+    {
+      "utc": "2008-12-31T23:59:59.500Z",
+      "unixSeconds": 1230767999.5,
+      "eyesEtSeconds": 284040064.684,
+      "eyesEtMilliseconds": 284040064.684
+    },
+    {
+      "utc": "2009-01-01T00:00:00Z",
+      "unixSeconds": 1230768000,
+      "eyesEtSeconds": 284040066.184,
+      "eyesEtMilliseconds": 284040066.184
+    },
+    {
+      "utc": "2012-06-30T23:59:59.500Z",
+      "unixSeconds": 1341100799.5,
+      "eyesEtSeconds": 394372865.684,
+      "eyesEtMilliseconds": 394372865.684
+    },
+    {
+      "utc": "2012-07-01T00:00:00Z",
+      "unixSeconds": 1341100800,
+      "eyesEtSeconds": 394372867.184,
+      "eyesEtMilliseconds": 394372867.184
+    },
+    {
+      "utc": "2015-06-30T23:59:59.500Z",
+      "unixSeconds": 1435708799.5,
+      "eyesEtSeconds": 488980866.684,
+      "eyesEtMilliseconds": 488980866.684
+    },
+    {
+      "utc": "2015-07-01T00:00:00Z",
+      "unixSeconds": 1435708800,
+      "eyesEtSeconds": 488980868.184,
+      "eyesEtMilliseconds": 488980868.184
+    },
+    {
+      "utc": "2016-12-31T23:59:59.500Z",
+      "unixSeconds": 1483228799.5,
+      "eyesEtSeconds": 536500867.684,
+      "eyesEtMilliseconds": 536500867.684
+    },
+    {
+      "utc": "2017-01-01T00:00:00Z",
+      "unixSeconds": 1483228800,
+      "eyesEtSeconds": 536500869.184,
+      "eyesEtMilliseconds": 536500869.184
+    },
+    {
+      "utc": "2025-01-01T12:00:00Z",
+      "unixSeconds": 1735732800,
+      "eyesEtSeconds": 789004869.184,
+      "eyesEtMilliseconds": 789004869.184
+    },
+    {
+      "utc": "2025-04-01T12:00:00Z",
+      "unixSeconds": 1743508800,
+      "eyesEtSeconds": 796780869.184,
+      "eyesEtMilliseconds": 796780869.184
+    },
+    {
+      "utc": "2025-07-01T12:00:00Z",
+      "unixSeconds": 1751371200,
+      "eyesEtSeconds": 804643269.184,
+      "eyesEtMilliseconds": 804643269.184
+    },
+    {
+      "utc": "2025-10-01T12:00:00Z",
+      "unixSeconds": 1759320000,
+      "eyesEtSeconds": 812592069.184,
+      "eyesEtMilliseconds": 812592069.184
+    }
+  ]
+}

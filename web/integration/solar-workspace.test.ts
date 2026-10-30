@@ -1105,7 +1105,7 @@ test("host lighting publishes validated mode and resets snapshot on disposal", a
     },
   );
   try {
-    assert.equal(states.at(-1)!.lighting, "natural");
+    assert.equal(states.at(-1)!.lighting, "shadow");
     app.lighting("shadow");
     assert.equal(states.at(-1)!.lighting, "shadow");
     app.lighting("flood");
@@ -1360,6 +1360,176 @@ test("selected object recovering coverage restores focus and survives next frame
     fixtures.step(1000);
     assert.equal(states.at(-1)!.selected, "sc_iss");
     assert.equal(fixtures.focused(), "sc_iss");
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("entity align source is explicit and landed InSight retains parent orientation", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const requests: string[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = String(input);
+        requests.push(url);
+        if (url.includes("sc_cluster_ii_fm5") && url.includes("type=ori"))
+          return new Response("No orientation track", { status: 503 });
+        return new Response(sample(url.includes("type=ori")));
+      },
+    },
+  );
+  try {
+    await app.select("sc_cluster_ii_fm5");
+    assert.match(states.at(-1)!.attitude, /控制器推导姿态/);
+    assert.match(states.at(-1)!.attitude, /非实测/);
+    assert.ok(
+      !requests.some(
+        (url) => url.includes("sc_cluster_ii_fm5") && url.includes("type=ori"),
+      ),
+    );
+    await app.select("sc_insight");
+    assert.match(states.at(-1)!.dataStatus, /^ready/);
+    assert.equal(states.at(-1)!.parentId, "mars");
+    assert.match(states.at(-1)!.source, /固定控制器位置/);
+    assert.match(states.at(-1)!.coverage, /平台求值范围，非观测覆盖终点/);
+    assert.ok(
+      JSON.parse(fixtures.core().state_at("mars", states.at(-1)!.epoch))
+        .orientationWxyz,
+    );
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("actual L1 align reference frame is resolved without a fabricated display body", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("sc_solar_1");
+    assert.equal(fixtures.focused(), "sc_solar_1");
+    assert.doesNotMatch(states.at(-1)!.error, /Invalid retained scene/);
+    assert.ok(!fixtures.visuals().some((v) => v.id === "j2000_ecliptic"));
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("first ISS selection loads Earth orientation before upgrading parent surface", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const requests: string[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = String(input);
+        requests.push(url);
+        return new Response(sample(url.includes("type=ori")));
+      },
+    },
+  );
+  try {
+    await app.select("sc_iss");
+    assert.ok(
+      requests.some(
+        (url) => url.includes("/earth?") && url.includes("type=ori"),
+      ),
+    );
+    assert.ok(
+      JSON.parse(fixtures.core().state_at("earth", states.at(-1)!.epoch))
+        .orientationWxyz,
+    );
+    assert.match(states.at(-1)!.attitude, /推导姿态|DYN 姿态/);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("unselected coverage gaps are informational while HTTP failures and selected gaps remain errors", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let broken = false;
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = String(input);
+        if (url.includes("sc_juno") && broken)
+          return new Response("server unavailable", { status: 503 });
+        return new Response(
+          sample(
+            url.includes("type=ori"),
+            url.includes("sc_cluster_ii_fm5") ? 100 : 4e9,
+          ),
+        );
+      },
+    },
+  );
+  try {
+    await app.select("earth");
+    assert.doesNotMatch(states.at(-1)!.error, /Rumba/);
+    assert.match(states.at(-1)!.phase, /项当前时间无覆盖/);
+    await assert.rejects(app.select("sc_cluster_ii_fm5"));
+    assert.ok(states.at(-1)!.error);
+    broken = true;
+    await assert.rejects(app.select("sc_juno"));
+    assert.ok(states.at(-1)!.error);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("InSight landing clears a previously dynamic trajectory without a static-orbit error", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.seek(590000000);
+    await app.select("sc_insight");
+    assert.ok(
+      fixtures.trails().some((t) => t.id === "sc_insight" && t.count > 0),
+    );
+    await app.seek(600000000);
+    assert.equal(
+      fixtures
+        .trails()
+        .filter((t) => t.id === "sc_insight")
+        .at(-1)!.count,
+      0,
+    );
+    assert.doesNotMatch(states.at(-1)!.error, /Orbit unavailable|轨道不可用/);
+    assert.match(states.at(-1)!.dataStatus, /^ready/);
   } finally {
     await app.dispose();
   }

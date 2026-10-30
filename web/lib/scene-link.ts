@@ -110,7 +110,7 @@ export function parseSceneLink(
     lighting: choice(
       "light",
       ["natural", "shadow", "flood"] as const,
-      "natural",
+      "shadow",
     ),
     fovDegrees,
     labels: flag("labels"),

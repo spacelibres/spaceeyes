@@ -1,6 +1,7 @@
+import { eyesDefinitions } from "../eyes-catalog.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { SolarSystemData } from "../solar-system.ts";
+import { SolarSystemData, hasDisplayCatalog } from "../solar-system.ts";
 import type { PluginContext } from "../plugin-host.ts";
 function orb(radius: number) {
   const b = new Uint8Array(28 + 144),
@@ -727,4 +728,380 @@ test("rollback removes newly published scene objects before restoring ownership"
   assert(!states.has("mars"));
   source.dispose();
   assert.equal(states.size, 0);
+});
+
+test("fixed and sequential entity align orientations publish with explicit provenance", async () => {
+  const old = eyesDefinitions.earth.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [
+      {
+        type: "fixed",
+        orientation: { constructor: "Quaternion", values: [2, 0, 0, 0] },
+      },
+      {
+        type: "align",
+        coverage: [0, 10],
+        primary: {
+          type: "point",
+          target: "sun",
+          axis: { expression: "Pioneer.Vector3.XAxis" },
+        },
+      },
+    ];
+    const { ctx, states } = context();
+    const source = new SolarSystemData(ctx, {
+      fetch: async () => new Response(orb(10)),
+    });
+    await source.load(["earth"], 5);
+    source.publishAt(5);
+    const state = states.get("earth") as { orientationWxyz: number[] };
+    assert.ok(state.orientationWxyz);
+    assert.ok(Math.abs(state.orientationWxyz[0]) < 1e-12);
+    assert.equal(source.status("earth")?.orientationSource, "derived");
+    assert.equal(source.status("earth")?.orientationStatus, "ready");
+    source.dispose();
+  } finally {
+    eyesDefinitions.earth.controllers = old;
+  }
+});
+test("fixed quaternion publishes without ORI request and invalid attitude preserves position", async () => {
+  const old = eyesDefinitions.earth.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [
+      {
+        type: "fixed",
+        orientation: { constructor: "Quaternion", values: [2, 0, 0, 0] },
+      },
+    ];
+    const { ctx, states } = context();
+    let oriRequests = 0;
+    const source = new SolarSystemData(ctx, {
+      fetch: async (input) => {
+        if (String(input).includes("type=ori")) oriRequests++;
+        return new Response(orb(10));
+      },
+    });
+    await source.load(["earth"], 5);
+    source.publishAt(5);
+    assert.deepEqual(
+      (states.get("earth") as any).orientationWxyz,
+      [1, 0, 0, 0],
+    );
+    assert.equal(source.status("earth")?.orientationSource, "fixed");
+    assert.equal(oriRequests, 0);
+    eyesDefinitions.earth.controllers = [
+      {
+        type: "fixed",
+        orientation: { constructor: "Quaternion", values: [0, 0, 0, 0] },
+      },
+    ];
+    source.publishAt(5);
+    assert.equal(source.status("earth")?.orientationStatus, "unavailable");
+    assert.ok(states.has("earth"));
+    assert.equal((states.get("earth") as any).orientationWxyz, undefined);
+    source.dispose();
+  } finally {
+    eyesDefinitions.earth.controllers = old;
+  }
+});
+test("orientation reference cycles reject without awaiting own pending load", async () => {
+  const earth = eyesDefinitions.earth.controllers,
+    moon = eyesDefinitions.moon.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [
+      { type: "align", primary: { type: "align", target: "moon" } },
+    ];
+    eyesDefinitions.moon.controllers = [
+      { type: "align", primary: { type: "align", target: "earth" } },
+    ];
+    const { ctx } = context();
+    const source = new SolarSystemData(ctx, {
+      fetch: async () => new Response(orb(10)),
+    });
+    await source.load(["earth"], 5);
+    assert.equal(source.status("earth")?.status, "ready");
+    assert.equal(source.status("earth")?.orientationStatus, "unavailable");
+    assert.match(
+      source.status("earth")?.orientationError ?? "",
+      /dependency cycle/,
+    );
+    source.dispose();
+  } finally {
+    eyesDefinitions.earth.controllers = earth;
+    eyesDefinitions.moon.controllers = moon;
+  }
+});
+
+test("self velocity align uses analytic parent plus child world velocity without self await", async () => {
+  const earth = eyesDefinitions.earth.controllers,
+    moon = eyesDefinitions.moon.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [{ type: "dynamo", url: "earth/ori" }];
+    eyesDefinitions.moon.controllers = [
+      { type: "dynamo", url: "earth/ori" },
+      {
+        type: "align",
+        primary: {
+          type: "velocity",
+          target: "moon",
+          axis: { expression: "Pioneer.Vector3.XAxis" },
+        },
+      },
+    ];
+    const { ctx, states } = context();
+    const source = new SolarSystemData(ctx, {
+      fetch: async (input) => {
+        if (String(input).includes("type=ori"))
+          return new Response(orientation());
+        const bytes = orb(String(input).includes("/moon?") ? 2 : 10),
+          v = new DataView(bytes.buffer);
+        for (let i = 0; i < 2; i++) v.setFloat64(28 + i * 72 + 24, 0.1, true);
+        return new Response(bytes);
+      },
+    });
+    await source.load(["moon"], 5);
+    const v = source.velocity("moon", 5);
+    assert.ok(Math.abs(v[1] - 1.2 * Math.cos(0.5)) < 1e-12);
+    source.publishAt(5);
+    assert.equal(source.status("moon")?.orientationSource, "derived");
+    assert.ok((states.get("moon") as any).orientationWxyz);
+    assert.deepEqual(source.velocity("moon", 5), v);
+    source.dispose();
+  } finally {
+    eyesDefinitions.earth.controllers = earth;
+    eyesDefinitions.moon.controllers = moon;
+  }
+});
+
+test("fresh InSight surface load waits for Mars ORI and publishes finite source coverage", async () => {
+  const epoch = 846620500;
+  const { ctx, states } = context();
+  let requestedMarsOri = false;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const url = String(input);
+      if (url.includes("type=ori")) {
+        if (url.includes("/mars?")) requestedMarsOri = true;
+        return new Response(orientation(epoch - 5));
+      }
+      const bytes = orb(1e8),
+        v = new DataView(bytes.buffer);
+      for (let i = 0; i < 2; i++)
+        v.setFloat64(28 + i * 72, epoch - 5 + i * 10, true);
+      return new Response(bytes);
+    },
+  });
+  await source.load(["sc_insight"], epoch);
+  assert.equal(requestedMarsOri, true);
+  source.publishAt(epoch);
+  const state = states.get("sc_insight") as {
+    coverageTdbSeconds: number[];
+    source: string;
+  };
+  assert.ok(state, source.status("sc_insight")?.error);
+  assert.ok(state.coverageTdbSeconds.every(Number.isFinite));
+  assert.equal(state.coverageTdbSeconds[1], 1e12);
+  assert.equal(source.status("sc_insight")?.positionSource, "fixed");
+  assert.match(state.source, /fixed position controller/);
+  assert.doesNotMatch(state.source, /NASA Eyes DYN/);
+  source.dispose();
+});
+
+test("declared ecliptic reference is internal and retention stops at solar boundary", async () => {
+  const old = eyesDefinitions.moon.controllers;
+  try {
+    eyesDefinitions.moon.controllers = eyesDefinitions.l1.controllers;
+    const { ctx, states } = context();
+    const requested: string[] = [];
+    const source = new SolarSystemData(ctx, {
+      fetch: async (input) => {
+        requested.push(String(input));
+        return new Response(
+          String(input).includes("type=ori")
+            ? orientation()
+            : orb(String(input).includes("/moon?") ? 2 : 10),
+        );
+      },
+    });
+    assert.equal(hasDisplayCatalog("j2000_ecliptic"), false);
+    source.retain(["moon", "earth", "sun"]);
+    await source.load(["moon"], 5);
+    source.publishAt(5);
+    assert.equal(
+      source.status("moon")?.orientationStatus,
+      "ready",
+      source.status("moon")?.orientationError,
+    );
+    assert.equal(source.status("moon")?.orientationSource, "derived");
+    assert.equal(source.status("j2000_ecliptic"), undefined);
+    assert.equal(states.has("j2000_ecliptic"), false);
+    assert.ok(!requested.some((url) => /j2000|milky|universe/i.test(url)));
+    source.dispose();
+  } finally {
+    eyesDefinitions.moon.controllers = old;
+  }
+});
+
+test("deferred static entity ORI cannot resurrect ready state after retain or dispose", async () => {
+  const old = eyesDefinitions.earth.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [
+      {
+        type: "fixed",
+        position: { constructor: "Vector3", values: [10, 0, 0] },
+      },
+      { type: "dynamo", url: "earth/ori" },
+    ];
+    for (const stop of ["retain", "dispose"]) {
+      const { ctx } = context();
+      let release!: (value: Response) => void;
+      let entered!: () => void;
+      const requested = new Promise<void>((resolve) => (entered = resolve));
+      const gate = new Promise<Response>((resolve) => (release = resolve));
+      const source = new SolarSystemData(ctx, {
+        fetch: async (input) => {
+          assert.match(String(input), /type=ori/);
+          entered();
+          return gate;
+        },
+      });
+      const loading = source.load(["earth"], 5);
+      await requested;
+      if (stop === "retain") source.retain([]);
+      else source.dispose();
+      release(new Response(orientation()));
+      await loading;
+      assert.equal(source.status("earth"), undefined);
+      assert.equal(source.cacheStats().orientationEntries, 0);
+    }
+  } finally {
+    eyesDefinitions.earth.controllers = old;
+  }
+});
+
+test("real Rumba declaration derives attitude without requesting absent ORI", async () => {
+  const { ctx, states } = context();
+  let rumbaOri = 0;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const url = String(input);
+      if (url.includes("type=ori")) {
+        if (url.includes("sc_cluster_ii_fm5")) {
+          rumbaOri++;
+          return new Response("", { status: 503 });
+        }
+        return new Response(orientation());
+      }
+      const bytes = orb(url.includes("sc_cluster_ii_fm5") ? 23444 : 1e8),
+        view = new DataView(bytes.buffer);
+      for (let i = 0; i < 2; i++) view.setFloat64(28 + i * 72 + 24, 0.1, true);
+      return new Response(bytes);
+    },
+  });
+  await source.load(["sc_cluster_ii_fm5"], 5);
+  source.publishAt(5);
+  assert.equal(rumbaOri, 0);
+  assert.equal(
+    source.status("sc_cluster_ii_fm5")?.orientationStatus,
+    "ready",
+    source.status("sc_cluster_ii_fm5")?.orientationError,
+  );
+  assert.equal(
+    source.status("sc_cluster_ii_fm5")?.orientationSource,
+    "derived",
+  );
+  assert.ok((states.get("sc_cluster_ii_fm5") as any).orientationWxyz);
+  source.dispose();
+});
+
+test("cached ORI still publishes after position-only dependency load downgrades requested status", async () => {
+  const { ctx, states } = context();
+  let reads = 0;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      reads++;
+      return new Response(
+        String(input).includes("type=ori") ? orientation() : orb(10),
+      );
+    },
+  });
+  await source.load(["earth"], 5);
+  await source.load(["earth"], 5, []);
+  assert.equal(source.status("earth")?.orientationStatus, "not-requested");
+  const before = reads;
+  source.publishAt(5);
+  assert.equal(reads, before);
+  assert.deepEqual((states.get("earth") as any).orientationWxyz, [1, 0, 0, 0]);
+  assert.equal(source.status("earth")?.orientationStatus, "ready");
+  assert.equal(source.status("earth")?.orientationSource, "dyn");
+  source.dispose();
+});
+
+test("source Align velocity direction ignores fast parent translation", async () => {
+  const earth = eyesDefinitions.earth.controllers,
+    moon = eyesDefinitions.moon.controllers;
+  try {
+    eyesDefinitions.earth.controllers = [{ type: "dynamo", url: "earth/orb" }];
+    eyesDefinitions.moon.controllers = [
+      { type: "dynamo", url: "moon/orb" },
+      {
+        type: "align",
+        primary: {
+          type: "velocity",
+          target: "moon",
+          axis: { expression: "Pioneer.Vector3.XAxis" },
+        },
+      },
+    ];
+    const quaternions: number[][] = [];
+    for (const parentRadius of [10, 1e8]) {
+      const { ctx, states } = context();
+      const source = new SolarSystemData(ctx, {
+        fetch: async (input) => {
+          const child = String(input).includes("/moon?");
+          const bytes = orb(child ? 2 : parentRadius),
+            v = new DataView(bytes.buffer);
+          for (let i = 0; i < 2; i++) {
+            v.setFloat64(28 + i * 72 + 24, 0.1, true);
+            v.setFloat64(28 + i * 72 + 32, child ? 0 : Math.PI / 2, true);
+          }
+          return new Response(bytes);
+        },
+      });
+      await source.load(["moon"], 5);
+      source.publishAt(5);
+      quaternions.push((states.get("moon") as any).orientationWxyz);
+      source.dispose();
+    }
+    assert.deepEqual(quaternions[0], quaternions[1]);
+  } finally {
+    eyesDefinitions.earth.controllers = earth;
+    eyesDefinitions.moon.controllers = moon;
+  }
+});
+
+test("trajectory eligibility follows current position phase, not historical ORI or flight declarations", () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx);
+  assert.equal(source.hasTrajectory("sc_insight", 846620500), false);
+  assert.equal(source.hasTrajectory("earth", 5), true);
+  const old = eyesDefinitions.moon.controllers;
+  try {
+    eyesDefinitions.moon.controllers = [
+      { type: "dynamo", url: "moon/orb", coverage: [0, 9] },
+      { type: "dynamo", url: "moon/ori", coverage: [0, 20] },
+      {
+        type: "fixed",
+        position: { constructor: "Vector3", values: [0, 0, 0] },
+        coverage: [10, 20],
+      },
+    ];
+    assert.equal(source.hasTrajectory("moon", 9), true);
+    assert.equal(source.hasTrajectory("moon", 10), false);
+    assert.equal(source.hasTrajectory("moon", 20), false);
+    assert.equal(source.hasTrajectory("moon", 21), false);
+  } finally {
+    eyesDefinitions.moon.controllers = old;
+    source.dispose();
+  }
 });

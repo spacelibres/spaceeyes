@@ -205,3 +205,9 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 ### 模型自动取景提示
 
 `visual.set` 的model可选 `framingRadiusKm`，必须有限且0<值≤1e12；省略保持按完整模型包围取景。它只控制自动取景范围，不改变科学ObjectState.radiusKm、模型scaleKmPerUnit、真实几何或碰撞固体。只能使用已核对目录的显示extents提示，不把它解释为物理半径；SDK复制冻结，Rust独立验证，现有WASM visual JSON直接转发该字段。
+
+
+### 姿态与时间来源边界
+
+- 数据插件发布`orientationWxyz`必须为归一化wxyz四元数，注明DYN、固定源或控制器推导；推导不是实测。引用系仅用于求值，不能为了姿态把内部辅助frame伪造成可见天体。退化/循环/缺覆盖保持位置与姿态可用性分别报告，禁止默认朝向冒充结果。
+- 平台科学时钟保持TDB；NASA恢复UI的TT型ET近似与DYN文件时标认证是不同证据。静态无限适用范围截到平台有限求值域不代表观测截止。普通Unix逆投影使用平台修正入口，真实闰秒的Unix fold不能当作时间双射。

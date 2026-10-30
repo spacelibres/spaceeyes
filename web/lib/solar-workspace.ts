@@ -1,4 +1,8 @@
 import {
+  entityAlignDependencies,
+  isEntityAlign,
+} from "../../platform/eyes-orientation.ts";
+import {
   snapshotEnvironment,
   type EnvironmentSpec,
 } from "../../platform/environment-contract.ts";
@@ -20,6 +24,7 @@ import {
   SolarSystemData,
   solarCatalog,
   baseSolarIds,
+  hasDisplayCatalog,
 } from "../../platform/solar-system.ts";
 import {
   eyesCatalog,
@@ -106,7 +111,7 @@ export const initialSnapshot: SolarSnapshot = {
     maxRecords: 1000000,
   },
   live: false,
-  lighting: "natural",
+  lighting: "shadow",
   fovDegrees: 45,
   galaxy: { enabled: false, phase: "disabled" },
   starfield: {
@@ -438,7 +443,11 @@ export async function createWorkspace(
       const status = data.status(state.selected);
       state.attitude =
         status?.orientationStatus === "ready"
-          ? "NASA Eyes DYN 姿态数据可用（精度未验收）"
+          ? status.orientationSource === "derived"
+            ? "NASA Eyes 实体控制器推导姿态（非实测，精度未验收）"
+            : status.orientationSource === "fixed"
+              ? "NASA Eyes 固定控制器姿态（非实测，精度未验收）"
+              : "NASA Eyes DYN 姿态数据可用（精度未验收）"
           : status?.orientationStatus === "unavailable"
             ? `姿态不可用：${status.orientationError ?? "源数据未就绪"}；不作真实姿态声明`
             : status?.orientationStatus === "not-requested"
@@ -458,7 +467,17 @@ export async function createWorkspace(
         state.source =
           state.selected === "sun"
             ? "本场景日心坐标原点"
-            : `NASA Eyes DYN · 近似星历（精度未验收）${provenance ? ` · SHA256 ${provenance.sha256.slice(0, 12)} · 获取 ${provenance.fetchedAt}${provenance.selection ? " · 已隔离源文件异常，使用核验有效区段" : ""}` : ""}`;
+            : status?.positionSource === "fixed"
+              ? "NASA Eyes 固定控制器位置（非实时遥测，精度未验收）"
+              : status?.positionSource === "orbital-elements"
+                ? "NASA Eyes 轨道元素推导位置（非实时遥测，精度未验收）"
+                : `NASA Eyes DYN · 近似星历（精度未验收）${provenance ? ` · SHA256 ${provenance.sha256.slice(0, 12)} · 获取 ${provenance.fetchedAt}${provenance.selection ? " · 已隔离源文件异常，使用核验有效区段" : ""}` : ""}`;
+        if (
+          (status?.positionSource === "fixed" ||
+            status?.positionSource === "orbital-elements") &&
+          status.coverage?.some((value) => Math.abs(value) === 1e12)
+        )
+          state.coverage += " · 平台求值范围，非观测覆盖终点";
         const visual = sdk.visual.status(state.selected);
         state.dataStatus += ` · 显示资源 ${visual?.phase ?? "pending"}`;
         if (visual?.phase === "failed")
@@ -568,7 +587,7 @@ export async function createWorkspace(
     for (const id of ids) {
       if (id !== "sun") {
         const parent = parentAt(id, epoch);
-        if (parent) ids.add(parent);
+        if (parent && hasDisplayCatalog(parent)) ids.add(parent);
       }
       for (const controller of activeController(
         id,
@@ -577,7 +596,13 @@ export async function createWorkspace(
       )) {
         const reference =
           controller.entityForOrientation ?? parentAt(id, epoch);
-        if (reference && reference !== id) ids.add(reference);
+        if (reference && reference !== id && hasDisplayCatalog(reference))
+          ids.add(reference);
+      }
+      for (const controller of activeController(id, epoch, "align")) {
+        if (isEntityAlign(controller))
+          for (const reference of entityAlignDependencies(controller))
+            if (hasDisplayCatalog(reference.id)) ids.add(reference.id);
       }
       if (ids.size > 256) throw Error("当前场景依赖超出对象预算（256）");
     }
@@ -585,6 +610,11 @@ export async function createWorkspace(
     return [...ids];
   };
   const refreshTrajectory = (id: string) => {
+    if (!data.hasTrajectory(id, core.epoch())) {
+      sdk.visual.trajectory(id, []);
+      trajectoryWindows.delete(id);
+      return;
+    }
     const count = data.status().filter((s) => s.status === "ready").length;
     const ordinary = state.selected
       ? Math.min(128, Math.max(0, Math.floor(2048 / Math.max(1, count - 1))))
@@ -734,11 +764,19 @@ export async function createWorkspace(
   const refreshDataWarning = () => {
     const unavailable = data
       .status()
-      .filter((item) => item.status !== "ready")
+      .filter(
+        (item) => item.status === "failed" || item.status === "unsupported",
+      )
       .map(
         (item) =>
           solarCatalog.find((body) => body.id === item.id)?.name ?? item.id,
       );
+    const outside = data
+      .status()
+      .filter((item) => item.status === "out-of-coverage").length;
+    state.phase =
+      state.phase.replace(/ · \d+项当前时间无覆盖/g, "") +
+      (outside ? ` · ${outside}项当前时间无覆盖` : "");
     state.error = unavailable.length
       ? `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`
       : "";
@@ -776,11 +814,18 @@ export async function createWorkspace(
         try {
           const ids = sceneIds(epoch);
           data.retain(ids);
-          await data.load(
-            ids,
-            epoch,
+          const orientationIds = new Set(
             [...detailedBodies, state.selected].filter(Boolean),
           );
+          let parent = state.selected ? parentAt(state.selected, epoch) : null;
+          const parentSeen = new Set<string>();
+          while (parent && !parentSeen.has(parent)) {
+            parentSeen.add(parent);
+            if (hasDisplayCatalog(parent)) orientationIds.add(parent);
+            if (parent === "sun") break;
+            parent = parentAt(parent, epoch);
+          }
+          await data.load(ids, epoch, [...orientationIds]);
           assertLive();
           if (current !== revision) {
             restore();
@@ -1196,6 +1241,7 @@ export async function createWorkspace(
       sdk.camera.view("overview");
       state.view = "orbit";
       state.phase = "太阳系总览";
+      refreshDataWarning();
       emit();
       if (state.busy)
         void queue
@@ -1208,6 +1254,7 @@ export async function createWorkspace(
             state.busy = false;
             sdk.time.setPlayback(desiredPlaying, state.rate);
             state.phase = "太阳系总览";
+            refreshDataWarning();
             emit();
           })
           .catch((error) => {
@@ -1365,6 +1412,7 @@ export async function createWorkspace(
     }
     sdk.camera.view("overview");
     options.onStartup?.("启动三维渲染器");
+    runtime.lighting("shadow");
     core.start_renderer(canvas);
     state.startupMs = Math.max(0, performance.now() - startupAt);
     state.active = true;
