@@ -1,0 +1,20 @@
+{
+  "model": "parker-isothermal-transonic-v1",
+  "solarGmM3S2": 1.3271244e+20,
+  "solarRadiusM": 695700000,
+  "boltzmannJK": 1.380649e-23,
+  "protonMassKg": 1.67262192595e-27,
+  "auM": 149597870700,
+  "temperatureK": 1500000,
+  "referenceElectronDensityM3": 5000000,
+  "boundaryStatus": "representative-assumptions-not-date-specific-observations",
+  "composition": "fully-ionized-pure-hydrogen-equal-electron-proton-temperature",
+  "visualSecondsPerSecond": 3600,
+  "sources": {
+    "solarNominal": "https://www.iau.org/static/resolutions/IAU2015_English.pdf",
+    "solarFactSheet": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html",
+    "fundamentalConstants": "https://pml.nist.gov/cuu/pdf/wall_2022.pdf",
+    "parkerEquation": "https://farside.ph.utexas.edu/teaching/plasma/lectures/node109.html",
+    "densityContext": "https://science.gsfc.nasa.gov/attic/cosmicopia.gsfc.nasa.gov/qa_sun.html"
+  }
+}

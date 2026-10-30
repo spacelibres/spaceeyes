@@ -23,3 +23,6 @@ await copyFile(new URL('../resources/shaders/starfield.wgsl', import.meta.url), 
 await copyFile(new URL('../resources/shaders/galaxy.wgsl', import.meta.url), new URL('galaxy.wgsl', shaders));
 
 await copyFile(new URL('../resources/shaders/prominence.wgsl', import.meta.url), new URL('prominence.wgsl', shaders));
+
+const { prepareSolarWind } = await import('../../tools/prepare-solar-wind.ts');
+await prepareSolarWind();
