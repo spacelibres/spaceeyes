@@ -41,6 +41,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 }
 
 function harness() {
+  const visuals: { id: string; spec: Record<string, any> }[] = [];
   let core: HostCore;
   let freed = 0;
   let callback: FrameRequestCallback | undefined;
@@ -58,6 +59,11 @@ function harness() {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if (property === "set_visual")
+            return (...args: any[]) => {
+              visuals.push({ id: args[2], spec: JSON.parse(args[3]) });
+              return Reflect.apply(value, target, args);
+            };
           if (property === "set_playback")
             return (...args: unknown[]) => {
               const result = Reflect.apply(value, target, args);
@@ -87,6 +93,7 @@ function harness() {
       callback = undefined;
     },
     step: (time: number) => callback?.(time),
+    visuals: () => visuals,
     freed: () => freed,
     core: () => core!,
     focused: () =>
@@ -210,37 +217,116 @@ test(
 );
 
 for (const partial of [false, true]) {
-  test(`automatic coverage transition rolls back or clears unavailable focus: partial=${partial}`, { timeout: 10000 }, async () => {
-    const fixtures = harness();
-    let settled: ((state: SolarSnapshot) => void) | undefined;
-    const app = await createWorkspace("#test", (state) => {
-      if (!state.busy && state.active) settled?.(state);
-    }, new AbortController().signal, {
+  test(
+    `automatic coverage transition rolls back or clears unavailable focus: partial=${partial}`,
+    { timeout: 10000 },
+    async () => {
+      const fixtures = harness();
+      let settled: ((state: SolarSnapshot) => void) | undefined;
+      const app = await createWorkspace(
+        "#test",
+        (state) => {
+          if (!state.busy && state.active) settled?.(state);
+        },
+        new AbortController().signal,
+        {
+          ...fixtures,
+          fetch: async (input) => {
+            const url = new URL(String(input), "http://localhost");
+            const short = !partial || url.pathname.endsWith("/moon");
+            if (short && Number(url.searchParams.get("epoch")) > 1e9)
+              return new Response("unavailable", { status: 503 });
+            return new Response(
+              sample(url.searchParams.get("type") === "ori", short ? 1e9 : 4e9),
+            );
+          },
+        },
+      );
+      try {
+        await app.seek(1e9 - 1);
+        await app.select("moon");
+        app.play(true, 1);
+        fixtures.step(0);
+        const done = new Promise<SolarSnapshot>((resolve) => {
+          settled = resolve;
+        });
+        fixtures.step(2000);
+        const state = await done;
+        assert.equal(state.playing, false);
+        if (partial) {
+          assert.match(state.phase, /总览/);
+          assert.doesNotThrow(() => fixtures.core().state_at("earth", 1e9 + 1));
+        } else {
+          assert.equal(fixtures.core().epoch(), 1e9 - 1);
+          assert.doesNotThrow(() => fixtures.core().state_at("moon", 1e9 - 1));
+        }
+      } finally {
+        await app.dispose();
+      }
+    },
+  );
+}
+
+test("overview leaves surfaces external and selection requests only that body's resources once", async () => {
+  const fixtures = harness();
+  const requested: string[] = [];
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
       ...fixtures,
       fetch: async (input) => {
-        const url = new URL(String(input), "http://localhost");
-        const short = !partial || url.pathname.endsWith("/moon");
-        if (short && Number(url.searchParams.get("epoch")) > 1e9)
-          return new Response("unavailable", { status: 503 });
-        return new Response(sample(url.searchParams.get("type") === "ori", short ? 1e9 : 4e9));
+        requested.push(String(input));
+        return new Response(sample(String(input).includes("type=ori")));
       },
-    });
-    try {
-      await app.seek(1e9 - 1);
-      await app.select("moon");
-      app.play(true, 1);
-      fixtures.step(0);
-      const done = new Promise<SolarSnapshot>((resolve) => { settled = resolve; });
-      fixtures.step(2000);
-      const state = await done;
-      assert.equal(state.playing, false);
-      if (partial) {
-        assert.match(state.phase, /总览/);
-        assert.doesNotThrow(() => fixtures.core().state_at("earth", 1e9 + 1));
-      } else {
-        assert.equal(fixtures.core().epoch(), 1e9 - 1);
-        assert.doesNotThrow(() => fixtures.core().state_at("moon", 1e9 - 1));
-      }
-    } finally { await app.dispose(); }
-  });
-}
+    },
+  );
+  try {
+    assert.equal(
+      fixtures.visuals().some(({ spec }) => spec.faceAssets || spec.ringAssets),
+      false,
+    );
+    assert.equal(
+      requested.some((url) => url.includes("type=ori")),
+      false,
+    );
+    await app.select("earth");
+    assert.deepEqual(
+      fixtures
+        .visuals()
+        .filter(({ spec }) => spec.faceAssets)
+        .map(({ id }) => id),
+      ["earth"],
+    );
+    await app.select("saturn");
+    assert.deepEqual(
+      requested
+        .filter((url) => url.includes("type=ori"))
+        .map((url) => url.split("/").at(-1)?.split("?")[0]),
+      ["earth", "saturn"],
+    );
+    const detailed = fixtures.visuals().filter(({ spec }) => spec.faceAssets);
+    assert.deepEqual(
+      detailed.map(({ id }) => id),
+      ["earth", "saturn"],
+    );
+    assert.equal(detailed[1].spec.ringAssets.length, 2);
+    await app.select("earth");
+    app.overview();
+    await app.seek(0);
+    app.layers(false, false);
+    assert.equal(
+      fixtures.visuals().filter(({ spec }) => spec.faceAssets).length,
+      2,
+    );
+    assert.equal(
+      fixtures
+        .visuals()
+        .some(({ id, spec }) => id === "moon" && spec.faceAssets),
+      false,
+    );
+  } finally {
+    await app.dispose();
+  }
+});

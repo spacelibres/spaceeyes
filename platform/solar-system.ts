@@ -174,13 +174,14 @@ export class SolarSystemData {
   async load(
     ids: readonly string[] = solarCatalog.map((x) => x.id),
     epoch = 0,
+    orientationIds: readonly string[] = ids,
   ) {
     await Promise.all(
       ids.map((id) => {
-        const key = id + ":" + epoch;
+        const key = id + ":" + epoch + ":" + orientationIds.includes(id);
         const existing = this.#pending.get(key);
         if (existing) return existing;
-        const task = this.#load([id], epoch).finally(() =>
+        const task = this.#load([id], epoch, orientationIds).finally(() =>
           this.#pending.delete(key),
         );
         this.#pending.set(key, task);
@@ -191,6 +192,7 @@ export class SolarSystemData {
   async #load(
     ids: readonly string[] = solarCatalog.map((x) => x.id),
     epoch = 0,
+    orientationIds: readonly string[] = ids,
   ) {
     const generation = this.#generation;
     await Promise.all(
@@ -212,7 +214,7 @@ export class SolarSystemData {
             item.parentId !== "sun" &&
             !this.#data.has(item.parentId)
           )
-            await this.load([item.parentId], epoch);
+            await this.load([item.parentId], epoch, orientationIds);
           let d = this.#data.get(id);
           if (d && (epoch < d.coverage.start || epoch > d.coverage.end))
             d = undefined;
@@ -226,18 +228,23 @@ export class SolarSystemData {
             if (generation !== this.#generation) return;
             this.#data.set(id, d);
           }
-          try {
-            let ori = this.#ori.get(id);
-            if (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end)
-              ori = decodeDyn(
-                await this.#read(
-                  `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
-                ),
-              );
-            if (generation === this.#generation) this.#ori.set(id, ori);
-          } catch {
-            /* Position remains available without attitude. */
-          }
+          if (orientationIds.includes(id))
+            try {
+              let ori = this.#ori.get(id);
+              if (
+                !ori ||
+                epoch < ori.coverage.start ||
+                epoch > ori.coverage.end
+              )
+                ori = decodeDyn(
+                  await this.#read(
+                    `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
+                  ),
+                );
+              if (generation === this.#generation) this.#ori.set(id, ori);
+            } catch {
+              /* Position remains available without attitude. */
+            }
           if (generation !== this.#generation) return;
           this.#states.set(id, {
             id,

@@ -178,7 +178,7 @@ export async function createWorkspace(
           return false;
         }
       }).length;
-      state.dataStatus = `${loaded.length}/${solarCatalog.length} 个对象数据可用 · ${shown} 个显示资源就绪`;
+      state.dataStatus = `${loaded.length}/${solarCatalog.length} 个对象数据可用 · ${shown} 个显示表示就绪 · 高清表面仅选择时加载`;
       state.source = "NASA Eyes 动态数据与固定表面资源 · 近似星历精度未验收";
       state.coverage = "选择对象查看其真实有效范围";
     }
@@ -211,18 +211,25 @@ export async function createWorkspace(
   const assertLive = () => {
     if (closed || signal.aborted) throw new Error("工作区已关闭");
   };
+  const detailedBodies = new Set<string>();
   const configure = () => {
     for (const body of solarCatalog) {
       if (data.status(body.id)?.status !== "ready") continue;
       try {
-        if (!sdk.visual.status(body.id)) {
+        const upgrade =
+          state.selected === body.id && !detailedBodies.has(body.id);
+        const detailed = detailedBodies.has(body.id) || upgrade;
+        if (!sdk.visual.status(body.id) || upgrade) {
           sdk.visual.set(body.id, {
             kind: "sphere",
-            colorRgba: surfaceAssets.has(body.id) ? [1, 1, 1, 1] : body.color,
-            ...(surfaceAssets.has(body.id)
+            colorRgba:
+              detailed && surfaceAssets.has(body.id)
+                ? [1, 1, 1, 1]
+                : body.color,
+            ...(detailed && surfaceAssets.has(body.id)
               ? { faceAssets: surfaceAssets.get(body.id)! }
               : {}),
-            ...(body.id === "saturn"
+            ...(detailed && body.id === "saturn"
               ? {
                   ringAssets: [
                     "planet:saturn:ring:top",
@@ -247,6 +254,7 @@ export async function createWorkspace(
                 }
               : {}),
           });
+          if (upgrade) detailedBodies.add(body.id);
           sdk.visual.label(body.id, body.id.toUpperCase());
         }
         if (state.trajectories && body.parentId) {
@@ -282,9 +290,16 @@ export async function createWorkspace(
         const restore = data.checkpoint();
         sdk.time.setPlayback(false, state.rate);
         try {
-          await data.load(undefined, epoch);
+          await data.load(
+            undefined,
+            epoch,
+            [...detailedBodies, state.selected].filter(Boolean),
+          );
           assertLive();
-          if (current !== revision) { restore(); return; }
+          if (current !== revision) {
+            restore();
+            return;
+          }
           if (
             state.active &&
             !data
@@ -303,7 +318,12 @@ export async function createWorkspace(
           data.publishAt(epoch);
           const valid = data.status().some((item) => {
             if (item.id === "sun" || item.status !== "ready") return false;
-            try { core.state_at(item.id, epoch); return true; } catch { return false; }
+            try {
+              core.state_at(item.id, epoch);
+              return true;
+            } catch {
+              return false;
+            }
           });
           if (state.active && !valid) {
             restore();
@@ -315,13 +335,17 @@ export async function createWorkspace(
           }
           lastPublishedEpoch = core.epoch();
           configure();
-          const selectedUnavailable = state.selected && data.status(state.selected)?.status !== "ready";
+          const selectedUnavailable =
+            state.selected && data.status(state.selected)?.status !== "ready";
           if (selectedUnavailable) {
             sdk.camera.view("overview");
             state.view = "orbit";
             desiredPlaying = false;
           }
-          sdk.time.setPlayback(selectedUnavailable ? false : resume, state.rate);
+          sdk.time.setPlayback(
+            selectedUnavailable ? false : resume,
+            state.rate,
+          );
           const available = data
             .status()
             .filter((item) => item.status === "ready").length;
@@ -334,7 +358,8 @@ export async function createWorkspace(
                 item.id,
             );
           state.phase = `太阳系场景：${available}/${solarCatalog.length} 个对象可用`;
-          if (selectedUnavailable) state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
+          if (selectedUnavailable)
+            state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
           if (unavailable.length)
             state.error = `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`;
         } finally {

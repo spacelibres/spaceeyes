@@ -106,6 +106,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn((
         Camera3d::default(),
+        // Analytic tonemapping keeps render lookup images out of the executable.
+        bevy::core_pipeline::tonemapping::Tonemapping::KhronosPbrNeutral,
         DisplayCamera,
         Transform::from_xyz(0.0, 0.0, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
@@ -610,6 +612,7 @@ fn maintain_labels(
     commands: &mut Commands,
     labels: &mut AnnotationLabels,
     desired: Vec<(String, String, Vec2)>,
+    font: Handle<Font>,
 ) {
     let mut desired: std::collections::HashMap<_, _> = desired
         .into_iter()
@@ -630,7 +633,11 @@ fn maintain_labels(
         commands.spawn((
             AnnotationLabel { object },
             Text::new(text),
-            FontSize::Px(14.0),
+            TextFont {
+                font: FontSource::Handle(font.clone()),
+                font_size: FontSize::Px(14.0),
+                ..default()
+            },
             TextColor(Color::WHITE),
             Node {
                 position_type: PositionType::Absolute,
@@ -641,21 +648,24 @@ fn maintain_labels(
         ));
     }
 }
+#[allow(clippy::too_many_arguments)]
 fn draw_annotations(
     mut commands: Commands,
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
     mut gizmos: Gizmos,
     mut labels: AnnotationLabels,
+    assets: Res<AssetServer>,
+    mut label_font: Local<Option<Handle<Font>>>,
     camera: Query<(&Camera, &GlobalTransform), With<DisplayCamera>>,
 ) {
     let mut desired_labels = Vec::new();
     let Ok(core) = store.0.lock() else {
-        maintain_labels(&mut commands, &mut labels, Vec::new());
+        maintain_labels(&mut commands, &mut labels, Vec::new(), Handle::default());
         return;
     };
     let Ok((camera, camera_transform)) = camera.single() else {
-        maintain_labels(&mut commands, &mut labels, Vec::new());
+        maintain_labels(&mut commands, &mut labels, Vec::new(), Handle::default());
         return;
     };
     let to_display = |p: [f64; 3]| {
@@ -685,7 +695,14 @@ fn draw_annotations(
             }
         }
     }
-    maintain_labels(&mut commands, &mut labels, desired_labels);
+    let font = if desired_labels.is_empty() {
+        label_font.clone().unwrap_or_default()
+    } else {
+        label_font
+            .get_or_insert_with(|| assets.load("fonts/FiraMono-subset.ttf"))
+            .clone()
+    };
+    maintain_labels(&mut commands, &mut labels, desired_labels, font);
 }
 
 #[cfg(test)]
@@ -798,7 +815,12 @@ mod label_persistence_tests {
         mut labels: AnnotationLabels,
         desired: Res<DesiredLabels>,
     ) {
-        maintain_labels(&mut commands, &mut labels, desired.0.clone());
+        maintain_labels(
+            &mut commands,
+            &mut labels,
+            desired.0.clone(),
+            Handle::default(),
+        );
     }
     #[test]
     fn label_entities_survive_frames_and_are_removed_only_when_absent() {

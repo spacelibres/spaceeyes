@@ -73,7 +73,7 @@ host.register({
 - `ObjectState.orientationWxyz?: [w,x,y,z]` 是单位四元数，body-local 到 ICRF；平方模误差不得超过 `1e-6`。省略时视为无额外旋转。Bevy 显示使用既有 `(x,z,-y)` 基变换。
 - `visual.trajectory(targetId, points)` 接收 ICRF km 三元组数组；每会话最多 4096 点、有限数值，空数组清除。Bevy 内置 Gizmos 绘制。
 - `visual.label(targetId, text)` 最多 256 Unicode 字符，不接受控制字符，空串清除；Bevy 原生 UI Text 经 Camera world_to_viewport 投影显示。
-- 字符校验不代表字形覆盖。当前默认字库未配置中文字形，内置标签使用 ASCII 对象标识；完整多语言标签不属于本版已验收能力。
+- 字符校验不代表字形覆盖。当前外置标签字库未配置中文字形，内置标签使用 ASCII 对象标识；完整多语言标签不属于本版已验收能力。
 - `visual.layers({ labels, trajectories })` 仅控制调用会话自有对象对应显示层。以上均需 `scene.visual`，Rust 再次验证权限与对象归属；移除对象/释放会话清理附属状态。
 - sphere `VisualSpec` 可选 `colorRgba`、`emissiveRgba`，均为 `[r,g,b,a]`，各通道有限且 `[0,1]`。由 Bevy `StandardMaterial` 执行；纹理仍通过宿主资源目录 `textureAsset`，不得虚构 NASA 资源。
 - 宿主 `WasmCore.utc_to_tdb(unixSeconds)` 使用独立 Hifitime 4.3.1 转换 UTC Unix 秒为 J2000 TDB 秒，不改变 clock；不链接 Nyx。闰秒依据库内表，未来闰秒需随资料维护。
@@ -82,3 +82,11 @@ host.register({
 - 宿主 `WasmCore.tdb_to_utc(tdbSeconds)` 是同一Hifitime的反向换算纯函数，返回Unix秒。
 
 - sphere环：`ringAssets: [topId,bottomId]`，同时必填`ringInnerRadiusRatio`、`ringOuterRadiusRatio`，满足1<=inner<outer<=10。NASA原环图是径向条带，按恢复RingsComponent的u=(r-inner)/(outer-inner)展开1024二维透明纹理；两片Bevy Plane3d各背面剔除，跟随父对象姿态。相机按outer展示范围取景，不改变科学radiusKm。
+
+## 外置资源与触发加载
+
+模型、纹理、字体、音频、星历及场景数据不得用 include_bytes/include_str 或嵌入资产宏编译进核心 WASM。资源登记只登记受控路径，不触发下载。首页总览需要科学位置与轨迹，因此只触发所需 DYN 轨道数据获取；姿态在选择该天体后才请求；总览基础几何不请求高清表面。选择天体才绑定该对象的六面纹理及其环，已访问表示在本会话中复用；不能为了相邻对象或未来操作提前加载整目录。
+
+当前标签字库是服务器 `/assets/fonts/FiraMono-subset.ttf`，首次有实际标签显示时由 Bevy AssetServer 加载，不使用编译内嵌 default_font。字体不包含完整中文字形。插件不能借此指定任意字体 URL 或绕过受控目录。
+
+Bevy 着色器、运行时生成的基础网格及程序常量属于核心程序；WASM data section 不等于业务资产包，不能通过清空所有 data section 实现资源分离。

@@ -1,0 +1,304 @@
+{
+  "assets": [
+    {
+      "id": "fa7cad3e6a3a125b",
+      "kind": "image",
+      "name": "spacelibre.svg",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 19,
+          "property": "href"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 38,
+          "property": "src"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/spacelibre.svg"
+    },
+    {
+      "id": "c5654013f10bd81e",
+      "kind": "stylesheet",
+      "name": "fb2240c77edc40e8.css",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 20,
+          "property": "href"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/css/fb2240c77edc40e8.css"
+    },
+    {
+      "id": "9b8078fced21024c",
+      "kind": "script",
+      "name": "webpack-6b2a9649fbb5f436.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "link"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 21,
+          "property": "href"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 231,
+          "property": "src"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/chunks/webpack-6b2a9649fbb5f436.js"
+    },
+    {
+      "id": "ef1a643c0022dba4",
+      "kind": "script",
+      "name": "4bd1b696-c7408084347438ae.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "script"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 22,
+          "property": "src"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/chunks/4bd1b696-c7408084347438ae.js"
+    },
+    {
+      "id": "1156e7392b72e603",
+      "kind": "script",
+      "name": "main-app-a41f968d5d7f056e.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "script"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 24,
+          "property": "src"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/chunks/main-app-a41f968d5d7f056e.js"
+    },
+    {
+      "id": "81bcfc4a4653cdc9",
+      "kind": "script",
+      "name": "794-216401842b802bd7.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "script"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 23,
+          "property": "src"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/chunks/794-216401842b802bd7.js"
+    },
+    {
+      "id": "5e62d87ff7ab25c7",
+      "kind": "script",
+      "name": "page-cb9c0d702d71bd00.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "script"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-cb9c0d702d71bd00.js"
+    },
+    {
+      "id": "726bb7e6b2b26f4f",
+      "kind": "script",
+      "name": "spaceeyes_core.js",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "script"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "id": "be2776c915a0aa26",
+      "kind": "image",
+      "name": "icon.svg",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "other"
+        },
+        {
+          "kind": "attribute",
+          "nodeId": 28,
+          "property": "href"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/icon.svg"
+    },
+    {
+      "id": "baaf21da20efd1d1",
+      "kind": "other",
+      "name": "spaceeyes_core_bg.wasm",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm"
+    },
+    {
+      "id": "93acc01285b87548",
+      "kind": "other",
+      "name": "mercury",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/mercury?epoch=846609766.5314853"
+    },
+    {
+      "id": "64488da5bf3a2be0",
+      "kind": "other",
+      "name": "venus",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/venus?epoch=846609766.5314853"
+    },
+    {
+      "id": "9809d925a1e0d087",
+      "kind": "other",
+      "name": "mars",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/mars?epoch=846609766.5314853"
+    },
+    {
+      "id": "02e4c9d8e09c62b6",
+      "kind": "other",
+      "name": "earth",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/earth?epoch=846609766.5314853"
+    },
+    {
+      "id": "038a2998b2ec0569",
+      "kind": "other",
+      "name": "jupiter",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/jupiter?epoch=846609766.5314853"
+    },
+    {
+      "id": "912d70667b6d5bcd",
+      "kind": "other",
+      "name": "saturn",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/saturn?epoch=846609766.5314853"
+    },
+    {
+      "id": "94b41d131e8a62b7",
+      "kind": "other",
+      "name": "uranus",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/uranus?epoch=846609766.5314853"
+    },
+    {
+      "id": "6891a0830ae7ffce",
+      "kind": "other",
+      "name": "neptune",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/neptune?epoch=846609766.5314853"
+    },
+    {
+      "id": "9b17d29e9fc656c8",
+      "kind": "other",
+      "name": "moon",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/api/solar-dyn/moon?epoch=846609766.5314853"
+    },
+    {
+      "id": "046444a03a413d40",
+      "kind": "font",
+      "name": "FiraMono-subset.ttf",
+      "sources": [
+        {
+          "kind": "resource",
+          "property": "fetch"
+        }
+      ],
+      "url": "http://127.0.0.1:3006/assets/fonts/FiraMono-subset.ttf"
+    }
+  ],
+  "id": "222bcaae-08da-4a87-b662-2e3b8cb01658",
+  "inlineSvgs": [],
+  "pageUrl": "http://127.0.0.1:3006/",
+  "summary": {
+    "byKind": {
+      "font": 1,
+      "image": 2,
+      "other": 10,
+      "script": 6,
+      "stylesheet": 1,
+      "video": 0
+    },
+    "inlineSvgCount": 0,
+    "totalCount": 20
+  }
+}
