@@ -215,9 +215,72 @@ test("real WASM visual API enforces registered resources, ownership and revision
       scene: 0,
       scaleKmPerUnit: 0.001,
     });
+    sdk.visual.set("object:test", {
+      kind: "model",
+      assetId: "model:juno",
+      scene: 0,
+      scaleKmPerUnit: 0.001,
+      framingRadiusKm: 0.00435,
+    });
     const first = sdk.visual.status("object:test");
     assert.equal(first?.phase, "pending");
     assert.equal(typeof first?.revision, "string");
+    // Rust independently rejects invalid hints and preserves the accepted assignment revision.
+    core.open_session(
+      "hint-owner",
+      "integration.hint",
+      false,
+      true,
+      false,
+      true,
+    );
+    core.publish_object(
+      "hint-owner",
+      "integration.hint",
+      "hint:test",
+      JSON.stringify({
+        positionKm: [0, 0, 0],
+        radiusKm: 0.02,
+        epochTdbSeconds: 0,
+        coverageTdbSeconds: [0, 1],
+        frame: "ICRF",
+        source: "test",
+      }),
+    );
+    const hintSpec = {
+      kind: "model",
+      assetId: "model:juno",
+      scene: 0,
+      scaleKmPerUnit: 0.001,
+      framingRadiusKm: 0.00435,
+    };
+    core.set_visual(
+      "hint-owner",
+      "integration.hint",
+      "hint:test",
+      JSON.stringify(hintSpec),
+    );
+    const hintBefore = core.owned_visual_status(
+      "hint-owner",
+      "integration.hint",
+      "hint:test",
+    );
+    for (const framingRadiusKm of [0, -1, 1e12 + 1, "1"]) {
+      assert.throws(() =>
+        core.set_visual(
+          "hint-owner",
+          "integration.hint",
+          "hint:test",
+          JSON.stringify({ ...hintSpec, framingRadiusKm }),
+        ),
+      );
+      assert.equal(
+        core.owned_visual_status("hint-owner", "integration.hint", "hint:test"),
+        hintBefore,
+      );
+    }
+    core.release_session("hint-owner");
+
     assert.throws(
       () =>
         sdk.visual.set("object:test", {

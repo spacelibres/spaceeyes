@@ -40,6 +40,7 @@ fn model() -> VisualSpec {
         asset_id: "model:juno".into(),
         scene: 0,
         scale_km_per_unit: 0.001,
+        framing_radius_km: None,
     }
 }
 
@@ -288,4 +289,54 @@ fn trusted_host_registers_external_hdr_without_allowing_urls() {
         ),
         Err(CoreError::InvalidAsset)
     );
+}
+#[test]
+fn model_framing_hint_is_optional_strict_and_bounded() {
+    let parsed: VisualSpec =
+        serde_json::from_str(r#"{"kind":"model","assetId":"model:juno","scaleKmPerUnit":1}"#)
+            .unwrap();
+    assert!(matches!(
+        parsed,
+        VisualSpec::Model {
+            framing_radius_km: None,
+            ..
+        }
+    ));
+    assert!(
+        serde_json::from_str::<VisualSpec>(
+            r#"{"kind":"model","assetId":"model:juno","scaleKmPerUnit":1,"framingRadius":1}"#
+        )
+        .is_err()
+    );
+    let mut core = setup();
+    for radius in [f64::NAN, f64::INFINITY, 0., -1., 1e12 + 1.] {
+        assert_eq!(
+            core.set_visual(
+                "owner",
+                "one.plugin",
+                "object:test",
+                Some(VisualSpec::Model {
+                    asset_id: "model:juno".into(),
+                    scene: 0,
+                    scale_km_per_unit: 1.,
+                    framing_radius_km: Some(radius)
+                })
+            ),
+            Err(CoreError::InvalidVisual)
+        );
+    }
+    for radius in [0.00435, 1e12] {
+        core.set_visual(
+            "owner",
+            "one.plugin",
+            "object:test",
+            Some(VisualSpec::Model {
+                asset_id: "model:juno".into(),
+                scene: 0,
+                scale_km_per_unit: 1.,
+                framing_radius_km: Some(radius),
+            }),
+        )
+        .unwrap();
+    }
 }

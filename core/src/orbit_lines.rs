@@ -1,5 +1,49 @@
 //! Temporal polyline attachment uses core state, never a nearest spatial guess.
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn path_scale_fade(
+    points: &[[f64; 3]],
+    focus_range: Option<f64>,
+    kind: Option<&str>,
+) -> f32 {
+    let Some(range) = focus_range.filter(|r| r.is_finite() && *r >= 0.) else {
+        return 1.;
+    };
+    if kind == Some("trail") || points.len() < 2 {
+        return 1.;
+    }
+    let mut lo = [f64::INFINITY; 3];
+    let mut hi = [f64::NEG_INFINITY; 3];
+    for p in points {
+        for i in 0..3 {
+            if !p[i].is_finite() {
+                return 1.;
+            }
+            lo[i] = lo[i].min(p[i]);
+            hi[i] = hi[i].max(p[i]);
+        }
+    }
+    let radius = ((hi[0] - lo[0]).hypot(hi[1] - lo[1])).hypot(hi[2] - lo[2]) * 0.5;
+    if !radius.is_finite() || radius <= 0. {
+        return 1.;
+    }
+    let t = ((range / radius - 0.02) / 0.06).clamp(0., 1.);
+    (t * t * (3. - 2. * t)) as f32
+}
+#[cfg(test)]
+mod scale_tests {
+    use super::*;
+    #[test]
+    fn local_system_hides_solar_orbit_but_keeps_trail_and_recovers() {
+        let p = [[-7e8, 0., 0.], [7e8, 0., 0.]];
+        assert_eq!(path_scale_fade(&p, Some(7e6), None), 0.);
+        assert_eq!(path_scale_fade(&p, Some(7e6), Some("trail")), 1.);
+        assert_eq!(path_scale_fade(&p, None, None), 1.);
+        assert_eq!(path_scale_fade(&p, Some(7e8 * 0.08), None), 1.);
+        assert!((path_scale_fade(&p, Some(7e8 * 0.05), None) - 0.5).abs() < 1e-6);
+        assert_eq!(path_scale_fade(&[[0.; 3]; 2], Some(1.), None), 1.);
+    }
+}
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
 pub(crate) fn distance_fade(distance_radii: f32) -> f32 {
     let t = ((distance_radii - 16.) / 112.).clamp(0., 1.);
     t * t * (3. - 2. * t)

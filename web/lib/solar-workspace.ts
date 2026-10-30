@@ -651,11 +651,18 @@ export async function createWorkspace(
         const detailed = detailedBodies.has(body.id) || upgrade;
         if (!sdk.visual.status(body.id) || upgrade) {
           const model = getEyesDefinition(body.id)?.model;
+          const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius;
           if (detailed && model) {
             sdk.visual.set(body.id, {
               kind: "model",
               assetId: `eyes:${body.id}:model`,
               scaleKmPerUnit: 1,
+              ...(typeof framingRadiusKm === "number" &&
+              Number.isFinite(framingRadiusKm) &&
+              framingRadiusKm > 0 &&
+              framingRadiusKm <= 1e12
+                ? { framingRadiusKm }
+                : {}),
               scene: 0,
             });
           } else
@@ -833,6 +840,31 @@ export async function createWorkspace(
             state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
           refreshDataWarning();
           validateFollow();
+          if (
+            state.selected &&
+            !selectedUnavailable &&
+            core.focused_object() === undefined
+          ) {
+            const target = state.selected;
+            const members = sceneIds(epoch).filter(
+              (id) =>
+                id === target ||
+                (parentAt(id, epoch) === target &&
+                  data.status(id)?.status === "ready" &&
+                  solarCatalog.find((body) => body.id === id)?.kind ===
+                    (target === "sun" ? "planet" : "moon")),
+            );
+            sdk.camera.observe(
+              target,
+              state.observationMode,
+              state.observationMode === "system"
+                ? { members }
+                : state.observationMode === "follow"
+                  ? { followId: state.followId }
+                  : undefined,
+            );
+            sdk.camera.view(state.view as "orbit" | "top" | "front" | "side");
+          }
         } finally {
           restore.discard();
           if (!closed && current === revision) {

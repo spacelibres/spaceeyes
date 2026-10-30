@@ -1,5 +1,11 @@
 export type VisualSpec =
-  | { kind: "model"; assetId: string; scene: number; scaleKmPerUnit: number }
+  | {
+      kind: "model";
+      assetId: string;
+      scene: number;
+      scaleKmPerUnit: number;
+      framingRadiusKm?: number;
+    }
   | {
       kind: "sphere";
       ringAssets?: [string, string];
@@ -30,7 +36,7 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
   if (!spec || typeof spec !== "object") throw new Error("invalid visual spec");
   const allowed =
     spec.kind === "model"
-      ? ["kind", "assetId", "scene", "scaleKmPerUnit"]
+      ? ["kind", "assetId", "scene", "scaleKmPerUnit", "framingRadiusKm"]
       : [
           "kind",
           "textureAsset",
@@ -46,6 +52,14 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
     throw new Error("invalid visual fields");
   if (spec.kind === "model") {
     if (
+      spec.framingRadiusKm !== undefined &&
+      (typeof spec.framingRadiusKm !== "number" ||
+        !Number.isFinite(spec.framingRadiusKm) ||
+        spec.framingRadiusKm <= 0 ||
+        spec.framingRadiusKm > 1e12)
+    )
+      throw Error("invalid model framing radius");
+    if (
       !Number.isSafeInteger(spec.scene) ||
       spec.scene < 0 ||
       spec.scene > 1023 ||
@@ -58,6 +72,9 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
       assetId: assetId(spec.assetId),
       scene: spec.scene,
       scaleKmPerUnit: spec.scaleKmPerUnit,
+      ...(spec.framingRadiusKm !== undefined
+        ? { framingRadiusKm: spec.framingRadiusKm }
+        : {}),
     });
   }
   if (spec.kind === "sphere") {

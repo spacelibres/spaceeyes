@@ -201,3 +201,7 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 `camera.observe(targetId, mode, options?)`需要camera.control。nearby仅目标；system需要options.members为最多128个唯一已登记当前有效对象ID且含targetId；follow需要不同于targetId的有效followId，不接受members。System以选中对象为中心取景，Follow仍锚定选中对象但随指定对象方向变化，不等于再次focus。`focus`恢复nearby，overview清理观察模式；退出清理会话意图。
 
 `camera.orbit(yawRadians,pitchRadians)`每分量有限[-0.5,0.5]；`camera.zoom(delta)`有限[-1,1]，负值靠近。核心有界累计，每帧只消费一次并执行惯性和碰撞，不授予Transform、原始Bevy对象或穿透能力。鼠标、按钮、键盘、触摸经同一受控意图协作，不能绕过核心科学坐标。
+
+### 模型自动取景提示
+
+`visual.set` 的model可选 `framingRadiusKm`，必须有限且0<值≤1e12；省略保持按完整模型包围取景。它只控制自动取景范围，不改变科学ObjectState.radiusKm、模型scaleKmPerUnit、真实几何或碰撞固体。只能使用已核对目录的显示extents提示，不把它解释为物理半径；SDK复制冻结，Rust独立验证，现有WASM visual JSON直接转发该字段。

@@ -76,6 +76,7 @@ fn real_bevy_entities_follow_core_and_use_double_precision_local_origin() {
                 asset_id: "model:test".into(),
                 scene: 0,
                 scale_km_per_unit: 0.001,
+                framing_radius_km: None,
             }),
         )
         .unwrap();

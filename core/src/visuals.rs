@@ -26,6 +26,8 @@ pub enum VisualSpec {
         #[serde(default)]
         scene: u32,
         scale_km_per_unit: f64,
+        #[serde(default)]
+        framing_radius_km: Option<f64>,
     },
     Sphere {
         #[serde(default)]
@@ -174,7 +176,11 @@ impl Core {
                 asset_id,
                 scene,
                 scale_km_per_unit,
+                framing_radius_km,
             } => {
+                if framing_radius_km.is_some_and(|r| !r.is_finite() || r <= 0. || r > 1e12) {
+                    return Err(CoreError::InvalidVisual);
+                }
                 if !scale_km_per_unit.is_finite() || *scale_km_per_unit <= 0.0 || *scene > 1023 {
                     return Err(CoreError::InvalidVisual);
                 }

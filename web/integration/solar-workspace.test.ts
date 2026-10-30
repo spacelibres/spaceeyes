@@ -260,7 +260,7 @@ test("extended catalog selection binds actual spacecraft and irregular-moon mode
     },
   );
   try {
-    for (const id of ["phobos", "sc_iss", "sc_juno"]) {
+    for (const id of ["phobos", "sc_iss", "sc_juno", "sc_cluster_ii_fm5"]) {
       await app.select(id);
       const visual = fixtures
         .visuals()
@@ -269,6 +269,11 @@ test("extended catalog selection binds actual spacecraft and irregular-moon mode
       assert.equal(visual.spec.kind, "model");
       assert.equal(visual.spec.assetId, `eyes:${id}:model`);
       assert.equal(visual.spec.scaleKmPerUnit, 1);
+      if (id === "sc_cluster_ii_fm5")
+        assert.equal(visual.spec.framingRadiusKm, 0.00435);
+      if (id === "sc_iss") assert.equal(visual.spec.framingRadiusKm, 0.072);
+      if (id === "phobos")
+        assert.equal(Object.hasOwn(visual.spec, "framingRadiusKm"), false);
       assert.equal(fixtures.focused(), id);
     }
   } finally {
@@ -1326,6 +1331,35 @@ test("invalid navigation cancels pending target without changing completed focus
     await pending;
     assert.equal(states.at(-1)!.selected, "earth");
     assert.equal(fixtures.focused(), "earth");
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("selected object recovering coverage restores focus and survives next frame", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let unavailable = true;
+  const app = await createWorkspace(
+    "#test",
+    (s) => states.push(s),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        unavailable && String(input).includes("sc_iss")
+          ? new Response("outside source coverage", { status: 503 })
+          : new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await assert.rejects(app.select("sc_iss"));
+    assert.equal(fixtures.focused(), undefined);
+    unavailable = false;
+    await app.now();
+    fixtures.step(1000);
+    assert.equal(states.at(-1)!.selected, "sc_iss");
+    assert.equal(fixtures.focused(), "sc_iss");
   } finally {
     await app.dispose();
   }

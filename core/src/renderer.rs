@@ -362,7 +362,6 @@ fn update_focus(
         settings.origin_km = DVec3::ZERO;
         settings.units_per_km = AU_KM.recip();
         orbit.framing_radius_km = radius;
-        orbit.framing_radius_km = radius;
         let radius_display = (radius / AU_KM) as f32;
         if orbit.target.is_some() {
             *orbit = OrbitView::default();
@@ -500,6 +499,17 @@ fn update_focus(
         if min.is_finite() && max.is_finite() {
             center = (min + max) * 0.5;
             radius = ((max - min).length() * 0.5).max(1e-7);
+        }
+    }
+    if let Some(assignment) = core.visual_assignment(id)
+        && let VisualSpec::Model {
+            framing_radius_km: Some(hint),
+            ..
+        } = assignment.spec
+    {
+        let hinted = (hint * settings.units_per_km) as f32;
+        if hinted.is_finite() && hinted > 0. {
+            radius = hinted.max(1e-7);
         }
     }
     if let Some(observation) = core.camera_observation()
@@ -1185,6 +1195,7 @@ mod camera_lifecycle_tests {
                     asset_id: "model:a".into(),
                     scene: 0,
                     scale_km_per_unit: 0.002,
+                    framing_radius_km: None,
                 }),
             )
             .unwrap();
@@ -1254,6 +1265,7 @@ mod camera_lifecycle_tests {
                     asset_id: "model:a".into(),
                     scene: 0,
                     scale_km_per_unit: 0.002,
+                    framing_radius_km: None,
                 }),
             )
             .unwrap();
@@ -1588,6 +1600,11 @@ fn draw_annotations(
         };
         if let Some(points) = points.filter(|_| orbit_visibility > 0.) {
             let style = core.trajectory_style(id);
+            let path_visibility = crate::orbit_lines::path_scale_fade(
+                points,
+                focus_range,
+                style.and_then(|s| s.kind.as_deref()),
+            );
             let origin = if let Some(origin) = style.and_then(|s| s.origin_id.as_deref()) {
                 let Ok(parent) = core.object_state_at(origin, core.clock().epoch()) else {
                     continue;
@@ -1612,6 +1629,7 @@ fn draw_annotations(
                     if a.is_finite() && b.is_finite() {
                         let selected = core.focused_object() == Some(id);
                         let opacity = orbit_visibility
+                            * path_visibility
                             * color[3]
                             * if selected {
                                 0.65
@@ -2089,6 +2107,7 @@ mod camera_collision_system_tests {
                 asset_id: "model".into(),
                 scene: 0,
                 scale_km_per_unit: 1.,
+                framing_radius_km: None,
             }),
         )
         .unwrap();
@@ -2160,6 +2179,109 @@ mod camera_collision_system_tests {
             assert_eq!(shared.lock().unwrap().focused_object(), Some("rumba"));
             assert!(eye.length() > 695700.);
             assert!(eye.distance(DVec3::new(AU_KM, 0., 0.)) > 6371.);
+            let before = eye.distance(target);
+            shared
+                .lock()
+                .unwrap()
+                .set_visual(
+                    "s",
+                    "p",
+                    "rumba",
+                    Some(VisualSpec::Model {
+                        asset_id: "model".into(),
+                        scene: 0,
+                        scale_km_per_unit: 1.,
+                        framing_radius_km: Some(0.00435),
+                    }),
+                )
+                .unwrap();
+            for _ in 0..20 {
+                app.update();
+            }
+            let camera_transform = app.world().get::<Transform>(camera).unwrap();
+            let settings = app.world().resource::<DisplaySettings>();
+            assert!(
+                camera_transform.translation.length() as f64 / settings.units_per_km < before * 0.2
+            );
+            assert_eq!(
+                shared
+                    .lock()
+                    .unwrap()
+                    .object_state_at("rumba", 0.)
+                    .unwrap()
+                    .radius_km,
+                0.00435
+            );
+            assert_eq!(
+                app.world().get::<Transform>(root).unwrap().scale,
+                Vec3::splat(0.001)
+            );
+            shared
+                .lock()
+                .unwrap()
+                .set_visual(
+                    "s",
+                    "p",
+                    "rumba",
+                    Some(VisualSpec::Model {
+                        asset_id: "model".into(),
+                        scene: 0,
+                        scale_km_per_unit: 1.,
+                        framing_radius_km: Some(1e-300),
+                    }),
+                )
+                .unwrap();
+            for _ in 0..20 {
+                app.update();
+            }
+            let transform = app.world().get::<Transform>(camera).unwrap();
+            assert!(transform.translation.is_finite() && transform.rotation.is_finite());
+            let Projection::Perspective(projection) =
+                app.world().get::<Projection>(camera).unwrap()
+            else {
+                panic!("perspective")
+            };
+            assert!(
+                projection.near.is_finite()
+                    && projection.far.is_finite()
+                    && projection.near > 0.
+                    && projection.far > projection.near
+            );
+            let status = shared.lock().unwrap().camera_render_status().unwrap();
+            let safe = DVec3::from_array(status.position_km);
+            assert!(
+                safe.distance(target) > 0.00435
+                    && safe.length() > 695700.
+                    && safe.distance(DVec3::new(AU_KM, 0., 0.)) > 6371.
+            );
+            // Restore full-bounds framing for the next repeated transition.
+            shared
+                .lock()
+                .unwrap()
+                .set_visual(
+                    "s",
+                    "p",
+                    "rumba",
+                    Some(VisualSpec::Model {
+                        asset_id: "model".into(),
+                        scene: 0,
+                        scale_km_per_unit: 1.,
+                        framing_radius_km: None,
+                    }),
+                )
+                .unwrap();
+            let revision = shared
+                .lock()
+                .unwrap()
+                .visual_assignment("rumba")
+                .unwrap()
+                .revision;
+            shared.lock().unwrap().record_visual_status(
+                "rumba",
+                revision,
+                VisualPhase::Ready,
+                None,
+            );
         }
     }
     #[test]
