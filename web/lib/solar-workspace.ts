@@ -2,6 +2,11 @@ import {
   snapshotEnvironment,
   type EnvironmentSpec,
 } from "../../platform/environment-contract.ts";
+import {
+  parseSceneLink,
+  formatSceneLink,
+  type SceneLinkState,
+} from "./scene-link.ts";
 import { activeController } from "../../platform/eyes-controllers.ts";
 import { isLive } from "./time-controls.ts";
 import { solarWorkspaceSettings } from "./solar-settings.ts";
@@ -29,6 +34,7 @@ import {
 } from "../../platform/starfield-source.ts";
 
 export interface HostCore extends WasmCoreBinding {
+  camera_render_status?(): string;
   pick_object(u: number, v: number): string | undefined;
   start_renderer(canvas: string): void;
   stop_renderer(): void;
@@ -45,6 +51,7 @@ export interface HostCore extends WasmCoreBinding {
 export type SolarSnapshot = {
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
+  cameraDebug?: Readonly<Record<string, unknown>>;
   dataCache: {
     records: number;
     positionEntries: number;
@@ -141,6 +148,8 @@ export const workspaceCatalog = solarCatalog
     parentId: body.parentId ?? undefined,
   }));
 export interface WorkspaceRuntime {
+  cancelSceneRestore(): void;
+  restoreScene(state: SceneLinkState): Promise<void>;
   tuneStellar(settings: Record<string, number>): void;
   lighting(mode: "natural" | "shadow" | "flood"): void;
   fieldOfView(degrees: number): void;
@@ -357,6 +366,7 @@ export async function createWorkspace(
     revision = 0,
     lastFrame: number | undefined,
     lastEmit = 0;
+  let cancelRestore: (() => void) | undefined;
   let observationToken = 0;
   let queue: Promise<void> = Promise.resolve(),
     disposal: Promise<void> | undefined;
@@ -406,6 +416,12 @@ export async function createWorkspace(
             ? { detail: String(status.detail).slice(0, 240) }
             : {}),
         };
+    }
+    try {
+      const debug = core.camera_render_status?.();
+      state.cameraDebug = debug ? (JSON.parse(debug) ?? undefined) : undefined;
+    } catch {
+      state.cameraDebug = undefined;
     }
     if (data) state.dataCache = data.cacheStats();
     state.epoch = core.epoch();
@@ -829,6 +845,116 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    cancelSceneRestore() {
+      assertLive();
+      observationToken++;
+      revision++;
+      cancelRestore?.();
+      state.busy = false;
+      desiredPlaying = false;
+      sdk.time.setPlayback(false, state.rate);
+      emit();
+    },
+    async restoreScene(input) {
+      assertLive();
+      runtime.cancelSceneRestore();
+      const ids = workspaceCatalog.map((body) => body.id);
+      const next = parseSceneLink(formatSceneLink(input, ids), ids);
+      if (!next) throw Error("场景链接无有效状态");
+      const token = ++observationToken;
+      const previous = { ...state };
+      const previousEpoch = core.epoch();
+      const rollbackData = data.checkpoint();
+      const rollback = () => {
+        cancelRestore = undefined;
+        rollbackData();
+        rollbackData.discard();
+        Object.assign(state, previous);
+        sdk.time.seek(previousEpoch);
+        data.publishAt(previousEpoch);
+        lastPublishedEpoch = previousEpoch;
+        configure();
+      };
+      cancelRestore = rollback;
+      sdk.time.setPlayback(false, state.rate);
+      desiredPlaying = false;
+      state.selected = next.targetId;
+      state.observationMode = "nearby";
+      state.followId = next.followId;
+      state.moons = next.moons;
+      state.spacecraft = next.spacecraft;
+      try {
+        const pending = reload(next.epoch ?? core.epoch());
+        const ownedRevision = revision;
+        await pending;
+        assertLive();
+        if (token !== observationToken || ownedRevision !== revision) {
+          if (cancelRestore === rollback) cancelRestore = undefined;
+          rollbackData.discard();
+          return;
+        }
+        if (next.targetId) {
+          if (data.status(next.targetId)?.status !== "ready")
+            throw Error("场景对象在指定时间无有效数据");
+          if (
+            next.mode === "follow" &&
+            (!next.followId || data.status(next.followId)?.status !== "ready")
+          )
+            throw Error("跟随参考对象在指定时间无有效数据");
+          const members = sceneIds(core.epoch()).filter(
+            (id) =>
+              id === next.targetId ||
+              (parentAt(id, core.epoch()) === next.targetId &&
+                data.status(id)?.status === "ready" &&
+                solarCatalog.find((body) => body.id === id)?.kind ===
+                  (next.targetId === "sun" ? "planet" : "moon")),
+          );
+          sdk.camera.observe(
+            next.targetId,
+            next.mode,
+            next.mode === "system"
+              ? { members }
+              : next.mode === "follow"
+                ? { followId: next.followId }
+                : undefined,
+          );
+          sdk.camera.view(next.view);
+        } else sdk.camera.view("overview");
+        sdk.camera.lighting(next.lighting);
+        sdk.camera.fieldOfView(next.fovDegrees);
+        cancelRestore = undefined;
+        rollbackData.discard();
+        state.observationMode = next.mode;
+        state.view = next.view;
+        state.lighting = next.lighting;
+        state.fovDegrees = next.fovDegrees;
+        state.labels = next.labels;
+        state.trajectories = next.trajectories;
+        state.trails = next.trails;
+        configure();
+        sdk.time.setPlayback(next.playing, next.rate);
+        desiredPlaying = next.playing;
+        state.rate = next.rate;
+        emit();
+      } catch (error) {
+        if (!closed && token === observationToken) {
+          rollback();
+          state.observationMode = "nearby";
+          state.followId = undefined;
+          try {
+            if (
+              state.selected &&
+              data.status(state.selected)?.status === "ready"
+            )
+              sdk.camera.observe(state.selected, "nearby");
+          } catch {}
+          state.error = `场景恢复失败：${String(error)}`;
+          emit();
+        }
+        throw error;
+      }
+    },
+
     tuneStellar(settings) {
       assertLive();
       const next = solarWorkspaceSettings(settings);
@@ -838,12 +964,16 @@ export async function createWorkspace(
     },
     lighting(mode) {
       assertLive();
+      if (state.busy) throw Error("场景加载中，请稍后修改光照");
+      observationToken++;
       sdk.camera.lighting(mode);
       state.lighting = mode;
       emit();
     },
     fieldOfView(degrees) {
       assertLive();
+      if (state.busy) throw Error("场景加载中，请稍后修改视场");
+      observationToken++;
       sdk.camera.fieldOfView(degrees);
       state.fovDegrees = degrees;
       emit();
@@ -905,6 +1035,7 @@ export async function createWorkspace(
     },
     async select(id) {
       assertLive();
+      cancelRestore?.();
       observationToken++;
       if (!solarCatalog.some((body) => body.id === id))
         throw new Error("未知对象");
@@ -1020,6 +1151,7 @@ export async function createWorkspace(
     },
     overview() {
       assertLive();
+      cancelRestore?.();
       observationToken++;
       const ownedRevision = ++revision;
       sdk.time.setPlayback(desiredPlaying, state.rate);
@@ -1056,6 +1188,8 @@ export async function createWorkspace(
     },
     view(mode) {
       assertLive();
+      if (state.busy) throw Error("场景加载中，请稍后修改视角");
+      observationToken++;
       sdk.camera.view(mode);
       state.view = mode;
       emit();

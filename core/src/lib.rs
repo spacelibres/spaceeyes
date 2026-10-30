@@ -19,7 +19,7 @@ pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app}
 mod camera_intent;
 #[cfg(feature = "browser-render")]
 mod camera_motion;
-pub use camera_intent::CameraObservation;
+pub use camera_intent::{CameraObservation, CameraRenderStatus};
 mod clock;
 mod deep_space;
 #[cfg(feature = "browser-render")]
@@ -134,6 +134,7 @@ pub struct Core {
     camera_input: [f32; 3],
     camera_input_owner: Option<String>,
     camera_lighting: Option<(String, String)>,
+    camera_render_status: Option<CameraRenderStatus>,
     camera_view: String,
     camera_fov: Option<f32>,
     camera_fov_owner: Option<String>,

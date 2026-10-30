@@ -21,6 +21,9 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  cameraDebug?: Readonly<Record<string, unknown>>;
+  shareUrl?: string;
+  onShare?: () => void;
   stellarSettings?: Record<string, number>;
   onStellar?: (settings: Record<string, number>) => void;
   galaxy: {
@@ -108,6 +111,8 @@ export type WorkspaceViewProps = {
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
   const [timeExpanded, setTimeExpanded] = useState(true);
+  const [sharing, setSharing] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("");
   const screen = useRef<HTMLElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenSupported, setFullscreenSupported] = useState(false);
@@ -260,9 +265,50 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           >
             {fullscreen ? "退出全屏" : "全屏"}
           </button>
+          <button
+            disabled={!p.active || p.busy}
+            onClick={() => {
+              p.onShare?.();
+              setSharing(true);
+              setCopyStatus("");
+            }}
+          >
+            分享场景
+          </button>
           <a href="/diagnostics">数据诊断</a>
         </div>
       </header>
+      {sharing && (
+        <section className="share-panel" aria-label="分享场景">
+          <button onClick={() => setSharing(false)} aria-label="关闭分享">
+            ×
+          </button>
+          <label>
+            场景链接
+            <input
+              readOnly
+              value={p.shareUrl ?? ""}
+              onFocus={(event) => event.currentTarget.select()}
+            />
+          </label>
+          <button
+            onClick={() => {
+              if (!navigator.clipboard?.writeText) {
+                setCopyStatus("无法自动复制，请选取链接手动复制");
+                return;
+              }
+              void navigator.clipboard.writeText(p.shareUrl ?? "").then(
+                () => setCopyStatus("已复制场景链接"),
+                () => setCopyStatus("复制失败，请选取链接手动复制"),
+              );
+            }}
+          >
+            复制链接
+          </button>
+          <p role="status">{copyStatus}</p>
+          <p>保存对象、时间及观察模式等语义状态，不包含精确鼠标轨道角度。</p>
+        </section>
+      )}
       <div className="workspace-status" role="status">
         <span className={p.active ? "status-dot live" : "status-dot"} />
         <span className="phase-text">{p.phase}</span>
@@ -473,7 +519,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <label>
               光照
               <select
-                disabled={!p.active}
+                disabled={!p.active || p.busy}
                 value={p.lighting ?? "natural"}
                 onChange={(e) =>
                   p.onLighting?.(
@@ -542,7 +588,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 min="10"
                 max="100"
                 step="1"
-                disabled={!p.active}
+                disabled={!p.active || p.busy}
                 value={p.fovDegrees}
                 onChange={(e) => p.onFov(Number(e.target.value))}
               />
@@ -550,7 +596,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <label>
               观察视角
               <select
-                disabled={!p.active}
+                disabled={!p.active || p.busy}
                 value={p.view}
                 onChange={(e) => p.onView(e.target.value)}
               >
@@ -730,6 +776,14 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           )}
           <details className="muted">
             <summary>场景与深空数据诊断</summary>
+            <details>
+              <summary>相机只读诊断</summary>
+              <pre>
+                {p.cameraDebug
+                  ? JSON.stringify(p.cameraDebug, null, 2)
+                  : "渲染器尚未提供相机诊断"}
+              </pre>
+            </details>
             <dl aria-label="DYN缓存诊断">
               <dt>缓存记录 / 上限</dt>
               <dd>

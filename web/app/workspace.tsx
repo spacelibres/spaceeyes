@@ -4,6 +4,11 @@ import {
   solarWorkspaceSettings,
   restoreSolarWorkspaceSettings,
 } from "../lib/solar-settings";
+import {
+  formatSceneLink,
+  parseSceneLink,
+  type SceneLinkState,
+} from "../lib/scene-link";
 import WorkspaceView from "./workspace-view";
 import {
   createWorkspace,
@@ -14,6 +19,27 @@ import {
 
 export default function Workspace() {
   const [state, setState] = useState(initialSnapshot);
+  const latest = useRef(initialSnapshot);
+  const lastHandledHref = useRef<string | undefined>(undefined);
+  const [shareUrl, setShareUrl] = useState("");
+  const linkState = (): SceneLinkState => ({
+    ...latest.current,
+    targetId: latest.current.selected,
+    mode: latest.current.observationMode,
+    epoch: latest.current.epoch,
+    view: latest.current.view as SceneLinkState["view"],
+  });
+  const knownIds = workspaceCatalog.map((body) => body.id);
+  const writeHistory = (kind: "push" | "replace") => {
+    const hash = formatSceneLink(linkState(), knownIds);
+    if (window.location.hash !== hash)
+      window.history[kind === "push" ? "pushState" : "replaceState"](
+        null,
+        "",
+        hash,
+      );
+    lastHandledHref.current = window.location.href;
+  };
   const [stellarSettings, setStellarSettings] = useState(
     solarWorkspaceSettings,
   );
@@ -50,8 +76,47 @@ export default function Workspace() {
       leave();
     };
   }, []);
+  useEffect(() => {
+    const navigate = () => {
+      const href = window.location.href;
+      if (lastHandledHref.current === href) return;
+      lastHandledHref.current = href;
+      const intent = ++actionRevision.current;
+      const current = runtime.current;
+      if (!current || controller.current?.signal.aborted) return;
+      try {
+        current.cancelSceneRestore();
+        const scene = parseSceneLink(window.location.hash, knownIds);
+        const restoring = scene
+          ? current.restoreScene(scene)
+          : (async () => {
+              current.overview();
+              current.play(true, 1);
+              await current.now();
+            })();
+        void restoring.catch((error) => {
+          if (
+            mounted.current &&
+            intent === actionRevision.current &&
+            runtime.current === current &&
+            !controller.current?.signal.aborted
+          )
+            setActionError(String(error));
+        });
+      } catch (error) {
+        setActionError(String(error));
+      }
+    };
+    window.addEventListener("popstate", navigate);
+    window.addEventListener("hashchange", navigate);
+    return () => {
+      window.removeEventListener("popstate", navigate);
+      window.removeEventListener("hashchange", navigate);
+    };
+  }, []);
   const action = <T,>(
     run: (value: WorkspaceRuntime) => T | Promise<T>,
+    history: "push" | "replace" | "none" = "replace",
   ): Promise<T | undefined> => {
     const revision = ++actionRevision.current;
     setActionError("");
@@ -65,7 +130,18 @@ export default function Workspace() {
           runtime.current !== currentRuntime
         )
           return undefined;
-        return run(currentRuntime);
+        return Promise.resolve(run(currentRuntime)).then((result) => {
+          if (
+            mounted.current &&
+            revision === actionRevision.current &&
+            !controller.current?.signal.aborted &&
+            runtime.current === currentRuntime &&
+            result !== false &&
+            history !== "none"
+          )
+            writeHistory(history);
+          return result;
+        });
       })
       .catch((error) => {
         if (mounted.current && revision === actionRevision.current)
@@ -104,7 +180,10 @@ export default function Workspace() {
       runtime.current = await createWorkspace(
         "#spaceeyes-canvas",
         (value) => {
-          if (mounted.current) setState(value);
+          if (mounted.current) {
+            latest.current = value;
+            setState(value);
+          }
         },
         controller.current.signal,
         {
@@ -115,6 +194,15 @@ export default function Workspace() {
           },
         },
       );
+      try {
+        lastHandledHref.current = window.location.href;
+        const initial = parseSceneLink(window.location.hash, knownIds);
+        if (initial && runtime.current && !controller.current.signal.aborted)
+          await runtime.current.restoreScene(initial);
+      } catch (error) {
+        if (mounted.current && !controller.current.signal.aborted)
+          setActionError(`场景链接恢复失败：${String(error)}`);
+      }
     } catch (error) {
       if (mounted.current)
         setState((current) => ({
@@ -139,6 +227,15 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      cameraDebug={state.cameraDebug}
+      shareUrl={shareUrl}
+      onShare={() =>
+        setShareUrl(
+          window.location.origin +
+            window.location.pathname +
+            formatSceneLink(linkState(), knownIds),
+        )
+      }
       stellarSettings={stellarSettings}
       onStellar={(settings) => {
         void action((value) => {
@@ -201,9 +298,9 @@ export default function Workspace() {
         runtime.current = null;
         void current?.dispose();
       }}
-      onSelect={(id) => action((value) => value.select(id))}
+      onSelect={(id) => action((value) => value.select(id), "push")}
       onPick={async (u, v) =>
-        Boolean(await action((value) => value.pick(u, v)))
+        Boolean(await action((value) => value.pick(u, v), "push"))
       }
       onFocus={() => action((value) => value.focus())}
       observationMode={state.observationMode}
@@ -211,10 +308,12 @@ export default function Workspace() {
       onObservation={(mode, reference) =>
         action((value) => value.observation(mode, reference))
       }
-      onOrbit={(yaw, pitch) => action((value) => value.orbit(yaw, pitch))}
-      onZoom={(delta) => action((value) => value.zoom(delta))}
+      onOrbit={(yaw, pitch) =>
+        action((value) => value.orbit(yaw, pitch), "none")
+      }
+      onZoom={(delta) => action((value) => value.zoom(delta), "none")}
       onFollow={(reference) => action((value) => value.follow(reference))}
-      onOverview={() => action((value) => value.overview())}
+      onOverview={() => action((value) => value.overview(), "push")}
       onView={(mode) =>
         action((value) =>
           value.view(mode as "orbit" | "top" | "front" | "side"),

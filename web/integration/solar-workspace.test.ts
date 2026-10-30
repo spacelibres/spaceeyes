@@ -1,3 +1,4 @@
+import type { SceneLinkState } from "../lib/scene-link.ts";
 import { StarfieldSource } from "../../platform/starfield-source.ts";
 import { solarWorkspaceSettings } from "../lib/solar-settings.ts";
 import { test } from "node:test";
@@ -1191,6 +1192,140 @@ test("overview warnings describe retained scene failures only", async () => {
       /ISS|International Space Station|国际空间站/i,
     );
     assert.match(states.at(-1)!.error, /火星|Mars/);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("restore scene applies one epoch and follow state and newer selection wins", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  const link: SceneLinkState = {
+    targetId: "earth",
+    epoch: 100,
+    rate: -60,
+    playing: false,
+    mode: "follow",
+    followId: "moon",
+    view: "top",
+    lighting: "shadow",
+    fovDegrees: 60,
+    labels: false,
+    trajectories: false,
+    trails: false,
+    moons: true,
+    spacecraft: false,
+  };
+  try {
+    await app.restoreScene(link);
+    assert.equal(states.at(-1)!.epoch, 100);
+    assert.equal(states.at(-1)!.selected, "earth");
+    assert.equal(states.at(-1)!.followId, "moon");
+    assert.equal(states.at(-1)!.observationMode, "follow");
+    assert.equal(states.at(-1)!.rate, -60);
+    await assert.rejects(app.restoreScene({ ...link, targetId: "unknown" }));
+    const pending = app.restoreScene(link);
+    const selecting = app.select("mars");
+    await Promise.all([pending, selecting]);
+    assert.equal(states.at(-1)!.selected, "mars");
+  } finally {
+    await app.dispose();
+  }
+  await assert.rejects(app.restoreScene(link));
+});
+
+test("new seek and invalid restore supersede pending scene restore", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  const link: SceneLinkState = {
+    targetId: "earth",
+    epoch: 100,
+    rate: -60,
+    playing: true,
+    mode: "nearby",
+    view: "top",
+    lighting: "shadow",
+    fovDegrees: 60,
+    labels: false,
+    trajectories: false,
+    trails: false,
+    moons: true,
+    spacecraft: false,
+  };
+  try {
+    app.play(false, 1);
+    const pending = app.restoreScene(link);
+    const seek = app.seek(200);
+    await Promise.all([pending, seek]);
+    assert.equal(states.at(-1)!.epoch, 200);
+    assert.notEqual(states.at(-1)!.rate, -60);
+    const before = states.at(-1)!.epoch;
+    const older = app.restoreScene(link);
+    await assert.rejects(app.restoreScene({ ...link, targetId: "invalid" }));
+    await older;
+    assert.equal(states.at(-1)!.epoch, before);
+    assert.notEqual(states.at(-1)!.rate, -60);
+    assert.equal(states.at(-1)!.busy, false);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("invalid navigation cancels pending target without changing completed focus", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (v) => states.push(v),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  const link: SceneLinkState = {
+    targetId: "sc_iss",
+    epoch: 100,
+    rate: 1,
+    playing: false,
+    mode: "nearby",
+    view: "orbit",
+    lighting: "natural",
+    fovDegrees: 45,
+    labels: true,
+    trajectories: true,
+    trails: true,
+    moons: true,
+    spacecraft: true,
+  };
+  try {
+    await app.select("earth");
+    const pending = app.restoreScene(link);
+    await assert.rejects(app.restoreScene({ ...link, targetId: "invalid" }));
+    await pending;
+    assert.equal(states.at(-1)!.selected, "earth");
+    assert.equal(fixtures.focused(), "earth");
   } finally {
     await app.dispose();
   }

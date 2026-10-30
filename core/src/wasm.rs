@@ -271,6 +271,9 @@ impl WasmCore {
             .set_camera_lighting(session, plugin, mode)
             .map_err(|e| format!("{e:?}"))
     }
+    pub fn camera_render_status(&self) -> Result<String, String> {
+        serde_json::to_string(&self.lock()?.camera_render_status()).map_err(|e| e.to_string())
+    }
     pub fn camera_lighting_mode(&self) -> Result<String, String> {
         Ok(self.lock()?.camera_lighting().into())
     }

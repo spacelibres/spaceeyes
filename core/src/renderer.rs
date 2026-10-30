@@ -42,6 +42,7 @@ struct OrbitView {
     input_active: bool,
     target: Option<String>,
     focus_revision: u64,
+    framing_radius_km: f64,
     yaw: f32,
     pitch: f32,
     distance: f32,
@@ -53,6 +54,7 @@ impl Default for OrbitView {
             input_active: false,
             target: None,
             focus_revision: 0,
+            framing_radius_km: 0.,
             yaw: 0.0,
             pitch: 0.0,
             distance: 4.0,
@@ -66,6 +68,9 @@ pub(crate) fn create_browser_app(
     canvas: &str,
     picks: SharedPickFrame,
 ) -> App {
+    if let Ok(mut state) = core.lock() {
+        state.record_camera_render_status(None);
+    }
     let mut app = App::new();
     app.insert_resource(ClearColor(Color::srgb(
         13.0 / 255.0,
@@ -356,6 +361,8 @@ fn update_focus(
         }
         settings.origin_km = DVec3::ZERO;
         settings.units_per_km = AU_KM.recip();
+        orbit.framing_radius_km = radius;
+        orbit.framing_radius_km = radius;
         let radius_display = (radius / AU_KM) as f32;
         if orbit.target.is_some() {
             *orbit = OrbitView::default();
@@ -510,6 +517,7 @@ fn update_focus(
             .fold(radius, f32::max);
         center = Vec3::ZERO;
     }
+    orbit.framing_radius_km = radius as f64 / settings.units_per_km;
     for (mut transform, mut projection) in &mut camera {
         let is_model = core
             .visual_assignment(id)
@@ -587,10 +595,11 @@ fn update_focus(
 fn enforce_camera_collision(
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
+    orbit: Option<Res<OrbitView>>,
     mut cameras: Query<(&mut Transform, &mut Projection), With<DisplayCamera>>,
     mut previous: Local<Option<DVec3>>,
 ) {
-    let Ok(core) = store.0.lock() else {
+    let Ok(mut core) = store.0.lock() else {
         return;
     };
     let Ok((mut camera, mut projection)) = cameras.single_mut() else {
@@ -632,6 +641,26 @@ fn enforce_camera_collision(
             Vec3::Y,
         );
     }
+    let desired_inside = core
+        .object_ids()
+        .filter_map(|id| {
+            core.object_state_at(id, core.clock().epoch())
+                .ok()
+                .filter(|body| {
+                    desired.distance(DVec3::from_array(body.position_km)) < body.radius_km
+                })
+                .map(|_| id.to_owned())
+        })
+        .collect();
+    let status = crate::CameraRenderStatus {
+        focused_id: core.focused_object().map(str::to_owned),
+        position_km: safe.to_array(),
+        desired_km: desired.to_array(),
+        framing_radius_km: orbit.as_ref().map_or(0., |v| v.framing_radius_km),
+        collision_adjusted: safe.distance_squared(desired) > 1e-18,
+        desired_inside,
+    };
+    core.record_camera_render_status(Some(status));
     if let Projection::Perspective(p) = &mut *projection {
         let gap = solids
             .iter()
@@ -961,8 +990,11 @@ fn orbit_input(
     let zoom = orbit.motion.zoom_step(dt);
     orbit.distance = (orbit.distance * zoom.exp()).clamp(1e-8, 1e12);
 }
-fn stop_renderer(stop: Res<RendererStop>, mut exit: MessageWriter<AppExit>) {
+fn stop_renderer(store: Res<CoreStore>, stop: Res<RendererStop>, mut exit: MessageWriter<AppExit>) {
     if stop.0.load(Ordering::Acquire) {
+        if let Ok(mut core) = store.0.lock() {
+            core.record_camera_render_status(None);
+        }
         exit.write(AppExit::Success);
     }
 }
@@ -2009,6 +2041,127 @@ mod camera_collision_system_tests {
     use super::*;
     use crate::Core;
     use std::sync::Mutex;
+    #[test]
+    fn rumba_seek_then_focus_converges_with_solar_and_earth_collision() {
+        use crate::{AssetDescriptor, AssetKind, ObjectState, SessionPermissions};
+        let mut core = Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            SessionPermissions {
+                camera_control: true,
+                visual_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        let make = |position, radius| ObjectState {
+            position_km: position,
+            radius_km: radius,
+            epoch_tdb_seconds: 0.,
+            coverage_tdb_seconds: [0., 10.],
+            orientation_wxyz: None,
+            frame: "ICRF".into(),
+            source: "test".into(),
+        };
+        for (id, position, radius) in [
+            ("sun", [0., 0., 0.], 695700.),
+            ("earth", [AU_KM, 0., 0.], 6371.),
+        ] {
+            core.register_object("s", id).unwrap();
+            core.set_object_state("s", id, make(position, radius))
+                .unwrap();
+        }
+        core.register_object("s", "rumba").unwrap();
+        core.register_asset(
+            "model",
+            AssetDescriptor {
+                kind: AssetKind::Model,
+                path: "rumba.glb".into(),
+            },
+        )
+        .unwrap();
+        core.set_visual(
+            "s",
+            "p",
+            "rumba",
+            Some(VisualSpec::Model {
+                asset_id: "model".into(),
+                scene: 0,
+                scale_km_per_unit: 1.,
+            }),
+        )
+        .unwrap();
+        let revision = core.visual_assignment("rumba").unwrap().revision;
+        core.record_visual_status("rumba", revision, VisualPhase::Ready, None);
+        let shared = Arc::new(Mutex::new(core));
+        let mut app = App::new();
+        let mut time = Time::<()>::default();
+        time.advance_by(std::time::Duration::from_secs_f64(1. / 30.));
+        app.insert_resource(time)
+            .insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, (update_focus, enforce_camera_collision).chain());
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()))
+            .id();
+        let object = app
+            .world_mut()
+            .spawn((SceneObject { id: "rumba".into() }, Transform::default()))
+            .id();
+        let root = app
+            .world_mut()
+            .spawn((Transform::from_scale(Vec3::splat(0.001)), ChildOf(object)))
+            .id();
+        app.world_mut().spawn((
+            Transform::default(),
+            Aabb::from_min_max(Vec3::splat(-44.), Vec3::splat(44.)),
+            ChildOf(root),
+        ));
+        for _ in 0..3 {
+            shared
+                .lock()
+                .unwrap()
+                .set_camera_view("s", "p", "overview")
+                .unwrap();
+            app.update();
+            shared.lock().unwrap().focus("s", "p", "rumba").unwrap();
+            app.update();
+            shared
+                .lock()
+                .unwrap()
+                .set_object_state(
+                    "s",
+                    "rumba",
+                    make([AU_KM + 21991.95, -7928.51, 1772.93], 0.00435),
+                )
+                .unwrap();
+            shared.lock().unwrap().focus("s", "p", "rumba").unwrap();
+            for _ in 0..300 {
+                app.update();
+            }
+            let settings = app.world().resource::<DisplaySettings>();
+            let eye = app
+                .world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .as_dvec3()
+                / settings.units_per_km;
+            let eye = settings.origin_km + DVec3::new(eye.x, -eye.z, eye.y);
+            let target = DVec3::new(AU_KM + 21991.95, -7928.51, 1772.93);
+            assert!(
+                eye.distance(target) < 1.,
+                "camera distance {}",
+                eye.distance(target)
+            );
+            assert_eq!(shared.lock().unwrap().focused_object(), Some("rumba"));
+            assert!(eye.length() > 695700.);
+            assert!(eye.distance(DVec3::new(AU_KM, 0., 0.)) > 6371.);
+        }
+    }
     #[test]
     fn a_noncentral_body_blocks_camera_after_floating_origin_changes() {
         let shared = Arc::new(Mutex::new(Core::default()));

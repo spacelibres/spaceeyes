@@ -1,3 +1,13 @@
+#[derive(Clone, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CameraRenderStatus {
+    pub focused_id: Option<String>,
+    pub position_km: [f64; 3],
+    pub desired_km: [f64; 3],
+    pub framing_radius_km: f64,
+    pub collision_adjusted: bool,
+    pub desired_inside: Vec<String>,
+}
 use crate::{Core, CoreError};
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -9,6 +19,21 @@ pub struct CameraObservation {
     pub follow_id: Option<String>,
 }
 impl Core {
+    pub fn camera_render_status(&self) -> Option<CameraRenderStatus> {
+        self.camera_render_status.clone()
+    }
+    #[cfg(any(feature = "browser-render", test))]
+    pub(crate) fn record_camera_render_status(&mut self, status: Option<CameraRenderStatus>) {
+        self.camera_render_status = status.filter(|s| {
+            s.position_km
+                .iter()
+                .chain(s.desired_km.iter())
+                .all(|n| n.is_finite())
+                && s.framing_radius_km.is_finite()
+                && s.framing_radius_km >= 0.
+        });
+    }
+
     pub fn camera_lighting(&self) -> &str {
         self.camera_lighting
             .as_ref()
@@ -153,6 +178,29 @@ mod tests {
             .unwrap();
         }
         c
+    }
+    #[test]
+    fn render_status_is_finite_read_only_and_clearable() {
+        let mut c = core();
+        assert!(c.camera_render_status().is_none());
+        let status = CameraRenderStatus {
+            focused_id: Some("a".into()),
+            position_km: [1., 2., 3.],
+            desired_km: [4., 5., 6.],
+            framing_radius_km: 1.,
+            collision_adjusted: true,
+            desired_inside: vec!["b".into()],
+        };
+        c.record_camera_render_status(Some(status.clone()));
+        assert_eq!(c.camera_render_status().unwrap().position_km, [1., 2., 3.]);
+        let json = serde_json::to_value(c.camera_render_status()).unwrap();
+        assert_eq!(json["focusedId"], "a");
+        let mut invalid = status;
+        invalid.position_km[0] = f64::NAN;
+        c.record_camera_render_status(Some(invalid));
+        assert!(c.camera_render_status().is_none());
+        c.record_camera_render_status(None);
+        assert!(c.camera_render_status().is_none());
     }
     #[test]
     fn lighting_requires_permission_validates_and_releases_owner() {

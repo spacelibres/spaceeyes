@@ -705,3 +705,34 @@ test("rollback clears newly published object from real Rust core", async () => {
     core.free();
   }
 });
+
+test("render camera diagnostics remain null without a renderer", () => {
+  const core = new WasmCore();
+  try {
+    assert.equal(JSON.parse(core.camera_render_status()), null);
+    core.open_session(
+      "diagnostic-reader",
+      "integration.reader",
+      false,
+      false,
+      false,
+      false,
+    );
+    assert.equal(JSON.parse(core.camera_render_status()), null);
+    core.open_session(
+      "diagnostic-camera",
+      "integration.camera",
+      true,
+      false,
+      false,
+      false,
+    );
+    core.camera_lighting("diagnostic-camera", "integration.camera", "flood");
+    assert.equal(JSON.parse(core.camera_render_status()), null);
+    core.release_session("diagnostic-camera");
+    core.release_session("diagnostic-reader");
+    assert.equal(JSON.parse(core.camera_render_status()), null);
+  } finally {
+    core.free();
+  }
+});

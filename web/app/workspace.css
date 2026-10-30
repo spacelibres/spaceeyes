@@ -597,3 +597,22 @@
   height: 100%;
   background: var(--background, #020617);
 }
+
+.share-panel {
+  position: fixed;
+  z-index: 30;
+  top: 110px;
+  right: 24px;
+  width: min(440px, calc(100vw - 48px));
+  padding: 20px;
+  background: var(--overlay);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.share-panel input {
+  width: 100%;
+}
+.object-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
