@@ -245,12 +245,15 @@ fn update_focus(
         for (mut transform, mut projection) in &mut camera {
             let mut distance = orbit.distance;
             if let Projection::Perspective(p) = &mut *projection {
-                p.near = 0.001;
+                p.near = (distance * 0.001).clamp(1e-12, 0.001);
                 let half_fov = (p.fov * 0.5)
                     .tan()
                     .min((p.fov * 0.5).tan() * p.aspect_ratio)
                     .atan();
-                distance = distance.max(1.1 / half_fov.sin());
+                if view_changed {
+                    distance = distance.max(1.1 / half_fov.sin());
+                }
+                orbit.distance = distance;
                 p.far = 10000.0;
             }
             let position = Quat::from_rotation_y(orbit.yaw)
@@ -336,15 +339,23 @@ fn update_focus(
         }
     }
     for (mut transform, mut projection) in &mut camera {
-        let mut distance = orbit.distance;
+        let is_model = core
+            .visual_assignment(id)
+            .is_some_and(|v| matches!(v.spec, VisualSpec::Model { .. }));
+        let surface = if is_model { radius } else { 1.0 };
+        let mut distance = orbit.distance.max(surface * 1.0001 / radius);
+        orbit.distance = distance;
         if let Projection::Perspective(p) = &mut *projection {
-            p.near = (radius * 0.01).max(1e-9);
+            p.near = ((distance * radius - surface) * 0.1).clamp(1e-9, (radius * 0.01).max(1e-9));
             p.far = (radius * 10000.0).max(p.near * 100.0);
             let half_fov = (p.fov * 0.5)
                 .tan()
                 .min((p.fov * 0.5).tan() * p.aspect_ratio)
                 .atan();
-            distance = distance.max(1.1 / half_fov.sin());
+            if view_changed {
+                distance = distance.max(1.1 / half_fov.sin());
+            }
+            orbit.distance = distance;
         }
         if view_changed {
             match core.camera_view() {
@@ -389,7 +400,7 @@ fn orbit_input(
             MouseScrollUnit::Line => event.y,
             MouseScrollUnit::Pixel => event.y * 0.01,
         };
-        orbit.distance = (orbit.distance * (-amount * 0.1).exp()).clamp(1.2, 1000.0);
+        orbit.distance = (orbit.distance * (-amount * 0.1).exp()).clamp(1e-8, 1000.0);
     }
 }
 
@@ -894,6 +905,19 @@ mod repeated_focus_tests {
             .id();
         app.update();
         let framed = app.world().get::<Transform>(camera).unwrap().translation;
+        app.world_mut().resource_mut::<OrbitView>().distance = 1.05;
+        app.update();
+        assert!(
+            (app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .length()
+                - 1.05)
+                .abs()
+                < 1e-4,
+            "manual zoom was clamped back to full-object framing"
+        );
         {
             let mut view = app.world_mut().resource_mut::<OrbitView>();
             view.yaw = 1.;
