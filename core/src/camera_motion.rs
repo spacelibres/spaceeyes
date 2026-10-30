@@ -33,7 +33,7 @@ impl Motion {
         if speed > 0.8 {
             self.velocity = self.velocity.map(|v| v * 0.8 / speed);
         }
-        self.remaining = 0.3;
+        self.remaining = 0.6;
     }
     pub(crate) fn coast(&mut self, dt: f32) -> [f32; 2] {
         if !dt.is_finite() || dt <= 0. {
@@ -41,7 +41,7 @@ impl Motion {
         }
         let step = dt.min(self.remaining);
         self.remaining = (self.remaining - dt).max(0.);
-        let k = std::f32::consts::LN_2 / 0.07;
+        let k = std::f32::consts::LN_2 / 0.14;
         let decay = (-k * step).exp();
         let result = self.velocity.map(|v| v * (1. - decay) / k);
         self.velocity = self.velocity.map(|v| v * decay);
@@ -85,11 +85,20 @@ mod tests {
         let mut a = Motion::default();
         a.drag([1., 0.], 0.001);
         let mut b = a.clone();
-        let x: f32 = (0..30).map(|_| a.coast(0.01)[0]).sum();
-        let y: f32 = (0..3).map(|_| b.coast(0.1)[0]).sum();
+        let x: f32 = (0..60).map(|_| a.coast(0.01)[0]).sum();
+        let y: f32 = (0..6).map(|_| b.coast(0.1)[0]).sum();
         assert!((x - y).abs() < 1e-6);
-        assert!(x <= 5_f32.to_radians());
+        assert!(x <= 10_f32.to_radians());
         assert_eq!(a.coast(0.01), [0., 0.]);
+    }
+    #[test]
+    fn release_has_a_visible_bounded_tail_then_stops() {
+        let mut motion = Motion::default();
+        motion.drag([0.02, 0.], 0.016);
+        motion.coast(0.2);
+        assert!(motion.coast(0.1)[0] > 0.01);
+        motion.coast(0.31);
+        assert_eq!(motion.coast(0.1), [0., 0.]);
     }
     #[test]
     fn reset_stops_every_axis() {

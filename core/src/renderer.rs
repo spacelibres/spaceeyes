@@ -128,7 +128,9 @@ pub(crate) fn create_browser_app(
     .add_systems(Startup, setup)
     .add_systems(
         Update,
-        (orbit_input, update_focus).chain().before(sync_scene),
+        (orbit_input, update_focus, enforce_camera_collision)
+            .chain()
+            .before(sync_scene),
     )
     .add_systems(
         Update,
@@ -471,6 +473,67 @@ fn update_focus(
         *transform = blend.apply(&key, *transform, desired, &old_settings, &settings, delta);
         if let Projection::Perspective(p) = &mut *projection {
             p.far = p.far.max(transform.translation.length() * 2.0);
+        }
+    }
+}
+
+/// Every current planet representation is solid. A texture mip level is not
+/// terrain LOD and grants no traversal capability.
+fn enforce_camera_collision(
+    store: Res<CoreStore>,
+    settings: Res<DisplaySettings>,
+    mut cameras: Query<(&mut Transform, &mut Projection), With<DisplayCamera>>,
+    mut previous: Local<Option<DVec3>>,
+) {
+    let Ok(core) = store.0.lock() else {
+        return;
+    };
+    let Ok((mut camera, mut projection)) = cameras.single_mut() else {
+        return;
+    };
+    let scale = settings.units_per_km;
+    if !scale.is_finite() || scale <= 0. {
+        return;
+    }
+    let local = camera.translation.as_dvec3() / scale;
+    let desired = settings.origin_km + DVec3::new(local.x, -local.z, local.y);
+    let solids: Vec<_> = core
+        .object_ids()
+        .filter_map(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|body| crate::camera_collision::SolidSphere {
+            center: DVec3::from_array(body.position_km),
+            // Leave room for the f64 -> f32 display projection without
+            // changing the object's scientific radius.
+            radius: body.radius_km
+                + (DVec3::from_array(body.position_km) - settings.origin_km)
+                    .abs()
+                    .max_element()
+                    * f32::EPSILON as f64
+                    * 4.,
+        })
+        .collect();
+    let safe = crate::camera_collision::constrain(previous.unwrap_or(desired), desired, &solids);
+    *previous = Some(safe);
+    if safe.distance_squared(desired) > 1e-18 {
+        let local = (safe - settings.origin_km) * scale;
+        camera.translation = Vec3::new(local.x as f32, local.z as f32, -local.y as f32);
+        let target = core
+            .focused_object()
+            .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
+            .map_or(DVec3::ZERO, |body| DVec3::from_array(body.position_km));
+        let target = (target - settings.origin_km) * scale;
+        camera.look_at(
+            Vec3::new(target.x as f32, target.z as f32, -target.y as f32),
+            Vec3::Y,
+        );
+    }
+    if let Projection::Perspective(p) = &mut *projection {
+        let gap = solids
+            .iter()
+            .map(|body| (safe.distance(body.center) - body.radius).max(0.))
+            .fold(f64::INFINITY, f64::min);
+        if gap.is_finite() {
+            p.near = p.near.min((gap * scale * 0.25).max(1e-12) as f32);
         }
     }
 }
@@ -1003,6 +1066,8 @@ fn draw_annotations(
     if focus_range.is_none() {
         *near_focus = false;
     }
+    let solar_overview =
+        crate::label_visibility::solar_overview(core.focused_object(), *near_focus);
     let mut depths = std::collections::HashMap::new();
     let mut marker_nodes = std::collections::HashMap::new();
     for id in core.object_ids() {
@@ -1159,7 +1224,9 @@ fn draw_annotations(
                 },
             );
         }
-        if let Some(text) = label.filter(|text| !text.is_empty()) {
+        if let Some(text) = label.filter(|text| {
+            !text.is_empty() && crate::label_visibility::overview_label_allowed(id, solar_overview)
+        }) {
             let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
                 continue;
             };
@@ -1188,7 +1255,7 @@ fn draw_annotations(
                 let alpha = fades.entry(id.to_owned()).or_default().update(
                     coverage,
                     allowed,
-                    core.focused_object() == Some(id),
+                    core.focused_object() == Some(id) && !solar_overview,
                     time.delta_secs(),
                 );
                 if !blocked && alpha > 0.02 {
@@ -1562,5 +1629,68 @@ fn update_illumination(
     let d = Vec3::new(d.x as f32, d.z as f32, -d.y as f32);
     for mut transform in &mut lights {
         *transform = Transform::from_translation(d * 10.).looking_at(Vec3::ZERO, Vec3::Y);
+    }
+}
+
+#[cfg(test)]
+mod camera_collision_system_tests {
+    use super::*;
+    use crate::Core;
+    use std::sync::Mutex;
+    #[test]
+    fn a_noncentral_body_blocks_camera_after_floating_origin_changes() {
+        let shared = Arc::new(Mutex::new(Core::default()));
+        let center = DVec3::new(1e8, 0., 0.);
+        {
+            let mut core = shared.lock().unwrap();
+            core.open_session_with_permissions("s", "p", crate::SessionPermissions::default())
+                .unwrap();
+            core.register_object("s", "planet").unwrap();
+            core.set_object_state(
+                "s",
+                "planet",
+                crate::ObjectState {
+                    position_km: center.to_array(),
+                    radius_km: 1000.,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 1.],
+                    orientation_wxyz: None,
+                    frame: "ICRF".into(),
+                    source: "collision fixture".into(),
+                },
+            )
+            .unwrap();
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared))
+            .insert_resource(DisplaySettings {
+                origin_km: center,
+                units_per_km: 0.001,
+            })
+            .add_systems(Update, enforce_camera_collision);
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::from_xyz(0., 5., 0.),
+                Projection::default(),
+            ))
+            .id();
+        app.update();
+        {
+            let mut settings = app.world_mut().resource_mut::<DisplaySettings>();
+            settings.origin_km = DVec3::ZERO;
+            settings.units_per_km = AU_KM.recip();
+        }
+        app.world_mut()
+            .get_mut::<Transform>(camera)
+            .unwrap()
+            .translation = Vec3::new((1e8 / AU_KM) as f32, (-5000. / AU_KM) as f32, 0.);
+        app.update();
+        let transform = app.world().get::<Transform>(camera).unwrap();
+        let local = transform.translation.as_dvec3() * AU_KM;
+        let result = DVec3::new(local.x, -local.z, local.y);
+        assert!(result.z > 0., "camera crossed planet: {result}");
+        assert!(result.distance(center) > 1000.);
     }
 }

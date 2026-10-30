@@ -642,3 +642,6 @@ mod stellar_render;
 
 #[cfg(feature = "browser-render")]
 mod solar_surface;
+
+#[cfg(feature = "browser-render")]
+mod camera_collision;
