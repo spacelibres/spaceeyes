@@ -348,6 +348,43 @@ export class SolarSystemData {
       this.position(id, start + ((end - start) * i) / (count - 1)),
     );
   }
+  trajectorySamples(id: string, epoch: number, count = 256, detailed = false) {
+    if (!Number.isInteger(count) || count < 8 || count > 4096)
+      throw Error("Trajectory sample budget");
+    const [start, end] = this.trajectoryRange(id, epoch);
+    if (!Number.isFinite(epoch) || epoch < start || epoch > end || start >= end)
+      throw Error("Outside trajectory coverage");
+    const uniform = detailed ? Math.floor(count / 2) : count - 1;
+    const times = [
+      epoch,
+      ...Array.from(
+        { length: uniform },
+        (_, i) => start + ((end - start) * i) / (uniform - 1),
+      ),
+    ];
+    const dense = detailed ? count - uniform - 1 : 0;
+    for (let i = 0; i < dense; i++) {
+      const u = (2 * i) / (dense - 1) - 1;
+      const fraction = Math.expm1(12 * Math.abs(u)) / Math.expm1(12);
+      times.push(
+        epoch + Math.sign(u) * fraction * (u < 0 ? epoch - start : end - epoch),
+      );
+    }
+    const epochsTdbSeconds = [...new Set(times)].sort((a, b) => a - b);
+    const parentId = solarCatalog.find((body) => body.id === id)?.parentId;
+    const originId = parentId && parentId !== "sun" ? parentId : undefined;
+    return {
+      originId,
+      epochsTdbSeconds,
+      points: epochsTdbSeconds.map((t) =>
+        originId ? evaluateOrb(this.#data.get(id)!, t) : this.position(id, t),
+      ),
+      refreshRange: [
+        Math.max(start, epoch - (end - start) / (detailed ? 1024 : 4)),
+        Math.min(end, epoch + (end - start) / (detailed ? 1024 : 4)),
+      ] as [number, number],
+    };
+  }
   dispose() {
     this.#generation++;
     this.#abort.abort();

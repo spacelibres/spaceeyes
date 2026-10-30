@@ -17,7 +17,12 @@ export interface CorePort {
     readonly visualControl: boolean;
   }): void;
   trajectory?(
-    request: FocusRequest & { points: readonly (readonly number[])[] },
+    request: FocusRequest & {
+      points: readonly (readonly number[])[];
+      epochsTdbSeconds?: readonly number[];
+      originId?: string;
+      colorRgba?: readonly number[];
+    },
   ): void;
   label?(request: FocusRequest & { text: string }): void;
   layers?(request: {

@@ -13,6 +13,7 @@ export interface HostCore extends WasmCoreBinding {
   free(): void;
   tick(elapsed: number): void;
   epoch(): number;
+  focused_object(): string | undefined;
   playing(): boolean;
   state_at(id: string, epoch: number): string;
   utc_to_tdb(unix: number): number;
@@ -147,6 +148,7 @@ export async function createWorkspace(
     disposal: Promise<void> | undefined;
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
+  let lastTrajectoryRefresh = 0;
   const state: SolarSnapshot = {
     ...initialSnapshot,
     busy: true,
@@ -225,8 +227,28 @@ export async function createWorkspace(
     if (closed || signal.aborted) throw new Error("工作区已关闭");
   };
   const detailedBodies = new Set<string>();
+  const trajectoryWindows = new Map<string, [number, number]>();
+  const refreshTrajectory = (id: string) => {
+    const trail = data.trajectorySamples(
+      id,
+      core.epoch(),
+      state.selected === id ? 2048 : 256,
+      state.selected === id,
+    );
+    sdk.visual.trajectory(id, trail.points, trail.epochsTdbSeconds, {
+      originId: trail.originId,
+      colorRgba: solarCatalog.find((body) => body.id === id)!.color,
+    });
+    trajectoryWindows.set(id, trail.refreshRange);
+  };
   const configure = () => {
-    for (const body of solarCatalog) {
+    for (const id of trajectoryWindows.keys())
+      if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
+    // Shrink the previous target's trail before growing the new one; retain the session budget.
+    for (const body of [...solarCatalog].sort(
+      (a, b) =>
+        Number(a.id === state.selected) - Number(b.id === state.selected),
+    )) {
       if (data.status(body.id)?.status !== "ready") continue;
       try {
         const upgrade =
@@ -246,7 +268,7 @@ export async function createWorkspace(
               ? {
                   ringAssets: [
                     "planet:saturn:ring:top",
-                    "planet:saturn:ring:bottom",
+                    "planet:saturn:ring:top",
                   ] as [string, string],
                   ringInnerRadiusRatio:
                     planetAssets.ringGeometry.saturn.innerRadiusKm /
@@ -271,11 +293,7 @@ export async function createWorkspace(
           sdk.visual.label(body.id, body.id.toUpperCase());
         }
         if (state.trajectories && body.parentId) {
-          const [start, end] = data.trajectoryRange(body.id, core.epoch());
-          sdk.visual.trajectory(
-            body.id,
-            data.trajectory(body.id, start, end, 128),
-          );
+          refreshTrajectory(body.id);
         }
       } catch (error) {
         state.error = `${body.name}：${String(error)}`;
@@ -513,6 +531,17 @@ export async function createWorkspace(
       try {
         if (!state.busy) {
           core.tick(lastFrame === undefined ? 0 : (now - lastFrame) / 1000);
+          if (
+            state.selected &&
+            data.status(state.selected)?.status === "ready" &&
+            core.focused_object() === undefined &&
+            !state.busy
+          ) {
+            state.selected = "";
+            state.view = "orbit";
+            state.phase = "已拉远至太阳系总览";
+            emit();
+          }
           const epoch = core.epoch();
           const missing = data
             .status()
@@ -531,6 +560,13 @@ export async function createWorkspace(
             });
           } else {
             data.publishAt(epoch);
+            if (state.trajectories && now - lastTrajectoryRefresh > 100) {
+              for (const [id, window] of trajectoryWindows) {
+                if (epoch < window[0] || epoch > window[1])
+                  refreshTrajectory(id);
+              }
+              lastTrajectoryRefresh = now;
+            }
             lastPublishedEpoch = core.epoch();
           }
         }

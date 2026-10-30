@@ -226,7 +226,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 ? `${object.name} · 无可用数据，当前显示太阳系总览`
                 : (object?.name ?? "太阳系总览")}
             </span>
-            <span>ICRF · km</span>
+            <span>ICRF · {object ? "km" : "AU"}</span>
           </div>
           {!p.active && (
             <div className="viewport-empty">

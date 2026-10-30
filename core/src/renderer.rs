@@ -20,6 +20,8 @@ struct RendererStop(Arc<AtomicBool>);
 struct RendererPicks(SharedPickFrame);
 #[derive(Component)]
 struct DisplayCamera;
+// IAU 2012 B1: one astronomical unit is exactly 149597870700 metres.
+const AU_KM: f64 = 149_597_870.7;
 #[derive(Component)]
 struct BodyMarker {
     key: String,
@@ -84,6 +86,7 @@ pub(crate) fn create_browser_app(
             }),
     )
     .add_plugins(CoreScenePlugin(core))
+    .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
     .init_resource::<OrbitView>()
@@ -197,7 +200,7 @@ fn update_focus(
     time: Option<Res<Time>>,
     mut blend: Local<CameraBlend>,
 ) {
-    let Ok(core) = store.0.lock() else {
+    let Ok(mut core) = store.0.lock() else {
         return;
     };
     let old_settings = settings.clone();
@@ -210,8 +213,8 @@ fn update_focus(
     let view_changed = blend.key.as_deref() != Some(key.as_str());
     let delta = time.as_ref().map(|time| time.delta_secs());
     if core.focused_object().is_none() {
-        let mut min = DVec3::splat(f64::INFINITY);
-        let mut max = DVec3::splat(f64::NEG_INFINITY);
+        // The current host's heliocentric scene is centered on its scientific origin.
+        let mut radius = 0.0_f64;
         for id in core.object_ids() {
             if let Ok(state) = core.object_state_at(id, core.clock().epoch()) {
                 let p = DVec3::from_array(state.position_km);
@@ -226,16 +229,15 @@ fn update_focus(
                     })
                     .unwrap_or(1.0)
                     * state.radius_km;
-                min = min.min(p - DVec3::splat(extent));
-                max = max.max(p + DVec3::splat(extent));
+                radius = radius.max(p.length() + extent);
             }
         }
-        if !min.is_finite() || !max.is_finite() {
+        if !radius.is_finite() || radius <= 0. {
             return;
         }
-        settings.origin_km = min * 0.5 + max * 0.5;
-        let radius = ((max - min).length() * 0.5).max(1e-12);
-        settings.units_per_km = radius.recip();
+        settings.origin_km = DVec3::ZERO;
+        settings.units_per_km = AU_KM.recip();
+        let radius_display = (radius / AU_KM) as f32;
         if orbit.target.is_some() {
             *orbit = OrbitView::default();
         }
@@ -265,16 +267,18 @@ fn update_focus(
                     .min((p.fov * 0.5).tan() * p.aspect_ratio)
                     .atan();
                 if view_changed {
-                    distance = distance.max(1.1 / half_fov.sin());
+                    distance = distance.max(1.1 * radius_display / half_fov.sin());
                 }
                 orbit.distance = distance;
-                p.far = 10000.0;
+                p.far = (distance * 2.0).max(10000.0);
             }
             let position = Quat::from_rotation_y(orbit.yaw)
                 * Quat::from_rotation_x(orbit.pitch)
                 * Vec3::new(0.0, 0.0, distance);
             let desired = Transform::from_translation(position).looking_at(Vec3::ZERO, Vec3::Y);
-            *transform = blend.apply(&key, *transform, desired, &old_settings, &settings, delta);
+            *transform = blend
+                .apply(&key, *transform, desired, &old_settings, &settings, delta)
+                .looking_at(Vec3::ZERO, Vec3::Y);
             if let Projection::Perspective(p) = &mut *projection {
                 p.far = p.far.max(transform.translation.length() * 2.0);
             }
@@ -287,6 +291,18 @@ fn update_focus(
     let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
         return;
     };
+    let distance_km = orbit.distance as f64 * state.radius_km;
+    let extent = core
+        .object_ids()
+        .filter_map(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|s| DVec3::from_array(s.position_km).length() + s.radius_km)
+        .fold(0.0_f64, f64::max);
+    if extent > state.radius_km * 100. && distance_km > extent * 0.5 {
+        core.camera_zoom_to_overview();
+        orbit.target = None;
+        orbit.distance = (distance_km / AU_KM) as f32;
+        return;
+    }
     settings.origin_km = DVec3::from_array(state.position_km);
     settings.units_per_km = 1.0 / state.radius_km;
     if orbit.target.as_deref() != Some(id) || orbit.focus_revision != core.focus_revision() {
@@ -361,7 +377,9 @@ fn update_focus(
         orbit.distance = distance;
         if let Projection::Perspective(p) = &mut *projection {
             p.near = ((distance * radius - surface) * 0.1).clamp(1e-9, (radius * 0.01).max(1e-9));
-            p.far = (radius * 10000.0).max(p.near * 100.0);
+            p.far = (radius * 10000.0)
+                .max(distance * radius * 2.)
+                .max(p.near * 100.0);
             let half_fov = (p.fov * 0.5)
                 .tan()
                 .min((p.fov * 0.5).tan() * p.aspect_ratio)
@@ -414,7 +432,7 @@ fn orbit_input(
             MouseScrollUnit::Line => event.y,
             MouseScrollUnit::Pixel => event.y * 0.01,
         };
-        orbit.distance = (orbit.distance * (-amount * 0.1).exp()).clamp(1e-8, 1000.0);
+        orbit.distance = (orbit.distance * (-amount * 0.1).exp()).clamp(1e-8, 1e12);
     }
 }
 
@@ -427,6 +445,92 @@ fn stop_renderer(stop: Res<RendererStop>, mut exit: MessageWriter<AppExit>) {
 #[cfg(test)]
 mod framing_tests {
     use super::*;
+    #[test]
+    fn asymmetric_overview_keeps_scientific_origin_on_camera_axis_after_orbit_and_return() {
+        use crate::{Core, ObjectState, SessionPermissions};
+        let shared = Arc::new(std::sync::Mutex::new(Core::default()));
+        {
+            let mut c = shared.lock().unwrap();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                SessionPermissions {
+                    camera_control: true,
+                    ..default()
+                },
+            )
+            .unwrap();
+            for (id, position) in [("sun", [0., 0., 0.]), ("planet", [300., 80., 40.])] {
+                c.register_object("s", id).unwrap();
+                c.set_object_state(
+                    "s",
+                    id,
+                    ObjectState {
+                        position_km: position,
+                        radius_km: 1.,
+                        epoch_tdb_seconds: 0.,
+                        coverage_tdb_seconds: [0., 1.],
+                        frame: "ICRF".into(),
+                        source: "test".into(),
+                        orientation_wxyz: None,
+                    },
+                )
+                .unwrap();
+            }
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()))
+            .id();
+        for mode in ["overview", "top", "side", "orbit"] {
+            shared
+                .lock()
+                .unwrap()
+                .set_camera_view("s", "p", mode)
+                .unwrap();
+            app.update();
+            assert_eq!(
+                app.world().resource::<DisplaySettings>().origin_km,
+                DVec3::ZERO
+            );
+            let transform = app.world().get::<Transform>(camera).unwrap();
+            assert!(
+                transform
+                    .forward()
+                    .dot((-transform.translation).normalize())
+                    > 0.99999
+            );
+        }
+        shared.lock().unwrap().focus("s", "p", "planet").unwrap();
+        app.update();
+        app.world_mut().resource_mut::<OrbitView>().distance = 1000.;
+        app.update();
+        assert_eq!(
+            shared.lock().unwrap().focused_object(),
+            None,
+            "wide zoom must release local focus"
+        );
+        app.update();
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_view("s", "p", "overview")
+            .unwrap();
+        app.update();
+        assert_eq!(
+            app.world().resource::<DisplaySettings>().origin_km,
+            DVec3::ZERO
+        );
+        assert_eq!(
+            app.world().resource::<DisplaySettings>().units_per_km,
+            AU_KM.recip()
+        );
+    }
     #[test]
     fn transformed_bounds_include_offset_rotation_and_scale() {
         let bounds = Aabb::from_min_max(Vec3::new(2.0, -1.0, -1.0), Vec3::new(4.0, 1.0, 1.0));
@@ -790,34 +894,60 @@ fn draw_annotations(
             BackgroundColor(color),
         ));
     }
+    let orbit_visibility = if core.focused_object().is_some() {
+        crate::orbit_lines::distance_fade(camera_transform.translation().length())
+    } else {
+        1.
+    };
     for (id, label, points) in core.annotations() {
-        if core.object_state_at(id, core.clock().epoch()).is_err() {
+        let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
-        }
-        if let Some(points) = points {
-            for pair in points.windows(2) {
-                let a = to_display(pair[0]);
-                let b = to_display(pair[1]);
-                if a.is_finite() && b.is_finite() {
-                    let selected = core.focused_object() == Some(id);
-                    gizmos.line(
-                        a,
-                        b,
-                        Color::srgba(
-                            0.35,
-                            0.55,
-                            0.7,
-                            if selected {
-                                0.65
-                            } else if core.focused_object().is_some() {
-                                0.12
-                            } else {
-                                0.32
-                            },
-                        ),
-                    );
-                }
-            }
+        };
+        if let Some(points) = points.filter(|_| orbit_visibility > 0.) {
+            let style = core.trajectory_style(id);
+            let origin = if let Some(origin) = style.and_then(|s| s.origin_id.as_deref()) {
+                let Ok(parent) = core.object_state_at(origin, core.clock().epoch()) else {
+                    continue;
+                };
+                parent.position_km
+            } else {
+                [0.; 3]
+            };
+            let current = std::array::from_fn(|i| state.position_km[i] - origin[i]);
+            let color = style
+                .and_then(|s| s.color_rgba)
+                .unwrap_or([0.35, 0.55, 0.7, 1.]);
+            crate::orbit_lines::visit_segments(
+                points,
+                core.trajectory_epochs(id),
+                core.clock().epoch(),
+                current,
+                |a, b| {
+                    let a = to_display(std::array::from_fn(|i| a[i] + origin[i]));
+                    let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
+                    if a.is_finite() && b.is_finite() {
+                        let selected = core.focused_object() == Some(id);
+                        gizmos.line(
+                            a,
+                            b,
+                            Color::srgba(
+                                color[0],
+                                color[1],
+                                color[2],
+                                orbit_visibility
+                                    * color[3]
+                                    * if selected {
+                                        0.65
+                                    } else if core.focused_object().is_some() {
+                                        0.3
+                                    } else {
+                                        0.6
+                                    },
+                            ),
+                        );
+                    }
+                },
+            );
         }
         if let Some(text) = label.filter(|text| !text.is_empty()) {
             let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {

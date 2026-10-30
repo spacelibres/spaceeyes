@@ -98,7 +98,16 @@ export class WasmCorePort implements CorePort {
       request.sessionId,
       request.pluginId,
       request.targetId,
-      JSON.stringify(request.points),
+      JSON.stringify(
+        request.epochsTdbSeconds
+          ? {
+              points: request.points,
+              epochs: request.epochsTdbSeconds,
+              originId: request.originId,
+              colorRgba: request.colorRgba,
+            }
+          : request.points,
+      ),
     );
   }
   label(request: Parameters<NonNullable<CorePort["label"]>>[0]): void {

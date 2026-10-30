@@ -63,6 +63,60 @@ test("moon positions compose the true loaded parent and all publishes share epoc
   source.dispose();
   assert.equal(states.size, 0);
 });
+
+test("moon displayed orbit remains parent-relative while world state includes Earth's motion", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const moon = String(input).includes("/moon?");
+      const bytes = orb(moon ? 2 : 10000);
+      const view = new DataView(bytes.buffer);
+      for (let i = 0; i < 2; i++) {
+        view.setFloat64(28 + i * 72 + 24, 0.1, true);
+        view.setFloat64(28 + i * 72 + 32, i, true);
+      }
+      return new Response(bytes);
+    },
+  });
+  await source.load(["moon"], 5, []);
+  const trail = source.trajectorySamples("moon", 5, 256);
+  assert.equal(trail.originId, "earth");
+  assert.ok(trail.points.every((p) => Math.abs(Math.hypot(...p) - 2) < 1e-8));
+  const p = source.position("moon", 5),
+    earth = source.position("earth", 5),
+    i = trail.epochsTdbSeconds.indexOf(5);
+  assert.deepEqual(
+    trail.points[i].map((v, j) => v + earth[j]),
+    p,
+  );
+  source.dispose();
+});
+
+test("trajectory sampling contains the exact current epoch, refines locally and preserves real endpoints", async () => {
+  const { ctx } = context();
+  const bytes = orb(5e7);
+  const view = new DataView(bytes.buffer);
+  for (let i = 0; i < 2; i++) {
+    view.setFloat64(28 + i * 72 + 24, 0.1, true);
+    view.setFloat64(28 + i * 72 + 32, i, true);
+  }
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response(bytes),
+  });
+  await source.load(["earth"], 5, []);
+  const epoch = 5.1234567;
+  const trail = source.trajectorySamples("earth", epoch, 2048, true);
+  const i = trail.epochsTdbSeconds.indexOf(epoch);
+  assert.ok(i > 0 && i < trail.points.length - 1);
+  assert.deepEqual(trail.points[i], source.position("earth", epoch));
+  assert.ok(trail.points.length <= 2048);
+  assert.ok(trail.epochsTdbSeconds.every((t, j, a) => j === 0 || t > a[j - 1]));
+  assert.ok(trail.epochsTdbSeconds[i + 1] - epoch < 1e-5);
+  assert.deepEqual(trail.points[0], source.position("earth", 0));
+  assert.deepEqual(trail.points.at(-1), source.position("earth", 10));
+  assert.notDeepEqual(trail.points[0], trail.points.at(-1));
+  source.dispose();
+});
 test("disposed delayed fetch cannot resurrect objects", async () => {
   const { ctx, states } = context();
   let release!: () => void;

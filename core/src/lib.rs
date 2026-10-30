@@ -2,6 +2,12 @@
 use std::collections::{HashMap, HashSet};
 pub type AnnotationRef<'a> = (&'a str, Option<&'a str>, Option<&'a [[f64; 3]]>);
 pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
+#[derive(Default, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TrajectoryStyle {
+    pub origin_id: Option<String>,
+    pub color_rgba: Option<[f32; 4]>,
+}
 #[cfg(feature = "bevy-runtime")]
 mod runtime;
 #[cfg(feature = "bevy-runtime")]
@@ -9,6 +15,7 @@ pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app}
 mod clock;
 #[cfg(feature = "browser-render")]
 mod face_texture;
+mod orbit_lines;
 mod picking;
 #[cfg(feature = "browser-render")]
 mod render_assets;
@@ -96,6 +103,8 @@ pub struct Core {
     camera_view: String,
     focus_revision: u64,
     trajectories: HashMap<String, Vec<[f64; 3]>>,
+    trajectory_epochs: HashMap<String, Vec<f64>>,
+    trajectory_styles: HashMap<String, TrajectoryStyle>,
     labels: HashMap<String, String>,
     layers: HashMap<String, (bool, bool)>,
     clock: SimulationClock,
@@ -182,6 +191,8 @@ impl Core {
         }
         self.objects.remove(object_id);
         self.trajectories.remove(object_id);
+        self.trajectory_epochs.remove(object_id);
+        self.trajectory_styles.remove(object_id);
         self.labels.remove(object_id);
         self.states.remove(object_id);
         self.visuals.remove(object_id);
@@ -385,6 +396,8 @@ impl Core {
                 return Err(CoreError::InvalidVisual);
             }
             self.trajectories.insert(id.to_owned(), points);
+            self.trajectory_epochs.remove(id);
+            self.trajectory_styles.remove(id);
         }
         if let Some(label) = label {
             if label.chars().count() > 256 || label.chars().any(|c| c.is_control()) {
@@ -393,6 +406,64 @@ impl Core {
             self.labels.insert(id.to_owned(), label);
         }
         Ok(())
+    }
+    pub fn set_timed_trajectory(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Vec<[f64; 3]>,
+        epochs: Vec<f64>,
+    ) -> Result<(), CoreError> {
+        self.set_trajectory_with_style(
+            session,
+            plugin,
+            id,
+            points,
+            epochs,
+            TrajectoryStyle::default(),
+        )
+    }
+    pub fn set_trajectory_with_style(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Vec<[f64; 3]>,
+        epochs: Vec<f64>,
+        style: TrajectoryStyle,
+    ) -> Result<(), CoreError> {
+        if let Some(origin) = &style.origin_id {
+            if origin == id {
+                return Err(CoreError::InvalidVisual);
+            }
+            if self.objects.get(origin).ok_or(CoreError::UnknownObject)? != session {
+                return Err(CoreError::WrongOwner);
+            }
+        }
+        if style
+            .color_rgba
+            .is_some_and(|c| c.iter().any(|n| !n.is_finite() || !(0.0..=1.0).contains(n)))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if epochs.len() != points.len()
+            || epochs.len() == 1
+            || epochs.iter().any(|t| !t.is_finite())
+            || epochs.windows(2).any(|w| w[0] >= w[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        self.set_annotation(session, plugin, id, Some(points), None)?;
+        self.trajectory_epochs.insert(id.to_owned(), epochs);
+        self.trajectory_styles.insert(id.to_owned(), style);
+        Ok(())
+    }
+    pub fn trajectory_epochs(&self, id: &str) -> Option<&[f64]> {
+        self.trajectory_epochs.get(id).map(Vec::as_slice)
+    }
+    pub fn trajectory_style(&self, id: &str) -> Option<&TrajectoryStyle> {
+        self.trajectory_styles.get(id)
     }
     pub fn set_layers(
         &mut self,
@@ -462,6 +533,11 @@ impl Core {
     pub fn focused_object(&self) -> Option<&str> {
         self.focus.as_ref().map(|(_, target)| target.as_str())
     }
+    #[cfg(feature = "browser-render")]
+    pub(crate) fn camera_zoom_to_overview(&mut self) {
+        self.focus = None;
+        self.camera_view = "overview".into();
+    }
 
     pub fn release_session(&mut self, id: &str) {
         self.layers.remove(id);
@@ -475,6 +551,10 @@ impl Core {
         }
         self.sessions.remove(id);
         self.objects.retain(|_, owner| owner != id);
+        self.trajectory_epochs
+            .retain(|object, _| self.objects.contains_key(object));
+        self.trajectory_styles
+            .retain(|object, _| self.objects.contains_key(object));
         self.states
             .retain(|object_id, _| self.objects.contains_key(object_id));
         self.visuals

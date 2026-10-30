@@ -31,7 +31,15 @@ export interface PluginContext {
     focus(targetId: string): void;
   };
   readonly visual: {
-    trajectory(targetId: string, points: [number, number, number][]): void;
+    trajectory(
+      targetId: string,
+      points: [number, number, number][],
+      epochsTdbSeconds?: number[],
+      style?: {
+        originId?: string;
+        colorRgba?: [number, number, number, number];
+      },
+    ): void;
     label(targetId: string, text: string): void;
     layers(layers: { labels: boolean; trajectories: boolean }): void;
     set(targetId: string, spec: VisualSpec): void;
@@ -171,7 +179,15 @@ export class PluginHost {
       pluginId: id,
       signal: session.controller.signal,
       visual: Object.freeze({
-        trajectory(targetId: string, points: [number, number, number][]) {
+        trajectory(
+          targetId: string,
+          points: [number, number, number][],
+          epochsTdbSeconds?: number[],
+          style?: {
+            originId?: string;
+            colorRgba?: [number, number, number, number];
+          },
+        ) {
           requireCapability("scene.visual");
           validateTargetId(targetId);
           if (
@@ -186,11 +202,48 @@ export class PluginHost {
           )
             throw new Error("invalid trajectory");
           if (!core?.trajectory) throw new Error("trajectory unavailable");
+          if (style !== undefined) {
+            if (
+              !style ||
+              Object.keys(style).some(
+                (k) => k !== "originId" && k !== "colorRgba",
+              ) ||
+              !epochsTdbSeconds
+            )
+              throw new Error("invalid trajectory style");
+            if (style.originId !== undefined) validateTargetId(style.originId);
+            if (
+              style.colorRgba !== undefined &&
+              (!Array.isArray(style.colorRgba) ||
+                style.colorRgba.length !== 4 ||
+                style.colorRgba.some(
+                  (n) => !Number.isFinite(n) || n < 0 || n > 1,
+                ))
+            )
+              throw new Error("invalid trajectory color");
+          }
+          if (
+            epochsTdbSeconds !== undefined &&
+            (!Array.isArray(epochsTdbSeconds) ||
+              epochsTdbSeconds.length !== points.length ||
+              epochsTdbSeconds.length === 1 ||
+              epochsTdbSeconds.some(
+                (t, i) =>
+                  !Number.isFinite(t) ||
+                  (i > 0 && t <= epochsTdbSeconds[i - 1]),
+              ))
+          )
+            throw new Error("invalid trajectory epochs");
           core.trajectory({
             pluginId: id,
             sessionId,
             targetId,
             points: points.map((p) => [...p]),
+            ...(epochsTdbSeconds
+              ? { epochsTdbSeconds: [...epochsTdbSeconds] }
+              : {}),
+            ...(style?.originId ? { originId: style.originId } : {}),
+            ...(style?.colorRgba ? { colorRgba: [...style.colorRgba] } : {}),
           });
         },
         label(targetId: string, text: string) {

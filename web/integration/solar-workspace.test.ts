@@ -42,6 +42,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 
 function harness() {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
+  const trails: { id: string; epochs: number[]; count: number }[] = [];
   let core: HostCore;
   let freed = 0;
   let picked: string | undefined;
@@ -62,6 +63,17 @@ function harness() {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if (property === "trajectory")
+            return (...args: any[]) => {
+              const result = Reflect.apply(value, target, args);
+              const payload = JSON.parse(args[3]);
+              trails.push({
+                id: args[2],
+                epochs: payload.epochs,
+                count: payload.points.length,
+              });
+              return result;
+            };
           if (property === "set_visual")
             return (...args: any[]) => {
               visuals.push({ id: args[2], spec: JSON.parse(args[3]) });
@@ -97,6 +109,7 @@ function harness() {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    trails: () => trails,
     setPick: (id: string | undefined) => {
       picked = id;
     },
@@ -154,6 +167,33 @@ test("scene hit reuses real WASM selection while empty hits do not load and stal
     await app.dispose();
   }
   await assert.rejects(app.pick(0.5, 0.5), /关闭/);
+});
+
+test("timed trajectory detail switches from a late catalog object without exceeding core budget", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("neptune");
+    await app.select("mercury");
+    const trail = fixtures
+      .trails()
+      .filter((t) => t.id === "mercury")
+      .at(-1)!;
+    assert.ok(trail.count > 1024 && trail.count <= 2048);
+    assert.ok(trail.epochs.includes(fixtures.core().epoch()));
+    assert.equal(fixtures.focused(), "mercury");
+  } finally {
+    await app.dispose();
+  }
 });
 
 test("complete host flow uses real Rust WASM for selection, time, layers and release", async () => {

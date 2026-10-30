@@ -3,6 +3,21 @@ import assert from 'node:assert/strict';
 import { PluginHost, type PluginContext } from '../plugin-host.ts';
 import type { VisualSpec } from '../visual-contract.ts';
 
+test('timed trajectories validate ascending epochs and isolate caller mutation', async () => {
+  let sdk!: PluginContext; let received: any;
+  const host=new PluginHost({openSession(){},releaseSession(){},focus(){},trajectory(request){received=request;}});
+  host.register({id:'example.timed',apiVersion:1,capabilities:['scene.visual']},ctx=>{sdk=ctx;});
+  await host.enable('example.timed',['scene.visual']);
+  const epochs=[0,10]; const points: [number,number,number][]=[[0,0,0],[1,1,0]];
+  const color: [number,number,number,number]=[0.2,0.5,1,1];
+  sdk.visual.trajectory('earth',points,epochs,{originId:'sun',colorRgba:color}); epochs[0]=100; points[0][0]=100; color[0]=1;
+  assert.deepEqual(received.epochsTdbSeconds,[0,10]); assert.equal(received.points[0][0],0);
+  assert.deepEqual(received.colorRgba,[0.2,0.5,1,1]); assert.equal(received.originId,'sun');
+  assert.throws(()=>sdk.visual.trajectory('earth',[[0,0,0],[1,1,0]],[0,1],{colorRgba:[2,1,1,1]}),/color/);
+  for(const invalid of [[10,0],[0,0],[0],[0,NaN]]) assert.throws(()=>sdk.visual.trajectory('earth',[[0,0,0],[1,1,0]],invalid),/epochs/);
+  await host.shutdown();
+});
+
 test('visual SDK forwards immutable asset references using its own identity', async () => {
   const calls: unknown[] = [];
   let sdk!: PluginContext;

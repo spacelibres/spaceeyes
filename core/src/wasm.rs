@@ -144,10 +144,47 @@ impl WasmCore {
         target: &str,
         points_json: &str,
     ) -> Result<(), String> {
-        let points = serde_json::from_str(points_json).map_err(|_| "InvalidVisual".to_owned())?;
-        self.lock()?
-            .set_annotation(session, plugin, target, Some(points), None)
-            .map_err(|e| format!("{e:?}"))
+        #[derive(serde::Deserialize)]
+        #[serde(rename_all = "camelCase", deny_unknown_fields)]
+        struct Timed {
+            points: Vec<[f64; 3]>,
+            epochs: Vec<f64>,
+            origin_id: Option<String>,
+            color_rgba: Option<[f32; 4]>,
+        }
+        #[derive(serde::Deserialize)]
+        #[serde(untagged)]
+        enum Payload {
+            Static(Vec<[f64; 3]>),
+            Timed(Timed),
+        }
+        if points_json.len() > 1024 * 1024 {
+            return Err("InvalidVisual".into());
+        }
+        let payload = serde_json::from_str(points_json).map_err(|_| "InvalidVisual".to_owned())?;
+        let mut core = self.lock()?;
+        match payload {
+            Payload::Static(points) => {
+                core.set_annotation(session, plugin, target, Some(points), None)
+            }
+            Payload::Timed(Timed {
+                points,
+                epochs,
+                origin_id,
+                color_rgba,
+            }) => core.set_trajectory_with_style(
+                session,
+                plugin,
+                target,
+                points,
+                epochs,
+                crate::TrajectoryStyle {
+                    origin_id,
+                    color_rgba,
+                },
+            ),
+        }
+        .map_err(|e| format!("{e:?}"))
     }
     pub fn label(
         &mut self,

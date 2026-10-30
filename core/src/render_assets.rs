@@ -221,6 +221,10 @@ pub(crate) fn attach_visuals(
             }
         };
         if let Some((ids, inner, outer)) = ring {
+            let Some(top_asset) = core.asset_descriptor(&ids[0]) else {
+                continue;
+            };
+            let opacity_image = assets.load::<Image>(top_asset.path.clone());
             for (side, id) in ids.iter().enumerate() {
                 let Some(asset) = core.asset_descriptor(id) else {
                     continue;
@@ -234,6 +238,7 @@ pub(crate) fn attach_visuals(
                         object: object.id.clone(),
                         revision,
                         image,
+                        opacity_image: opacity_image.clone(),
                         inner,
                         outer,
                         bottom: side == 1,

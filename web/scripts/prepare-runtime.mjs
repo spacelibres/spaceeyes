@@ -7,6 +7,9 @@ if (font.length !== 18848 || createHash('sha256').update(font).digest('hex') !==
 const wasm = await readFile(new URL('../../core/pkg-web/spaceeyes_core_bg.wasm', import.meta.url));
 if (wasm.indexOf(font) !== -1) throw new Error('Embedded label font found in WASM; disable Bevy default_font.');
 const fonts = new URL('../public/assets/fonts/', import.meta.url);
+const shaders = new URL('../public/assets/shaders/', import.meta.url);
+await mkdir(shaders, { recursive: true });
+await copyFile(new URL('../resources/shaders/ring-particles.wgsl', import.meta.url), new URL('ring-particles.wgsl', shaders));
 await mkdir(fonts, { recursive: true });
 await copyFile(fontSource, new URL('FiraMono-subset.ttf', fonts));
 const output = new URL('../public/wasm/', import.meta.url);
