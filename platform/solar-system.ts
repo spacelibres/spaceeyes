@@ -66,6 +66,8 @@ export class SolarSystemData {
     {
       sha256: string;
       fetchedAt: string;
+      sourceSha256?: string;
+      selection?: string;
     }
   >();
   async #read(url: string) {
@@ -112,6 +114,10 @@ export class SolarSystemData {
         x.toString(16).padStart(2, "0"),
       ).join(""),
       fetchedAt: new Date().toISOString(),
+      ...(r.headers.has("x-dyn-source-sha256") ? {
+        sourceSha256: r.headers.get("x-dyn-source-sha256")!,
+        selection: r.headers.get("x-dyn-selection") ?? undefined,
+      } : {}),
     });
     return bytes;
   }

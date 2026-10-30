@@ -2,6 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fetchSolarDyn } from "./solar-dyn-server.ts";
 import { decodeDyn } from "../../platform/dyn-decoder.ts";
+import { readFile } from "node:fs/promises";
+import { evaluateOrb } from "../../platform/dyn-evaluator.ts";
+import type { DynSelection } from "./reviewed-dyn-window.ts";
 
 // v2 definition contains an index, while its child starts at flag/count, not version.
 function fixtures() {
@@ -26,6 +29,46 @@ function fixtures() {
   return { definition, child };
 }
 const signal = () => new AbortController().signal;
+
+test("reviewed Venus and Mars source windows load modern states without weakening the decoder", async () => {
+  for(const id of ["venus","mars"]) {
+    const raw = new Uint8Array(await readFile(new URL(`./fixtures/${id}-orb-anomaly.dyn`,import.meta.url)));
+    assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+    const bytes=await fetchSolarDyn(id,846619861.460,signal(),async()=>new Response(raw));
+    const d=decodeDyn(bytes);
+    assert.equal(d.kind,"inline");
+    assert.ok(d.coverage.start<846619861.460 && d.coverage.end>846619861.460);
+  }
+});
+
+test("reviewed windows preserve source records and expose their exact selection", async () => {
+  for (const id of ["venus", "mars"]) {
+    const raw = new Uint8Array(await readFile(new URL(`./fixtures/${id}-orb-anomaly.dyn`, import.meta.url)));
+    let selected: DynSelection | undefined;
+    const bytes = await fetchSolarDyn(id, 846619861.460, signal(), async () => new Response(raw), "orb", value => { selected = value; });
+    assert.ok(selected);
+    assert.deepEqual(bytes.subarray(28), raw.subarray(28 + selected.records[0] * 72, 28 + selected.records[1] * 72));
+    assert.match(selected.sourceSha256,/^[a-f0-9]{64}$/);
+    const d=decodeDyn(bytes);
+    assert.deepEqual([d.coverage.start,d.coverage.end],selected.coverage);
+    for(const t of [d.coverage.start,846619861.460,d.coverage.end])
+      assert.ok(evaluateOrb(d,t).every(Number.isFinite));
+    const changed=raw.slice(); changed[36]^=1;
+    await assert.rejects(fetchSolarDyn(id,846619861.460,signal(),async()=>new Response(changed)),/sample times must increase/);
+  }
+});
+
+test("Venus duplicate boundary is covered on both sides; ambiguous Mars history remains rejected", async () => {
+  const venus=new Uint8Array(await readFile(new URL("./fixtures/venus-orb-anomaly.dyn",import.meta.url)));
+  for(const t of [-3155716758.816,-16495135.817,-16495135.816,-16495135.815,3155716869.184]) {
+    const d=decodeDyn(await fetchSolarDyn("venus",t,signal(),async()=>new Response(venus)));
+    assert.ok(evaluateOrb(d,t).every(Number.isFinite));
+  }
+  const mars=new Uint8Array(await readFile(new URL("./fixtures/mars-orb-anomaly.dyn",import.meta.url)));
+  await assert.rejects(fetchSolarDyn("mars",-5e8,signal(),async()=>new Response(mars)),/ambiguous historical interval/);
+  const early=decodeDyn(await fetchSolarDyn("mars",-2e9,signal(),async()=>new Response(mars)));
+  assert.ok(evaluateOrb(early,-2e9).every(Number.isFinite));
+});
 
 test("Moon index resolves a headerless child and preserves the definition metadata", async () => {
   const { definition, child } = fixtures();

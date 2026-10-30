@@ -1,4 +1,5 @@
 import { fetchSolarDyn } from "../../../../lib/solar-dyn-server";
+import type { DynSelection } from "../../../../lib/reviewed-dyn-window";
 export const runtime = "nodejs";
 export async function GET(
   request: Request,
@@ -13,17 +14,23 @@ export async function GET(
     const raw = new URL(request.url).searchParams.get("epoch");
     if (raw === null)
       return Response.json({ error: "epoch required" }, { status: 400 });
+    let selection: DynSelection | undefined;
     const bytes = await fetchSolarDyn(
       id,
       Number(raw),
       request.signal,
       fetch,
       new URL(request.url).searchParams.get("type") === "ori" ? "ori" : "orb",
+      (value) => { selection = value; },
     );
     return new Response(bytes as BodyInit, {
       headers: {
         "content-type": "application/octet-stream",
         "cache-control": "no-store",
+        ...(selection ? {
+          "x-dyn-source-sha256": selection.sourceSha256,
+          "x-dyn-selection": JSON.stringify({ records: selection.records, coverage: selection.coverage }),
+        } : {}),
       },
     });
   } catch (e) {

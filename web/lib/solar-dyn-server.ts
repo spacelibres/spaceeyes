@@ -1,11 +1,13 @@
 import { decodeDyn } from "../../platform/dyn-decoder.ts";
 import { solarCatalog } from "../../platform/solar-system.ts";
+import { selectReviewedDynWindow, type DynSelection } from "./reviewed-dyn-window.ts";
 export async function fetchSolarDyn(
   id: string,
   epoch: number,
   signal: AbortSignal,
   fetcher: typeof fetch = fetch,
   type: "orb" | "ori" = "orb",
+  onSelection?: (selection: DynSelection) => void,
 ): Promise<Uint8Array> {
   const item = solarCatalog.find((x) => x.id === id);
   if (!item?.orbPath || !Number.isFinite(epoch))
@@ -47,7 +49,7 @@ export async function fetchSolarDyn(
   let name = "def";
   let header: Uint8Array | undefined;
   for (let depth = 0; depth < 8; depth++) {
-    let bytes = await read(name);
+    let bytes: Uint8Array = await read(name);
     if (name === "def") {
       const headerLength =
         2 +
@@ -68,6 +70,11 @@ export async function fetchSolarDyn(
       full.set(prefix, header!.length);
       full.set(bytes, header!.length + prefix.length);
       bytes = full;
+    }
+    if (name === "def" && type === "orb") {
+      const selected = selectReviewedDynWindow(id, bytes, epoch);
+      bytes = selected.bytes;
+      if (selected.selection) onSelection?.(selected.selection);
     }
     const d = decodeDyn(bytes);
     if (epoch < d.coverage.start || epoch > d.coverage.end)

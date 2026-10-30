@@ -1,0 +1,224 @@
+{
+  "epoch": 846620500,
+  "ready": 10,
+  "rows": [
+    {
+      "id": "sun",
+      "status": "ready",
+      "coverage": [
+        846620500,
+        846620500
+      ],
+      "positionKm": [
+        0,
+        0,
+        0
+      ],
+      "orientationAvailable": false,
+      "provenance": []
+    },
+    {
+      "id": "mercury",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        49635883.97509981,
+        11745806.89605851,
+        1130516.3830043657
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/mercury?epoch=846620500",
+          "sha256": "e6a1587170f94a2e87be179364228b675108d4ae5099e4bff4ffd6e523b80fd6",
+          "fetchedAt": "2026-10-30T08:21:51.179Z"
+        }
+      ]
+    },
+    {
+      "id": "venus",
+      "status": "ready",
+      "coverage": [
+        -16495135.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        82481479.77314728,
+        65694189.63104926,
+        24342486.57779544
+      ],
+      "orientationAvailable": true,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/venus?epoch=846620500",
+          "sha256": "6290d058f8ee720f56e0616697ef0e123cdcffcd5961048cdc2b83c94457119a",
+          "fetchedAt": "2026-10-30T08:21:50.828Z",
+          "sourceSha256": "6d922b577b7a1eb5997b3668804c738fdfaaafdd5a5f21eae10da24f20526404",
+          "selection": "{\"records\":[16,34],\"coverage\":[-16495135.816,3155716869.184]}"
+        },
+        {
+          "url": "/api/solar-dyn/venus?epoch=846620500&type=ori",
+          "sha256": "9bf5d8421e4fc250ed2460de38b260d952d6477f9ead70e44b8014708b1eb027",
+          "fetchedAt": "2026-10-30T08:21:51.004Z"
+        }
+      ]
+    },
+    {
+      "id": "earth",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        119360137.83474185,
+        81188985.86126494,
+        35193912.404832564
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/earth?epoch=846620500",
+          "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580",
+          "fetchedAt": "2026-10-30T08:21:50.900Z"
+        }
+      ]
+    },
+    {
+      "id": "moon",
+      "status": "ready",
+      "coverage": [
+        836169537.7186799,
+        852615807.5075626
+      ],
+      "positionKm": [
+        119338081.3874626,
+        81512955.95644285,
+        35362508.63926326
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/moon?epoch=846620500",
+          "sha256": "786200b9fa5d19a9315f40dd8c946cb172edf7d58f9129b8c99d113e45777706",
+          "fetchedAt": "2026-10-30T08:21:51.636Z"
+        }
+      ]
+    },
+    {
+      "id": "mars",
+      "status": "ready",
+      "coverage": [
+        -72717692,
+        3155716869.184
+      ],
+      "positionKm": [
+        -39843486.683045074,
+        213077198.44671774,
+        98808547.36846861
+      ],
+      "orientationAvailable": true,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/mars?epoch=846620500",
+          "sha256": "94a359fe94426103525e7b068cc573956923df64d054c7618f34928540466450",
+          "fetchedAt": "2026-10-30T08:21:51.984Z",
+          "sourceSha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22",
+          "selection": "{\"records\":[17,50],\"coverage\":[-72717692,3155716869.184]}"
+        },
+        {
+          "url": "/api/solar-dyn/mars?epoch=846620500&type=ori",
+          "sha256": "a46d87b6eaefc016e1a68ff0df6e6a6f57717733ad9e3031df53d1fe93898125",
+          "fetchedAt": "2026-10-30T08:21:52.209Z"
+        }
+      ]
+    },
+    {
+      "id": "jupiter",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        -547108785.465143,
+        525624688.16804045,
+        238615437.07085642
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/jupiter?epoch=846620500",
+          "sha256": "9e69166cf390e6713d6b345a9941d0f7efb7c2a42517b826005ee71574d38f43",
+          "fetchedAt": "2026-10-30T08:21:50.828Z"
+        }
+      ]
+    },
+    {
+      "id": "saturn",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        1378753484.9989216,
+        288445177.9747466,
+        59741640.36707942
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/saturn?epoch=846620500",
+          "sha256": "51b1cd717e636e1226b424d9a9795f96bb332aa5f8c7efb5177c6529f63a775c",
+          "fetchedAt": "2026-10-30T08:21:50.826Z"
+        }
+      ]
+    },
+    {
+      "id": "uranus",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155025667.1836557
+      ],
+      "positionKm": [
+        1320728919.440558,
+        2379941667.816968,
+        1023633097.3265216
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/uranus?epoch=846620500",
+          "sha256": "5bd9fe8cdd813cf3dceaa633b753cacfa277ce4fb53185e7b19ee787c45d110a",
+          "fetchedAt": "2026-10-30T08:21:51.036Z"
+        }
+      ]
+    },
+    {
+      "id": "neptune",
+      "status": "ready",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "positionKm": [
+        4464275410.100624,
+        244837475.13811797,
+        -10916693.703420982
+      ],
+      "orientationAvailable": false,
+      "provenance": [
+        {
+          "url": "/api/solar-dyn/neptune?epoch=846620500",
+          "sha256": "3b3fbb878b33a86118b967afc38913034f84ce5b2725048ddf92ce10b2d3a508",
+          "fetchedAt": "2026-10-30T08:21:50.830Z"
+        }
+      ]
+    }
+  ]
+}

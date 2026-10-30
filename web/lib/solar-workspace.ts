@@ -169,11 +169,11 @@ export async function createWorkspace(
         : "无可用覆盖";
       try {
         JSON.parse(core.state_at(state.selected, state.epoch));
-        const provenance = data.provenance(state.selected).at(-1);
+        const provenance = data.provenance(state.selected).findLast(entry => !entry.url.includes("&type=ori"));
         state.source =
           state.selected === "sun"
             ? "本场景日心坐标原点"
-            : `NASA Eyes DYN · 近似星历（精度未验收）${provenance ? ` · SHA256 ${provenance.sha256.slice(0, 12)} · 获取 ${provenance.fetchedAt}` : ""}`;
+            : `NASA Eyes DYN · 近似星历（精度未验收）${provenance ? ` · SHA256 ${provenance.sha256.slice(0, 12)} · 获取 ${provenance.fetchedAt}${provenance.selection ? " · 已隔离源文件异常，使用核验有效区段" : ""}` : ""}`;
         const visual = sdk.visual.status(state.selected);
         state.dataStatus += ` · 显示资源 ${visual?.phase ?? "pending"}`;
         if (visual?.phase === "failed")

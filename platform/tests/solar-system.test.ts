@@ -143,6 +143,23 @@ test("instantaneous ellipse closes beyond DYN coverage without publishing extrap
   source.dispose();
 });
 
+test("reviewed source identity and selected coverage survive into published provenance", async () => {
+  const {ctx,states}=context();
+  const rawHash="a".repeat(64), selection=JSON.stringify({records:[17,50],coverage:[0,10]});
+  const source=new SolarSystemData(ctx,{fetch:async()=>new Response(orb(10),{headers:{
+    "x-dyn-source-sha256":rawHash,"x-dyn-selection":selection,
+  }})});
+  await source.load(["earth"],5,[]);
+  const provenance=source.provenance("earth")[0];
+  assert.equal(provenance.sourceSha256,rawHash);
+  assert.equal(provenance.selection,selection);
+  assert.match(provenance.sha256,/^[a-f0-9]{64}$/);
+  source.publishAt(5);
+  assert.ok((states.get("earth") as {source:string}).source.includes(rawHash));
+  assert.deepEqual(source.coverage("earth"),[0,10]);
+  source.dispose();
+});
+
 test("disposed delayed fetch cannot resurrect objects", async () => {
   const { ctx, states } = context();
   let release!: () => void;
