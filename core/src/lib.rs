@@ -639,3 +639,6 @@ mod annotation_tests {
 
 #[cfg(feature = "browser-render")]
 mod stellar_render;
+
+#[cfg(feature = "browser-render")]
+mod solar_surface;

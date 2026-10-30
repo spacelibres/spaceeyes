@@ -15,7 +15,7 @@ export default function Workspace() {
   useEffect(()=>{
     try {
       const saved=localStorage.getItem("spaceeyes.solar-tuning.v1");
-      if(saved){const parsed=JSON.parse(saved);if(parsed.version!==1)throw Error("太阳配置版本不支持");setStellarSettings({...snapshotSettings(parsed.settings)});}
+      if(saved){const parsed=JSON.parse(saved);if(![1,2].includes(parsed.version))throw Error("太阳配置版本不支持");setStellarSettings({...snapshotSettings(parsed.settings)});}
     }catch(error){setActionError(`恢复太阳配置失败：${String(error)}`);}
   },[]);
   const [actionError, setActionError] = useState("");

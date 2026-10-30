@@ -26,3 +26,5 @@ await copyFile(new URL('../resources/shaders/prominence.wgsl', import.meta.url),
 
 const { prepareSolarWind } = await import('../../tools/prepare-solar-wind.ts');
 await prepareSolarWind();
+
+await copyFile(new URL("../resources/shaders/solar-surface.wgsl", import.meta.url), new URL("solar-surface.wgsl", shaders));

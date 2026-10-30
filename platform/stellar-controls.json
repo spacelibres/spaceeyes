@@ -636,5 +636,181 @@
     "unit": "R",
     "group": "性能与距离",
     "index": 57
+  },
+  {
+    "key": "surfaceContrast",
+    "label": "表面对比度",
+    "value": 1.6,
+    "min": 0.5,
+    "max": 3,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测表面",
+    "index": 58
+  },
+  {
+    "key": "surfaceDetail",
+    "label": "细尺度纹理",
+    "value": 0.7,
+    "min": 0,
+    "max": 1,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测表面",
+    "index": 59
+  },
+  {
+    "key": "surfaceSpeed",
+    "label": "表面演化速度",
+    "value": 0.05,
+    "min": 0,
+    "max": 1,
+    "step": 0.01,
+    "unit": "×",
+    "group": "观测表面",
+    "index": 60
+  },
+  {
+    "key": "activeRegionGain",
+    "label": "活动区强度",
+    "value": 2.1,
+    "min": 0,
+    "max": 4,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测表面",
+    "index": 61
+  },
+  {
+    "key": "activeRegionSize",
+    "label": "活动区范围",
+    "value": 0.12,
+    "min": 0.04,
+    "max": 0.3,
+    "step": 0.01,
+    "unit": "rad",
+    "group": "观测表面",
+    "index": 62
+  },
+  {
+    "key": "limbGlowGain",
+    "label": "日缘细节强度",
+    "value": 0.25,
+    "min": 0,
+    "max": 2,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测表面",
+    "index": 63
+  },
+  {
+    "key": "prominenceHeightKm",
+    "label": "日珥高度",
+    "value": 26000,
+    "min": 1000,
+    "max": 100000,
+    "step": 1000,
+    "unit": "km",
+    "group": "观测日珥",
+    "index": 64
+  },
+  {
+    "key": "prominenceWidthKm",
+    "label": "细丝直径",
+    "value": 300,
+    "min": 150,
+    "max": 450,
+    "step": 10,
+    "unit": "km",
+    "group": "观测日珥",
+    "index": 65
+  },
+  {
+    "key": "prominenceLengthKm",
+    "label": "日珥长度",
+    "value": 65000,
+    "min": 10000,
+    "max": 150000,
+    "step": 1000,
+    "unit": "km",
+    "group": "观测日珥",
+    "index": 66
+  },
+  {
+    "key": "prominenceFlowKmS",
+    "label": "细丝流速",
+    "value": 10,
+    "min": 0,
+    "max": 30,
+    "step": 0.5,
+    "unit": "km/s",
+    "group": "观测日珥",
+    "index": 67
+  },
+  {
+    "key": "prominenceTau",
+    "label": "日珥光学厚度",
+    "value": 0.8,
+    "min": 0.01,
+    "max": 5,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测日珥",
+    "index": 68
+  },
+  {
+    "key": "prominenceSource",
+    "label": "日珥源函数示意",
+    "value": 0.35,
+    "min": 0,
+    "max": 2,
+    "step": 0.01,
+    "unit": "Iref",
+    "group": "观测日珥",
+    "index": 69
+  },
+  {
+    "key": "prominenceTimeScale",
+    "label": "细丝时间倍率",
+    "value": 60,
+    "min": 1,
+    "max": 600,
+    "step": 1,
+    "unit": "s/s",
+    "group": "观测日珥",
+    "index": 70
+  },
+  {
+    "key": "coronaExtent",
+    "label": "近表面日冕范围",
+    "value": 1.12,
+    "min": 1.01,
+    "max": 1.4,
+    "step": 0.01,
+    "unit": "R",
+    "group": "观测日冕",
+    "index": 71
+  },
+  {
+    "key": "observationStyle",
+    "label": "观测约束模式",
+    "value": 1,
+    "min": 0,
+    "max": 1,
+    "step": 1,
+    "unit": "",
+    "group": "观测表面",
+    "index": 72
+  },
+  {
+    "key": "coronaGain",
+    "label": "近表面日冕强度",
+    "value": 0.3,
+    "min": 0,
+    "max": 2,
+    "step": 0.05,
+    "unit": "",
+    "group": "观测日冕",
+    "index": 73
   }
 ]

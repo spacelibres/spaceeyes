@@ -166,3 +166,12 @@ profile含density/travel各64个有限值，density相对根部且>0、<=1.00001
 
 
 网页0.0.30 / SDK0.0.23的`applySolarReferencePalette(settings)`仅返回参考照片的光球亮度与五项颜色覆盖，仍通过snapshotSettings校验；不修改开关、形态、速度、Parker输入或采样预算。宿主随后沿用visual.stellar发布并可自行保存配置。默认光球#FF4400/1.05，外流#650400→#FF7A0A，日珥#930A00→#FFD05A。
+
+
+## 观测约束太阳重建（核心0.0.25 / SDK0.0.24）
+
+settings扩为74项，新增字段索引58..73固定。只接受完整74项，或严格旧58项快照；旧快照补默认且observationStyle=0，保持旧模式。未知/部分字段仍拒绝。JSON/localStorage读v1/v2、写v2，不覆盖用户配置。
+
+`applySolarObservationPreset(settings)`明确切换新模式；程序化自发光表面与局部活动区、局部三维日珥、有限近表面日冕。日珥高度/丝径/长度为km，流速km/s；参数经科学半径换算，乘显式形态系数，输运另乘显示速度与时间压缩。颜色与常量源函数是显示映射，非NLTE解。旧Parker输入保留且只服务旧风模式。
+
+Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数近似；不能宣称求解MHD、观测磁场、能量守恒或实测喷发。细节仅靠近创建，退出距离/关闭/源移除释放专用材质和几何；资源仍由服务器按需获取，着色器不内嵌WASM。完整依据见docs/太阳观测约束与三维重建设计.md。

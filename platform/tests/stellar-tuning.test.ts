@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {stellarDefaults,snapshotSettings,buildStellarTuning,snapshotStellarTuning,describeStellarWind,applySolarReferencePalette} from '../stellar-tuning.ts';
+import {stellarDefaults,snapshotSettings,buildStellarTuning,snapshotStellarTuning,describeStellarWind,applySolarReferencePalette,applySolarObservationPreset} from '../stellar-tuning.ts';
 import {PluginHost,type PluginContext} from '../plugin-host.ts';
 test('stellar settings validate strict fields, pairs, geometry and finite values',()=>{
  const defaults=stellarDefaults(); assert.ok(Object.keys(defaults).length>50);
@@ -28,4 +28,25 @@ test('reference palette preserves user switches, dynamics and physical inputs',(
  assert.equal(result.surfaceColor,0xff4400);assert.equal(result.hotColor,0xff7a0a);
  for(const key of ['surfaceEnabled','volumeEnabled','archesEnabled','flowSpeed','temperatureMK','densityCm3','archCount'])assert.equal(result[key],custom[key]);
  assert.equal(custom.surfaceColor,0);assert.ok(Object.isFrozen(result));
+});
+
+test('exact legacy payload migrates with legacy appearance and validates first',()=>{
+ const defaults=stellarDefaults(),legacy=Object.fromEntries(Object.entries(defaults).slice(0,58));
+ assert.equal(snapshotSettings(legacy).observationStyle,0);assert.equal(Object.keys(snapshotSettings(legacy)).length,74);
+ assert.equal(defaults.observationStyle,1);assert.deepEqual(buildStellarTuning(legacy).profile,buildStellarTuning(defaults).profile);
+ assert.throws(()=>snapshotSettings({...legacy,flowSpeed:NaN}));assert.throws(()=>snapshotSettings({...legacy,unknown:1}));
+ const partial={...legacy};delete partial.paused;assert.throws(()=>snapshotSettings(partial));
+ const custom={...defaults,observationStyle:0,prominenceTau:2};assert.equal(applySolarReferencePalette(custom).prominenceTau,2);assert.equal(applySolarReferencePalette(custom).observationStyle,0);
+});
+
+
+test('observation preset restores visible moving shape while preserving Parker and old wind inputs',()=>{
+ const defaults=stellarDefaults();
+ const resetKeys=['surfaceGain','surfaceColor','archGain','archCount','strandCount','archHeight','archSpread','archWidth','archCoolColor','archHotColor','flowSpeed'];
+ const custom={...defaults,archGain:.05,paused:1,archCount:1,strandCount:1,archHeight:.2,archWidth:.2,surfaceGain:.1,surfaceColor:0,flowSpeed:.7,temperatureMK:2,densityCm3:10,windGain:.4,timeScale:2};
+ const result=applySolarObservationPreset(custom);
+ for(const key of resetKeys)assert.equal(result[key],defaults[key],key);
+ for(const key of ['temperatureMK','densityCm3','windGain','timeScale'])assert.equal(result[key],custom[key as keyof typeof custom],key);
+ assert.equal(result.paused,0);assert.equal(result.observationStyle,1);assert.equal(result.surfaceEnabled,1);assert.equal(result.archesEnabled,1);assert.equal(result.volumeEnabled,0);
+ assert.equal(custom.paused,1);assert.ok(Object.isFrozen(result));
 });

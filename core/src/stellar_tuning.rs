@@ -71,8 +71,37 @@ pub const CONTROLS: &[(&str, f64, f64, f64, bool)] = &[
     ("enterDistance", 2.0, 20.0, 8.0, false),
     ("exitDistance", 2.0, 20.0, 10.0, false),
     ("fullDistance", 1.0, 20.0, 6.0, false),
+    ("surfaceContrast", 0.5, 3.0, 1.6, false),
+    ("surfaceDetail", 0.0, 1.0, 0.7, false),
+    ("surfaceSpeed", 0.0, 1.0, 0.05, false),
+    ("activeRegionGain", 0.0, 4.0, 2.1, false),
+    ("activeRegionSize", 0.04, 0.3, 0.12, false),
+    ("limbGlowGain", 0.0, 2.0, 0.25, false),
+    ("prominenceHeightKm", 1000.0, 100000.0, 26000.0, false),
+    ("prominenceWidthKm", 150.0, 450.0, 300.0, false),
+    ("prominenceLengthKm", 10000.0, 150000.0, 65000.0, false),
+    ("prominenceFlowKmS", 0.0, 30.0, 10.0, false),
+    ("prominenceTau", 0.01, 5.0, 0.8, false),
+    ("prominenceSource", 0.0, 2.0, 0.35, false),
+    ("prominenceTimeScale", 1.0, 600.0, 60.0, true),
+    ("coronaExtent", 1.01, 1.4, 1.12, false),
+    ("observationStyle", 0.0, 1.0, 1.0, true),
+    ("coronaGain", 0.0, 2.0, 0.3, false),
 ];
 impl StellarTuning {
+    pub fn normalize_legacy(&mut self) {
+        if self.settings.len() == 58
+            && CONTROLS[..58]
+                .iter()
+                .all(|(key, _, _, _, _)| self.settings.contains_key(*key))
+        {
+            for (key, _, _, value, _) in &CONTROLS[58..] {
+                self.settings.insert((*key).into(), *value);
+            }
+            self.settings.insert("observationStyle".into(), 0.);
+        }
+    }
+
     pub fn value(&self, key: &str) -> f64 {
         self.settings[key]
     }
@@ -122,7 +151,7 @@ impl Core {
         session: &str,
         plugin: &str,
         target: &str,
-        tuning: StellarTuning,
+        mut tuning: StellarTuning,
     ) -> Result<(), CoreError> {
         if !self.authorize(session, plugin)?.visual_control {
             return Err(CoreError::PermissionDenied);
@@ -130,6 +159,7 @@ impl Core {
         if self.objects.get(target).ok_or(CoreError::UnknownObject)? != session {
             return Err(CoreError::WrongOwner);
         }
+        tuning.normalize_legacy();
         if !tuning.valid() {
             return Err(CoreError::InvalidVisual);
         }
@@ -163,6 +193,37 @@ mod tests {
                 travel: (0..64).map(|i| i as f64).collect(),
             },
         }
+    }
+    #[test]
+    fn metadata_and_strict_legacy_migration_match() {
+        let schema: serde_json::Value =
+            serde_json::from_str(include_str!("../../platform/stellar-controls.json")).unwrap();
+        let rows = schema.as_array().unwrap();
+        assert_eq!(rows.len(), CONTROLS.len());
+        for (row, (key, min, max, value, _)) in rows.iter().zip(CONTROLS) {
+            assert_eq!(row["key"].as_str().unwrap(), *key);
+            assert_eq!(row["min"].as_f64().unwrap(), *min);
+            assert_eq!(row["max"].as_f64().unwrap(), *max);
+            assert_eq!(row["value"].as_f64().unwrap(), *value);
+        }
+        let mut legacy = valid();
+        for (key, ..) in &CONTROLS[58..] {
+            legacy.settings.remove(*key);
+        }
+        let profile = legacy.profile.travel.clone();
+        assert!(!legacy.valid());
+        legacy.normalize_legacy();
+        assert!(legacy.valid());
+        assert_eq!(legacy.value("observationStyle"), 0.);
+        assert_eq!(legacy.profile.travel, profile);
+        let mut partial = valid();
+        partial.settings.remove("surfaceContrast");
+        partial.normalize_legacy();
+        assert!(!partial.valid());
+        let mut unknown = legacy.clone();
+        unknown.settings.insert("shader".into(), 1.);
+        unknown.normalize_legacy();
+        assert!(!unknown.valid());
     }
     #[test]
     fn snapshot_bounds_and_cross_constraints() {

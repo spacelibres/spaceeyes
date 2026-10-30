@@ -295,6 +295,12 @@ test("real WASM stellar tuning is owned, bounded, revocable and does not reload 
   core.publish_object("rust-solar","rust.solar","fixture",JSON.stringify({positionKm:[0,0,0],radiusKm:1,epochTdbSeconds:0,coverageTdbSeconds:[0,1],frame:"ICRF",source:"fixture"}));
   core.set_visual("rust-solar","rust.solar","fixture",JSON.stringify({kind:"sphere",stellar:{coronaIntensity:1,flowSpeed:.15}}));
   core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify(tuning));
+  const legacySettings = Object.fromEntries(Object.entries(tuning.settings).filter(([key])=>!['surfaceContrast','surfaceDetail','surfaceSpeed','activeRegionGain','activeRegionSize','limbGlowGain','prominenceHeightKm','prominenceWidthKm','prominenceLengthKm','prominenceFlowKmS','prominenceTau','prominenceSource','prominenceTimeScale','coronaExtent','observationStyle','coronaGain'].includes(key)));
+  assert.equal(Object.keys(legacySettings).length,58);
+  core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:legacySettings}));
+  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...legacySettings,injected:1}})),/InvalidVisual/);
+  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,prominenceWidthKm:451}})),/InvalidVisual/);
+
   assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","sun",JSON.stringify(tuning)),/WrongOwner/);
   assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,sampleCount:25}})),/InvalidVisual/);
   assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,enterDistance:12,exitDistance:10}})),/InvalidVisual/);

@@ -3,11 +3,11 @@
 #import bevy_pbr::mesh_view_bindings::{globals,view}
 @group(#{MATERIAL_BIND_GROUP}) @binding(0) var<uniform> parameters:vec4<f32>;
 
-struct Settings { data:array<vec4<f32>,15>, }
+struct Settings { data:array<vec4<f32>,19>, }
 struct Profile { data:array<vec4<f32>,64>, }
 @group(#{MATERIAL_BIND_GROUP}) @binding(1) var<uniform> settings:Settings;
 @group(#{MATERIAL_BIND_GROUP}) @binding(2) var<uniform> profile:Profile;
-fn param(i:u32)->f32{return settings.data[min(i/4u,14u)][i%4u];}
+fn param(i:u32)->f32{return settings.data[min(i/4u,18u)][i%4u];}
 fn rgb(i:u32)->vec3<f32>{let c=u32(param(i));return vec3<f32>(f32((c>>16u)&255u),f32((c>>8u)&255u),f32(c&255u))/255.0;}
 fn tuned_wind(r:f32)->vec2<f32>{if(profile.data[0].z<0.5){return solar_wind_state(r);}let x=clamp(log(r)/log(12.0)*63.0,0.0,63.0);let a=u32(floor(x));let b=min(a+1u,63u);return mix(profile.data[a].xy,profile.data[b].xy,fract(x));}
 struct Out {
@@ -28,7 +28,7 @@ fn noise(p:vec3<f32>)->f32 {
  let model=get_world_from_local(v.instance_index);
  let center=model[3].xyz;
  let world=model*vec4<f32>(v.position,1.0);
- let radius=length(model[0].xyz)/param(13u);
+ let radius=length(model[0].xyz)/select(param(13u),param(71u),param(72u)>0.5);
  var o:Out; o.clip=view.clip_from_world*world;
  o.p=(world.xyz-center)/radius; o.eye=(view.world_position-center)/radius;
  o.center_radius=vec4<f32>(center,radius);
@@ -40,6 +40,24 @@ struct PlasmaOutput {
 }
 @fragment fn fragment(v:Out)->PlasmaOutput {
  let ray=normalize(v.p-v.eye);
+ if(param(72u)>0.5){
+  let b=dot(v.eye,ray); let outer=param(71u);
+  let disc=b*b-dot(v.eye,v.eye)+outer*outer;
+  if(disc<=0.0){discard;}
+  let start=max(-b-sqrt(disc),0.0); var end=-b+sqrt(disc);
+  let inner=b*b-dot(v.eye,v.eye)+1.0;
+  if(inner>=0.0 && param(0u)>0.5){let hit=-b-sqrt(inner);if(hit>=0.0){end=min(end,hit);}}
+  if(end<=start){discard;}
+  let middle=v.eye+ray*((start+end)*0.5);
+  let impact=length(cross(v.eye,ray));
+  let shell=exp(-max(impact-1.0,0.0)/0.035);
+  let wisp=0.65+0.35*noise(normalize(middle)*90.0+vec3<f32>(parameters.z*0.03,parameters.z*0.02,0.0));
+  let alpha=clamp((end-start)*shell*wisp*param(73u)*parameters.x,0.0,0.7);
+  var out:PlasmaOutput;out.color=vec4<f32>(rgb(15u)*alpha,alpha);
+  let clip=view.clip_from_world*vec4<f32>(v.center_radius.xyz+(v.eye+ray*start)*v.center_radius.w,1.0);
+  out.depth=clip.z/clip.w;return out;
+ }
+
  let b=dot(v.eye,ray); let c=dot(v.eye,v.eye)-param(13u)*param(13u);
  let h=sqrt(max(b*b-c,0.0));
  let start=max(-b-h,0.0); var end=-b+h;

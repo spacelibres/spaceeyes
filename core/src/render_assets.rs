@@ -263,6 +263,7 @@ pub(crate) fn attach_visuals(
                 .entity(root)
                 .insert(crate::stellar_render::StellarEmitter {
                     source: object.id.clone(),
+                    current_settings: [Vec4::ZERO; 19],
                     clock: 0.,
                     parameters: Vec4::new(stellar.corona_intensity, stellar.flow_speed, 0., 0.),
                 });

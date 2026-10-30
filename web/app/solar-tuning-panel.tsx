@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import controls from "../../platform/stellar-controls.json";
-import { stellarDefaults, snapshotSettings, describeStellarWind, applySolarReferencePalette } from "../../platform/stellar-tuning";
+import { stellarDefaults, snapshotSettings, describeStellarWind, applySolarReferencePalette, applySolarObservationPreset } from "../../platform/stellar-tuning";
 
 const storageKey = "spaceeyes.solar-tuning.v1";
-const switches = new Set(["surfaceEnabled", "volumeEnabled", "archesEnabled", "paused"]);
-const geometry = new Set(["archCount", "strandCount", "archHeight", "archSpread", "archWidth"]);
+const switches = new Set(["surfaceEnabled", "volumeEnabled", "archesEnabled", "paused", "observationStyle"]);
+const geometry = new Set(["archCount", "strandCount", "archHeight", "archSpread", "archWidth", "prominenceHeightKm", "prominenceWidthKm", "prominenceLengthKm"]);
 const groups = [...new Set(controls.map(c => c.group))];
 type Settings = Record<string, number>;
 
@@ -39,7 +39,7 @@ export function SolarTuningPanel({ active, onApply, initial }: { active: boolean
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.version !== 1) throw new Error("本机配置版本不支持");
+        if (![1,2].includes(parsed.version)) throw new Error("本机配置版本不支持");
         accept(parsed.settings);
       }
     } catch (e) { setError(`读取本机配置失败：${e instanceof Error ? e.message : String(e)}`); }
@@ -61,8 +61,8 @@ export function SolarTuningPanel({ active, onApply, initial }: { active: boolean
   };
   const wind = useMemo(()=>describeStellarWind(valid.current),[valid.current.temperatureMK,valid.current.densityCm3]);
   return <details className="solar-tuning"><summary>太阳特效调试 <small>{controls.length} 项参数</small></summary>
-    <p>程序日珥与体积外流 · 参数不改变科学半径</p>
-    <fieldset disabled={!active}><legend>{active ? "实时预览" : "进入工作区后可调整"}</legend>
+    <p>程序化表面与运动学日珥，非完整 MHD/NLTE · 参数不改变科学半径</p>
+    <p>文献约束：日珥核心温度约 7500–9000 K，电子密度 10⁹–10¹¹ cm⁻³，宁静日珥磁场常见 8–10 G；当前仅约束运动学重建，不求解磁场平衡。</p><p>观测模式使用独立近表面日冕；日珥基准尺寸（km）仍乘高度、跨度与宽度倍率，数量、亮度和颜色共用。体积外流、火舌与旧流动阈值仅用于旧模式。</p><fieldset disabled={!active}><legend>{active ? "实时预览" : "进入工作区后可调整"}</legend>
       {groups.map(group => <details key={group} className="solar-tuning-group"><summary>{group} <small>{controls.filter(c => c.group === group).length} 项</small></summary>
         <button type="button" onClick={() => { const next = { ...valid.current }; controls.filter(c => c.group === group).forEach(c => { next[c.key] = c.value; }); accept(next); }}>恢复本组默认</button>
         {controls.filter(c => c.group === group).map(c => <div className="solar-tuning-control" key={c.key}>
@@ -75,8 +75,8 @@ export function SolarTuningPanel({ active, onApply, initial }: { active: boolean
         </div>)}
       </details>)}
       <p className="solar-tuning-note">积分最多 24 步；提高步数会增加 GPU 成本。几何参数松开后更新。</p>
-      <div className="solar-tuning-actions"><button type="button" onClick={() => accept(applySolarReferencePalette(valid.current))}>应用参考图配色</button><button type="button" onClick={() => accept(stellarDefaults())}>全部恢复默认</button><button type="button" onClick={() => accept({ ...valid.current, surfaceEnabled:0,volumeEnabled:0,archesEnabled:0 })}>关闭特效</button><button type="button" onClick={() => { try { localStorage.setItem(storageKey,JSON.stringify({ version:1,settings:valid.current })); setNotice("已保存到本机"); } catch(e) { setError(`保存失败：${String(e)}`); } }}>本机保存</button></div>
-      <details><summary>配置 JSON</summary><textarea aria-label="太阳特效配置 JSON" value={json} onChange={e => setJson(e.target.value)} /><div className="solar-tuning-actions"><button type="button" onClick={() => setJson(JSON.stringify({version:1,settings:valid.current},null,2))}>导出 JSON</button><button type="button" onClick={() => { try { const parsed = JSON.parse(json); if(parsed.version !== 1) throw new Error("仅支持 version: 1"); accept(parsed.settings); } catch(e) { setError(`导入失败：${String(e)}`); } }}>导入 JSON</button></div></details>
+      <div className="solar-tuning-actions"><button type="button" onClick={() => accept(applySolarObservationPreset(valid.current))}>应用观测重建预设</button><button type="button" onClick={() => accept(applySolarReferencePalette(valid.current))}>应用参考图配色</button><button type="button" onClick={() => accept(stellarDefaults())}>全部恢复默认</button><button type="button" onClick={() => accept({ ...valid.current, surfaceEnabled:0,volumeEnabled:0,archesEnabled:0,coronaGain:0 })}>关闭特效</button><button type="button" onClick={() => { try { localStorage.setItem(storageKey,JSON.stringify({ version:2,settings:valid.current })); setNotice("已保存到本机"); } catch(e) { setError(`保存失败：${String(e)}`); } }}>本机保存</button></div>
+      <details><summary>配置 JSON</summary><textarea aria-label="太阳特效配置 JSON" value={json} onChange={e => setJson(e.target.value)} /><div className="solar-tuning-actions"><button type="button" onClick={() => setJson(JSON.stringify({version:2,settings:valid.current},null,2))}>导出 JSON</button><button type="button" onClick={() => { try { const parsed = JSON.parse(json); if(![1,2].includes(parsed.version)) throw new Error("仅支持 version: 1 或 2"); accept(parsed.settings); } catch(e) { setError(`导入失败：${String(e)}`); } }}>导入 JSON</button></div></details>
     </fieldset>
     {error && <p role="alert" className="solar-tuning-error">{error}</p>}{notice && <p role="status">{notice}</p>}
     <details><summary>Parker 模型诊断与来源</summary><p>音速 {(wind.soundSpeedMS/1000).toFixed(1)} km/s · 临界半径 {wind.sonicRadiusR.toFixed(2)} R · 1 AU 风速 {(wind.oneAuSpeedMS/1000).toFixed(1)} km/s · 电子密度 {wind.oneAuDensityCm3.toFixed(2)} cm⁻³</p><p>等温 Parker 显示模型，查表范围 1–12 R；NASA 对象科学半径与模型名义太阳半径分别保留。</p><p>只读模型常数：GM☉ = 1.3271244×10²⁰ m³/s²；R☉ = 695700000 m；kB = 1.380649×10⁻²³ J/K；mp = 1.67262192595×10⁻²⁷ kg。来源：<a href="https://www.iau.org/">IAU 名义太阳参数</a>、<a href="https://physics.nist.gov/cuu/Constants/">NIST CODATA（kB、质子质量）</a>；AU = 149597870700 m。</p></details>

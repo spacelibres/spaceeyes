@@ -9,9 +9,11 @@ export function stellarDefaults():Record<string,number> {return Object.fromEntri
 export function snapshotSettings(input:unknown):Readonly<Record<string,number>> {
  if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Invalid stellar settings');
  const raw=input as Record<string,unknown>;
- if(Reflect.ownKeys(raw).length!==controls.length||Reflect.ownKeys(raw).some(k=>typeof k!=='string'||!controls.some(c=>c.key===k)))throw Error('Invalid stellar fields');
- const result:Record<string,number>={};
- for(const c of controls){const n=raw[c.key];if(typeof n!=='number'||!Number.isFinite(n)||n<c.min||n>c.max||(c.step===1&&!Number.isInteger(n)))throw Error(`Invalid stellar parameter: ${c.label}`);result[c.key]=n;}
+ const legacy=Reflect.ownKeys(raw).length===58&&controls.slice(0,58).every(c=>Object.hasOwn(raw,c.key));
+ const fields=legacy?controls.slice(0,58):controls;
+ if(Reflect.ownKeys(raw).length!==fields.length||Reflect.ownKeys(raw).some(k=>typeof k!=='string'||!controls.some(c=>c.key===k)))throw Error('Invalid stellar fields');
+ const result:Record<string,number>=legacy?{...stellarDefaults(),observationStyle:0}:{};
+ for(const c of fields){const n=raw[c.key];if(typeof n!=='number'||!Number.isFinite(n)||n<c.min||n>c.max||(c.step===1&&!Number.isInteger(n)))throw Error(`Invalid stellar parameter: ${c.label}`);result[c.key]=n;}
  for(const [low,high] of [['channelLow','channelHigh'],['parcelLow','parcelHigh'],['streamLow','streamHigh'],['archLow','archHigh'],['enterDistance','exitDistance'],['fadeStart','outerRadius']])if(result[low]>=result[high])throw Error(`Invalid stellar pair: ${low} < ${high}`);
  if(result.fullDistance>result.enterDistance)throw Error('完全显示距离不能超过靠近触发距离');
  if(result.archCount*result.strandCount*49*7>50000)throw Error('日珥顶点预算不能超过50000');
@@ -49,4 +51,10 @@ export function applySolarReferencePalette(input:unknown):Readonly<Record<string
  const settings=snapshotSettings(input), defaults=stellarDefaults();
  const keys=['surfaceGain','surfaceColor','coolColor','hotColor','archCoolColor','archHotColor'];
  return snapshotSettings({...settings,...Object.fromEntries(keys.map(key=>[key,defaults[key]]))});
+}
+
+export function applySolarObservationPreset(input:unknown):Readonly<Record<string,number>> {
+ const settings=snapshotSettings(input),defaults=stellarDefaults();
+ const resetKeys=[...controls.slice(58).map(c=>c.key),'surfaceGain','surfaceColor','archGain','archCount','strandCount','archHeight','archSpread','archWidth','archCoolColor','archHotColor','flowSpeed'];
+ return snapshotSettings({...settings,...Object.fromEntries(resetKeys.map(key=>[key,defaults[key]])),observationStyle:1,surfaceEnabled:1,archesEnabled:1,volumeEnabled:0,paused:0});
 }
