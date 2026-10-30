@@ -35,6 +35,7 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  galaxy: { enabled: boolean; phase: string; detail?: string };
   starfield: StarfieldProgress;
   startupMs?: number;
   parentId?: string;
@@ -55,6 +56,7 @@ export type SolarSnapshot = {
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
+  galaxy: { enabled: false, phase: "disabled" },
   starfield: {
     enabled: false,
     loading: false,
@@ -90,6 +92,7 @@ export const workspaceCatalog = solarCatalog
     parentId: body.parentId ?? undefined,
   }));
 export interface WorkspaceRuntime {
+  galaxy(enabled: boolean): void;
   starfield(enabled: boolean): Promise<void>;
   retryStarfield(): Promise<void>;
   observeAvailable(): Promise<void>;
@@ -113,6 +116,7 @@ export async function createWorkspace(
   options: {
     onStartup?: (phase: string) => void;
     backgroundStars?: boolean;
+    backgroundGalaxy?: boolean;
     loadCore?: () => Promise<{
       default(): Promise<unknown>;
       WasmCore: new () => HostCore;
@@ -144,6 +148,13 @@ export async function createWorkspace(
     options.cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const core = new module.WasmCore(),
     host = new PluginHost(new WasmCorePort(core));
+  core.register_asset(
+    "environment:milkyway:4k",
+    "deep-space/milkyway.webp",
+    "texture",
+  );
+  core.register_asset("environment:milkyway:preview", "deep-space/milkyway-preview.webp", "texture");
+  let galaxyPreview = false;
   for (const body of eyesCatalog) {
     const definition = getEyesDefinition(body.id);
     if (definition?.model)
@@ -198,6 +209,7 @@ export async function createWorkspace(
     );
   }
   let sdk!: PluginContext, data!: SolarSystemData;
+  let galaxySdk!: PluginContext;
   let stars!: StarfieldSource;
   let frame = 0,
     closed = false,
@@ -216,6 +228,21 @@ export async function createWorkspace(
   };
   const emit = () => {
     if (closed) return;
+    if (state.galaxy.enabled && core.environment_status) {
+      const status = JSON.parse(core.environment_status());
+      if (galaxyPreview && status.phase === "ready") {
+        galaxyPreview = false;
+        galaxySdk.visual.environment({assetId: "environment:milkyway:4k", frame: "ICRF", intensity: 1});
+      }
+      if (status && ["pending", "ready", "failed"].includes(status.phase))
+        state.galaxy = {
+          enabled: true,
+          phase: status.phase,
+          ...(status.detail
+            ? { detail: String(status.detail).slice(0, 240) }
+            : {}),
+        };
+    }
     state.epoch = core.epoch();
     state.playing = core.playing();
     state.utc = new Date(core.tdb_to_utc(state.epoch) * 1000).toISOString();
@@ -278,6 +305,7 @@ export async function createWorkspace(
           active: false,
           busy: false,
           playing: false,
+          galaxy: { enabled: false, phase: "disabled" },
           starfield: {
             ...state.starfield,
             enabled: false,
@@ -399,6 +427,7 @@ export async function createWorkspace(
                       number,
                       number,
                     ],
+                    stellar: { coronaIntensity: 1, flowSpeed: 0.15 },
                   }
                 : {}),
             });
@@ -531,6 +560,19 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    galaxy(enabled) {
+      assertLive();
+      galaxyPreview = enabled;
+      galaxySdk.visual.environment(null);
+      if (enabled)
+        galaxySdk.visual.environment({
+          assetId: "environment:milkyway:preview",
+          frame: "ICRF",
+          intensity: 1,
+        });
+      state.galaxy = { enabled, phase: enabled ? "pending" : "disabled" };
+      emit();
+    },
     starfield(enabled) {
       assertLive();
       return stars.enable(enabled);
@@ -708,6 +750,17 @@ export async function createWorkspace(
       },
     );
     await host.enable("spaceeyes.background-stars", ["scene.visual"]);
+    host.register(
+      {
+        id: "spaceeyes.background-galaxy",
+        apiVersion: 1,
+        capabilities: ["scene.visual"],
+      },
+      (context) => {
+        galaxySdk = context;
+      },
+    );
+    await host.enable("spaceeyes.background-galaxy", ["scene.visual"]);
     assertLive();
     options.onStartup?.("加载总览所需轨道数据");
     await reload(core.utc_to_tdb(Date.now() / 1000));
@@ -717,6 +770,7 @@ export async function createWorkspace(
     core.start_renderer(canvas);
     state.startupMs = Math.max(0, performance.now() - startupAt);
     state.active = true;
+    if (options.backgroundGalaxy !== false) runtime.galaxy(true);
     emit();
     if (options.backgroundStars !== false)
       void stars.enable(true).catch((error) => {

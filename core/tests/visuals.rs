@@ -44,6 +44,27 @@ fn model() -> VisualSpec {
 }
 
 #[test]
+fn stellar_effect_bounds_preserve_previous_visual_on_rejection() {
+    let mut core = setup();
+    let spec = |intensity: f32, speed: f32| {
+        serde_json::from_value::<VisualSpec>(serde_json::json!({"kind":"sphere","stellar":{"coronaIntensity":intensity,"flowSpeed":speed}})).unwrap()
+    };
+    core.set_visual("owner", "one.plugin", "object:test", Some(spec(1., 0.15)))
+        .unwrap();
+    let revision = core.visual_assignment("object:test").unwrap().revision;
+    for bad in [spec(5., 0.15), spec(1., 3.)] {
+        assert_eq!(
+            core.set_visual("owner", "one.plugin", "object:test", Some(bad)),
+            Err(CoreError::InvalidVisual)
+        );
+        assert_eq!(
+            core.visual_assignment("object:test").unwrap().revision,
+            revision
+        );
+    }
+}
+
+#[test]
 fn visual_changes_require_ownership_permission_and_registered_assets() {
     let mut core = setup();
     assert_eq!(
@@ -55,6 +76,7 @@ fn visual_changes_require_ownership_permission_and_registered_assets() {
         Err(CoreError::WrongOwner)
     );
     let missing = VisualSpec::Sphere {
+        stellar: None,
         texture_asset: Some("missing:image".into()),
         face_assets: None,
         ring_assets: None,
@@ -86,6 +108,7 @@ fn stale_load_completions_cannot_resurrect_replaced_or_removed_visuals() {
         "one.plugin",
         "object:test",
         Some(VisualSpec::Sphere {
+            stellar: None,
             texture_asset: None,
             face_assets: None,
             ring_assets: None,
@@ -168,6 +191,7 @@ fn rings_require_registered_textures_and_ordered_physical_ratios() {
         .unwrap();
     }
     let make = |inner, outer| VisualSpec::Sphere {
+        stellar: None,
         texture_asset: None,
         face_assets: None,
         ring_assets: Some(["ring:top".into(), "ring:bottom".into()]),

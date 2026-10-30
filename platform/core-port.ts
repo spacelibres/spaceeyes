@@ -1,4 +1,5 @@
 import type { StarfieldSpec } from "./starfield-contract.ts";
+import type { EnvironmentSpec } from "./environment-contract.ts";
 // Internal host-to-core adapter boundary, not a public wire protocol.
 // An implementation must forward to Rust/Bevy and validate target existence there.
 import type { ObjectState } from "./state-contract.ts";
@@ -9,6 +10,11 @@ export interface FocusRequest {
   readonly targetId: string;
 }
 export interface CorePort {
+  environment?(request: {
+    pluginId: string;
+    sessionId: string;
+    spec: Readonly<EnvironmentSpec> | null;
+  }): void;
   openSession(request: {
     readonly pluginId: string;
     readonly sessionId: string;
@@ -57,6 +63,11 @@ export interface CorePort {
     readonly playing: boolean;
     readonly rate: number;
   }): void;
-  starfield?(request: { readonly pluginId: string; readonly sessionId: string; readonly layerId: string; readonly spec: Readonly<StarfieldSpec> | null }): void;
+  starfield?(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly layerId: string;
+    readonly spec: Readonly<StarfieldSpec> | null;
+  }): void;
   releaseSession(sessionId: string): void | Promise<void>;
 }

@@ -42,7 +42,16 @@ pub enum VisualSpec {
         color_rgba: Option<[f32; 4]>,
         #[serde(default)]
         emissive_rgba: Option<[f32; 4]>,
+        #[serde(default)]
+        stellar: Option<StellarSpec>,
     },
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StellarSpec {
+    pub corona_intensity: f32,
+    pub flow_speed: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -178,7 +187,16 @@ impl Core {
                 ring_outer_radius_ratio,
                 color_rgba,
                 emissive_rgba,
+                stellar,
             } => {
+                if stellar.as_ref().is_some_and(|s| {
+                    !s.corona_intensity.is_finite()
+                        || !(0.0..=4.0).contains(&s.corona_intensity)
+                        || !s.flow_speed.is_finite()
+                        || !(0.0..=2.0).contains(&s.flow_speed)
+                }) {
+                    return Err(CoreError::InvalidVisual);
+                }
                 if color_rgba
                     .iter()
                     .chain(emissive_rgba.iter())

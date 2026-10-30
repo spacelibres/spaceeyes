@@ -12,9 +12,17 @@ pub struct TrajectoryStyle {
 mod runtime;
 #[cfg(feature = "bevy-runtime")]
 pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
+#[cfg(feature = "browser-render")]
+mod camera_motion;
 mod clock;
+mod deep_space;
+#[cfg(feature = "browser-render")]
+mod label_visibility;
+pub use deep_space::EnvironmentSpec;
 mod starfield;
 pub use starfield::StarfieldSpec;
+#[cfg(feature = "browser-render")]
+mod deep_render;
 #[cfg(feature = "browser-render")]
 mod face_texture;
 mod orbit_lines;
@@ -94,6 +102,9 @@ impl Default for CoreLimits {
 pub struct Core {
     starfields: HashMap<(String, String), starfield::StarfieldLayer>,
     starfield_revision: u64,
+    environment: Option<deep_space::EnvironmentLayer>,
+    environment_status: serde_json::Value,
+    environment_revision: u64,
     assets: HashMap<String, AssetDescriptor>,
     visuals: HashMap<String, VisualAssignment>,
     visual_statuses: HashMap<String, VisualStatus>,
@@ -546,6 +557,10 @@ impl Core {
     }
 
     pub fn release_session(&mut self, id: &str) {
+        if self.environment.as_ref().is_some_and(|v| v.owner == id) {
+            self.environment = None;
+            self.environment_status = serde_json::json!({"phase":"disabled"});
+        }
         self.starfields.retain(|(session, _), _| session != id);
         self.layers.remove(id);
         self.trajectories
@@ -615,3 +630,6 @@ mod annotation_tests {
         assert!(!c.labels.contains_key("a") && !c.trajectories.contains_key("a"));
     }
 }
+
+#[cfg(feature = "browser-render")]
+mod stellar_render;

@@ -2,13 +2,23 @@
 use bevy::prelude::*;
 
 pub(crate) fn label_size(text: &str) -> Vec2 {
-    Vec2::new((text.chars().count() as f32 * 8.5).clamp(24., 220.), 22.)
+    Vec2::new((text.chars().count() as f32 * 8.5 + 4.).max(24.), 22.)
 }
 
+#[cfg(test)]
 pub(crate) fn place_labels(
+    items: Vec<(String, String, Vec2)>,
+    viewport: Vec2,
+    focused: Option<&str>,
+) -> Vec<(String, String, Vec2)> {
+    place_labels_measured(items, viewport, focused, &std::collections::HashMap::new())
+}
+
+pub(crate) fn place_labels_measured(
     mut items: Vec<(String, String, Vec2)>,
     viewport: Vec2,
     focused: Option<&str>,
+    measured: &std::collections::HashMap<String, Vec2>,
 ) -> Vec<(String, String, Vec2)> {
     items.sort_by(|a, b| {
         (Some(a.0.as_str()) != focused)
@@ -18,15 +28,15 @@ pub(crate) fn place_labels(
     let mut boxes: Vec<(Vec2, Vec2)> = Vec::new();
     let mut placed = Vec::new();
     for (id, text, anchor) in items {
-        let size = label_size(&text);
+        let size = measured
+            .get(&id)
+            .copied()
+            .unwrap_or_else(|| label_size(&text));
         for offset in [
             Vec2::new(12., -11.),
             Vec2::new(12., 16.),
-            Vec2::new(12., -38.),
             Vec2::new(-size.x - 12., -11.),
-            Vec2::new(12., 43.),
             Vec2::new(-size.x - 12., 16.),
-            Vec2::new(-size.x - 12., -38.),
         ] {
             let lo = anchor + offset;
             let hi = lo + size;
@@ -62,10 +72,8 @@ mod tests {
             for b in &placed[i + 1..] {
                 assert!(
                     (a.2.y - b.2.y).abs() >= 26.
-                        || a.2.x + (a.1.chars().count() as f32 * 8.5).clamp(24., 220.) + 5.
-                            <= b.2.x
-                        || b.2.x + (b.1.chars().count() as f32 * 8.5).clamp(24., 220.) + 5.
-                            <= a.2.x
+                        || a.2.x + (a.1.chars().count() as f32 * 8.5 + 4.).max(24.) + 5. <= b.2.x
+                        || b.2.x + (b.1.chars().count() as f32 * 8.5 + 4.).max(24.) + 5. <= a.2.x
                 );
             }
         }
@@ -80,5 +88,16 @@ mod tests {
             )
             .is_empty()
         );
+    }
+}
+
+#[cfg(test)]
+mod measured_tests {
+    use super::*;
+    #[test]
+    fn actual_font_bounds_control_placement() {
+        let items = vec![("a".into(), "A".into(), Vec2::new(100., 100.))];
+        let measured = std::collections::HashMap::from([("a".into(), Vec2::new(500., 30.))]);
+        assert!(place_labels_measured(items, Vec2::new(400., 300.), None, &measured).is_empty());
     }
 }

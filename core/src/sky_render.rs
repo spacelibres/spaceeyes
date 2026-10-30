@@ -25,7 +25,7 @@ impl Material for SkyMaterial {
     // Bevy adds this only to transparent sorting distance. Render sky before
     // transparent rings so their opacity attenuates the existing background.
     fn depth_bias(&self) -> f32 {
-        1e30
+        -1e30
     }
     fn enable_prepass() -> bool {
         false

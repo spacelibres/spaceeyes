@@ -18,10 +18,11 @@ struct Output { @builtin(position) position: vec4<f32>, @location(0) uv: vec2<f3
  clip.z=0.0;
  clip=vec4<f32>(clip.xy+(v.uv-0.5)*2.0*size/view.viewport.zw*clip.w,0.0,clip.w);
  out.position=clip;out.uv=v.uv;
- out.color=vec4<f32>(v.color.rgb,clamp(bright*particleScale,0.05,1.0)*clamp((sqrt(d2)-0.1)/0.9,0.0,1.0));return out;
+ out.color=vec4<f32>(v.color.rgb,clamp(bright*particleScale,0.05,12.0)*clamp((sqrt(d2)-0.1)/0.9,0.0,1.0));return out;
 }
 @fragment fn fragment(v: Output) -> @location(0) vec4<f32> {
- let psf=pow(max(1.0-2.0*length(v.uv-0.5),0.0),5.0);
+ let r=2.0*length(v.uv-0.5);
+ let psf=(exp(-32.0*r*r)+0.08*exp(-5.0*r*r))*(1.0-smoothstep(0.8,1.0,r));
  // Bevy Add uses its premultiplied pipeline: zero alpha preserves the destination.
  return vec4<f32>(v.color.rgb*(v.color.a*psf),0.0);
 }

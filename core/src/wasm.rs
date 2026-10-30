@@ -354,6 +354,23 @@ impl WasmCore {
             .set_starfield(plugin, session, layer, spec)
             .map_err(|e| format!("{e:?}"))
     }
+    pub fn set_environment(
+        &mut self,
+        plugin: &str,
+        session: &str,
+        payload: Option<String>,
+    ) -> Result<(), String> {
+        let spec = payload
+            .map(|json| serde_json::from_str::<crate::EnvironmentSpec>(&json))
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        self.lock()?
+            .set_environment(plugin, session, spec)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn environment_status(&self) -> Result<String, String> {
+        Ok(self.lock()?.environment_status.to_string())
+    }
     pub fn starfield_count(&self) -> Result<usize, String> {
         Ok(self.lock()?.starfield_count())
     }

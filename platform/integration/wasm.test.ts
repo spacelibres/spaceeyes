@@ -9,6 +9,40 @@ const { WasmCore } = createRequire(import.meta.url)(
   "../../core/pkg/spaceeyes_core.js",
 );
 
+test("real WASM validates environment ownership and clears it with the session", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  try {
+    core.register_asset("sky", "deep-space/milkyway.webp", "texture");
+    host.register(
+      {
+        id: "integration.galaxy",
+        apiVersion: 1,
+        capabilities: ["scene.visual"],
+      },
+      (ctx) => {
+        sdk = ctx;
+      },
+    );
+    await host.enable("integration.galaxy", ["scene.visual"]);
+    sdk.visual.environment({ assetId: "sky", frame: "ICRF", intensity: 1 });
+    assert.equal(JSON.parse(core.environment_status()).phase, "pending");
+    assert.throws(() =>
+      core.set_environment(
+        "spoof",
+        "unknown",
+        JSON.stringify({ assetId: "sky", frame: "ICRF", intensity: 1 }),
+      ),
+    );
+    await host.shutdown();
+    assert.equal(JSON.parse(core.environment_status()).phase, "disabled");
+  } finally {
+    await host.shutdown();
+    core.free();
+  }
+});
+
 test("starfield SDK publishes independent layers to real WASM and revokes all on disposal", async () => {
   const core = new WasmCore();
   const host = new PluginHost(new WasmCorePort(core));

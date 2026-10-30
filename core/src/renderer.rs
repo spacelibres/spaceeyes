@@ -38,6 +38,8 @@ type FramingNodes<'w, 's> = Query<
 >;
 #[derive(Resource)]
 struct OrbitView {
+    motion: crate::camera_motion::Motion,
+    input_active: bool,
     target: Option<String>,
     focus_revision: u64,
     yaw: f32,
@@ -47,6 +49,8 @@ struct OrbitView {
 impl Default for OrbitView {
     fn default() -> Self {
         Self {
+            motion: crate::camera_motion::Motion::default(),
+            input_active: false,
             target: None,
             focus_revision: 0,
             yaw: 0.0,
@@ -88,6 +92,12 @@ pub(crate) fn create_browser_app(
     .add_plugins(CoreScenePlugin(core))
     .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
     .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
+    .add_plugins((
+        MaterialPlugin::<crate::deep_render::GalaxyMaterial>::default(),
+        MaterialPlugin::<crate::stellar_render::StellarMaterial>::default(),
+        MaterialPlugin::<crate::stellar_render::ProminenceMaterial>::default(),
+    ))
+    .add_systems(Update, crate::deep_render::sync_environment)
     .add_systems(Update, crate::sky_render::sync_sky.after(sync_scene))
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
@@ -125,6 +135,15 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     });
     commands.spawn((
         Camera3d::default(),
+        bevy::camera::Hdr,
+        bevy::post_process::bloom::Bloom {
+            intensity: 0.12,
+            prefilter: bevy::post_process::bloom::BloomPrefilter {
+                threshold: 1.0,
+                threshold_softness: 0.5,
+            },
+            ..bevy::post_process::bloom::Bloom::NATURAL
+        },
         // Analytic tonemapping keeps render lookup images out of the executable.
         bevy::core_pipeline::tonemapping::Tonemapping::KhronosPbrNeutral,
         DisplayCamera,
@@ -213,6 +232,12 @@ fn update_focus(
         core.focus_revision()
     );
     let view_changed = blend.key.as_deref() != Some(key.as_str());
+    if view_changed {
+        orbit.motion.clear();
+    }
+    if !view_changed && orbit.input_active {
+        blend.elapsed = 0.35;
+    }
     let delta = time.as_ref().map(|time| time.delta_secs());
     if core.focused_object().is_none() {
         // The current host's heliocentric scene is centered on its scientific origin.
@@ -299,7 +324,11 @@ fn update_focus(
         .filter_map(|id| core.object_state_at(id, core.clock().epoch()).ok())
         .map(|s| DVec3::from_array(s.position_km).length() + s.radius_km)
         .fold(0.0_f64, f64::max);
-    if extent > state.radius_km * 100. && distance_km > extent * 0.5 {
+    if !view_changed
+        && orbit.target.as_deref() == Some(id)
+        && extent > state.radius_km * 100.
+        && distance_km > extent * 0.5
+    {
         core.camera_zoom_to_overview();
         orbit.target = None;
         orbit.distance = (distance_km / AU_KM) as f32;
@@ -424,20 +453,48 @@ fn orbit_input(
     motion: Res<AccumulatedMouseMotion>,
     mut wheel: MessageReader<MouseWheel>,
     mut orbit: ResMut<OrbitView>,
+    time: Res<Time>,
+    windows: Query<&Window>,
+    mut drag_gate: Local<crate::camera_motion::DragGate>,
 ) {
-    if buttons.pressed(MouseButton::Left) {
-        orbit.yaw -= motion.delta.x * 0.005;
-        orbit.pitch = (orbit.pitch - motion.delta.y * 0.005).clamp(-1.5, 1.5);
+    let dt = time.delta_secs();
+    let available = !windows
+        .iter()
+        .any(|w| !w.focused || w.cursor_position().is_none());
+    let dragging = drag_gate.accept(
+        available,
+        buttons.pressed(MouseButton::Left),
+        buttons.just_pressed(MouseButton::Left),
+    );
+    orbit.input_active = dragging;
+    if !available {
+        orbit.motion.clear();
+        wheel.clear();
+        return;
     }
+    if buttons.just_pressed(MouseButton::Left) {
+        orbit.motion.clear();
+    }
+    let delta = if dragging {
+        let delta = [-motion.delta.x * 0.005, -motion.delta.y * 0.005];
+        orbit.motion.drag(delta, dt);
+        delta
+    } else {
+        orbit.motion.coast(dt)
+    };
+    orbit.yaw += delta[0];
+    orbit.pitch = (orbit.pitch + delta[1]).clamp(-1.5, 1.5);
     for event in wheel.read() {
         let amount = match event.unit {
             MouseScrollUnit::Line => event.y,
             MouseScrollUnit::Pixel => event.y * 0.01,
         };
-        orbit.distance = (orbit.distance * (-amount * 0.1).exp()).clamp(1e-8, 1e12);
+        orbit.input_active = true;
+        orbit.motion.zoom(-amount * 0.1);
     }
+    let zoom = orbit.motion.zoom_step(dt);
+    orbit.distance = (orbit.distance * zoom.exp()).clamp(1e-8, 1e12);
 }
-
 fn stop_renderer(stop: Res<RendererStop>, mut exit: MessageWriter<AppExit>) {
     if stop.0.load(Ordering::Acquire) {
         exit.write(AppExit::Success);
@@ -737,6 +794,7 @@ type AnnotationLabels<'w, 's> = Query<
         &'static AnnotationLabel,
         &'static mut Text,
         &'static mut Node,
+        Option<&'static bevy::text::TextLayoutInfo>,
     ),
     Without<BodyMarker>,
 >;
@@ -745,23 +803,31 @@ fn maintain_labels(
     labels: &mut AnnotationLabels,
     desired: Vec<(String, String, Vec2)>,
     font: Handle<Font>,
+    opacity: &std::collections::HashMap<String, f32>,
 ) {
     let mut desired: std::collections::HashMap<_, _> = desired
         .into_iter()
         .map(|(id, text, pixel)| (id, (text, pixel)))
         .collect();
-    for (entity, label, mut text, mut node) in labels.iter_mut() {
+    for (entity, label, mut text, mut node, _) in labels.iter_mut() {
         if let Some((value, pixel)) = desired.remove(&label.object) {
             if text.0 != value {
                 text.0 = value;
             }
             node.left = Val::Px(pixel.x + 8.0);
             node.top = Val::Px(pixel.y - 8.0);
+            commands.entity(entity).insert(TextColor(Color::srgba(
+                1.,
+                1.,
+                1.,
+                opacity.get(&label.object).copied().unwrap_or(1.),
+            )));
         } else {
             commands.entity(entity).despawn();
         }
     }
     for (object, (text, pixel)) in desired {
+        let alpha = opacity.get(&object).copied().unwrap_or(1.);
         commands.spawn((
             AnnotationLabel { object },
             Text::new(text),
@@ -770,7 +836,7 @@ fn maintain_labels(
                 font_size: FontSize::Px(14.0),
                 ..default()
             },
-            TextColor(Color::WHITE),
+            TextColor(Color::srgba(1., 1., 1., alpha)),
             Node {
                 position_type: PositionType::Absolute,
                 left: Val::Px(pixel.x + 8.0),
@@ -790,6 +856,9 @@ fn draw_annotations(
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
     mut label_font: Local<Option<Handle<Font>>>,
+    mut fades: Local<std::collections::HashMap<String, crate::label_visibility::Fade>>,
+    time: Res<Time>,
+    mut near_focus: Local<bool>,
     mut markers: Query<
         (Entity, &BodyMarker, &mut Node, &mut BackgroundColor),
         Without<AnnotationLabel>,
@@ -800,12 +869,33 @@ fn draw_annotations(
         *frame = PickFrame::default();
     }
     let mut desired_labels = Vec::new();
+    let measured: std::collections::HashMap<String, Vec2> = labels
+        .iter_mut()
+        .filter_map(|(_, label, _, _, layout)| {
+            layout
+                .filter(|l| l.size.x > 0. && l.size.y > 0.)
+                .map(|l| (label.object.clone(), l.size + Vec2::splat(4.)))
+        })
+        .collect();
+    let mut opacity = std::collections::HashMap::new();
     let Ok(core) = store.0.lock() else {
-        maintain_labels(&mut commands, &mut labels, Vec::new(), Handle::default());
+        maintain_labels(
+            &mut commands,
+            &mut labels,
+            Vec::new(),
+            Handle::default(),
+            &opacity,
+        );
         return;
     };
     let Ok((camera, camera_transform)) = camera.single() else {
-        maintain_labels(&mut commands, &mut labels, Vec::new(), Handle::default());
+        maintain_labels(
+            &mut commands,
+            &mut labels,
+            Vec::new(),
+            Handle::default(),
+            &opacity,
+        );
         return;
     };
     let to_display = |p: [f64; 3]| {
@@ -813,16 +903,56 @@ fn draw_annotations(
         Vec3::new(p.x as f32, p.z as f32, -p.y as f32)
     };
     let viewport = camera.logical_viewport_size().unwrap_or(Vec2::ZERO);
+    let c = camera_transform.translation().as_dvec3() / settings.units_per_km;
+    let scientific_camera = settings.origin_km + DVec3::new(c.x, -c.z, c.y);
+    let spheres: Vec<_> = core
+        .object_ids()
+        .filter_map(|id| {
+            core.object_state_at(id, core.clock().epoch())
+                .ok()
+                .map(|state| {
+                    (
+                        id.to_owned(),
+                        DVec3::from_array(state.position_km),
+                        state.radius_km,
+                    )
+                })
+        })
+        .collect();
+
     let mut pick_frame = PickFrame {
         viewport: viewport.to_array(),
         targets: Vec::new(),
     };
+    fades.retain(|id, _| spheres.iter().any(|(body, _, _)| body == id));
+    let focus_range = core
+        .focused_object()
+        .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|f| {
+            let range = scientific_camera
+                .distance(DVec3::from_array(f.position_km))
+                .max(f.radius_km);
+            let angular = f.radius_km / range;
+            *near_focus = angular > if *near_focus { 0.018 } else { 0.022 };
+            range
+        });
+    if focus_range.is_none() {
+        *near_focus = false;
+    }
     let mut depths = std::collections::HashMap::new();
     let mut marker_nodes = std::collections::HashMap::new();
     for id in core.object_ids() {
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
         };
+        if crate::label_visibility::occluded(
+            scientific_camera,
+            DVec3::from_array(state.position_km),
+            &spheres,
+            id,
+        ) {
+            continue;
+        }
         let position = to_display(state.position_km);
         let Ok(pixel) = camera.world_to_viewport(camera_transform, position) else {
             continue;
@@ -957,7 +1087,37 @@ fn draw_annotations(
             };
             let position = to_display(state.position_km);
             if let Ok(pixel) = camera.world_to_viewport(camera_transform, position) {
-                desired_labels.push((id.to_owned(), text.to_owned(), pixel));
+                if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
+                    fades.remove(id);
+                    continue;
+                }
+                let local_system = !*near_focus
+                    || focus_range.is_none_or(|range| {
+                        scientific_camera.distance(DVec3::from_array(state.position_km))
+                            < range * 100.
+                    });
+                let blocked = crate::label_visibility::occluded(
+                    scientific_camera,
+                    DVec3::from_array(state.position_km),
+                    &spheres,
+                    id,
+                );
+                let allowed = local_system && !blocked;
+                let coverage = (state.radius_km
+                    / scientific_camera
+                        .distance(DVec3::from_array(state.position_km))
+                        .max(state.radius_km)) as f32;
+                let alpha = fades.entry(id.to_owned()).or_default().update(
+                    coverage,
+                    allowed,
+                    time.delta_secs(),
+                );
+                if !blocked && alpha > 0.02 {
+                    opacity.insert(id.to_owned(), alpha);
+                    desired_labels.push((id.to_owned(), text.to_owned(), pixel));
+                }
+            } else {
+                fades.remove(id);
             }
         }
     }
@@ -974,15 +1134,23 @@ fn draw_annotations(
             })
         })
     });
-    let desired_labels = crate::screen_layout::place_labels(desired_labels, viewport, priority);
+    let desired_labels =
+        crate::screen_layout::place_labels_measured(desired_labels, viewport, priority, &measured);
     for (id, text, anchor) in &desired_labels {
+        if opacity.get(id).copied().unwrap_or(0.) < 0.5 {
+            continue;
+        }
         if let Some(&depth) = depths.get(id) {
             pick_frame.targets.push(PickTarget {
                 id: id.clone(),
                 depth,
                 shape: PickShape::Label {
                     min: (*anchor + Vec2::new(8., -8.)).to_array(),
-                    size: crate::screen_layout::label_size(text).to_array(),
+                    size: measured
+                        .get(id)
+                        .copied()
+                        .unwrap_or_else(|| crate::screen_layout::label_size(text))
+                        .to_array(),
                 },
             });
         }
@@ -997,7 +1165,7 @@ fn draw_annotations(
             .get_or_insert_with(|| assets.load("fonts/FiraMono-subset.ttf"))
             .clone()
     };
-    maintain_labels(&mut commands, &mut labels, desired_labels, font);
+    maintain_labels(&mut commands, &mut labels, desired_labels, font, &opacity);
 }
 
 #[cfg(test)]
@@ -1115,6 +1283,7 @@ mod label_persistence_tests {
             &mut labels,
             desired.0.clone(),
             Handle::default(),
+            &std::collections::HashMap::from([("earth".to_owned(), 0.2)]),
         );
     }
     #[test]
@@ -1130,15 +1299,29 @@ mod label_persistence_tests {
             .query_filtered::<Entity, With<AnnotationLabel>>()
             .single(app.world())
             .unwrap();
+        // Existing labels must update opacity; only surviving entities may receive commands.
+        app.world_mut()
+            .entity_mut(entity)
+            .insert(TextColor(Color::WHITE));
         app.world_mut().resource_mut::<DesiredLabels>().0 =
             vec![("earth".into(), "EARTH updated".into(), Vec2::splat(10.))];
         app.update();
         assert!(app.world().get::<AnnotationLabel>(entity).is_some());
+        assert!((app.world().get::<TextColor>(entity).unwrap().0.alpha() - 0.2).abs() < 1e-5);
         assert_eq!(app.world().get::<Text>(entity).unwrap().0, "EARTH updated");
         assert_eq!(app.world().get::<Node>(entity).unwrap().left, Val::Px(18.));
         app.world_mut().resource_mut::<DesiredLabels>().0.clear();
         app.update();
         assert!(app.world().get::<AnnotationLabel>(entity).is_none());
+        // Removal must not leave a later TextColor insertion targeting the dead entity.
+        app.update();
+        assert_eq!(
+            app.world_mut()
+                .query_filtered::<Entity, With<AnnotationLabel>>()
+                .iter(app.world())
+                .count(),
+            0
+        );
     }
 }
 
@@ -1147,6 +1330,57 @@ mod repeated_focus_tests {
     use super::*;
     use crate::{Core, ObjectState, SessionPermissions};
     use std::sync::Mutex;
+    #[test]
+    fn overview_distance_is_not_reinterpreted_before_new_focus_is_framed() {
+        let shared = Arc::new(Mutex::new(Core::default()));
+        {
+            let mut c = shared.lock().unwrap();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                SessionPermissions {
+                    camera_control: true,
+                    ..default()
+                },
+            )
+            .unwrap();
+            c.register_object("s", "sun").unwrap();
+            c.set_object_state(
+                "s",
+                "sun",
+                ObjectState {
+                    orientation_wxyz: None,
+                    position_km: [0.; 3],
+                    radius_km: 695500.,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 1.],
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                },
+            )
+            .unwrap();
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        app.world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()));
+        app.update();
+        app.world_mut().resource_mut::<OrbitView>().distance = 1e12;
+        shared.lock().unwrap().focus("s", "p", "sun").unwrap();
+        app.update();
+        assert_eq!(shared.lock().unwrap().focused_object(), Some("sun"));
+        let view = app.world().resource::<OrbitView>();
+        assert_eq!(view.target.as_deref(), Some("sun"));
+        assert!(
+            view.distance < 100.,
+            "old overview distance leaked into focused radius units"
+        );
+        app.update();
+        assert_eq!(shared.lock().unwrap().focused_object(), Some("sun"));
+    }
     #[test]
     fn explicit_focus_of_same_target_restores_framing() {
         let shared = Arc::new(Mutex::new(Core::default()));

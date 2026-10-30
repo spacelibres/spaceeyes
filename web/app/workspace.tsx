@@ -103,6 +103,9 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      galaxy={state.galaxy}
+      onGalaxy={() => action((value) => value.galaxy(!state.galaxy.enabled))}
+      onRetryGalaxy={() => action((value) => value.galaxy(true))}
       starfield={state.starfield}
       onStarfield={() =>
         action((value) => value.starfield(!state.starfield.enabled))

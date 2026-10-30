@@ -8,6 +8,7 @@ const config: NextConfig = {
     "sharp",
     "@loaders.gl/textures",
     "gl-matrix",
+    "three",
   ],
 };
 export default config;

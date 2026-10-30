@@ -34,12 +34,16 @@ pub(crate) struct VisualRoot {
     instance_ready: bool,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn attach_visuals(
     mut commands: Commands,
     store: Res<CoreStore>,
     assets: Res<AssetServer>,
     shared: Res<SharedVisuals>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut stellar_materials: ResMut<Assets<crate::stellar_render::StellarMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut prominence_materials: ResMut<Assets<crate::stellar_render::ProminenceMaterial>>,
     query: Query<(Entity, &SceneObject, Option<&AppliedVisual>)>,
 ) {
     let Ok(mut core) = store.0.lock() else {
@@ -63,6 +67,7 @@ pub(crate) fn attach_visuals(
                 ring_outer_radius_ratio: None,
                 color_rgba: None,
                 emissive_rgba: None,
+                stellar: None,
             },
             |visual| visual.spec,
         );
@@ -75,6 +80,16 @@ pub(crate) fn attach_visuals(
                 ..
             } => Some((ids.clone(), *inner as f32, *outer as f32)),
             _ => None,
+        };
+        let stellar = match &spec {
+            VisualSpec::Sphere { stellar, .. } => stellar.clone(),
+            _ => None,
+        };
+        let stellar_gain = match &spec {
+            VisualSpec::Sphere {
+                stellar: Some(s), ..
+            } => 1.0 + s.corona_intensity * 0.6,
+            _ => 1.0,
         };
         let root = match spec {
             VisualSpec::Sphere {
@@ -96,7 +111,14 @@ pub(crate) fn attach_visuals(
                         .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
                         .unwrap_or(Color::WHITE),
                     emissive: emissive_rgba
-                        .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                        .map(|c| {
+                            LinearRgba::new(
+                                c[0] * stellar_gain,
+                                c[1] * stellar_gain,
+                                c[2] * stellar_gain,
+                                c[3],
+                            )
+                        })
                         .unwrap_or(LinearRgba::BLACK),
                     ..default()
                 });
@@ -157,6 +179,7 @@ pub(crate) fn attach_visuals(
                 ring_outer_radius_ratio: _,
                 color_rgba,
                 emissive_rgba,
+                ..
             } => {
                 let Some(descriptor) = core.asset_descriptor(&asset_id) else {
                     continue;
@@ -169,7 +192,14 @@ pub(crate) fn attach_visuals(
                         .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
                         .unwrap_or(Color::WHITE),
                     emissive: emissive_rgba
-                        .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                        .map(|c| {
+                            LinearRgba::new(
+                                c[0] * stellar_gain,
+                                c[1] * stellar_gain,
+                                c[2] * stellar_gain,
+                                c[3],
+                            )
+                        })
                         .unwrap_or(LinearRgba::BLACK),
                     perceptual_roughness: 0.9,
                     ..default()
@@ -198,6 +228,7 @@ pub(crate) fn attach_visuals(
                 ring_outer_radius_ratio: _,
                 color_rgba,
                 emissive_rgba,
+                ..
             } => {
                 core.record_visual_status(&object.id, revision, VisualPhase::Ready, None);
                 commands
@@ -209,7 +240,14 @@ pub(crate) fn attach_visuals(
                                     .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
                                     .unwrap_or(Color::WHITE),
                                 emissive: emissive_rgba
-                                    .map(|c| LinearRgba::new(c[0], c[1], c[2], c[3]))
+                                    .map(|c| {
+                                        LinearRgba::new(
+                                            c[0] * stellar_gain,
+                                            c[1] * stellar_gain,
+                                            c[2] * stellar_gain,
+                                            c[3],
+                                        )
+                                    })
                                     .unwrap_or(LinearRgba::BLACK),
                                 ..default()
                             }),
@@ -220,6 +258,33 @@ pub(crate) fn attach_visuals(
                     .id()
             }
         };
+        if let Some(stellar) = stellar.filter(|s| s.corona_intensity > 0.0) {
+            commands.spawn((
+                Mesh3d(meshes.add(crate::stellar_render::prominence_mesh())),
+                MeshMaterial3d(prominence_materials.add(
+                    crate::stellar_render::ProminenceMaterial {
+                        parameters: Vec4::new(stellar.corona_intensity, stellar.flow_speed, 0., 0.),
+                    },
+                )),
+                Transform::default(),
+                ChildOf(root),
+            ));
+            commands.spawn((
+                Mesh3d(shared.mesh.clone()),
+                MeshMaterial3d(
+                    stellar_materials.add(crate::stellar_render::StellarMaterial {
+                        parameters: Vec4::new(
+                            stellar.corona_intensity,
+                            stellar.flow_speed,
+                            0.0,
+                            0.0,
+                        ),
+                    }),
+                ),
+                Transform::from_scale(Vec3::splat(1.65)),
+                ChildOf(root),
+            ));
+        }
         if let Some((ids, inner, outer)) = ring {
             let Some(top_asset) = core.asset_descriptor(&ids[0]) else {
                 continue;

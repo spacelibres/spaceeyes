@@ -131,3 +131,14 @@ NASA DYN 服务对固定 SHA256 的金星重复记录、火星历史回退文件
 当前标签字库是服务器 `/assets/fonts/FiraMono-subset.ttf`，首次有实际标签显示时由 Bevy AssetServer 加载，不使用编译内嵌 default_font。字体不包含完整中文字形。插件不能借此指定任意字体 URL 或绕过受控目录。
 
 Bevy 着色器、运行时生成的基础网格及程序常量属于核心程序；WASM data section 不等于业务资产包，不能通过清空所有 data section 实现资源分离。
+
+
+## 深空环境与恒星显示（SDK 0.0.19）
+
+- `visual.environment({assetId, frame: 'ICRF', intensity})` 或 `null` 需要 `scene.visual`；assetId 必须是宿主登记的 texture，intensity 为有限 [0,4]。只允许一个活动会话拥有环境；其他会话不能覆盖或清除，释放会话自动清理。环境是方向背景，不生成科学天体或轨道，不授予灯光、相机或任意 URL 权限。
+- sphere 可选 `stellar: {coronaIntensity, flowSpeed}`，分别为有限 [0,4]、[0,2]；SDK 复制并冻结，Rust 再验证。它只描述通用自发光天体的视觉效果，不改变科学尺寸、时间或状态，不能用于推断太阳观测数据。
+- 银河固定源、原始字节及 SHA256 见 validation/galaxy-assets.json。服务器成熟 EXR 解码后做线性曝光/Reinhard/sRGB 转换并翻转底向上行序；派生图单独通过服务器加载，不进入 WASM。浏览器仍只有 Bevy 渲染器。
+- 银河加载状态由宿主查询核心 pending/ready/failed/disabled；ready 表示纹理加载，不代表着色器或 GPU 验收。必须检查包括 Bevy 转发为 log 级别的 ERROR 信息。关闭/退出取消订阅，不能复活旧层；失败可重试。
+- 标签显隐、遮挡、文字测量、碰撞及鼠标轻惯性由核心执行；插件不能直接改 Bevy 实体。未来头显姿态不得套用鼠标惯性滤波；未提供 WebXR 或头显验收。
+
+银河宿主可在已登记预览与高清assetId之间渐进替换；核心在新纹理就绪前保留旧层，关闭清理两者。当前仅两级全景，不代表视野瓦片调度。stellar日珥是核心通用视觉模拟，不改变科学半径，不能作为磁场或真实喷发数据。

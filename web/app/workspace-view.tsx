@@ -13,6 +13,9 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  galaxy: { enabled: boolean; phase: string; detail?: string };
+  onGalaxy: () => void;
+  onRetryGalaxy: () => void;
   starfield: StarfieldProgress;
   onStarfield: () => void;
   onRetryStarfield: () => void;
@@ -372,6 +375,32 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </section>
           )}
           <h3>显示图层</h3>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={p.galaxy.enabled}
+              disabled={!p.active}
+              onChange={p.onGalaxy}
+            />
+            银河全景
+          </label>
+          <p className="muted" role="status" aria-label="银河加载状态">
+            {!p.galaxy.enabled
+              ? "银河已关闭"
+              : p.galaxy.phase === "ready"
+                ? "NASA 银河全景已就绪"
+                : p.galaxy.phase === "failed"
+                  ? "银河资源暂不可用"
+                  : "正在加载 NASA 银河全景"}
+          </p>
+          {p.galaxy.phase === "failed" && (
+            <div>
+              <p>{p.galaxy.detail}</p>
+              <button disabled={!p.active} onClick={p.onRetryGalaxy}>
+                重试银河
+              </button>
+            </div>
+          )}
           <label className="toggle">
             <input
               type="checkbox"

@@ -10,6 +10,7 @@ const fonts = new URL('../public/assets/fonts/', import.meta.url);
 const shaders = new URL('../public/assets/shaders/', import.meta.url);
 await mkdir(shaders, { recursive: true });
 await copyFile(new URL('../resources/shaders/ring-particles.wgsl', import.meta.url), new URL('ring-particles.wgsl', shaders));
+await copyFile(new URL('../resources/shaders/stellar.wgsl', import.meta.url), new URL('stellar.wgsl', shaders));
 await mkdir(fonts, { recursive: true });
 await copyFile(fontSource, new URL('FiraMono-subset.ttf', fonts));
 const output = new URL('../public/wasm/', import.meta.url);
@@ -19,3 +20,6 @@ for (const file of ['spaceeyes_core.js', 'spaceeyes_core_bg.wasm']) {
 }
 console.log('Prepared renderer WASM runtime; external font verified absent from WASM, surfaces load on selection.');
 await copyFile(new URL('../resources/shaders/starfield.wgsl', import.meta.url), new URL('starfield.wgsl', shaders));
+await copyFile(new URL('../resources/shaders/galaxy.wgsl', import.meta.url), new URL('galaxy.wgsl', shaders));
+
+await copyFile(new URL('../resources/shaders/prominence.wgsl', import.meta.url), new URL('prominence.wgsl', shaders));

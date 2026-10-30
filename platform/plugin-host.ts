@@ -1,4 +1,8 @@
 import { snapshotStarfield, type StarfieldSpec } from "./starfield-contract.ts";
+import {
+  snapshotEnvironment,
+  type EnvironmentSpec,
+} from "./environment-contract.ts";
 // Original SPACEEYES code, MIT. Trusted in-process plugin lifecycle only.
 import type { CorePort } from "./core-port.ts";
 import {
@@ -32,6 +36,7 @@ export interface PluginContext {
     focus(targetId: string): void;
   };
   readonly visual: {
+    environment(spec: EnvironmentSpec | null): void;
     starfield(layerId: string, spec: StarfieldSpec | null): void;
     trajectory(
       targetId: string,
@@ -182,17 +187,34 @@ export class PluginHost {
       pluginId: id,
       signal: session.controller.signal,
       visual: Object.freeze({
+        environment(spec: EnvironmentSpec | null) {
+          requireCapability("scene.visual");
+          const snapshot = spec === null ? null : snapshotEnvironment(spec);
+          if (!core?.environment) throw Error("environment unavailable");
+          core.environment({ pluginId: id, sessionId, spec: snapshot });
+        },
         starfield(layerId: string, spec: StarfieldSpec | null) {
           requireCapability("scene.visual");
-          if (typeof layerId !== "string" || !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,255}$/.test(layerId)) throw new Error("invalid starfield layer id");
+          if (
+            typeof layerId !== "string" ||
+            !/^[A-Za-z0-9][A-Za-z0-9:._-]{0,255}$/.test(layerId)
+          )
+            throw new Error("invalid starfield layer id");
           const snapshot = spec === null ? null : snapshotStarfield(spec);
           const next = new Map(starfieldCounts);
-          if (snapshot) next.set(layerId, snapshot.magnitudes.length); else next.delete(layerId);
-          if (next.size > 8 || [...next.values()].reduce((a,b)=>a+b,0) > 50000) throw new Error("starfield budget exceeded");
+          if (snapshot) next.set(layerId, snapshot.magnitudes.length);
+          else next.delete(layerId);
+          if (
+            next.size > 8 ||
+            [...next.values()].reduce((a, b) => a + b, 0) > 50000
+          )
+            throw new Error("starfield budget exceeded");
           if (!core?.starfield) throw new Error("starfield unavailable");
-          core.starfield(Object.freeze({pluginId:id, sessionId, layerId, spec:snapshot}));
+          core.starfield(
+            Object.freeze({ pluginId: id, sessionId, layerId, spec: snapshot }),
+          );
           starfieldCounts.clear();
-          for (const [key,count] of next) starfieldCounts.set(key,count);
+          for (const [key, count] of next) starfieldCounts.set(key, count);
         },
         trajectory(
           targetId: string,

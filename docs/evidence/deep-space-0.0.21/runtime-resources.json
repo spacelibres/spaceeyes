@@ -1,0 +1,22 @@
+{
+  "wasmBytes": 29590308,
+  "wasmSha256": "b7d8f43e5a72509ad0c764ef78e04c255dfa7a1267c18cd766962d6bb7dc53c0",
+  "externalShaders": [
+    {
+      "file": "galaxy.wgsl",
+      "embedded": false
+    },
+    {
+      "file": "stellar.wgsl",
+      "embedded": false
+    },
+    {
+      "file": "starfield.wgsl",
+      "embedded": false
+    },
+    {
+      "file": "prominence.wgsl",
+      "embedded": false
+    }
+  ]
+}

@@ -112,6 +112,7 @@ function harness() {
   }
   return {
     backgroundStars: false,
+    backgroundGalaxy: false,
     loadCore: async () => ({
       default: async () => {},
       WasmCore: TestCore as unknown as new () => HostCore,

@@ -1,0 +1,24 @@
+[
+  {
+    "file": "milkyway_2020_4k.exr",
+    "url": "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k.exr",
+    "bytes": 36436668,
+    "sha256": "2eb802d6e68d170b410f766c7fec07f7518619f6b6708fdc81e9302d93e74fdb",
+    "headerHex": "762f3101020000006368616e6e656c73",
+    "compressionCode": 3,
+    "width": 4096,
+    "height": 2048
+  },
+  {
+    "file": "sun-glow.png",
+    "url": "https://eyes.nasa.gov/assets/static/sprites/sun_glow.png",
+    "bytes": 1771,
+    "sha256": "90621a9e8f9da6558c46e18d95c80a08e91d3bf8743fd9327100b6042ce83dad",
+    "headerHex": "89504e470d0a1a0a0000000d49484452"
+  },
+  {
+    "url": "https://eyes.nasa.gov/assets/static/env_maps/starmap_2048.jpg",
+    "status": 403,
+    "note": "NASA Eyes declared resource could not be downloaded; prefer verified NASA SVS bright-star-free panorama"
+  }
+]

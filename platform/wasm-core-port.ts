@@ -4,7 +4,14 @@ import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
-  set_starfield?(plugin: string, session: string, layer: string, specJson?: string): void;
+  set_environment?(plugin: string, session: string, specJson?: string): void;
+  environment_status?(): string;
+  set_starfield?(
+    plugin: string,
+    session: string,
+    layer: string,
+    specJson?: string,
+  ): void;
   tdb_to_utc?(tdbSeconds: number): number;
   utc_to_tdb?(unixSeconds: number): number;
   open_session(
@@ -55,6 +62,16 @@ export interface WasmCoreBinding {
 }
 
 export class WasmCorePort implements CorePort {
+  environment(
+    request: Parameters<NonNullable<CorePort["environment"]>>[0],
+  ): void {
+    if (!this.#binding.set_environment) throw Error("environment unavailable");
+    this.#binding.set_environment(
+      request.pluginId,
+      request.sessionId,
+      request.spec === null ? undefined : JSON.stringify(request.spec),
+    );
+  }
   #binding: WasmCoreBinding;
   constructor(binding: WasmCoreBinding) {
     this.#binding = binding;
@@ -71,7 +88,12 @@ export class WasmCorePort implements CorePort {
   }
   starfield(request: Parameters<NonNullable<CorePort["starfield"]>>[0]): void {
     if (!this.#binding.set_starfield) throw new Error("starfield unavailable");
-    this.#binding.set_starfield(request.pluginId, request.sessionId, request.layerId, request.spec === null ? undefined : JSON.stringify(request.spec));
+    this.#binding.set_starfield(
+      request.pluginId,
+      request.sessionId,
+      request.layerId,
+      request.spec === null ? undefined : JSON.stringify(request.spec),
+    );
   }
   releaseSession(sessionId: string): void {
     this.#binding.release_session(sessionId);
