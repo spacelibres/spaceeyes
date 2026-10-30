@@ -154,3 +154,12 @@ Bevy 着色器、运行时生成的基础网格及程序常量属于核心程序
 ### 三维外流标签（SDK 0.0.21）
 
 `windMaterialPoint(positionR, flightSeconds, timeSeconds, periodSeconds)` 返回摄像机无关的三维物质坐标标签，仅用于显示输运一致性验证；positionR在1..12R范围内，周期边界淡入淡出。它不是粒子科学状态、磁场数据或新场景权限。宿主生成的外置体积查表覆盖1..12R，Parker科学表仍到1AU。消光、亮度和时间压缩是显示映射，不得把周期扰动宣称为完整守恒MHD。相机不作为密度场输入，未来每眼分别计算射线；未验收VR。
+
+
+## 太阳特效实时调参（核心0.0.23 / SDK0.0.22）
+
+`visual.stellar(targetId, tuning)`需要已批准的scene.visual及本会话已有的stellar球体对象。tuning只含settings和profile；settings严格包含platform/stellar-controls.json全部58个具名字段，不接受未知字段。使用`stellarDefaults()`、`snapshotSettings()`和`buildStellarTuning(settings)`构造；后者按温度和1AU参考电子密度重算64点Parker表，并缓存物理输入，普通视觉调整不重复求解。
+
+profile含density/travel各64个有限值，density相对根部且>0、<=1.00001，首点1；travel首点0且严格递增，不超过1e12秒。范围固定1..12R对数半径；不能塞任意shader、URL或Core指针。TS冻结副本，Rust再次校验字段、数值范围、配对关系、顶点预算和归属。采样步数4..24，日珥顶点<=50000；fullDistance<=enterDistance<exitDistance，fadeStart<outerRadius，各阈值低<高。
+
+更新不增加视觉资源修订，不重载贴图；普通字段进入现有uniform，日珥几何字段替换同一专用Mesh资产内容。源对象移除、清空表示或释放会话清除调参；旧会话不可再更新。宿主关闭面板保留本次配置，本机保存/恢复及JSON导入导出由宿主管理，导入仍必须走同样校验。Parker温度和密度为示例边界，不是实测日期；日珥网格/体积噪声不是离散粒子或完整MHD。

@@ -1,3 +1,4 @@
+import {snapshotStellarTuning,type StellarTuning} from './stellar-tuning.ts';
 import { snapshotStarfield, type StarfieldSpec } from "./starfield-contract.ts";
 import {
   snapshotEnvironment,
@@ -49,6 +50,7 @@ export interface PluginContext {
     ): void;
     label(targetId: string, text: string): void;
     layers(layers: { labels: boolean; trajectories: boolean }): void;
+    stellar(targetId:string,tuning:StellarTuning):void;
     set(targetId: string, spec: VisualSpec): void;
     clear(targetId: string): void;
     status(targetId: string): Readonly<VisualStatus> | null;
@@ -310,6 +312,13 @@ export class PluginHost {
             labels: layers.labels,
             trajectories: layers.trajectories,
           });
+        },
+        stellar(targetId:string,tuning:StellarTuning) {
+          requireCapability("scene.visual");
+          validateTargetId(targetId);
+          const snapshot=snapshotStellarTuning(tuning);
+          if(!core?.tuneStellar)throw Error("stellar tuning unavailable");
+          core.tuneStellar(Object.freeze({pluginId:id,sessionId,targetId,tuning:snapshot}));
         },
         set(targetId: string, spec: VisualSpec) {
           requireCapability("scene.visual");

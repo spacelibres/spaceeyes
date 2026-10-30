@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import SolarTuningPanel from "./solar-tuning-panel";
 import { SceneGesture } from "../lib/scene-gesture";
 import type { StarfieldProgress } from "../../platform/starfield-source";
 export type CatalogEntry = {
@@ -13,6 +14,8 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  stellarSettings?:Record<string,number>;
+  onStellar?:(settings:Record<string,number>)=>void;
   galaxy: { enabled: boolean; phase: string; detail?: string };
   onGalaxy: () => void;
   onRetryGalaxy: () => void;
@@ -336,7 +339,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <dd>{p.dataStatus}</dd>
             <dt>科学来源</dt>
             <dd>{p.source}</dd>
-            {p.selected === "sun" && <><dt>太阳风模型</dt><dd>Parker 等温跨声速模型 · 1.5 MK、1 AU 密度 5 cm⁻³ 为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整 MHD。</dd></>}
+            {p.selected === "sun" && <><dt>太阳风模型</dt><dd>Parker 等温跨声速模型 · {p.stellarSettings?.temperatureMK ?? 1.5} MK、1 AU 密度 {p.stellarSettings?.densityCm3 ?? 5} cm⁻³ 为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整 MHD。</dd></>}
             <dt>有效覆盖 · J2000 TDB 秒</dt>
             <dd>{p.coverage}</dd>
             {object && (
@@ -375,6 +378,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 ))}
             </section>
           )}
+          {p.selected === "sun" && p.onStellar && <SolarTuningPanel active={p.active && !p.busy} onApply={p.onStellar} initial={p.stellarSettings} />}
           <h3>显示图层</h3>
           <label className="toggle">
             <input

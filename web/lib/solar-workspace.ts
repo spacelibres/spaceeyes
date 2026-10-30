@@ -1,3 +1,4 @@
+import {buildStellarTuning,snapshotSettings} from '../../platform/stellar-tuning.ts';
 import { PluginHost, type PluginContext } from "../../platform/plugin-host.ts";
 import {
   WasmCorePort,
@@ -92,6 +93,7 @@ export const workspaceCatalog = solarCatalog
     parentId: body.parentId ?? undefined,
   }));
 export interface WorkspaceRuntime {
+  tuneStellar(settings:Record<string,number>):void;
   galaxy(enabled: boolean): void;
   starfield(enabled: boolean): Promise<void>;
   retryStarfield(): Promise<void>;
@@ -218,6 +220,7 @@ export async function createWorkspace(
     lastEmit = 0;
   let queue: Promise<void> = Promise.resolve(),
     disposal: Promise<void> | undefined;
+  let stellarSettings:Readonly<Record<string,number>>|undefined;
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
   let lastTrajectoryRefresh = 0;
@@ -431,6 +434,7 @@ export async function createWorkspace(
                   }
                 : {}),
             });
+          if(body.id === "sun" && stellarSettings) sdk.visual.stellar(body.id,buildStellarTuning(stellarSettings));
           if (upgrade) detailedBodies.add(body.id);
           sdk.visual.label(
             body.id,
@@ -560,6 +564,12 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    tuneStellar(settings) {
+      assertLive();
+      const tuning=buildStellarTuning(settings);
+      sdk.visual.stellar("sun",tuning);
+      stellarSettings=snapshotSettings(settings);
+    },
     galaxy(enabled) {
       assertLive();
       galaxyPreview = enabled;

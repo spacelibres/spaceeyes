@@ -258,10 +258,12 @@ pub(crate) fn attach_visuals(
                     .id()
             }
         };
-        if let Some(stellar) = stellar.filter(|s| s.corona_intensity > 0.0) {
+        if let Some(stellar) = stellar {
             commands
                 .entity(root)
                 .insert(crate::stellar_render::StellarEmitter {
+                    source: object.id.clone(),
+                    clock: 0.,
                     parameters: Vec4::new(stellar.corona_intensity, stellar.flow_speed, 0., 0.),
                 });
         }

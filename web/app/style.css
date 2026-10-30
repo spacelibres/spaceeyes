@@ -491,3 +491,25 @@ button:hover:enabled {
     font-size: 12px;
   }
 }
+
+/* Solar controls share the approved workspace palette and existing SVG identity. */
+.solar-tuning { margin-block:16px; border-top:1px solid var(--line); padding-top:16px; font-size:13px; }
+.solar-tuning summary { cursor:pointer; font-weight:bold; padding-block:8px; }
+.solar-tuning small { font-weight:normal; color:var(--muted); opacity:1; }
+.solar-tuning fieldset { border:0; padding:0; min-width:0; }
+.solar-tuning legend { font-size:12px; padding-block:8px; }
+.solar-tuning-group { border-bottom:1px solid var(--line); padding-block:8px; }
+.solar-tuning-control { display:grid; grid-template-columns:minmax(0,1fr) 80px; gap:8px; margin-block:16px; align-items:center; }
+.solar-tuning-control label, .solar-tuning-control small { grid-column:1 / -1; }
+.solar-tuning-control input { min-width:0; width:100%; accent-color:var(--primary); }
+.solar-tuning-control input[type=checkbox] { width:20px; height:20px; }
+.solar-tuning-control input[type=color] { width:72px; height:32px; }
+.solar-tuning input[type=number], .solar-tuning textarea { background:var(--card); color:var(--ink); border:1px solid var(--muted); border-radius:4px; padding:6px; }
+.solar-tuning textarea { width:100%; min-height:160px; font:12px Consolas,monospace; }
+.solar-tuning-actions { display:flex; flex-wrap:wrap; gap:8px; margin-block:12px; }
+.solar-tuning button { font-size:12px; padding:6px 8px; cursor:pointer; }
+.solar-tuning-error { color:var(--danger); overflow-wrap:anywhere; }
+.solar-tuning p { line-height:1.6; }
+.solar-tuning a { color:var(--primaryOnLight); text-decoration:underline; }
+.solar-tuning :disabled { opacity:.6; cursor:default; }
+.solar-tuning-note { color:var(--muted); }

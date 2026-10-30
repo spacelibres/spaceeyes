@@ -164,6 +164,7 @@ impl Core {
         }
         let Some(spec) = spec else {
             self.visuals.remove(id);
+            self.stellar_tuning.remove(id);
             self.visual_statuses.remove(id);
             self.visual_parts.remove(id);
             return Ok(());
@@ -258,6 +259,7 @@ impl Core {
             .checked_add(1)
             .ok_or(CoreError::CapacityExceeded)?;
         self.next_visual_revision = revision;
+        self.stellar_tuning.remove(id);
         let mut parts = std::collections::HashSet::from(["surface".to_owned()]);
         if matches!(
             &spec,

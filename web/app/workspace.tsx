@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import {stellarDefaults,snapshotSettings} from "../../platform/stellar-tuning";
 import WorkspaceView from "./workspace-view";
 import {
   createWorkspace,
@@ -10,6 +11,13 @@ import {
 
 export default function Workspace() {
   const [state, setState] = useState(initialSnapshot);
+  const [stellarSettings,setStellarSettings]=useState(stellarDefaults);
+  useEffect(()=>{
+    try {
+      const saved=localStorage.getItem("spaceeyes.solar-tuning.v1");
+      if(saved){const parsed=JSON.parse(saved);if(parsed.version!==1)throw Error("太阳配置版本不支持");setStellarSettings({...snapshotSettings(parsed.settings)});}
+    }catch(error){setActionError(`恢复太阳配置失败：${String(error)}`);}
+  },[]);
   const [actionError, setActionError] = useState("");
   const actionRevision = useRef(0);
   const [search, setSearch] = useState("");
@@ -25,9 +33,16 @@ export default function Workspace() {
       controller.current?.abort();
       void runtime.current?.dispose();
     };
+    // Scrollable HTML controls overlay the canvas. Keep their wheel events out
+    // of winit's window-level input listeners while preserving native scrolling.
+    const uiWheel = (event:WheelEvent) => {
+      if(event.target instanceof Element && event.target.closest("#info-panel,#catalog-panel,#time-panel")) event.stopImmediatePropagation();
+    };
+    window.addEventListener("wheel",uiWheel,{capture:true,passive:true});
     window.addEventListener("pagehide", leave);
     return () => {
       mounted.current = false;
+      window.removeEventListener("wheel",uiWheel,true);
       window.removeEventListener("pagehide", leave);
       leave();
     };
@@ -103,6 +118,8 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      stellarSettings={stellarSettings}
+      onStellar={(settings)=>{void action(value=>{value.tuneStellar(settings);setStellarSettings(settings);});}}
       galaxy={state.galaxy}
       onGalaxy={() => action((value) => value.galaxy(!state.galaxy.enabled))}
       onRetryGalaxy={() => action((value) => value.galaxy(true))}

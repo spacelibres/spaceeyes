@@ -52,6 +52,7 @@ export interface WasmCoreBinding {
     playing: boolean,
     rate: number,
   ): void;
+  tune_stellar?(session:string,plugin:string,target:string,tuningJson:string):void;
   set_visual(
     session: string,
     plugin: string,
@@ -97,6 +98,10 @@ export class WasmCorePort implements CorePort {
   }
   releaseSession(sessionId: string): void {
     this.#binding.release_session(sessionId);
+  }
+  tuneStellar(request:Parameters<NonNullable<CorePort["tuneStellar"]>>[0]):void {
+    if(!this.#binding.tune_stellar)throw Error("stellar tuning unavailable");
+    this.#binding.tune_stellar(request.sessionId,request.pluginId,request.targetId,JSON.stringify(request.tuning));
   }
   setVisual(
     request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null },

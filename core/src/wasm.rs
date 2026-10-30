@@ -247,6 +247,21 @@ impl WasmCore {
             .map_err(|e| format!("{e:?}"))
     }
 
+    pub fn tune_stellar(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        target: &str,
+        json: &str,
+    ) -> Result<(), String> {
+        if json.len() > 32768 {
+            return Err("InvalidVisual".into());
+        }
+        let tuning = serde_json::from_str(json).map_err(|_| "InvalidVisual".to_owned())?;
+        self.lock()?
+            .tune_stellar(session, plugin, target, tuning)
+            .map_err(|e| format!("{e:?}"))
+    }
     pub fn visual_status(&self, target: &str) -> Result<String, String> {
         let core = self.lock()?;
         let status = core.visual_status(target).map_err(|e| format!("{e:?}"))?;

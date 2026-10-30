@@ -40,6 +40,8 @@ mod sky_render;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;
+mod stellar_tuning;
+pub use stellar_tuning::{StellarProfile, StellarTuning};
 mod visuals;
 pub use visuals::{
     AssetDescriptor, AssetKind, VisualAssignment, VisualPhase, VisualSpec, VisualStatus,
@@ -100,6 +102,7 @@ impl Default for CoreLimits {
 
 #[derive(Default)]
 pub struct Core {
+    stellar_tuning: HashMap<String, StellarTuning>,
     starfields: HashMap<(String, String), starfield::StarfieldLayer>,
     starfield_revision: u64,
     environment: Option<deep_space::EnvironmentLayer>,
@@ -213,6 +216,7 @@ impl Core {
         self.labels.remove(object_id);
         self.states.remove(object_id);
         self.visuals.remove(object_id);
+        self.stellar_tuning.remove(object_id);
         self.visual_statuses.remove(object_id);
         self.visual_parts.remove(object_id);
         if self.focused_object() == Some(object_id) {
@@ -580,6 +584,8 @@ impl Core {
         self.states
             .retain(|object_id, _| self.objects.contains_key(object_id));
         self.visuals
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.stellar_tuning
             .retain(|object_id, _| self.objects.contains_key(object_id));
         self.visual_statuses
             .retain(|object_id, _| self.objects.contains_key(object_id));

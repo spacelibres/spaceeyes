@@ -1,3 +1,4 @@
+import type { StellarTuning } from './stellar-tuning.ts';
 import type { StarfieldSpec } from "./starfield-contract.ts";
 import type { EnvironmentSpec } from "./environment-contract.ts";
 // Internal host-to-core adapter boundary, not a public wire protocol.
@@ -48,6 +49,7 @@ export interface CorePort {
     request: FocusRequest & { readonly state: Readonly<ObjectState> },
   ): void;
   removeObject?(request: FocusRequest): void;
+  tuneStellar?(request: FocusRequest & {readonly tuning:StellarTuning}):void;
   setVisual?(
     request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null },
   ): void;
