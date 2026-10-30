@@ -1,0 +1,409 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-c983c7f4116260f9.exe)
+
+running 10 tests
+test orbit_lines::tests::close_inspection_hides_orbits_and_zooming_out_restores_them_continuously ... ok
+test picking::tests::placed_label_is_pickable_but_does_not_select_through_nearer_body ... ok
+test orbit_lines::tests::exact_vertex_is_updated_without_closing_uncovered_endpoints ... ok
+test annotation_tests::annotations_enforce_owner_budget_layers_and_cleanup ... ok
+test picking::tests::invalid_coordinates_and_cleared_frames_never_hit ... ok
+test state::orientation_tests::rejects_non_unit_orientation_and_preserves_absence ... ok
+test picking::tests::depth_ties_are_stable_and_invalid_targets_are_ignored ... ok
+test orbit_lines::tests::current_epoch_splits_its_own_interval_in_both_playback_directions ... ok
+test picking::tests::overlapping_discs_select_nearest_visible_body ... ok
+test wasm::picking_tests::host_pick_revalidates_failed_removed_objects_and_stopped_renderer ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\bevy_runtime.rs (core\target\debug\deps\bevy_runtime-7953f21d8ba41066.exe)
+
+running 3 tests
+test stale_samples_are_reported_and_do_not_remain_in_the_scene ... ok
+test real_bevy_entities_follow_core_and_use_double_precision_local_origin ... ok
+test clock_epoch_survives_json_publication_without_respawning_scene ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests\boundary.rs (core\target\debug\deps\boundary-dd36102d1338db2c.exe)
+
+running 3 tests
+test core_validates_session_permission_and_target_before_focus ... ok
+test release_removes_owned_objects_and_focus_but_preserves_other_sessions ... ok
+test identities_cannot_be_overwritten_or_reused ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\budget.rs (core\target\debug\deps\budget-45242c169cf21006.exe)
+
+running 1 test
+test bounded_lifecycle_rejects_growth_without_overwriting_existing_state ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\commands.rs (core\target\debug\deps\commands-1b8d0043a8622618.exe)
+
+running 2 tests
+test time_commands_require_explicit_authority_and_do_not_mutate_on_failure ... ok
+test publishing_and_removal_enforce_permissions_and_ownership_atomically ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\scene.rs (core\target\debug\deps\scene-9d2568b5c3e57d5e.exe)
+
+running 2 tests
+test clock_pause_rate_and_seek_are_explicit_and_reject_invalid_updates ... ok
+test scientific_state_is_owned_validated_and_not_silently_extrapolated ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\trajectory.rs (core\target\debug\deps\trajectory-fecc0cd367476539.exe)
+
+running 1 test
+test timed_annotations_validate_atomically_and_follow_object_lifecycle ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\visuals.rs (core\target\debug\deps\visuals-b1f5e0aaa9dc55f5.exe)
+
+running 5 tests
+test catalog_rejects_remote_escaping_and_incompatible_resource_paths ... ok
+test multipart_visual_ready_waits_for_both_rings_and_failure_is_terminal ... ok
+test rings_require_registered_textures_and_ordered_physical_ratios ... ok
+test visual_changes_require_ownership_permission_and_registered_assets ... ok
+test stale_load_completions_cannot_resurrect_replaced_or_removed_visuals ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests spaceeyes_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.39s
+✔ ori fields preserve wxyz and immutable owned values (2.6ms)
+✔ v1 inline and offset Uint8Array views decode (0.291ms)
+✔ v2 boundaries close segments without sentinel child (0.4318ms)
+✔ v1 explicit intervals preserve gaps and inferred padding (0.2122ms)
+✔ all truncated prefixes and trailing bytes rejected (5.5982ms)
+✔ unknown versions types flags and invalid counts rejected (0.4658ms)
+✔ nonfinite records, duplicate times and bad interval boundaries rejected (0.2886ms)
+✔ budgets reject before record allocation (0.3035ms)
+✔ orb endpoints, segment middle and body scaling remain deterministic (1.3063ms)
+✔ orientation advances angular velocity with recovered inverse sign (0.3161ms)
+✔ Eyes velocity blends analytic endpoint velocities and rejects uncovered epochs (0.4035ms)
+✔ complete source catalog and temporal parents (2.209ms)
+✔ catalog preserves descriptive names and original search keywords (0.493ms)
+✔ hyperbolic source elements stay nonperiodic and finite (1.592ms)
+✔ declared orbital elements and landing coordinates evaluate without source execution (0.6848ms)
+✔ pos source records interpolate only in coverage (0.7452ms)
+✔ lin source records interpolate only in coverage (0.2577ms)
+✔ Mars landing coordinates follow declared planetocentric latitude (0.1728ms)
+✔ fixture server streams exact lengths, supports HEAD and exposes no workspace paths (96.1079ms)
+✔ inclined retrograde ellipse closes, includes the current point and retains eccentric geometry (5.4541ms)
+✔ unbound, radial, nonfinite and invalid-gravity states cannot become closed display ellipses (0.2291ms)
+✔ registration is unique and enable/disable owns a fresh lifecycle (5.7517ms)
+✔ capabilities require declaration, host approval and a live generation (0.7067ms)
+✔ activation failure aborts work and cleans resources in reverse order (0.9108ms)
+✔ cleanup failure does not skip remaining cleanup or permit SDK calls (0.5888ms)
+✔ overlapping lifecycle operations fail explicitly (0.3447ms)
+✔ invalid and incompatible manifests never activate (0.2117ms)
+✔ camera SDK routes approved intent with host-owned identity and releases its session (1.1852ms)
+✔ camera SDK refuses undeclared authority and absent core adapters (0.5137ms)
+✔ host shutdown cleans all plugins, continues after failures and closes registration (0.8032ms)
+✔ shutdown invalidates and drains pending activation before releasing its core session (0.3859ms)
+✔ default browser fetch keeps its global receiver (19.8627ms)
+✔ resource catalog constrains fetches and cache copies cannot mutate stored bytes (0.6672ms)
+✔ cancelled late response is rejected and never cached; HTTP failures are explicit (0.8394ms)
+✔ streamed size limits, redirect rejection and cache budget are enforced (0.6464ms)
+✔ clearing resources invalidates in-flight results instead of repopulating cache (0.3052ms)
+✔ aborted cache reads fail and LRU eviction stays inside the total budget (0.6658ms)
+✔ moon positions compose the true loaded parent and all publishes share epoch (47.1778ms)
+✔ moon displayed orbit remains parent-relative while world state includes Earth's motion (10.8722ms)
+✔ trajectory sampling contains the exact current epoch, refines locally and preserves real endpoints (6.3079ms)
+✔ instantaneous ellipse closes beyond DYN coverage without publishing extrapolated states (1.8111ms)
+✔ reviewed source identity and selected coverage survive into published provenance (1.3658ms)
+✔ disposed delayed fetch cannot resurrect objects (0.9481ms)
+✔ checkpoint restores previous cache and provenance after a failed load, never after dispose (4.55ms)
+✔ missing catalog definitions stay unsupported without source requests (0.3838ms)
+✔ default load stays baseline ten and retain removes published states (5.0659ms)
+✔ retain removes only states owned by a successful publish (0.7311ms)
+✔ deferred static parent cannot resurrect landing state after retain or dispose (1.4031ms)
+✔ child-only epoch jump reloads its parent segment (1.6715ms)
+✔ checkpoint restores retention and published ownership alongside data state (0.4114ms)
+✔ source network reads are bounded and disposal never starts queued fetches (1.3842ms)
+✔ instantaneous request falls back to covered linear source history (0.9028ms)
+✔ declared orbital elements expose finite covered trajectory history (1.6019ms)
+✔ data and time SDK forward immutable samples through host-owned sessions (5.6291ms)
+✔ declared data capability does not grant time or bypass missing adapters (0.2978ms)
+✔ sparse or nonfinite coordinates cannot pass the runtime state boundary (0.1403ms)
+✔ timed trajectories validate ascending epochs and isolate caller mutation (6.0955ms)
+✔ visual SDK forwards immutable asset references using its own identity (0.9655ms)
+✔ publishing data alone does not authorize visual changes (0.3745ms)
+✔ CLI emits auditable reports and exits nonzero for a changed sample (246.9977ms)
+✔ point cloud validates exact layout, including non-finite coordinates (1.5617ms)
+✔ KTX2 checks 64-bit payload intervals rather than trusting extension (0.6626ms)
+✔ glTF validates referenced geometry and rejects absent or corrupt buffers (1.2948ms)
+✔ glTF does not let external references escape the sample directory (0.2715ms)
+✔ DYN v2 terminal boundary closes segments without adding a phantom resource (0.5117ms)
+✔ DYN sample records reject truncation, unknown type and nonfinite values (0.2863ms)
+✔ every truncated prefix of fixed-layout fixtures is rejected (3.4286ms)
+✔ malformed glTF shapes fail instead of producing a successful empty result (0.3519ms)
+ℹ tests 68
+ℹ suites 0
+ℹ pass 68
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 548.3928
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.33s
+✔ host pick query validates normalized input and empty headless frames never select (5.6341ms)
+✔ TS plugin drives real Rust WASM state, clock, focus and session cleanup (10.0675ms)
+✔ actual WASM boundary independently rejects spoofed identity and invalid JSON (0.5968ms)
+✔ real WASM visual API enforces registered resources, ownership and revisions (5.0298ms)
+✔ clock epochs survive 1000 JSON publications without stale state (43.5983ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196.7148
+    Finished `wasm-release` profile [optimized] target(s) in 0.51s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.60s
+Renderer Web WASM exported. Headless Node tests retain the foundation WASM; GPU checks remain separate.
+{
+  "generatedAt": "2026-10-30T09:58:12.421Z",
+  "passed": true,
+  "scope": "offline resource contract experiment; not Bevy loading, GPU rendering or scientific certification",
+  "artifacts": [
+    {
+      "file": "juno.gltf",
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf",
+      "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9",
+      "passed": true,
+      "checks": {
+        "positions": 34637,
+        "positionAccessors": 22,
+        "bufferViews": 110,
+        "dependencies": [
+          "juno_closed.bin",
+          "foil_normal.png",
+          "juno_transparent_crosses.png",
+          "foil_dish_normal.png",
+          "juno_tex_01_normal.png",
+          "juno_tex_01_albedo.jpg",
+          "juno_tex_01_pbr.jpg",
+          "juno_array_normal.png",
+          "juno_array_albedo.jpg",
+          "juno_array_pbr.jpg"
+        ],
+        "scope": "buffer bounds and POSITION; topology, materials and rendering unverified"
+      }
+    },
+    {
+      "file": "juno_closed.bin",
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin",
+      "sha256": "ecb0f34d8cdcd961e0e4e6ddf1aafc402be4d2a9071a41ec4829b1a667cebee0",
+      "passed": true,
+      "checks": {
+        "scope": "identity only; content semantics unverified"
+      }
+    },
+    {
+      "file": "galaxies.0.bin",
+      "source": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05",
+      "passed": true,
+      "checks": {
+        "records": 1211,
+        "bytes": 27857,
+        "stride": 23,
+        "scope": "layout and finite fields; scientific units unverified"
+      }
+    },
+    {
+      "file": "earth-color-face0-level-7.ktx2",
+      "source": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/color/0/-7/0/0.ktx2",
+      "sha256": "bee4dcfc2635d96bfb8266cf673ed1bba354b0189385cb97a51ecee681242c1e",
+      "passed": true,
+      "checks": {
+        "width": 20,
+        "height": 20,
+        "levels": 5,
+        "scheme": "BasisLZ",
+        "scope": "header and payload intervals; no texture transcode"
+      }
+    },
+    {
+      "file": "earth-sun-orb-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/sun/orb/def.dyn",
+      "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "orb",
+        "records": 429,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    },
+    {
+      "file": "earth-ori-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/ori/def.dyn",
+      "sha256": "bb6b0384b9b0c17f2ed49b1b458758dbd731e1b3e27477afdc6a11fe9d0bd877",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "ori",
+        "records": 3,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    },
+    {
+      "file": "jupiter-sun-orb-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/jupiter/sun/orb/def.dyn",
+      "sha256": "9e69166cf390e6713d6b345a9941d0f7efb7c2a42517b826005ee71574d38f43",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "orb",
+        "records": 35,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    }
+  ]
+}
+✔ fixed real orb sample fields and coverage (3.8222ms)
+✔ fixed real ori sample fields and coverage (1.3591ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.6441
+Verified 11 pinned Juno resources; cached bytes are not committed.
+Prepared renderer WASM runtime; external font verified absent from WASM, surfaces load on selection.
+✔ jump validates coverage and rejects empty/UTC/nonfinite input (1.166ms)
+✔ reverse and forward limits clamp and request pause (0.8263ms)
+✔ racing cleanup invokes release once and shares completion (0.2125ms)
+✔ DYN rejects arbitrary identifiers before network (0.9664ms)
+✔ DYN pinned source fetch policy and hash failure (19.6766ms)
+✔ DYN surfaces HTTP and length failures (0.4488ms)
+✔ DYN cancellation prevents request (0.1713ms)
+✔ DYN abort during streamed read discards result (0.6184ms)
+✔ independent deadline cancels after fetch and discards body (0.2851ms)
+✔ independent deadline abort during read discards bytes (0.1938ms)
+✔ asset service rejects unknown objects and paths before network and honors cancellation (5.8175ms)
+✔ changed dependency bytes are refused even when buffer lengths still match the glTF declaration (29.3823ms)
+✔ shared model fetch stays alive for another subscriber and cancels when the last leaves (3.1386ms)
+✔ model conversion keeps geometry and bakes the declared local km transform into each scene (13.5195ms)
+✔ WebP and Basis texture selection excludes unused fallback images without guessing replacement URLs (0.2958ms)
+✔ unused exporter texture slots are ignored while invalid referenced images fail explicitly (0.3125ms)
+✔ stationary primary release selects once, without conflating pointer identities (1.4603ms)
+✔ dragging out and back never turns into a click (0.1967ms)
+✔ secondary buttons, cancellation, and multi-touch cannot select (0.1348ms)
+✔ reviewed Venus and Mars source windows load modern states without weakening the decoder (25.9455ms)
+✔ reviewed windows preserve source records and expose their exact selection (5.6545ms)
+✔ Venus duplicate boundary is covered on both sides; ambiguous Mars history remains rejected (4.6614ms)
+✔ Moon index resolves a headerless child and preserves the definition metadata (0.875ms)
+✔ coverage rejection stops before requesting a child (0.3823ms)
+✔ request cancellation is passed to the upstream fetch (0.3199ms)
+✔ unknown objects, origin-only Sun and nonfinite epochs never fetch (0.2939ms)
+✔ reviewed Voyager positions preserve raw source and exclude exact duplicate terminator (3.3462ms)
+✔ Juno flyby source must match its temporal parent (0.6371ms)
+✔ all hash-pinned mission windows preserve contiguous original records and strict decoding (31.844ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 329.4085
+✔ scene hit reuses real WASM selection while empty hits do not load and stale hits do not refocus (114.4395ms)
+✔ timed trajectory detail switches from a late catalog object without exceeding core budget (45.2589ms)
+✔ extended catalog selection binds actual spacecraft and irregular-moon model assets (55.6304ms)
+✔ returning to overview invalidates a pending seek before it can change time or resume playback (24.7312ms)
+✔ a superseded available-time request cannot refocus the old selection (34.1535ms)
+✔ complete host flow uses real Rust WASM for selection, time, layers and release (55.34ms)
+✔ leaving during source loading aborts requests and cannot start a late renderer (5.6621ms)
+✔ automatic coverage transition rolls back or clears unavailable focus: partial=false (44.4479ms)
+✔ automatic coverage transition rolls back or clears unavailable focus: partial=true (34.4193ms)
+✔ overview leaves surfaces external and selection requests only that body's resources once (58.5002ms)
+✔ a successful valid-time reload clears the previous unavailable-target error (29.3359ms)
+✔ cancelled module loading does not initialize WASM or start a renderer (0.329ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 673.6013
+▲ Next.js 16.4.3 (webpack)
+✓ Running next.config.ts took 25ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.3s
+  Running TypeScript ...
+  Finished TypeScript in 2.4s ...
+  Collecting page data using 10 workers ...
+  Generating static pages using 10 workers (0/4) ...
+  Generating static pages using 10 workers (1/4)
+  Generating static pages using 10 workers (2/4)
+  Generating static pages using 10 workers (3/4)
+✓ Generating static pages using 10 workers (4/4) in 774ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/dyn/[id]
+├ ƒ /api/solar-dyn/[id]
+├ ƒ /assets/eyes/[id]/[...path]
+├ ƒ /assets/planet-rings/[file]
+├ ƒ /assets/planets/[body]/[file]
+└ ○ /diagnostics
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+Verified 10 complete celestial surfaces and 2 ring textures (62 pinned files).
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.61s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-c0f774dfe811b3b2.exe)
+
+running 24 tests
+test annotation_tests::annotations_enforce_owner_budget_layers_and_cleanup ... ok
+test face_texture::batching_tests::rgba_source_fast_path_preserves_exact_bytes ... ok
+test face_texture::tests::cardinal_face_order ... ok
+test face_texture::closed_face_tests::closed_mapping_preserves_reference_uv_and_later_face_ties ... ok
+test orbit_lines::tests::close_inspection_hides_orbits_and_zooming_out_restores_them_continuously ... ok
+test orbit_lines::tests::current_epoch_splits_its_own_interval_in_both_playback_directions ... ok
+test orbit_lines::tests::exact_vertex_is_updated_without_closing_uncovered_endpoints ... ok
+test picking::tests::depth_ties_are_stable_and_invalid_targets_are_ignored ... ok
+test picking::tests::overlapping_discs_select_nearest_visible_body ... ok
+test picking::tests::placed_label_is_pickable_but_does_not_select_through_nearer_body ... ok
+test renderer::blend_tests::switching_origin_reprojects_previous_camera_then_locks_without_follow_lag ... ok
+test renderer::framing_tests::transformed_bounds_include_offset_rotation_and_scale ... ok
+test picking::tests::invalid_coordinates_and_cleared_frames_never_hit ... ok
+test screen_layout::tests::labels_outside_view_are_not_piled_on_edges ... ok
+test state::orientation_tests::rejects_non_unit_orientation_and_preserves_absence ... ok
+test wasm::picking_tests::host_pick_revalidates_failed_removed_objects_and_stopped_renderer ... ok
+test screen_layout::tests::clustered_labels_are_separated_and_focus_wins ... ok
+test ring_texture::tests::gray_bottom_uses_top_opacity_including_transparent_gaps ... ok
+test renderer::framing_tests::asymmetric_overview_keeps_scientific_origin_on_camera_axis_after_orbit_and_return ... ok
+test renderer::repeated_focus_tests::explicit_focus_of_same_target_restores_framing ... ok
+test renderer::camera_lifecycle_tests::replacement_and_target_switch_reframe_without_changing_scientific_radius ... ok
+test renderer::label_persistence_tests::label_entities_survive_frames_and_are_removed_only_when_absent ... ok
+test renderer::preset_input_tests::preset_allows_next_frame_drag_in_overview_and_focus ... ok
+test face_texture::batching_tests::row_batches_match_full_conversion_and_publish_only_at_end ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+Core checks passed. Renderer switch checks build/export, not GPU pixels; browser evidence must be recorded separately.

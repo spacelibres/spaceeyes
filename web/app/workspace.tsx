@@ -108,6 +108,7 @@ export default function Workspace() {
       search={search}
       setSearch={setSearch}
       startupMs={state.startupMs}
+      parentId={state.parentId}
       active={state.active}
       busy={state.busy}
       phase={state.phase}
@@ -155,6 +156,7 @@ export default function Workspace() {
         })
       }
       onNow={() => action((value) => value.now())}
+      onMissionTime={() => action((value) => value.observeAvailable())}
       onLabels={() =>
         action((value) => value.layers(!state.labels, state.trajectories))
       }

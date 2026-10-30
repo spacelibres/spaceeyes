@@ -1,20 +1,30 @@
+import { reviewedMissionWindow } from "./reviewed-mission-window.ts";
+import {
+  declaredTracks,
+  getEyesDefinition,
+  parentAt,
+} from "../../platform/eyes-catalog.ts";
 import { decodeDyn } from "../../platform/dyn-decoder.ts";
 import { solarCatalog } from "../../platform/solar-system.ts";
-import { selectReviewedDynWindow, type DynSelection } from "./reviewed-dyn-window.ts";
-export async function fetchSolarDyn(
+import {
+  selectReviewedDynWindow,
+  type DynSelection,
+} from "./reviewed-dyn-window.ts";
+async function fetchTrack(
   id: string,
   epoch: number,
   signal: AbortSignal,
   fetcher: typeof fetch = fetch,
   type: "orb" | "ori" = "orb",
   onSelection?: (selection: DynSelection) => void,
+  track?: string,
 ): Promise<Uint8Array> {
   const item = solarCatalog.find((x) => x.id === id);
   if (!item?.orbPath || !Number.isFinite(epoch))
     throw Error("Invalid solar resource");
   const read = async (name: string) => {
     const r = await fetcher(
-      `https://eyes.nasa.gov/assets/dynamic/dynamo/${type === "ori" ? `${id}/ori` : item.orbPath}/${name}.dyn`,
+      `https://eyes.nasa.gov/assets/dynamic/dynamo/${track ?? (type === "ori" ? `${id}/ori` : item.orbPath)}/${name}.dyn`,
       {
         signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]),
         redirect: "error",
@@ -58,7 +68,7 @@ export async function fetchSolarDyn(
         (new DataView(bytes.buffer, bytes.byteOffset).getInt16(0, true) === 2
           ? 1
           : 0) +
-        (type === "orb" ? 16 : 0);
+        (String.fromCharCode(...bytes.slice(2, 5)) === "orb" ? 16 : 0);
       header = bytes.slice(0, headerLength);
     } else {
       const version = new DataView(header!.buffer).getInt16(0, true);
@@ -71,8 +81,17 @@ export async function fetchSolarDyn(
       full.set(bytes, header!.length + prefix.length);
       bytes = full;
     }
-    if (name === "def" && type === "orb") {
+    if (
+      name === "def" &&
+      type === "orb" &&
+      String.fromCharCode(...bytes.slice(2, 5)) === "orb"
+    ) {
       const selected = selectReviewedDynWindow(id, bytes, epoch);
+      bytes = selected.bytes;
+      if (selected.selection) onSelection?.(selected.selection);
+    }
+    if (track) {
+      const selected = reviewedMissionWindow(track, bytes, epoch, name);
       bytes = selected.bytes;
       if (selected.selection) onSelection?.(selected.selection);
     }
@@ -90,4 +109,44 @@ export async function fetchSolarDyn(
     name = name === "def" ? child : `${name}_${child}`;
   }
   throw Error("DYN index depth budget");
+}
+
+export async function fetchSolarDyn(
+  id: string,
+  epoch: number,
+  signal: AbortSignal,
+  fetcher: typeof fetch = fetch,
+  type: "orb" | "ori" = "orb",
+  onSelection?: (selection: DynSelection) => void,
+): Promise<Uint8Array> {
+  const declared = declaredTracks(id, type);
+  const parent = parentAt(id, epoch);
+  const matching =
+    type === "orb" && parent
+      ? declared.filter(
+          (track) =>
+            track.startsWith(`${id}/${parent}/`) || track === `${id}/${parent}`,
+        )
+      : [];
+  const tracks = matching.length ? matching : declared;
+  if (!getEyesDefinition(id) || !tracks.length)
+    return fetchTrack(id, epoch, signal, fetcher, type, onSelection);
+  let failure: unknown;
+  for (const track of tracks) {
+    try {
+      return await fetchTrack(
+        id,
+        epoch,
+        signal,
+        fetcher,
+        type,
+        onSelection,
+        track,
+      );
+    } catch (e) {
+      signal.throwIfAborted();
+      failure = e;
+    }
+  }
+  throw failure;
 }

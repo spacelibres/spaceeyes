@@ -1,0 +1,924 @@
+{
+  "version": 1,
+  "total": 131,
+  "ready": 131,
+  "results": [
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_chandra/chandra.gltf",
+      "id": "sc_chandra",
+      "ok": true,
+      "bytes": 2885436,
+      "sha256": "32e8b08f347606e768892aaec9e2739d26f262d85560dfe0752004f49a4f525a"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/generic/asteroid_1/generic_asteroid_1.gltf",
+      "id": "adrastea",
+      "ok": true,
+      "bytes": 3696580,
+      "sha256": "1c88765ec9fc65f944745a27c81a85afade0e533557dab25423f8963cb01f2df"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/generic/asteroid_2/generic_asteroid_2.gltf",
+      "id": "aegir",
+      "ok": true,
+      "bytes": 3407932,
+      "sha256": "4ce0e2c7b8813866e409f1ce6b46e1c6c9d91a591a8b642f82a207167124bee2"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+      "id": "albiorix",
+      "ok": true,
+      "bytes": 3411288,
+      "sha256": "67b66f4db8e89b1f9d1a342b43769ecf75dfc9de3c8270857a2868e18e585b48"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/deimos/deimos.gltf",
+      "id": "deimos",
+      "ok": true,
+      "bytes": 854648,
+      "sha256": "3332ed7bd865255b3c487a5af5ed4aa297280c999f35c51b0cd7b3117e670a97"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/hyperion/hyperion.gltf",
+      "id": "hyperion",
+      "ok": true,
+      "bytes": 591692,
+      "sha256": "e1b166df5c0f91977ed491eefd0f7e7e8a683eee5ea68dcdd28989fca9da4bf4"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/dimorphos/Dimorphos.gltf",
+      "id": "dimorphos",
+      "ok": true,
+      "bytes": 3525036,
+      "sha256": "e327e5f421730a5939dab85732af9915b46b070f429b9c061ad657c1e17ee142"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/mimas/mimas.gltf",
+      "id": "mimas",
+      "ok": true,
+      "bytes": 1912668,
+      "sha256": "883c68355bf75964eebbe39174efaf30880ad2c5c7af4e51118b88dc2658b7a1"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/phobos/phobos.gltf",
+      "id": "phobos",
+      "ok": true,
+      "bytes": 1182908,
+      "sha256": "ac4050c5797481eb438d658fdfeec99816020049bd1457434716e91f6694b277"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/phoebe/phoebe.gltf",
+      "id": "phoebe",
+      "ok": true,
+      "bytes": 735800,
+      "sha256": "a1ca4de622a23307ad9081886b530a08ce98211a1622d3abc66b3118854fee31"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/proteus/proteus.gltf",
+      "id": "proteus",
+      "ok": true,
+      "bytes": 981024,
+      "sha256": "8bcc349fb63ad0c6d6b0ba0f68a2694d10ebe250aca8ea946f93fb3fcbc34ae7"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ace/ace.gltf",
+      "id": "sc_ace",
+      "ok": true,
+      "bytes": 2085044,
+      "sha256": "8303ee51fa9691674be87eaf793ad1a41a46cf7cd9d3a4940ac716dee2f0c421"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_acrimsat/acrimsat.gltf",
+      "id": "sc_acrimsat",
+      "ok": true,
+      "bytes": 993192,
+      "sha256": "4c88d9f494444062f882bf11352622ca0b4208092a1f59c6316a967a332a8778"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_aqua/Aqua.gltf",
+      "id": "sc_aqua",
+      "ok": true,
+      "bytes": 3224012,
+      "sha256": "a462147743a557f2323080ca57b721541c0e46ad2a6e0a4744b536349cd46cd8"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_acs3/acs3.gltf",
+      "id": "sc_acs3",
+      "ok": true,
+      "bytes": 6642248,
+      "sha256": "d9b88635432743aca065d3a5679a8fa8d79ea3032f4c25fd102d1180667ab7bc"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_aura/Aura.gltf",
+      "id": "sc_aura",
+      "ok": true,
+      "bytes": 3162964,
+      "sha256": "c2830a5fe6f8cc88fa1428f3cb129aee35d5f07096d55f5c9faf86c908ce4f78"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_biosentinel/biosentinel.gltf",
+      "id": "sc_biosentinel",
+      "ok": true,
+      "bytes": 32941148,
+      "sha256": "9bfdf64d4a1acac121a35153805fb3b1b3f731827ece1ece97ffe784a2d9e127"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_artemis/artemis_ii.gltf",
+      "id": "sc_artemis_1",
+      "ok": true,
+      "bytes": 46575520,
+      "sha256": "bf481304c30ad5840a8a5acdcb63c7fb8b9af4b4b002269ae9c02522ce88413e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_calipso/calipso.gltf",
+      "id": "sc_calipso",
+      "ok": true,
+      "bytes": 2460620,
+      "sha256": "6c888cc9ed55022823f229e22f87d912127d524f051b729428baebc1b2adfe30"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_capstone/capstone.gltf",
+      "id": "sc_capstone",
+      "ok": true,
+      "bytes": 2004212,
+      "sha256": "ede28a8eaa788ae166905f27086aeafdbc2e924d330eaa80993b52d64c87cdf2"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_cassini/Cassini.gltf",
+      "id": "sc_cassini",
+      "ok": true,
+      "bytes": 4314880,
+      "sha256": "5542db7c7f144671ed58efd78a11548776665d7acdbd09da152af27286ff8507"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_clementine/clementine.gltf",
+      "id": "sc_clementine",
+      "ok": true,
+      "bytes": 3268980,
+      "sha256": "37d2989c33523b25d0bc0d61ebc9e5bde77c90e1f01e889150b4e5960f8d69af"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_cloudsat/CloudSat.gltf",
+      "id": "sc_cloudsat",
+      "ok": true,
+      "bytes": 2083496,
+      "sha256": "2aea80d85c1259dded1247028c337c49fd8506711ebd626a0babba8e6932c142"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_cluster_ii/cluster_ii.gltf",
+      "id": "sc_cluster_ii_fm5",
+      "ok": true,
+      "bytes": 1456372,
+      "sha256": "22e0b8798be96e89a723eafdd2c882bb958d77807b4600d04c4e06d298bc1b72"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_cygnss/CYGNSS.gltf",
+      "id": "sc_cygnss_1",
+      "ok": true,
+      "bytes": 1382324,
+      "sha256": "26579bb58668b1e213f7aee801b1d367712e1890af89c10a9037acc0ca7cc3e4"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_danuri/danuri.gltf",
+      "id": "sc_danuri",
+      "ok": true,
+      "bytes": 10123816,
+      "sha256": "b5846828105f41f326d36d464a82373a5be5625e93fee8455f182e5aa618b200"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_dart/dart.gltf",
+      "id": "sc_dart",
+      "ok": true,
+      "bytes": 9257500,
+      "sha256": "55792cf1264b5e4d7f0adeba87a622b704b6a287c90f587eb739b17511553a07"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_dawn/model.gltf",
+      "id": "sc_dawn",
+      "ok": true,
+      "bytes": 1730504,
+      "sha256": "68f3ecf374356a2761893e837c9671936c3bcb39cd2785471b043173a8df7d35"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_deep_impact/deep_impact_wo_impactor.gltf",
+      "id": "sc_deep_impact",
+      "ok": true,
+      "bytes": 2000616,
+      "sha256": "dbae0e31b2fa9623eca081213da0c2b9fccfdac04510f1d8d59a61e1ce66e0d6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_deep_space_1/deep_space_1.gltf",
+      "id": "sc_deep_space_1",
+      "ok": true,
+      "bytes": 1885428,
+      "sha256": "6d1a37b455685df9af8128a225c447b8dc139e90935c7ad1e4ac0fde3a330031"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_deep_impact_impactor/deep_impact_impactor.gltf",
+      "id": "sc_deep_impact_impactor",
+      "ok": true,
+      "bytes": 4113508,
+      "sha256": "8ab22903629035f3090f05fa1217f39261af47d00bde256a0b324c72c3d83355"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_dscovr/dscovr.gltf",
+      "id": "sc_dscovr",
+      "ok": true,
+      "bytes": 2795396,
+      "sha256": "2b0bb14a07ffa7feb3fd47b016ecb7dc475cad7e6cd54c4a89ed517239d7e50f"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_eo_1/eo-1.gltf",
+      "id": "sc_eo_1",
+      "ok": true,
+      "bytes": 4942872,
+      "sha256": "10e013e12a37172fb8c8dbe707b8da7af84603999eb2ad9f5ad0a9a4e1abf69d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_escapade/escapade.gltf",
+      "id": "sc_escapade_blue",
+      "ok": true,
+      "bytes": 3332996,
+      "sha256": "2e9854fd7fe0c008a3ac844e3966861d21aa99fec78d8abdfee596e88a928628"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_euclid/euclid.gltf",
+      "id": "sc_euclid",
+      "ok": true,
+      "bytes": 1745900,
+      "sha256": "b7d17d66a58a30756c5f93d216a178d597d6422c71d2bfceeb20588d6af38ec5"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_explorer_1_v2/explorer_1.gltf",
+      "id": "sc_explorer_1",
+      "ok": true,
+      "bytes": 429972,
+      "sha256": "ad90f78820adb5f0d779aa0ca64f4ee9211137b0f4992972bad3db7ba12f8114"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_europa_clipper/europa_clipper.gltf",
+      "id": "sc_europa_clipper",
+      "ok": true,
+      "bytes": 9858252,
+      "sha256": "d1c9a52f9c703223736ebb6b354ef0a4f3558488adbd33b4e7ca390a527cdaea"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_galileo/galileo.gltf",
+      "id": "sc_galileo",
+      "ok": true,
+      "bytes": 5588272,
+      "sha256": "d5b15b9e724c0d20c148aa7480faab6d7c4ac358704ec5fc808abbcf885f2e2f"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_galileo_probe/galileo_probe.gltf",
+      "id": "sc_galileo_probe",
+      "ok": true,
+      "bytes": 2735736,
+      "sha256": "74a9fee9df5184a799e8ffb2d9777de7150c6e1684ef8e5974846fc4ac0944c6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_geotail/geotail.gltf",
+      "id": "sc_geotail",
+      "ok": true,
+      "bytes": 2191864,
+      "sha256": "55ed4051c5e64e84b690a240a0c599850ad1001d4e3496e9281489cc3d0f85a6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_grace/grace.gltf",
+      "id": "sc_grace_1",
+      "ok": true,
+      "bytes": 1677180,
+      "sha256": "1915524a4e463f86700be8152bc66bb7abeb18451584aa7cfcefb2e8e0ec37d5"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_gpm/GPM.gltf",
+      "id": "sc_gpm",
+      "ok": true,
+      "bytes": 7167300,
+      "sha256": "277c4d0699ab0accbb1dbaba30b322c5a2eccf9fd4a1f80646404c704b259d1f"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_grace_fo/graceFO.gltf",
+      "id": "sc_grace_fo1",
+      "ok": true,
+      "bytes": 6117504,
+      "sha256": "57a335d0bff3007fa485f0777f12c2d0e9aa21cccd662a9bfa8976dbcf11db95"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_grail/grail_b.gltf",
+      "id": "sc_grail_a",
+      "ok": true,
+      "bytes": 2432844,
+      "sha256": "b40dd56dbc0deb3426b41c8597b853017467738cb1143a1b28fa6b348362436b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_grifex/grifex.gltf",
+      "id": "sc_grifex",
+      "ok": true,
+      "bytes": 720344,
+      "sha256": "3ffcee68c5dc1edca2ff62847d991cf57aae382b5f764e1bcdab1d70462b9ef1"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_huygens/Huygens.gltf",
+      "id": "sc_huygens",
+      "ok": true,
+      "bytes": 282740,
+      "sha256": "0e402b6b75ab9498852cbf4532c3934d66c1b8995d7fffb307b7ee8ee4892503"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ibex/iBEX.gltf",
+      "id": "sc_ibex",
+      "ok": true,
+      "bytes": 2044964,
+      "sha256": "4b5b6698c042af510394dc24e2ced883010ecbad28149453b8c752ccb90f98f0"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_hubble/Hubble.gltf",
+      "id": "sc_hubble_space_telescope",
+      "ok": true,
+      "bytes": 6907524,
+      "sha256": "4c1f2671de8dc6c43caa47804afde4047af2899450727d9d563816645df7c445"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_icesatii/ICESat2.gltf",
+      "id": "sc_icesat_2",
+      "ok": true,
+      "bytes": 3346496,
+      "sha256": "909d45edc5c65a6bae23fadcfc09ea8d7761fc6f608c1c410195379f4c09b51b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_image/image.gltf",
+      "id": "sc_image",
+      "ok": true,
+      "bytes": 6721184,
+      "sha256": "113770b53c6d0b167a11ce6d52830f49e9c54815ea9cb497cbf95c6c0ae3470e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_imap/imap.gltf",
+      "id": "sc_imap",
+      "ok": true,
+      "bytes": 10502536,
+      "sha256": "58978abb78898294cf150877b616014e6f2be0769b4f588082fc02727f04b0b6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ipex/IPEX.gltf",
+      "id": "sc_ipex",
+      "ok": true,
+      "bytes": 2686444,
+      "sha256": "705acebc88f42c1aa3e224ebf5be69ba211cc748807504be36d15999b331766b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_insight/lander/insight.gltf",
+      "id": "sc_insight",
+      "ok": true,
+      "bytes": 18112488,
+      "sha256": "9a672f6067a46d85bb729619aec0820d1c74bf4e77c7918fedb8495921dc5aa6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ixpe/ixpe.gltf",
+      "id": "sc_ixpe",
+      "ok": true,
+      "bytes": 1672076,
+      "sha256": "53a76cba9149ff7108214cbc4faf44795d7b880b873c98d69704df4a2580ef57"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ostm/ostm.gltf",
+      "id": "sc_jason_1",
+      "ok": true,
+      "bytes": 2042664,
+      "sha256": "e674b42dba9f8e13a9401c7895380dd459dcd34d57d267e4240a29db0432d204"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_juice/juice.gltf",
+      "id": "sc_juice",
+      "ok": true,
+      "bytes": 4193020,
+      "sha256": "944bb255615b4be9405ff3fb140832ab2a1a78efe4d7cfed55481a67bd5f4171"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_iss/ISS_stationary.gltf",
+      "id": "sc_iss",
+      "ok": true,
+      "bytes": 26496996,
+      "sha256": "2c1eedc1554f1af3e45b11083ce7097245928e43f90b4c3796b26168d8c0e168"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_juno/Juno.gltf",
+      "id": "sc_juno",
+      "ok": true,
+      "bytes": 7602572,
+      "sha256": "b002870b21a196b2b79f158e1159f9b15a56a5091b901260de199419d429865b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_jwst/webb_deployed.gltf",
+      "id": "sc_jwst",
+      "ok": true,
+      "bytes": 3856012,
+      "sha256": "e0f5551a21b38e18976eaf66fe164d9a5f67bde5bda229d75bad578745345a16"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_kepler/Kepler.gltf",
+      "id": "sc_kepler_space_telescope",
+      "ok": true,
+      "bytes": 2557140,
+      "sha256": "5fdb7cea9c2ccc33b7eb91725a700a1f615a3d88bc6512834dfc00ac94a5d8a2"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ladee/ladee.gltf",
+      "id": "sc_ladee",
+      "ok": true,
+      "bytes": 2848448,
+      "sha256": "e727e67dd8217a67793447dedfdded441f7516b2a8ad6778b0040a7d6f98f670"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_landsat_7/LandSat7.gltf",
+      "id": "sc_landsat_7",
+      "ok": true,
+      "bytes": 5251964,
+      "sha256": "5afe9beb34bb04a70db3fa25c6e98a8b1afbc113ef912339a3a1c7cd1e6df1f2"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_landsat_8/LandSat8.gltf",
+      "id": "sc_landsat_8",
+      "ok": true,
+      "bytes": 7027136,
+      "sha256": "55a4bcb3f02a9d0358739fa3d0ea592cfe9cca79847bc944a5659e737d48adf6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_landsat_9/Landsat9.gltf",
+      "id": "sc_landsat_9",
+      "ok": true,
+      "bytes": 5476392,
+      "sha256": "fd6b1679c33f385dd70e9f1b54732083c7ef514a7756e9259e3de0f08131e9cc"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_lcross/lcross.gltf",
+      "id": "sc_lcross",
+      "ok": true,
+      "bytes": 1540980,
+      "sha256": "7c5078f76ccf29cfc3949c872ea9463414f616b9d834a694394e671ab1b2fe67"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_lunar_flashlight/lunar_flashlight.gltf",
+      "id": "sc_lunar_flashlight",
+      "ok": true,
+      "bytes": 5628808,
+      "sha256": "e5f63345525edfd5abb24fb9c22146caabeca5a3b64efcfe60f2e6cd4b3e3095"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_lucy/lucy.gltf",
+      "id": "sc_lucy",
+      "ok": true,
+      "bytes": 9526812,
+      "sha256": "90d914d20d2bf0cf70b53595a35e9fbb9da6eff20d50ed349150a2208509443b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_lunar_prospector/lunar_prospector.gltf",
+      "id": "sc_lunar_prospector",
+      "ok": true,
+      "bytes": 2802216,
+      "sha256": "9d5e1db099ce87929c34ab922748de1bf20f3c3bef1a59ec7a1aae798a0da2ef"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_lunar_reconnaissance_orbiter/LRO.gltf",
+      "id": "sc_lunar_reconnaissance_orbiter",
+      "ok": true,
+      "bytes": 4209108,
+      "sha256": "86e3f912ee614a9991a3c4c111d0e787d7e80dad9763006bfcc780707b26e778"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_magellan/magellan.gltf",
+      "id": "sc_magellan",
+      "ok": true,
+      "bytes": 2421196,
+      "sha256": "d4a99960dc8ee3477f88ec576e3c42d1fe216fa92e0743580d59b80e5e76f0f6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_marco/model.gltf",
+      "id": "sc_marco_a",
+      "ok": true,
+      "bytes": 2513640,
+      "sha256": "4d3df23301c7d79372aaad8cf3e2323b78e23e65885924c5d5480a0eca7774ff"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mariner_2/mariner2.gltf",
+      "id": "sc_mariner_2",
+      "ok": true,
+      "bytes": 3155464,
+      "sha256": "4d6ad7a1485ce306b5d83d65d52e605a836a071d38c72ad32971c09dab52326d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf",
+      "id": "sc_mars_2020",
+      "ok": true,
+      "bytes": 7544524,
+      "sha256": "6d1860b7e9c7f7fcedb5569c8173ed5ea422a044b07c2b22d3cb700b20cd7a83"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf",
+      "id": "sc_mars_exploration_rover_1",
+      "ok": true,
+      "bytes": 4456300,
+      "sha256": "681c002408c4c7c5fcc27d0744430bd7e7069d7df2c16cd04e56c3b947d58d78"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_express/mars_express.gltf",
+      "id": "sc_mars_express",
+      "ok": true,
+      "bytes": 3954936,
+      "sha256": "2f31b70624cea0b87a7bd1aaa9beb5436559d288311e78701b83fd48fcd945ba"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_global_surveyor/mars_global_surveyor.gltf",
+      "id": "sc_mars_global_surveyor",
+      "ok": true,
+      "bytes": 2268236,
+      "sha256": "4791bb7611861410085846f688aa289a997d503799bdd2fffcc01f22cf6b9f30"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_reconnaissance_orbiter/MRO.gltf",
+      "id": "sc_mars_reconnaissance_orbiter",
+      "ok": true,
+      "bytes": 2188748,
+      "sha256": "9b6ed0229f980e6d578ffe5a2916f4c1580692da42b880f25b5cae3750c7f37a"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_odyssey/mars_odyssey.gltf",
+      "id": "sc_mars_odyssey",
+      "ok": true,
+      "bytes": 8156692,
+      "sha256": "771450369747ff8c812cd3e91fb778e7bffbb249e6a13e750eb984cd772b419d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf",
+      "id": "sc_mars_science_laboratory",
+      "ok": true,
+      "bytes": 6979872,
+      "sha256": "8db3f66053022932ced8f53fa57eb435e0904463b00ae044055575ce69d7ec93"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_maven/Maven.gltf",
+      "id": "sc_maven",
+      "ok": true,
+      "bytes": 4909124,
+      "sha256": "a8e02b8b82a6fa9a689c2a5a1983d8c615c2de0294c3b77c91311eeafbac9c4d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_messenger/Messenger.gltf",
+      "id": "sc_messenger",
+      "ok": true,
+      "bytes": 4538848,
+      "sha256": "e3180286591b083b348858bea7fedd0ca46caaa2de49aa085cb9155ccb98051e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mcubed_2/M-Cubed2.gltf",
+      "id": "sc_mcubed_2",
+      "ok": true,
+      "bytes": 1522324,
+      "sha256": "a7f6be209fcf1ed777ff28a390fd1b8ba21b4ee97c8725744c3dad807baf3765"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_near_shoemaker/near.gltf",
+      "id": "sc_near_shoemaker",
+      "ok": true,
+      "bytes": 970020,
+      "sha256": "3969ffa4126797a201cc40ddee5309a3a6f0c3b30ea9751354f0533ae41802d9"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_mms/MMS.gltf",
+      "id": "sc_mms_1",
+      "ok": true,
+      "bytes": 2671020,
+      "sha256": "7af0da0a04dfa2a08ec68c27a6eb65e6a53dbdace3ff29f8aaa60d805ef716dc"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_new_horizons/new_horizons.gltf",
+      "id": "sc_new_horizons",
+      "ok": true,
+      "bytes": 3092472,
+      "sha256": "3f358b94a3877b3050798a524a9783d29d9707c69af4b690bb0dc91152671a43"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_nisar/Nisar.gltf",
+      "id": "sc_nisar",
+      "ok": true,
+      "bytes": 2070808,
+      "sha256": "c2944c3606e43d57116e94d3125f958503836a9b0240cab55419a601f9aba911"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_neo_surveyor/neosurveyor.gltf",
+      "id": "sc_neo_surveyor",
+      "ok": true,
+      "bytes": 21262980,
+      "sha256": "0cb526bdac7c9349da622a8e44195d53be0ce1af4cec0d44e04180fd4abc4026"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_nustar/nustar.gltf",
+      "id": "sc_nustar",
+      "ok": true,
+      "bytes": 9892784,
+      "sha256": "ff0b74324bddc6433c96434dce7c352fea51496d72536fc24bef5a21ad1bb60b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_osiris_rex_v2/osiris_rex_articulated_panels.gltf",
+      "id": "sc_osiris_rex",
+      "ok": true,
+      "bytes": 3270284,
+      "sha256": "18217f27c196271643c44bc8dcc5b1007b7499cd565c7f247944d86993de2b37"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_oco_2/oco2.gltf",
+      "id": "sc_oco_2",
+      "ok": true,
+      "bytes": 4868652,
+      "sha256": "001592ef6b6d3fe019fba3e1bdf847b87e7db293467963249fd8b29984e0bf95"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_osiris_rex_v2/src/osiris_rex_heatshield.gltf",
+      "id": "sc_osiris_rex_src",
+      "ok": true,
+      "bytes": 909068,
+      "sha256": "81f18cc8ae4b2e905c87de3a3b2e0be340c13e07c454a8fe4002c6ebcbfbcb11"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_pace/pace.gltf",
+      "id": "sc_pace",
+      "ok": true,
+      "bytes": 5421908,
+      "sha256": "2ab602bb3abd25f09375570b0a3d31cc101ac7eb2a468bdd3421ef475b6e26ac"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_parker_solar_probe/PSP.gltf",
+      "id": "sc_parker_solar_probe",
+      "ok": true,
+      "bytes": 4483524,
+      "sha256": "cc47a196ab7017fe2041f01c1a03680d724c6464918753c51983b8fc6cbc0977"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_philae/philae.gltf",
+      "id": "sc_philae",
+      "ok": true,
+      "bytes": 1671164,
+      "sha256": "94903b4a0ea5774b4536aec5c9668b92bda63fe47ab6e93d18b2e367ae95f742"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_phoenix/cruise/phoenix_cruise.gltf",
+      "id": "sc_phoenix",
+      "ok": true,
+      "bytes": 4314616,
+      "sha256": "9af5b218f3c58dbcc49888dc152ebd910d4885afb0c87ce49bcd7a826d996ce3"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_pioneer/pioneer.gltf",
+      "id": "sc_pioneer_10",
+      "ok": true,
+      "bytes": 6658440,
+      "sha256": "7e0a490f3f6e787e9ca54728913250e815a623cb26a441b349f60f0563c5d61f"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_polar/polar.gltf",
+      "id": "sc_polar",
+      "ok": true,
+      "bytes": 5252632,
+      "sha256": "b4aef29383a146b37667e7544dd30df2e2484793da692ad62fa24b0fa62c14a7"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_prefire/prefire.gltf",
+      "id": "sc_prefire_1",
+      "ok": true,
+      "bytes": 3959672,
+      "sha256": "44b1c7362bac9f58de2bf455d2ad594aae0721a7165cb1c4362ee5c2db65fa6d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_psyche/psyche.gltf",
+      "id": "sc_psyche",
+      "ok": true,
+      "bytes": 3390988,
+      "sha256": "e93ce4f1621619b5fb6f3e68000b8f2ed59c9cef2cf7f701fa0ef9d84d8bc7a9"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_quikscat/QuikSCAT.gltf",
+      "id": "sc_quikscat",
+      "ok": true,
+      "bytes": 2335992,
+      "sha256": "5a278a1e7aa2639254b0c9b4dcff89b179f5c8465ef9c95be6edcfdf1d27524e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_rbsp/rbsp.gltf",
+      "id": "sc_rbsp_a",
+      "ok": true,
+      "bytes": 2126900,
+      "sha256": "e39224e5dcdbb9259e9f3b5908ba1fd744bc0f290224ed699eaaf01bdd4612b0"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_raincube/Raincube.gltf",
+      "id": "sc_raincube",
+      "ok": true,
+      "bytes": 4628280,
+      "sha256": "40f19d1f28b9078b49dadbd7c48fbfbfb9b67ef958aec4334e0d50e546d71e8c"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_sac_d/aquarius.gltf",
+      "id": "sc_sac_d",
+      "ok": true,
+      "bytes": 3695992,
+      "sha256": "d4bf29145d67eab33566ced123c72d3c8abcd4efe8df11e4f68d5acefbaa7bf5"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_rosetta/rosettaPhilae.gltf",
+      "id": "sc_rosetta",
+      "ok": true,
+      "bytes": 3137016,
+      "sha256": "35c2eaa0db9606b282a1f199895f45c07ff65c2f147a03ba27825d647bdd4997"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_sdo/sdo.gltf",
+      "id": "sc_sdo",
+      "ok": true,
+      "bytes": 2917644,
+      "sha256": "082f56f53730af71df803cf4b149377189c6d1bda34a1b654cedf8e51cb15637"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_sentinel_6/Sentinel6.gltf",
+      "id": "sc_sentinel_6",
+      "ok": true,
+      "bytes": 2585280,
+      "sha256": "59079f433d747608403eca4ee44df5419f1bd723818e59cdc890def5681a5989"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_smap/SMAP.gltf",
+      "id": "sc_smap",
+      "ok": true,
+      "bytes": 5686972,
+      "sha256": "df620d46211961cd8c5647c8ef3a7c50c57be37a4997d3fda7a3e1e613505021"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_soho/soho.gltf",
+      "id": "sc_soho",
+      "ok": true,
+      "bytes": 1462016,
+      "sha256": "f3d9fb9ff55a716d1563fa400edfc53d0b4e5891b15454a7b82d55d1c2858c0e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_roman_space_telescope/roman.gltf",
+      "id": "sc_roman_space_telescope",
+      "ok": true,
+      "bytes": 36550564,
+      "sha256": "720ee00b5e55b276005828ee1f96741853a43341c23ad5797f1280466a539afe"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_sorce/sorce.gltf",
+      "id": "sc_sorce",
+      "ok": true,
+      "bytes": 9385816,
+      "sha256": "7d168a6c0143c4f1953475ab5609a1e51aa2639a49a3f9ac7d0e11bc4eb28fdb"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_spherex/spherex.gltf",
+      "id": "sc_spherex",
+      "ok": true,
+      "bytes": 6888032,
+      "sha256": "b7099cb8b895e9542978222c05ac729d9f2d86cc508526a7ada9fc35193db3a6"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_spitzer/SPITZER.gltf",
+      "id": "sc_spitzer",
+      "ok": true,
+      "bytes": 2279460,
+      "sha256": "9188ff5c63da61821a5bd53fe1e7aab85a770cc05a56ceff9090142f9fa1a7ee"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_stardust/stardust_articulated.gltf",
+      "id": "sc_stardust",
+      "ok": true,
+      "bytes": 4934148,
+      "sha256": "615671fb14372f1ef7509d0b5405ed083051ac9164c2f5297b435a69494b17bc"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_stardust_src/stardust_capsule.gltf",
+      "id": "sc_stardust_src",
+      "ok": true,
+      "bytes": 839300,
+      "sha256": "0dc3b3a9d48775775f0d45c4ae3a3358c4a161f3ac48e7af80a172a355cdd925"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_stereo_ahead/stereo_a.gltf",
+      "id": "sc_stereo_ahead",
+      "ok": true,
+      "bytes": 2657068,
+      "sha256": "20d5178641adc5194191364837abb63c809c0c62b8400583d443c481abf9c815"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_starling/starling.gltf",
+      "id": "sc_starling_1",
+      "ok": true,
+      "bytes": 5510968,
+      "sha256": "bbe4405ab5a08a0b21077c9a6254d7d153c9051edeb3302cff8a94ee9b6ec479"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_stereo_behind/stereo_b.gltf",
+      "id": "sc_stereo_behind",
+      "ok": true,
+      "bytes": 2695900,
+      "sha256": "fa9933ee19500951eb480b1153b54a570cbb8eb2ab9af13a9bda0b07c8c00974"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_tdrs/tdrs.gltf",
+      "id": "sc_tdrs_3",
+      "ok": true,
+      "bytes": 2447692,
+      "sha256": "812bba0ff2d9721839ac44705bf3dc7a1af7f3a76ff531667a28072446f76ae0"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_npp/NPP.gltf",
+      "id": "sc_suomi_npp",
+      "ok": true,
+      "bytes": 2919340,
+      "sha256": "795c3aa077dec338f27692e7c26b3fc9f1112a06466f798fdf8e4be96c061119"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_swot_v2/swot.gltf",
+      "id": "sc_swot",
+      "ok": true,
+      "bytes": 8273536,
+      "sha256": "5b9eae978cfbfe8d424469b5d5047eaf083a7482c43b48ee953f3bfed653897b"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_solar_1/swfo.gltf",
+      "id": "sc_solar_1",
+      "ok": true,
+      "bytes": 17487320,
+      "sha256": "953454f8431704edddc818f472f1d25757f796951029b8ad5b11571f9ac3da04"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_tempo/tempo.gltf",
+      "id": "sc_tempo",
+      "ok": true,
+      "bytes": 4023356,
+      "sha256": "c3548a5d4ade8494f2877a13d0ef71628a05670623eafa23fea6c4c7dcf8431e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_terra/Terra.gltf",
+      "id": "sc_terra",
+      "ok": true,
+      "bytes": 1382664,
+      "sha256": "aa8264420388a92456d392b132d0c5bbbcbe812f7e6e90b7cf0e2dfe4835db6a"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_themis/themis.gltf",
+      "id": "sc_themis_a",
+      "ok": true,
+      "bytes": 732784,
+      "sha256": "762a4c3030d123891badba38bc79e43c46df9ebfa07582b48a2e18a204a36ba8"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_tess/TESS.gltf",
+      "id": "sc_tess",
+      "ok": true,
+      "bytes": 2511708,
+      "sha256": "5601800c10c7ae6a0d6786f7aff981b94d3402d2194385e3a4e623ebd6365b10"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_trace_gas_orbiter/TGO.gltf",
+      "id": "sc_trace_gas_orbiter",
+      "ok": true,
+      "bytes": 2340048,
+      "sha256": "d99e159f72c5c7d5317761205cde25d2d4f3c5dd204bab095ff12181499e8b5d"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_trmm/TRMM.gltf",
+      "id": "sc_trmm",
+      "ok": true,
+      "bytes": 2083736,
+      "sha256": "292ae67e2bbb193a5319e6dab7677a546fffaf848fa6ff40b0162444a370b47e"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_ulysses/ulysses.gltf",
+      "id": "sc_ulysses",
+      "ok": true,
+      "bytes": 1913388,
+      "sha256": "2f033a93f8c17ee2529d095d156e42e5924064072d46de1668aee0b1d79bf2fa"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "id": "sc_tropics_03",
+      "ok": true,
+      "bytes": 7852412,
+      "sha256": "dc6fcab44a77f4e41a70b554fc9377ce8c6f1d93ad3a001cd0a46dad6df3b3a9"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_voyager/Voyager.gltf",
+      "id": "sc_voyager_1",
+      "ok": true,
+      "bytes": 4223608,
+      "sha256": "9d9bacdf75d74e1385d0de0f4e2e8927d0f5d2ad67d100f373c54fd0a859569c"
+    },
+    {
+      "url": "$STATIC_ASSETS_URL/models/sc_wind/wind.gltf",
+      "id": "sc_wind",
+      "ok": true,
+      "bytes": 2858988,
+      "sha256": "2f1bb02c8c0bf5f764782ba13dc24e1b2170987ec24972538dc797cd66af5d83"
+    }
+  ]
+}

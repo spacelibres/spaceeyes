@@ -4,3 +4,4 @@ public/wasm/
 public/assets/
 *.tsbuildinfo
 next-env.d.ts
+.cache/

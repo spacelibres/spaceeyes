@@ -42,7 +42,13 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 
 function harness() {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
-  const trails: { id: string; epochs: number[]; count: number; closed: boolean }[] = [];
+  const focusCalls: string[] = [];
+  const trails: {
+    id: string;
+    epochs: number[];
+    count: number;
+    closed: boolean;
+  }[] = [];
   let core: HostCore;
   let freed = 0;
   let picked: string | undefined;
@@ -63,6 +69,12 @@ function harness() {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if (property === "focus")
+            return (...args: any[]) => {
+              const result = Reflect.apply(value, target, args);
+              focusCalls.push(args[2]);
+              return result;
+            };
           if (property === "trajectory")
             return (...args: any[]) => {
               const result = Reflect.apply(value, target, args);
@@ -71,7 +83,9 @@ function harness() {
                 id: args[2],
                 epochs: payload.epochs,
                 count: payload.points.length,
-                closed: JSON.stringify(payload.points[0]) === JSON.stringify(payload.points.at(-1)),
+                closed:
+                  JSON.stringify(payload.points[0]) ===
+                  JSON.stringify(payload.points.at(-1)),
               });
               return result;
             };
@@ -110,6 +124,7 @@ function harness() {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    focusCalls: () => focusCalls,
     trails: () => trails,
     setPick: (id: string | undefined) => {
       picked = id;
@@ -184,7 +199,13 @@ test("timed trajectory detail switches from a late catalog object without exceed
   );
   try {
     await app.select("neptune");
-      assert.equal(fixtures.trails().filter(t=>t.id==="neptune").at(-1)!.closed,true);
+    assert.equal(
+      fixtures
+        .trails()
+        .filter((t) => t.id === "neptune")
+        .at(-1)!.closed,
+      true,
+    );
     await app.select("mercury");
     const trail = fixtures
       .trails()
@@ -192,8 +213,115 @@ test("timed trajectory detail switches from a late catalog object without exceed
       .at(-1)!;
     assert.ok(trail.count > 1024 && trail.count <= 2048);
     assert.ok(trail.epochs.includes(fixtures.core().epoch()));
-      assert.equal(trail.closed,true);
+    assert.equal(trail.closed, true);
     assert.equal(fixtures.focused(), "mercury");
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("extended catalog selection binds actual spacecraft and irregular-moon model assets", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    for (const id of ["phobos", "sc_iss", "sc_juno"]) {
+      await app.select(id);
+      const visual = fixtures
+        .visuals()
+        .filter((v) => v.id === id)
+        .at(-1)!;
+      assert.equal(visual.spec.kind, "model");
+      assert.equal(visual.spec.assetId, `eyes:${id}:model`);
+      assert.equal(visual.spec.scaleKmPerUnit, 1);
+      assert.equal(fixtures.focused(), id);
+    }
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("returning to overview invalidates a pending seek before it can change time or resume playback", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let began!: () => void, release!: () => void;
+  const ready = new Promise<void>((done) => {
+      began = done;
+    }),
+    gate = new Promise<void>((done) => {
+      release = done;
+    });
+  const app = await createWorkspace(
+    "#test",
+    (value) => states.push(value),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = String(input);
+        if (url.includes("epoch=10000000000")) {
+          began();
+          await gate;
+        }
+        return new Response(
+          sample(
+            url.includes("type=ori"),
+            url.includes("epoch=10000000000") ? 2e10 : 4e9,
+          ),
+        );
+      },
+    },
+  );
+  try {
+    const before = fixtures.core().epoch();
+    // Force a request outside the initial loaded coverage.
+    const seeking = app.seek(1e10);
+    await ready;
+    app.overview();
+    release();
+    await seeking;
+    assert.equal(fixtures.core().epoch(), before);
+    assert.equal(states.at(-1)!.busy, false);
+    assert.equal(states.at(-1)!.selected, "");
+    assert.match(states.at(-1)!.phase, /总览/);
+  } finally {
+    release();
+    await app.dispose();
+  }
+});
+
+test("a superseded available-time request cannot refocus the old selection", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (value) => states.push(value),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    assert.equal(states.at(-1)!.error, "");
+    await app.select("moon");
+    const before = fixtures.focusCalls().length;
+    const paused = fixtures.waitForPause();
+    const old = app.observeAvailable();
+    await paused;
+    const next = app.select("earth");
+    await Promise.all([old, next]);
+    assert.deepEqual(fixtures.focusCalls().slice(before), ["earth"]);
+    assert.equal(fixtures.focused(), "earth");
   } finally {
     await app.dispose();
   }
@@ -418,6 +546,38 @@ test("overview leaves surfaces external and selection requests only that body's 
         .some(({ id, spec }) => id === "moon" && spec.faceAssets),
       false,
     );
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("a successful valid-time reload clears the previous unavailable-target error", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = new URL(String(input), "http://localhost");
+        if (
+          url.pathname.endsWith("/sc_cassini") &&
+          Number(url.searchParams.get("epoch")) >= 0
+        )
+          return new Response("outside mission coverage", { status: 503 });
+        return new Response(sample(url.searchParams.get("type") === "ori"));
+      },
+    },
+  );
+  try {
+    await assert.rejects(app.select("sc_cassini"));
+    assert.notEqual(states.at(-1)!.error, "");
+    await app.observeAvailable();
+    assert.equal(states.at(-1)!.selected, "sc_cassini");
+    assert.equal(states.at(-1)!.error, "");
+    assert.equal(fixtures.focused(), "sc_cassini");
   } finally {
     await app.dispose();
   }

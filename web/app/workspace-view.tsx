@@ -6,6 +6,10 @@ export type CatalogEntry = {
   name: string;
   parentId?: string;
   radiusKm: number;
+  kind?: string;
+  subcategory?: string;
+  radiusSource?: string;
+  keywords?: string[];
 };
 export type WorkspaceViewProps = {
   catalog: CatalogEntry[];
@@ -13,6 +17,7 @@ export type WorkspaceViewProps = {
   search: string;
   setSearch: (v: string) => void;
   startupMs?: number;
+  parentId?: string;
   active: boolean;
   busy: boolean;
   phase: string;
@@ -40,6 +45,7 @@ export type WorkspaceViewProps = {
   onJumpInput: (v: string) => void;
   onJump: () => void;
   onNow: () => void;
+  onMissionTime: () => void;
   utc: string;
   utcJump: string;
   onUtcInput: (v: string) => void;
@@ -82,10 +88,18 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     setPanel(panel === next ? null : next);
   };
   const object = p.catalog.find((o) => o.id === p.selected);
+  const [category, setCategory] = useState("all");
   const canObserve =
     p.active && Boolean(object) && p.dataStatus.startsWith("ready");
-  const matches = p.catalog.filter((o) =>
-    `${o.name} ${o.id}`.toLowerCase().includes(p.search.toLowerCase()),
+  const matches = p.catalog.filter(
+    (o) =>
+      (category === "all" ||
+        (category === "major"
+          ? o.kind === "star" || o.kind === "planet"
+          : o.kind === category)) &&
+      `${o.name} ${o.id} ${o.keywords?.join(" ") ?? ""}`
+        .toLowerCase()
+        .includes(p.search.toLowerCase()),
   );
   return (
     <main
@@ -167,6 +181,22 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               placeholder="搜索名称或标识"
             />
           </label>
+          <label className="search-label">
+            对象分类
+            <select
+              aria-label="对象分类"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+            >
+              <option value="all">全部对象</option>
+              <option value="major">太阳与行星</option>
+              <option value="moon">天然卫星</option>
+              <option value="spacecraft">人造卫星与飞船</option>
+            </select>
+          </label>
+          <p className="muted">
+            {matches.length} / {p.catalog.length} 项 · 模型按需加载
+          </p>
           <button
             className="overview-button"
             disabled={!p.active}
@@ -303,17 +333,28 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <dd>{p.coverage}</dd>
             {object && (
               <>
-                <dt>参考半径</dt>
+                <dt>
+                  {object.radiusSource?.includes("framing")
+                    ? "模型取景范围（非物理半径）"
+                    : "参考半径"}
+                </dt>
                 <dd>{object.radiusKm.toLocaleString()} km</dd>
               </>
             )}
           </dl>
+          {object?.kind === "spacecraft" && (
+            <button disabled={!p.active || p.busy} onClick={p.onMissionTime}>
+              前往有效观测时间
+            </button>
+          )}
           {object && (
             <section>
               <h3>关联对象</h3>
               {p.catalog
                 .filter(
-                  (o) => o.parentId === object.id || o.id === object.parentId,
+                  (o) =>
+                    o.parentId === object.id ||
+                    o.id === (p.parentId ?? object.parentId),
                 )
                 .map((o) => (
                   <button

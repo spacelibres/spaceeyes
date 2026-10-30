@@ -89,10 +89,21 @@ test("moon displayed orbit remains parent-relative while world state includes Ea
     trail.points[i].map((v, j) => v + earth[j]),
     p,
   );
-  const ellipse = source.trajectorySamples("moon", 5, 256, false, "instantaneous");
-  assert.equal(ellipse.originId,"earth");
-  assert.deepEqual(ellipse.points[0],ellipse.points.at(-1));
-  assert.deepEqual(ellipse.points[ellipse.epochsTdbSeconds.indexOf(5)].map((v,j)=>v+earth[j]),p);
+  const ellipse = source.trajectorySamples(
+    "moon",
+    5,
+    256,
+    false,
+    "instantaneous",
+  );
+  assert.equal(ellipse.originId, "earth");
+  assert.deepEqual(ellipse.points[0], ellipse.points.at(-1));
+  assert.deepEqual(
+    ellipse.points[ellipse.epochsTdbSeconds.indexOf(5)].map(
+      (v, j) => v + earth[j],
+    ),
+    p,
+  );
   source.dispose();
 });
 
@@ -123,40 +134,63 @@ test("trajectory sampling contains the exact current epoch, refines locally and 
 });
 test("instantaneous ellipse closes beyond DYN coverage without publishing extrapolated states", async () => {
   const { ctx, states } = context();
-  const bytes = orb(10), view = new DataView(bytes.buffer);
+  const bytes = orb(10),
+    view = new DataView(bytes.buffer);
   // A circular two-body fixture: mu=1+2=3, n=sqrt(mu/a^3).
   const n = Math.sqrt(3 / 1000);
   for (let i = 0; i < 2; i++) {
     view.setFloat64(28 + i * 72 + 24, n, true);
     view.setFloat64(28 + i * 72 + 32, n * i * 10, true);
   }
-  const source = new SolarSystemData(ctx, { fetch: async () => new Response(bytes) });
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response(bytes),
+  });
   await source.load(["neptune"], 5, []);
   const before = structuredClone([...states]);
-  const trail = source.trajectorySamples("neptune", 5, 256, false, "instantaneous");
+  const trail = source.trajectorySamples(
+    "neptune",
+    5,
+    256,
+    false,
+    "instantaneous",
+  );
   assert.deepEqual(trail.points[0], trail.points.at(-1));
-  assert.ok(trail.points.every(p => Math.abs(Math.hypot(...p) - 10) < 1e-8));
-  assert.deepEqual(trail.points[trail.epochsTdbSeconds.indexOf(5)], source.position("neptune", 5));
-  assert.ok(trail.epochsTdbSeconds[0] < 0 && trail.epochsTdbSeconds.at(-1)! > 10);
+  assert.ok(trail.points.every((p) => Math.abs(Math.hypot(...p) - 10) < 1e-8));
+  assert.deepEqual(
+    trail.points[trail.epochsTdbSeconds.indexOf(5)],
+    source.position("neptune", 5),
+  );
+  assert.ok(
+    trail.epochsTdbSeconds[0] < 0 && trail.epochsTdbSeconds.at(-1)! > 10,
+  );
   assert.deepEqual([...states], before);
   assert.throws(() => source.position("neptune", 11), /coverage/);
   source.dispose();
 });
 
 test("reviewed source identity and selected coverage survive into published provenance", async () => {
-  const {ctx,states}=context();
-  const rawHash="a".repeat(64), selection=JSON.stringify({records:[17,50],coverage:[0,10]});
-  const source=new SolarSystemData(ctx,{fetch:async()=>new Response(orb(10),{headers:{
-    "x-dyn-source-sha256":rawHash,"x-dyn-selection":selection,
-  }})});
-  await source.load(["earth"],5,[]);
-  const provenance=source.provenance("earth")[0];
-  assert.equal(provenance.sourceSha256,rawHash);
-  assert.equal(provenance.selection,selection);
-  assert.match(provenance.sha256,/^[a-f0-9]{64}$/);
+  const { ctx, states } = context();
+  const rawHash = "a".repeat(64),
+    selection = JSON.stringify({ records: [17, 50], coverage: [0, 10] });
+  const source = new SolarSystemData(ctx, {
+    fetch: async () =>
+      new Response(orb(10), {
+        headers: {
+          "x-dyn-source-sha256": rawHash,
+          "x-dyn-selection": selection,
+        },
+      }),
+  });
+  await source.load(["earth"], 5, []);
+  const provenance = source.provenance("earth")[0];
+  assert.equal(provenance.sourceSha256, rawHash);
+  assert.equal(provenance.selection, selection);
+  assert.match(provenance.sha256, /^[a-f0-9]{64}$/);
   source.publishAt(5);
-  assert.ok((states.get("earth") as {source:string}).source.includes(rawHash));
-  assert.deepEqual(source.coverage("earth"),[0,10]);
+  assert.ok(
+    (states.get("earth") as { source: string }).source.includes(rawHash),
+  );
+  assert.deepEqual(source.coverage("earth"), [0, 10]);
   source.dispose();
 });
 
@@ -207,4 +241,201 @@ test("checkpoint restores previous cache and provenance after a failed load, nev
   assert.deepEqual(source.status(), []);
   assert.equal(states.size, 0);
   assert.throws(() => source.position("earth", 5), /unavailable/);
+});
+
+test("missing catalog definitions stay unsupported without source requests", async () => {
+  const { ctx } = context();
+  let fetched = 0;
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => {
+      fetched++;
+      throw Error("unexpected");
+    },
+  });
+  await source.load(["sc_isas", "sc_lunar_trailblazer", "sc_lunir"], 0, []);
+  assert.equal(fetched, 0);
+  for (const id of ["sc_isas", "sc_lunar_trailblazer", "sc_lunir"])
+    assert.equal(source.status(id)?.status, "unsupported");
+});
+
+test("default load stays baseline ten and retain removes published states", async () => {
+  const { ctx, states } = context();
+  const ids = new Set<string>();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const u = new URL(String(input), "https://local");
+      ids.add(u.pathname.split("/").at(-1)!);
+      return u.searchParams.has("type")
+        ? new Response("", { status: 404 })
+        : new Response(orb(10));
+    },
+  });
+  await source.load();
+  assert.equal(source.status().length, 10);
+  assert.ok(!ids.has("sc_iss"));
+  source.publishAt(0);
+  source.retain(["sun"]);
+  assert.equal(source.status().length, 1);
+  assert.deepEqual([...states.keys()], ["sun"]);
+});
+
+test("retain removes only states owned by a successful publish", async () => {
+  const { ctx, states } = context();
+  ctx.data.remove = (id: string) => {
+    assert.ok(states.has(id), "cannot remove unpublished " + id);
+    states.delete(id);
+  };
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response("", { status: 404 }),
+  });
+  await source.load(["sc_isas", "mars"], 0, []);
+  source.retain(["sun"]);
+  assert.equal(source.status().length, 0);
+  await source.load(["sun"]);
+  source.publishAt(0);
+  source.retain([]);
+  assert.equal(states.size, 0);
+});
+
+test("deferred static parent cannot resurrect landing state after retain or dispose", async () => {
+  for (const stop of ["retain", "dispose"]) {
+    const { ctx } = context();
+    let release!: (r: Response) => void;
+    const gate = new Promise<Response>((r) => (release = r));
+    const source = new SolarSystemData(ctx, { fetch: async () => gate });
+    const loading = source.load(["sc_mars_2020_landing_site"], 700000000, []);
+    await Promise.resolve();
+    if (stop === "retain") source.retain([]);
+    else source.dispose();
+    release(new Response(orb(10)));
+    await loading;
+    assert.equal(source.status("sc_mars_2020_landing_site"), undefined);
+  }
+});
+
+test("child-only epoch jump reloads its parent segment", async () => {
+  const { ctx } = context();
+  let earthRequests = 0;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const u = new URL(String(input), "https://local");
+      const epoch = Number(u.searchParams.get("epoch"));
+      const later = epoch >= 20;
+      if (u.pathname.endsWith("/earth")) earthRequests++;
+      const b = orb(u.pathname.endsWith("/moon") ? 2 : later ? 20 : 10);
+      if (later) {
+        const v = new DataView(b.buffer);
+        v.setFloat64(28, 20, true);
+        v.setFloat64(100, 30, true);
+      }
+      return new Response(b);
+    },
+  });
+  await source.load(["moon"], 5, []);
+  assert.deepEqual(source.position("moon", 5), [12, 0, 0]);
+  await source.load(["moon"], 25, []);
+  assert.equal(earthRequests, 2);
+  assert.deepEqual(source.position("moon", 25), [22, 0, 0]);
+});
+
+test("checkpoint restores retention and published ownership alongside data state", async () => {
+  const { ctx, states } = context();
+  ctx.data.remove = (id: string) => {
+    assert.ok(states.has(id));
+    states.delete(id);
+  };
+  const source = new SolarSystemData(ctx);
+  source.retain(["sun"]);
+  await source.load(["sun"]);
+  source.publishAt(0);
+  const restore = source.checkpoint();
+  source.retain([]);
+  assert.equal(states.size, 0);
+  restore();
+  source.publishAt(0);
+  source.retain([]);
+  assert.equal(states.size, 0);
+});
+
+test("source network reads are bounded and disposal never starts queued fetches", async () => {
+  const { ctx } = context();
+  let active = 0,
+    peak = 0,
+    calls = 0;
+  const releases: (() => void)[] = [];
+  const source = new SolarSystemData(ctx, {
+    fetch: async (_input, options) => {
+      calls++;
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise<void>((resolve) => {
+        releases.push(resolve);
+        options?.signal?.addEventListener("abort", () => resolve(), {
+          once: true,
+        });
+      });
+      active--;
+      options?.signal?.throwIfAborted();
+      return new Response(orb(10));
+    },
+  });
+  const loading = source.load(
+    [
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptune",
+    ],
+    0,
+    [],
+  );
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(peak, 4);
+  assert.equal(calls, 4);
+  source.dispose();
+  for (const release of releases) release();
+  await loading;
+  assert.equal(calls, 4);
+});
+
+test("instantaneous request falls back to covered linear source history", async () => {
+  const { ctx } = context();
+  const b = new Uint8Array(76),
+    v = new DataView(b.buffer);
+  v.setInt16(0, 2, true);
+  b.set([108, 105, 110, 0, 3, 1], 2);
+  v.setInt32(8, 2, true);
+  v.setFloat64(44, 10, true);
+  v.setFloat64(52, 10, true);
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response(b),
+  });
+  await source.load(["sc_voyager_1"], 5, []);
+  const path = source.trajectorySamples(
+    "sc_voyager_1",
+    5,
+    8,
+    false,
+    "instantaneous",
+  );
+  assert.ok(path.points.length <= 8);
+  assert.ok(path.points.every((p) => p.every(Number.isFinite)));
+});
+
+test("declared orbital elements expose finite covered trajectory history", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) =>
+      String(input).includes("type=ori")
+        ? new Response("", { status: 404 })
+        : new Response(orb(10)),
+  });
+  await source.load(["dactyl"], 5, []);
+  const path = source.trajectorySamples("dactyl", 5, 8, false, "instantaneous");
+  assert.ok(path.points.length <= 8);
+  assert.ok(path.points.every((p) => p.every(Number.isFinite)));
 });

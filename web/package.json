@@ -1,6 +1,6 @@
 {
   "name": "spaceeyes-web",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,14 +13,21 @@
     "prepare:fixture": "node scripts/prepare-assets.mjs"
   },
   "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@loaders.gl/textures": "4.5.4",
+    "draco3dgltf": "1.5.9",
+    "gl-matrix": "3.4.4",
     "next": "16.4.3",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@types/node": "24.10.0",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
+    "acorn": "8.19.0",
     "prettier": "3.6.2",
     "typescript": "5.9.3"
   }

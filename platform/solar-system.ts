@@ -1,5 +1,21 @@
+import {
+  staticPosition,
+  staticCoverage,
+  activeController,
+  rotateVector,
+} from "./eyes-controllers.ts";
+import {
+  eyesCatalog,
+  eyesDependencies,
+  eyesDefinitions,
+  parentAt,
+} from "./eyes-catalog.ts";
 import { decodeDyn, type DecodedDyn } from "./dyn-decoder.ts";
-import { evaluateOrb, evaluateOrbVelocity, evaluateOri } from "./dyn-evaluator.ts";
+import {
+  evaluateOrb,
+  evaluateOrbVelocity,
+  evaluateOri,
+} from "./dyn-evaluator.ts";
 import { osculatingOrbit } from "./osculating-orbit.ts";
 import type { PluginContext } from "./plugin-host.ts";
 // Display styling only; colors do not describe measured surface spectra.
@@ -15,7 +31,7 @@ const displayColors: Record<string, [number, number, number, number]> = {
   uranus: [0.4, 0.83, 0.87, 1],
   neptune: [0.2, 0.36, 0.9, 1],
 };
-export const solarCatalog = [
+const baseCatalog = [
   ["sun", "太阳", null, 695500],
   ["mercury", "水星", "sun", 2439.4],
   ["venus", "金星", "sun", 6051.8],
@@ -40,6 +56,13 @@ export const solarCatalog = [
   source: "Eyes 4a8a83b entity definitions",
   radiusSource: "Eyes 4a8a83b entity definitions",
 }));
+export const solarCatalog = [
+  ...baseCatalog,
+  ...[...eyesCatalog, ...eyesDependencies].filter(
+    (x) => !baseCatalog.some((b) => b.id === x.id),
+  ),
+];
+export const baseSolarIds = baseCatalog.map((x) => x.id);
 export type SolarStatus = {
   id: string;
   status:
@@ -57,9 +80,12 @@ export class SolarSystemData {
   #fetch: typeof fetch;
   #abort = new AbortController();
   #data = new Map<string, DecodedDyn>();
+  #dataParents = new Map<string, string | null>();
   #ori = new Map<string, DecodedDyn>();
   #states = new Map<string, SolarStatus>();
   #generation = 0;
+  #retained: Set<string> | undefined;
+  #published = new Set<string>();
   #pending = new Map<string, Promise<void>>();
   #provenance = new Map<
     string,
@@ -70,7 +96,54 @@ export class SolarSystemData {
       selection?: string;
     }
   >();
+  #networkActive = 0;
+  #queueAbort = new AbortController();
+  #networkQueue: {
+    start: () => void;
+    reject: (error: unknown) => void;
+    signal: AbortSignal;
+    abort: () => void;
+  }[] = [];
   async #read(url: string) {
+    const queueSignal = AbortSignal.any([
+      this.#abort.signal,
+      this.#queueAbort.signal,
+    ]);
+    queueSignal.throwIfAborted();
+    await new Promise<void>((resolve, reject) => {
+      const waiter = {
+        start: () => {
+          this.#networkActive++;
+          resolve();
+        },
+        reject,
+        signal: queueSignal,
+        abort: () => {
+          const i = this.#networkQueue.indexOf(waiter);
+          if (i >= 0) this.#networkQueue.splice(i, 1);
+          reject(queueSignal.reason);
+        },
+      };
+      if (this.#networkActive < 4) waiter.start();
+      else {
+        this.#networkQueue.push(waiter);
+        queueSignal.addEventListener("abort", waiter.abort, { once: true });
+      }
+    });
+    try {
+      queueSignal.throwIfAborted();
+      return await this.#readUnbounded(url);
+    } finally {
+      this.#networkActive--;
+      while (this.#networkQueue.length && this.#networkActive < 4) {
+        const waiter = this.#networkQueue.shift()!;
+        waiter.signal.removeEventListener("abort", waiter.abort);
+        if (waiter.signal.aborted) waiter.reject(waiter.signal.reason);
+        else waiter.start();
+      }
+    }
+  }
+  async #readUnbounded(url: string) {
     const signal = AbortSignal.any([
       this.#abort.signal,
       AbortSignal.timeout(25000),
@@ -114,10 +187,12 @@ export class SolarSystemData {
         x.toString(16).padStart(2, "0"),
       ).join(""),
       fetchedAt: new Date().toISOString(),
-      ...(r.headers.has("x-dyn-source-sha256") ? {
-        sourceSha256: r.headers.get("x-dyn-source-sha256")!,
-        selection: r.headers.get("x-dyn-selection") ?? undefined,
-      } : {}),
+      ...(r.headers.has("x-dyn-source-sha256")
+        ? {
+            sourceSha256: r.headers.get("x-dyn-source-sha256")!,
+            selection: r.headers.get("x-dyn-selection") ?? undefined,
+          }
+        : {}),
     });
     return bytes;
   }
@@ -135,7 +210,10 @@ export class SolarSystemData {
   /** Internal transaction snapshot; frozen DYN payloads remain shared. */
   checkpoint(): () => void {
     const generation = this.#generation;
+    const published = new Set(this.#published);
     const data = new Map(this.#data);
+    const dataParents = new Map(this.#dataParents);
+    const retained = this.#retained ? new Set(this.#retained) : undefined;
     const ori = new Map(this.#ori);
     const cloneStates = (states: Map<string, SolarStatus>) =>
       new Map(
@@ -155,7 +233,10 @@ export class SolarSystemData {
     );
     return () => {
       if (generation !== this.#generation || this.#abort.signal.aborted) return;
+      this.#published = new Set(published);
       this.#data = new Map(data);
+      this.#dataParents = new Map(dataParents);
+      this.#retained = retained;
       this.#ori = new Map(ori);
       this.#states = cloneStates(states);
       this.#provenance = new Map(
@@ -175,11 +256,30 @@ export class SolarSystemData {
       .filter(([url]) => url.startsWith(`/api/solar-dyn/${id}?`))
       .map(([url, value]) => ({ url, ...value }));
   }
+  parentAt(id: string, epoch: number): string | null {
+    return eyesDefinitions[id]
+      ? parentAt(id, epoch)
+      : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
+  }
+  retain(ids: readonly string[]) {
+    this.#queueAbort.abort(new Error("Scene changed"));
+    this.#queueAbort = new AbortController();
+    const keep = new Set(ids);
+    this.#retained = keep;
+    for (const id of this.#states.keys())
+      if (!keep.has(id)) {
+        this.#states.delete(id);
+        if (this.#published.has(id)) {
+          this.#ctx.data.remove(id);
+          this.#published.delete(id);
+        }
+      }
+  }
   coverage(id: string) {
     return this.#states.get(id)?.coverage;
   }
   async load(
-    ids: readonly string[] = solarCatalog.map((x) => x.id),
+    ids: readonly string[] = baseSolarIds,
     epoch = 0,
     orientationIds: readonly string[] = ids,
   ) {
@@ -197,7 +297,7 @@ export class SolarSystemData {
     );
   }
   async #load(
-    ids: readonly string[] = solarCatalog.map((x) => x.id),
+    ids: readonly string[] = baseSolarIds,
     epoch = 0,
     orientationIds: readonly string[] = ids,
   ) {
@@ -206,6 +306,59 @@ export class SolarSystemData {
       ids.map(async (id) => {
         const item = solarCatalog.find((x) => x.id === id);
         if (!item) throw Error("Unknown object");
+        if (eyesCatalog.find((x) => x.id === id)?.unsupported) {
+          this.#states.set(id, {
+            id,
+            status: "unsupported",
+            error: "Missing Eyes entity definition",
+          });
+          return;
+        }
+        const currentParent = this.parentAt(id, epoch);
+        const fixedCoverage = staticCoverage(id, epoch);
+        if (fixedCoverage && id !== "sun") {
+          if (currentParent && currentParent !== "sun")
+            await this.load([currentParent], epoch, [
+              currentParent,
+              ...orientationIds,
+            ]);
+          if (
+            generation !== this.#generation ||
+            this.#abort.signal.aborted ||
+            (this.#retained && !this.#retained.has(id))
+          )
+            return;
+          this.#states.set(id, {
+            id,
+            status: "ready",
+            coverage: this.#phaseCoverage(id, epoch, ...fixedCoverage),
+          });
+          return;
+        }
+        if (
+          !item.orbPath &&
+          id !== "sun" &&
+          (eyesDefinitions[id]?.controllers ?? []).some(
+            (c) =>
+              (c.type === "fixed" && (c.position || c.llaOnSpheroid)) ||
+              c.type === "orbitalElements",
+          )
+        ) {
+          this.#states.set(id, {
+            id,
+            status: "out-of-coverage",
+            error: "Outside source controller coverage",
+          });
+          return;
+        }
+        if (!item.orbPath && id !== "sun") {
+          this.#states.set(id, {
+            id,
+            status: "unsupported",
+            error: "No supported position controller",
+          });
+          return;
+        }
         if (!item.orbPath) {
           this.#states.set(id, {
             id,
@@ -216,13 +369,21 @@ export class SolarSystemData {
         }
         this.#states.set(id, { id, status: "loading" });
         try {
-          if (
-            item.parentId &&
-            item.parentId !== "sun" &&
-            !this.#data.has(item.parentId)
-          )
-            await this.load([item.parentId], epoch, orientationIds);
-          let d = this.#data.get(id);
+          if (currentParent && currentParent !== "sun")
+            await this.load([currentParent], epoch, orientationIds);
+          for (const controller of activeController(
+            id,
+            epoch,
+            "rotateByEntityOrientation",
+          )) {
+            const reference = controller.entityForOrientation ?? currentParent;
+            if (reference && reference !== id)
+              await this.load([reference], epoch, [reference]);
+          }
+          let d =
+            this.#dataParents.get(id) === currentParent
+              ? this.#data.get(id)
+              : undefined;
           if (d && (epoch < d.coverage.start || epoch > d.coverage.end))
             d = undefined;
           if (!d) {
@@ -232,8 +393,13 @@ export class SolarSystemData {
             if (d.kind !== "inline") throw Error("Unresolved index");
             if (epoch < d.coverage.start || epoch > d.coverage.end)
               throw Error("Outside source coverage");
-            if (generation !== this.#generation) return;
+            if (
+              generation !== this.#generation ||
+              (this.#retained && !this.#retained.has(id))
+            )
+              return;
             this.#data.set(id, d);
+            this.#dataParents.set(id, currentParent);
           }
           if (orientationIds.includes(id))
             try {
@@ -252,14 +418,26 @@ export class SolarSystemData {
             } catch {
               /* Position remains available without attitude. */
             }
-          if (generation !== this.#generation) return;
+          if (
+            generation !== this.#generation ||
+            (this.#retained && !this.#retained.has(id))
+          )
+            return;
           this.#states.set(id, {
             id,
             status: "ready",
-            coverage: [d.coverage.start, d.coverage.end],
+            coverage: this.#phaseCoverage(
+              id,
+              epoch,
+              d.coverage.start,
+              d.coverage.end,
+            ),
           });
         } catch (e) {
-          if (generation === this.#generation)
+          if (
+            generation === this.#generation &&
+            (!this.#retained || this.#retained.has(id))
+          )
             this.#states.set(id, {
               id,
               status: String(e).includes("sample times must increase")
@@ -273,17 +451,72 @@ export class SolarSystemData {
       }),
     );
   }
+  #phaseCoverage(
+    id: string,
+    t: number,
+    start: number,
+    end: number,
+  ): [number, number] {
+    const parents = eyesDefinitions[id]?.parents ?? [];
+    for (let i = 0; i < parents.length; i++) {
+      const boundary = Number(parents[i][0]);
+      if (boundary <= t) start = Math.max(start, boundary);
+      else {
+        end = Math.min(end, boundary);
+        break;
+      }
+    }
+    return [start, end];
+  }
   position(id: string, t: number): [number, number, number] {
     if (id === "sun") return [0, 0, 0];
     const item = solarCatalog.find((x) => x.id === id),
       d = this.#data.get(id);
-    if (!item || !d) throw Error("Object unavailable");
-    const p = evaluateOrb(d, t);
-    if (item.parentId && item.parentId !== "sun") {
-      const parent = this.position(item.parentId, t);
+    if (!item) throw Error("Object unavailable");
+    const parentForOrientation = this.parentAt(id, t);
+    const ori = parentForOrientation
+      ? this.#orientationAt(parentForOrientation, t)
+      : undefined;
+    const fixed = staticPosition(id, t, ori);
+    if (!fixed && !d) throw Error("Object unavailable");
+    const body = (eyesDefinitions[id]?.controllers ?? []).find(
+      (c) => c.type === "dynamo" && c.parentIsBarycenter,
+    )?.parentIsBarycenter
+      ? 1
+      : 0;
+    let p = fixed ?? evaluateOrb(d!, t, body);
+    if (!fixed)
+      for (const controller of activeController(
+        id,
+        t,
+        "rotateByEntityOrientation",
+      )) {
+        const reference =
+          controller.entityForOrientation ?? this.parentAt(id, t);
+        const attitude = reference
+          ? this.#orientationAt(reference, t)
+          : undefined;
+        if (!attitude)
+          throw Error(
+            "Reference orientation unavailable for rotated source position",
+          );
+        p = rotateVector(p, attitude);
+      }
+    const parentId = this.parentAt(id, t);
+    if (parentId && parentId !== "sun") {
+      const parent = this.position(parentId, t);
       return p.map((v, i) => v + parent[i]) as [number, number, number];
     }
     return p;
+  }
+  #orientationAt(id: string, t: number): readonly number[] | undefined {
+    const dynamic = this.#ori.get(id);
+    if (dynamic && t >= dynamic.coverage.start && t <= dynamic.coverage.end)
+      return evaluateOri(dynamic, t);
+    const fixed = activeController(id, t, "fixed")
+      .filter((c) => c.orientation?.constructor === "Quaternion")
+      .at(-1);
+    return fixed?.orientation.values;
   }
   publishAt(epoch: number) {
     for (const item of solarCatalog) {
@@ -315,20 +548,44 @@ export class SolarSystemData {
               : JSON.stringify(this.provenance(item.id).slice(-2)) +
                 " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification",
         });
+        this.#published.add(item.id);
         s.status = "ready";
       } catch (e) {
         s.status = "out-of-coverage";
         s.error = String(e);
         try {
-          this.#ctx.data.remove(item.id);
+          if (this.#published.has(item.id)) {
+            this.#ctx.data.remove(item.id);
+            this.#published.delete(item.id);
+          }
         } catch {}
       }
     }
   }
   trajectoryRange(id: string, epoch: number): [number, number] {
     const d = this.#data.get(id);
-    if (!d || d.kind !== "inline" || d.type !== "orb")
+    const declared = activeController(id, epoch, "orbitalElements").at(-1);
+    if (declared) {
+      const half = Math.PI / Math.abs(declared.meanAngularMotion);
+      let [start, end] = this.#phaseCoverage(
+        id,
+        epoch,
+        Math.max(epoch - half, Number(declared.coverage?.[0] ?? -Infinity)),
+        Math.min(epoch + half, Number(declared.coverage?.[1] ?? Infinity)),
+      );
+      const parent = this.parentAt(id, epoch),
+        coverage =
+          parent && parent !== "sun" ? this.coverage(parent) : undefined;
+      if (coverage) {
+        start = Math.max(start, coverage[0]);
+        end = Math.min(end, coverage[1]);
+      }
+      return [start, end];
+    }
+    if (!d || d.kind !== "inline" || d.type === "ori")
       throw Error("Orbit unavailable");
+    if (d.type !== "orb")
+      return this.#phaseCoverage(id, epoch, d.coverage.start, d.coverage.end);
     let r = d.records[0];
     for (const sample of d.records) {
       if (sample.time > epoch) break;
@@ -338,7 +595,8 @@ export class SolarSystemData {
     if (!Number.isFinite(period)) throw Error("Orbit period unavailable");
     let start = Math.max(d.coverage.start, epoch - period / 2),
       end = Math.min(d.coverage.end, epoch + period / 2);
-    const parent = solarCatalog.find((x) => x.id === id)?.parentId;
+    [start, end] = this.#phaseCoverage(id, epoch, start, end);
+    const parent = this.parentAt(id, epoch);
     if (parent && parent !== "sun") {
       const c = this.coverage(parent);
       if (c) {
@@ -355,19 +613,38 @@ export class SolarSystemData {
       this.position(id, start + ((end - start) * i) / (count - 1)),
     );
   }
-  trajectorySamples(id: string, epoch: number, count = 256, detailed = false, mode: "history" | "instantaneous" = "history") {
+  trajectorySamples(
+    id: string,
+    epoch: number,
+    count = 256,
+    detailed = false,
+    mode: "history" | "instantaneous" = "history",
+  ) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
     if (mode === "instantaneous") {
       const d = this.#data.get(id);
-      if (!d || d.kind !== "inline" || d.type !== "orb") throw Error("Orbit unavailable");
-      const orbit = osculatingOrbit(evaluateOrb(d,epoch), evaluateOrbVelocity(d,epoch),
-        (d.gravitationalParameter1 ?? 0)+(d.gravitationalParameter2 ?? 0), epoch,count,detailed);
-      if (orbit) {
-        const parentId = solarCatalog.find(body=>body.id===id)?.parentId;
-        const interval = orbit.period/(detailed ? 4096 : 1024);
-        return { ...orbit, originId: parentId && parentId !== "sun" ? parentId : undefined,
-          refreshRange: [Math.max(d.coverage.start,epoch-interval),Math.min(d.coverage.end,epoch+interval)] as [number,number] };
+      if (d?.kind === "inline" && d.type === "orb") {
+        const orbit = osculatingOrbit(
+          evaluateOrb(d, epoch),
+          evaluateOrbVelocity(d, epoch),
+          (d.gravitationalParameter1 ?? 0) + (d.gravitationalParameter2 ?? 0),
+          epoch,
+          count,
+          detailed,
+        );
+        if (orbit) {
+          const parentId = this.parentAt(id, epoch);
+          const interval = orbit.period / (detailed ? 4096 : 1024);
+          return {
+            ...orbit,
+            originId: parentId && parentId !== "sun" ? parentId : undefined,
+            refreshRange: [
+              Math.max(d.coverage.start, epoch - interval),
+              Math.min(d.coverage.end, epoch + interval),
+            ] as [number, number],
+          };
+        }
       }
       // Unbound or degenerate states remain open covered paths; never fabricate a closed orbit.
     }
@@ -391,13 +668,17 @@ export class SolarSystemData {
       );
     }
     const epochsTdbSeconds = [...new Set(times)].sort((a, b) => a - b);
-    const parentId = solarCatalog.find((body) => body.id === id)?.parentId;
+    const parentId = this.parentAt(id, epoch);
     const originId = parentId && parentId !== "sun" ? parentId : undefined;
     return {
       originId,
       epochsTdbSeconds,
       points: epochsTdbSeconds.map((t) =>
-        originId ? evaluateOrb(this.#data.get(id)!, t) : this.position(id, t),
+        originId
+          ? (this.position(id, t).map(
+              (v, i) => v - this.position(originId, t)[i],
+            ) as [number, number, number])
+          : this.position(id, t),
       ),
       refreshRange: [
         Math.max(start, epoch - (end - start) / (detailed ? 1024 : 4)),
@@ -408,10 +689,11 @@ export class SolarSystemData {
   dispose() {
     this.#generation++;
     this.#abort.abort();
-    for (const id of this.#states.keys())
+    for (const id of this.#published)
       try {
         this.#ctx.data.remove(id);
       } catch {}
+    this.#published.clear();
     this.#states.clear();
     this.#data.clear();
     this.#ori.clear();

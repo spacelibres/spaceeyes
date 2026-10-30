@@ -3,8 +3,18 @@ import {
   WasmCorePort,
   type WasmCoreBinding,
 } from "../../platform/wasm-core-port.ts";
-import { SolarSystemData, solarCatalog } from "../../platform/solar-system.ts";
+import {
+  SolarSystemData,
+  solarCatalog,
+  baseSolarIds,
+} from "../../platform/solar-system.ts";
+import {
+  eyesCatalog,
+  getEyesDefinition,
+  parentAt,
+} from "../../platform/eyes-catalog.ts";
 import planetAssets from "../../validation/solar-assets.json" with { type: "json" };
+import observationTimes from "../../platform/eyes-observation-times.json" with { type: "json" };
 
 export interface HostCore extends WasmCoreBinding {
   pick_object(u: number, v: number): string | undefined;
@@ -22,6 +32,7 @@ export interface HostCore extends WasmCoreBinding {
 }
 export type SolarSnapshot = {
   startupMs?: number;
+  parentId?: string;
   active: boolean;
   busy: boolean;
   phase: string;
@@ -55,11 +66,18 @@ export const initialSnapshot: SolarSnapshot = {
   dataStatus: "尚未加载",
   utc: "",
 };
-export const workspaceCatalog = solarCatalog.map((body) => ({
-  ...body,
-  parentId: body.parentId ?? undefined,
-}));
+const visibleCatalogIds = new Set([
+  ...baseSolarIds,
+  ...eyesCatalog.map((body) => body.id),
+]);
+export const workspaceCatalog = solarCatalog
+  .filter((body) => visibleCatalogIds.has(body.id))
+  .map((body) => ({
+    ...body,
+    parentId: body.parentId ?? undefined,
+  }));
 export interface WorkspaceRuntime {
+  observeAvailable(): Promise<void>;
   pick(u: number, v: number): Promise<boolean>;
   select(id: string): Promise<void>;
   focus(): void;
@@ -110,6 +128,15 @@ export async function createWorkspace(
     options.cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const core = new module.WasmCore(),
     host = new PluginHost(new WasmCorePort(core));
+  for (const body of eyesCatalog) {
+    const definition = getEyesDefinition(body.id);
+    if (definition?.model)
+      core.register_asset(
+        `eyes:${body.id}:model`,
+        `eyes/${body.id}/model.glb`,
+        "model",
+      );
+  }
   const surfaceAssets = new Map<
     string,
     [string, string, string, string, string, string]
@@ -138,6 +165,22 @@ export async function createWorkspace(
       "texture",
     );
   }
+  for (const body of eyesCatalog) {
+    if (
+      surfaceAssets.has(body.id) ||
+      !getEyesDefinition(body.id)?.spheroidLOD?.textures?.color
+    )
+      continue;
+    const ids = Array.from({ length: 6 }, (_, face) => {
+      const id = `eyes:${body.id}:face:${face}`;
+      core.register_asset(id, `eyes/${body.id}/face-${face}.png`, "texture");
+      return id;
+    });
+    surfaceAssets.set(
+      body.id,
+      ids as [string, string, string, string, string, string],
+    );
+  }
   let sdk!: PluginContext, data!: SolarSystemData;
   let frame = 0,
     closed = false,
@@ -160,6 +203,7 @@ export async function createWorkspace(
     state.playing = core.playing();
     state.utc = new Date(core.tdb_to_utc(state.epoch) * 1000).toISOString();
     if (state.selected && data) {
+      state.parentId = data.parentAt(state.selected, state.epoch) ?? undefined;
       const status = data.status(state.selected);
       state.dataStatus =
         (status?.status ?? "未加载") +
@@ -169,7 +213,9 @@ export async function createWorkspace(
         : "无可用覆盖";
       try {
         JSON.parse(core.state_at(state.selected, state.epoch));
-        const provenance = data.provenance(state.selected).findLast(entry => !entry.url.includes("&type=ori"));
+        const provenance = data
+          .provenance(state.selected)
+          .findLast((entry) => !entry.url.includes("&type=ori"));
         state.source =
           state.selected === "sun"
             ? "本场景日心坐标原点"
@@ -228,13 +274,45 @@ export async function createWorkspace(
   };
   const detailedBodies = new Set<string>();
   const trajectoryWindows = new Map<string, [number, number]>();
+  const sceneIds = (epoch: number) => {
+    const ids = new Set(baseSolarIds);
+    if (state.selected) {
+      let id: string | null = state.selected;
+      const visited = new Set<string>();
+      while (id && !visited.has(id)) {
+        visited.add(id);
+        ids.add(id);
+        if (id === "sun") break;
+        id = parentAt(id, epoch);
+      }
+      const system =
+        solarCatalog.find((body) => body.id === state.selected)?.kind ===
+        "planet"
+          ? state.selected
+          : parentAt(state.selected, epoch);
+      for (const body of eyesCatalog
+        .filter(
+          (body) =>
+            body.kind === "moon" &&
+            body.subcategory === "Major Moon" &&
+            parentAt(body.id, epoch) === system,
+        )
+        .slice(0, 24))
+        ids.add(body.id);
+    }
+    return [...ids];
+  };
   const refreshTrajectory = (id: string) => {
+    const count = data.status().filter((s) => s.status === "ready").length;
+    const ordinary = state.selected
+      ? Math.min(128, Math.max(8, Math.floor(2048 / Math.max(1, count - 1))))
+      : 256;
     const trail = data.trajectorySamples(
       id,
       core.epoch(),
-      state.selected === id ? 2048 : 256,
+      state.selected === id ? 2048 : ordinary,
       state.selected === id,
-        "instantaneous",
+      "instantaneous",
     );
     sdk.visual.trajectory(id, trail.points, trail.epochsTdbSeconds, {
       originId: trail.originId,
@@ -256,44 +334,64 @@ export async function createWorkspace(
           state.selected === body.id && !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
         if (!sdk.visual.status(body.id) || upgrade) {
-          sdk.visual.set(body.id, {
-            kind: "sphere",
-            colorRgba:
-              detailed && surfaceAssets.has(body.id)
-                ? [1, 1, 1, 1]
-                : body.color,
-            ...(detailed && surfaceAssets.has(body.id)
-              ? { faceAssets: surfaceAssets.get(body.id)! }
-              : {}),
-            ...(detailed && body.id === "saturn"
-              ? {
-                  ringAssets: [
-                    "planet:saturn:ring:top",
-                    "planet:saturn:ring:top",
-                  ] as [string, string],
-                  ringInnerRadiusRatio:
-                    planetAssets.ringGeometry.saturn.innerRadiusKm /
-                    body.radiusKm,
-                  ringOuterRadiusRatio:
-                    planetAssets.ringGeometry.saturn.outerRadiusKm /
-                    body.radiusKm,
-                }
-              : {}),
-            ...(body.id === "sun"
-              ? {
-                  emissiveRgba: [1, 0.75, 0.25, 1] as [
-                    number,
-                    number,
-                    number,
-                    number,
-                  ],
-                }
-              : {}),
-          });
+          const model = getEyesDefinition(body.id)?.model;
+          if (detailed && model) {
+            sdk.visual.set(body.id, {
+              kind: "model",
+              assetId: `eyes:${body.id}:model`,
+              scaleKmPerUnit: 1,
+              scene: 0,
+            });
+          } else
+            sdk.visual.set(body.id, {
+              kind: "sphere",
+              colorRgba:
+                detailed && surfaceAssets.has(body.id)
+                  ? [1, 1, 1, 1]
+                  : body.color,
+              ...(detailed && surfaceAssets.has(body.id)
+                ? { faceAssets: surfaceAssets.get(body.id)! }
+                : {}),
+              ...(detailed && body.id === "saturn"
+                ? {
+                    ringAssets: [
+                      "planet:saturn:ring:top",
+                      "planet:saturn:ring:top",
+                    ] as [string, string],
+                    ringInnerRadiusRatio:
+                      planetAssets.ringGeometry.saturn.innerRadiusKm /
+                      body.radiusKm,
+                    ringOuterRadiusRatio:
+                      planetAssets.ringGeometry.saturn.outerRadiusKm /
+                      body.radiusKm,
+                  }
+                : {}),
+              ...(body.id === "sun"
+                ? {
+                    emissiveRgba: [1, 0.75, 0.25, 1] as [
+                      number,
+                      number,
+                      number,
+                      number,
+                    ],
+                  }
+                : {}),
+            });
           if (upgrade) detailedBodies.add(body.id);
-          sdk.visual.label(body.id, body.id.toUpperCase());
+          sdk.visual.label(
+            body.id,
+            (getEyesDefinition(body.id)?.label ?? body.id).toUpperCase(),
+          );
         }
-        if (state.trajectories && body.parentId) {
+        if (
+          state.trajectories &&
+          body.id !== "sun" &&
+          data.parentAt(body.id, core.epoch()) &&
+          (baseSolarIds.includes(body.id) ||
+            (getEyesDefinition(body.id)?.controllers ?? []).some(
+              (c) => c.type === "dynamo" || c.type === "orbitalElements",
+            ))
+        ) {
           refreshTrajectory(body.id);
         }
       } catch (error) {
@@ -322,8 +420,10 @@ export async function createWorkspace(
         const restore = data.checkpoint();
         sdk.time.setPlayback(false, state.rate);
         try {
+          const ids = sceneIds(epoch);
+          data.retain(ids);
           await data.load(
-            undefined,
+            ids,
             epoch,
             [...detailedBodies, state.selected].filter(Boolean),
           );
@@ -389,11 +489,12 @@ export async function createWorkspace(
                 solarCatalog.find((body) => body.id === item.id)?.name ??
                 item.id,
             );
-          state.phase = `太阳系场景：${available}/${solarCatalog.length} 个对象可用`;
+          state.phase = `当前场景：${available}/${data.status().length} 个对象可用 · 目录 ${workspaceCatalog.length} 项`;
           if (selectedUnavailable)
             state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
-          if (unavailable.length)
-            state.error = `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`;
+          state.error = unavailable.length
+            ? `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`
+            : "";
         } finally {
           if (!closed && current === revision) {
             state.busy = false;
@@ -405,6 +506,20 @@ export async function createWorkspace(
     return queue;
   };
   const runtime: WorkspaceRuntime = {
+    async observeAvailable() {
+      assertLive();
+      const id = state.selected;
+      if (!id) throw Error("请先选择任务");
+      const epoch = (observationTimes.epochs as Record<string, number>)[id];
+      if (epoch === undefined) throw Error("该对象没有已核验的有效观测时间");
+      const pending = reload(epoch),
+        ownedRevision = revision;
+      await pending;
+      assertLive();
+      if (state.selected !== id || revision !== ownedRevision) return;
+      if (data.status(id)?.status === "ready") sdk.camera.focus(id);
+      emit();
+    },
     async pick(u, v) {
       assertLive();
       const id = core.pick_object(u, v);
@@ -417,9 +532,11 @@ export async function createWorkspace(
       if (!solarCatalog.some((body) => body.id === id))
         throw new Error("未知对象");
       state.selected = id;
-      await reload(core.epoch());
+      const pending = reload(core.epoch()),
+        ownedRevision = revision;
+      await pending;
       assertLive();
-      if (state.selected !== id) return;
+      if (state.selected !== id || revision !== ownedRevision) return;
       if (data.status(id)?.status !== "ready") {
         sdk.camera.view("overview");
         state.view = "orbit";
@@ -450,11 +567,34 @@ export async function createWorkspace(
     },
     overview() {
       assertLive();
+      const ownedRevision = ++revision;
+      desiredPlaying = false;
+      sdk.time.setPlayback(false, state.rate);
       state.selected = "";
+      data.retain(baseSolarIds);
+      configure();
       sdk.camera.view("overview");
       state.view = "orbit";
       state.phase = "太阳系总览";
       emit();
+      if (state.busy)
+        void queue
+          .finally(() => {
+            if (closed || revision !== ownedRevision) return;
+            data.retain(baseSolarIds);
+            data.publishAt(core.epoch());
+            configure();
+            state.busy = false;
+            state.phase = "太阳系总览";
+            emit();
+          })
+          .catch((error) => {
+            if (!closed && revision === ownedRevision) {
+              state.busy = false;
+              state.error = String(error);
+              emit();
+            }
+          });
     },
     view(mode) {
       assertLive();
@@ -539,6 +679,8 @@ export async function createWorkspace(
             !state.busy
           ) {
             state.selected = "";
+            data.retain(baseSolarIds);
+            configure();
             state.view = "orbit";
             state.phase = "已拉远至太阳系总览";
             emit();

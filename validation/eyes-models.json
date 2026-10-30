@@ -1,0 +1,6115 @@
+{
+  "source": "NASA Eyes Solar System original model manifests; fetched 2026-10-30",
+  "total": 131,
+  "rows": [
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf",
+      "ok": true,
+      "bytes": 3263,
+      "sha256": "30678a539400bbb97c5a32167c4a2c43401f1bf596ec50078379cc2f5917dbfe",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "generic_asteroid_2.bin",
+          "bytes": 90104
+        }
+      ],
+      "images": [
+        {
+          "uri": "asteroid2_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "asteroid_02_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf",
+      "ok": true,
+      "bytes": 3258,
+      "sha256": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "generic_asteroid_3.bin",
+          "bytes": 91068
+        }
+      ],
+      "images": [
+        {
+          "uri": "asteroid3_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "asteroid_03_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_chandra/chandra.gltf",
+      "ok": true,
+      "bytes": 13957,
+      "sha256": "7f94a22ac6db56e207f58a53e63ae4cf7f39d6e36fbca62e3d710815e5bc04bf",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "chandra.bin",
+          "bytes": 1169620
+        }
+      ],
+      "images": [
+        {
+          "uri": "chandra_hrma_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "chandra_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "chandra_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "chandra_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/generic/asteroid_1/generic_asteroid_1.gltf",
+      "ok": true,
+      "bytes": 3261,
+      "sha256": "c58e8806383331dedbf1f3b02df3c78d3a9a492c4234ea0615f7c0dc1a9945cd",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "generic_asteroid_1.bin",
+          "bytes": 89240
+        }
+      ],
+      "images": [
+        {
+          "uri": "asteroid01_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "asteroid_01_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/mimas/mimas.gltf",
+      "ok": true,
+      "bytes": 3103,
+      "sha256": "67c8c7c6a6edbd0207cb0f9eeb96215c91413dc38173b51cf74e6de259e289ab",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "mimas.bin",
+          "bytes": 243468
+        }
+      ],
+      "images": [
+        {
+          "uri": "Mimas_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Mimas_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/hyperion/hyperion.gltf",
+      "ok": true,
+      "bytes": 2823,
+      "sha256": "b6ebd99d5b9c7b7a17c9387b5fc50bf0a5020ad332bab2fc6961fa564e8dfa64",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "hyperion.bin",
+          "bytes": 358880
+        }
+      ],
+      "images": [
+        {
+          "uri": "Hyperion.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/dimorphos/Dimorphos.gltf",
+      "ok": true,
+      "bytes": 3660,
+      "sha256": "aed909d0de4dda3f53e8da391eac1d63943e3232e08fc13c0de235a446c5cf4f",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "Dimorphos.bin",
+          "bytes": 177456
+        }
+      ],
+      "images": [
+        {
+          "uri": "Dimorphos_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Dimorphos_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "Dimorphos_rough.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/phobos/phobos.gltf",
+      "ok": true,
+      "bytes": 2838,
+      "sha256": "d9d165311b145da217f888e14ed8eae0e263d2b32b14d249bf4e8381e7472972",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "phobos.bin",
+          "bytes": 718608
+        }
+      ],
+      "images": [
+        {
+          "uri": "phobos_tex_01.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/deimos/deimos.gltf",
+      "ok": true,
+      "bytes": 2838,
+      "sha256": "c9be5dfb22d0ed8b1f16b2817d9638cac330d95d4437054296c50fdfec54aa0d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "deimos.bin",
+          "bytes": 727840
+        }
+      ],
+      "images": [
+        {
+          "uri": "deimos_tex_01.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ace/ace.gltf",
+      "ok": true,
+      "bytes": 39453,
+      "sha256": "f7762dba98104b69092e0df1558cb0999625e841d6406618027e68ce1d76eaf1",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "ace.bin",
+          "bytes": 367552
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ace_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ace_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ace_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_acrimsat/acrimsat.gltf",
+      "ok": true,
+      "bytes": 20032,
+      "sha256": "2aa2907d959ab3135e6d4e75016cb986e5a8a9aced6d9d8022695acbc2041b4c",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "acrimsat.bin",
+          "bytes": 130460
+        }
+      ],
+      "images": [
+        {
+          "uri": "acrimsat_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "acrimsat_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "acrimsat_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/proteus/proteus.gltf",
+      "ok": true,
+      "bytes": 3125,
+      "sha256": "3c5ed015ec14e5a107a990d88af896aef41b4b5ca5c7add03ec1696603a0e1e2",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "proteus.bin",
+          "bytes": 115264
+        }
+      ],
+      "images": [
+        {
+          "uri": "Proteus_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Proteus_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/phoebe/phoebe.gltf",
+      "ok": true,
+      "bytes": 3218,
+      "sha256": "7e8bc4c2a11f9c926b2bfb2c4725231f556c659ae57557c49459f8c18adec32b",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "phoebe.bin",
+          "bytes": 25952
+        }
+      ],
+      "images": [
+        {
+          "uri": "phoebe_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "phoebe_diff.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_aqua/Aqua.gltf",
+      "ok": true,
+      "bytes": 34532,
+      "sha256": "d7a7ba15d433b29f3a5a019590e7bb794035e0681fedacc37e8cea0643f82261",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "aqua.bin",
+          "bytes": 1919244
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aqua_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aqua_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aqua_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aqua_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clear_png.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_acs3/acs3.gltf",
+      "ok": true,
+      "bytes": 21210,
+      "sha256": "5870ebb073b0713fb396b8df0d8b2e275c66e28430505a61d7ec3780b95f4f94",
+      "required": [],
+      "used": [
+        "KHR_materials_specular",
+        "KHR_materials_ior"
+      ],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "acs3.bin",
+          "bytes": 2078148
+        }
+      ],
+      "images": [
+        {
+          "uri": "carbon_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "carbon.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "panels_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "panels_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "sail_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "sail_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_artemis/artemis_ii.gltf",
+      "ok": true,
+      "bytes": 88499,
+      "sha256": "243f20ab284793e9d5cf8d0715f192d4bf16590f7932f65bcfd47f4c86770eb8",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_materials_clearcoat",
+        "KHR_materials_ior",
+        "KHR_materials_specular",
+        "KHR_materials_transmission",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 29,
+      "buffers": [
+        {
+          "uri": "artemis_ii.bin",
+          "bytes": 553576
+        }
+      ],
+      "images": [
+        {
+          "uri": "logo_and_flag.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "foil_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "orion_shell_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "orion_shell_albedo2.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "orion_shell_pbr2.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "piping_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "piping_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "worm.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "esa.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "scratched_metal_rough.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "scratched_metal_rough.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "grid_cloth.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "blackrect_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "blackrect.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "blackcircle.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "blacktri.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "cells1_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "cells1_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "arraycell_1-cells1_rough.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_3_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_3_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_3_metallic-array_3_rough.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_1_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_1_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_1_metallic.png-array_1_rough.png.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_2_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_2_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "array_2_metallic-array_2_rough.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "servicemod_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "servicemod_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "servicemod_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_aura/Aura.gltf",
+      "ok": true,
+      "bytes": 24279,
+      "sha256": "58a37268c35eee3b06b1491a0febdcd8b7b385878188c818c697cdbba445a45a",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "aura.bin",
+          "bytes": 1875352
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aura_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aura_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aura_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aura_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_cassini/Cassini.gltf",
+      "ok": true,
+      "bytes": 23098,
+      "sha256": "dff0eb45563e761c7fb72b9fbac0db53f18cf1b087f0fc2c721d78864d20b8c3",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 10,
+      "buffers": [
+        {
+          "uri": "cassini.bin",
+          "bytes": 2402020
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cassini_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "cassini_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cassini_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "cassini_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_capstone/capstone.gltf",
+      "ok": true,
+      "bytes": 15057,
+      "sha256": "45c33c7c2453ed1d2f22e962a10fa4f9b21fff214fe278d137258ae7a87d6e34",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "capstone.bin",
+          "bytes": 189544
+        }
+      ],
+      "images": [
+        {
+          "uri": "capstone_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "capstone_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "capstone_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "capstone_pbr_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_calipso/calipso.gltf",
+      "ok": true,
+      "bytes": 15873,
+      "sha256": "ceb72db5acb2290457b54eb354ac41103eca10b43bda4411954a821ff69691a0",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "calipso.bin",
+          "bytes": 603604
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "calipso_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "calipso_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "calipso_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_cloudsat/CloudSat.gltf",
+      "ok": true,
+      "bytes": 18804,
+      "sha256": "6e431141c5e2793ea693270d83ff7025472110895c76d5338e5fd747cef83a9e",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "cloudsat.bin",
+          "bytes": 552668
+        }
+      ],
+      "images": [
+        {
+          "uri": "cloudsat_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cloudsat_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cloudsat_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "cloudsat_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_cluster_ii/cluster_ii.gltf",
+      "ok": true,
+      "bytes": 10892,
+      "sha256": "1f2e00fc8ffc52cef6398652d24b0f8b494cc3628681b5c4010a5db2089eac56",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "cluster_ii.bin",
+          "bytes": 307108
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "cluster_ii_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cluster_ii_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "cluster_ii_pbr.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine.gltf",
+      "ok": true,
+      "bytes": 22031,
+      "sha256": "f0df65dd45405ac1d2be44c5b904571abac0cd7febe81a2ef12804472d8dec1b",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "clementine.bin",
+          "bytes": 352112
+        }
+      ],
+      "images": [
+        {
+          "uri": "clementine_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clementine_hinges_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "clementine_foil_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clem_shiny_panel_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "clem_shiny_panel_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clem_shiny_panel_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clem_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "clem_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clem_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "clear_png.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_cygnss/CYGNSS.gltf",
+      "ok": true,
+      "bytes": 49482,
+      "sha256": "e48e96640f3660c7f0bc582eb5ff3db603105bb52512065394db0c83e9c9eb39",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 18,
+      "buffers": [
+        {
+          "uri": "CYGNSS.bin",
+          "bytes": 320176
+        }
+      ],
+      "images": [
+        {
+          "uri": "CYGNSS_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "CYGNSS_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "CYGNSS_metal-CYGNSS_roughness.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_dawn/model.gltf",
+      "ok": true,
+      "bytes": 26539,
+      "sha256": "e262ff9d330fd40875e3f3de72458b43425df42bd713071a72a251acb1168cb5",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "dawn.bin",
+          "bytes": 823364
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n_2.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dawn_albedo.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_danuri/danuri.gltf",
+      "ok": true,
+      "bytes": 20171,
+      "sha256": "badf871034ea4f758cdc001cd0bb2691ba04037e138af5cbd7d07fdb74ce152e",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "danuri.bin",
+          "bytes": 405415
+        }
+      ],
+      "images": [
+        {
+          "uri": "danuri_wing_board_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "danuri_wing_board_base_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "danuri_wing_board_base_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "foil_new_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "danuri_shadowcam_pcb_base_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "danuri_shadowcam_body_normal.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_deep_impact/deep_impact_wo_impactor.gltf",
+      "ok": true,
+      "bytes": 20166,
+      "sha256": "685c60438def824f994ef97548032382696643f70db81fcf9b591375cd390fa8",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "deep_impact_wo_impactor.bin",
+          "bytes": 1133116
+        }
+      ],
+      "images": [
+        {
+          "uri": "epoxi_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "epoxi_hole_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "epoxi_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "epoxi_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "epoxi_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_dart/dart.gltf",
+      "ok": true,
+      "bytes": 63815,
+      "sha256": "d8800c834a7658727339a2b1315d242b7d7caac408d1c2ab7d7f4bd793835afe",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 18,
+      "buffers": [
+        {
+          "uri": "dart.bin",
+          "bytes": 1728772
+        }
+      ],
+      "images": [
+        {
+          "uri": "arraycells_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arraycells_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayback_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayback_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayextend_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayextend_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arraygrid_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayframe_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "arrayframe_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "bus_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "bus_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "bus_pbr.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dart_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_deep_impact_impactor/deep_impact_impactor.gltf",
+      "ok": true,
+      "bytes": 13351,
+      "sha256": "01a311fd671e4baf83741069654e6a6df42aeafa3dbfe1313a20301f877d95c0",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "deep_impact_impactor.bin",
+          "bytes": 331608
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "epoxi_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "epoxi_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "epoxi_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "noise_02_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_biosentinel/biosentinel.gltf",
+      "ok": true,
+      "bytes": 2320736,
+      "sha256": "6c49d1dffaaa9f21010a387d2e53b69c9c21356ecec8deb3ebb5cb0acca28616",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 773,
+      "buffers": [
+        {
+          "uri": "biosentinel.bin",
+          "bytes": 29153376
+        }
+      ],
+      "images": [
+        {
+          "uri": "image_0.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_0-1.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_dscovr/dscovr.gltf",
+      "ok": true,
+      "bytes": 83287,
+      "sha256": "e81f4923f9128a0d4398f2d88ec15367dd723e5eeb9f80e39ebeca4b6c599e2f",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 25,
+      "buffers": [
+        {
+          "uri": "dscovr.bin",
+          "bytes": 1354396
+        }
+      ],
+      "images": [
+        {
+          "uri": "dscovr_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dscovr_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dscovr_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_eo_1/eo-1.gltf",
+      "ok": true,
+      "bytes": 26699,
+      "sha256": "bdeda220d30108f643597cf4824c4471a793df9a43b288a0be45879df744b071",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "eo-1.bin",
+          "bytes": 475152
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "eo-1_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "eo-1_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "eo-1_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_deep_space_1/deep_space_1.gltf",
+      "ok": true,
+      "bytes": 15156,
+      "sha256": "091c8d8efbea5d1b99cb8108770cc7914a5a0736c12602a2fb8355d0af2ecf54",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "deep_space_1.bin",
+          "bytes": 1024936
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "deepspace1_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "deepspace1_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "deepspace1_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_euclid/euclid.gltf",
+      "ok": true,
+      "bytes": 179307,
+      "sha256": "b1c66e33440a948eba13a8baa2b3240df7d0cd7a89e9d0755f9cc36458f1944a",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 65,
+      "buffers": [
+        {
+          "uri": "euclid.bin",
+          "bytes": 1230532
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarpanels_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_escapade/escapade.gltf",
+      "ok": true,
+      "bytes": 75611,
+      "sha256": "ac5b2526024bffc5e341c7a8419c96aacdd6c80f3b8f9f357bc1f2e5edaaeb7d",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "scenes": 1,
+      "nodes": 38,
+      "buffers": [
+        {
+          "uri": "escapade.bin",
+          "bytes": 239145
+        }
+      ],
+      "images": [
+        {
+          "uri": "mli_foil_radial.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "brushed_1k_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "brushed_1k_roughness.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "metal_scratch_tile_1_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "dl_norm.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "dl_diff.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mli_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "solarpanel_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "solarpanel_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "solarpanel_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_europa_clipper/europa_clipper.gltf",
+      "ok": true,
+      "bytes": 40576,
+      "sha256": "a679d7e560e41a7158c2b72c588bfeaf3d7bc25a0b451511bb646ed60425b4c5",
+      "required": [
+        "EXT_texture_webp"
+      ],
+      "used": [
+        "EXT_texture_webp"
+      ],
+      "scenes": 1,
+      "nodes": 17,
+      "buffers": [
+        {
+          "uri": "europa_clipper.bin",
+          "bytes": 9502924
+        }
+      ],
+      "images": [
+        {
+          "uri": "clipper_reason_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_reason_basecolor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "reason_clipper_reason_metalness-reason_clipper_reason_roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_solar_cells_chassis_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_solar_cells_chassis_basecolor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "solar_cells_chassis_clipper_solar_cells_chassis_metalness-solar.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_solar_cells_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_solar_cells_albedo.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_solar_cells_metalness-clipper_solar_cells_roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "foil_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_bus_exposed_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_bus_exposed_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "bus_exposed_clipper_bus_exposed_Metalness-bus_exposed_clipper_b.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_e_themis_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_e_themis_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "e_themis_clipper_e_themis_Metalness-e_themis_clipper_e_themis_R.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_eis_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_eis_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "eis_clipper_eis_Metalness-eis_clipper_eis_Roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_europa_uvs_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_europa_uvs_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "europa_uvs_clipper_europa_uvs_Metalness-europa_uvs_clipper_euro.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_magnetometer_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_magnetometer_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "magnetometer_clipper_magnetometer_Metalness-magnetometer_clippe.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_maspex_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_maspex_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "maspex_clipper_maspex_Metalness-maspex_clipper_maspex_Roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_mise_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_mise_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "mise_clipper_mise_Metalness-mise_clipper_mise_Roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_pims_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_pims_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "pims_clipper_pims_Metalness-pims_clipper_pims_Roughness.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_suda_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "clipper_suda_baseColor.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "suda_clipper_suda_Metalness-suda_clipper_suda_Roughness.webp",
+          "mimeType": "image/webp"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_explorer_1_v2/explorer_1.gltf",
+      "ok": true,
+      "bytes": 5888,
+      "sha256": "61b765ce646e5bb289571503e7a0430399861e08f8be3326cd0d6615a141e1db",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "explorer_1.bin",
+          "bytes": 204856
+        }
+      ],
+      "images": [
+        {
+          "uri": "explorer_1_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "explorer_1_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_galileo/galileo.gltf",
+      "ok": true,
+      "bytes": 26732,
+      "sha256": "43943ada671c17c31d07ddb220a95c302e0ca5c3ded6abda7935df2bae634877",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "galileo.bin",
+          "bytes": 731820
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_02_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "galileo_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_01_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "galileo_tex_02.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_galileo_probe/galileo_probe.gltf",
+      "ok": true,
+      "bytes": 5846,
+      "sha256": "46f2b20d4ff79e95dd8ab83084c925a2c14e24cb54e9b1c4d14a4d92d56ee6d8",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "galileo_probe.bin",
+          "bytes": 19896
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_01_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "galileo_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_geotail/geotail.gltf",
+      "ok": true,
+      "bytes": 16738,
+      "sha256": "a3400de4d692bb18269cf4e4021980b468df73fb5b381af2da37200d5f082137",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "geotail.bin",
+          "bytes": 751992
+        }
+      ],
+      "images": [
+        {
+          "uri": "geotail_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "geotail_ao_masts.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "geotail_tex_01.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_grace_fo/graceFO.gltf",
+      "ok": true,
+      "bytes": 12478,
+      "sha256": "7b5e9efeb63bb309b4d300b395aa9e025382b595fbb07584ee902483291dc839",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "grace_fo.bin",
+          "bytes": 112052
+        }
+      ],
+      "images": [
+        {
+          "uri": "gracefo_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "gracefo_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gracefo_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_gpm/GPM.gltf",
+      "ok": true,
+      "bytes": 73749,
+      "sha256": "93bff9ab606011eb35222b32a663f5052211b23c74afd85294fb2d9e71d6dbe3",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "gpm.bin",
+          "bytes": 3448508
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "gpm_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "gpm_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_02_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "gpm_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_03_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_04_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_05_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "gpm_06_ao.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 1
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_grifex/grifex.gltf",
+      "ok": true,
+      "bytes": 6256,
+      "sha256": "29c5483213a342bc6fd82e1f9a3f9f1e7511813a4f8a9bc115b8fa2adcb9afc8",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "grifex.bin",
+          "bytes": 56004
+        }
+      ],
+      "images": [
+        {
+          "uri": "grifex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grifex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grifex_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_grace/grace.gltf",
+      "ok": true,
+      "bytes": 9599,
+      "sha256": "86b4c2a198addd0163ef56ffac38c6a1fada1d0bbd9d8356b6b7442b5bc735e8",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 3,
+      "buffers": [
+        {
+          "uri": "grace.bin",
+          "bytes": 209132
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grace_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grace_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grace_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_grail/grail_b.gltf",
+      "ok": true,
+      "bytes": 27166,
+      "sha256": "5fd82bb248b085ac3b448077d77cbcd532516ad627268c2fde32c5db5392de53",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "grail_b.bin",
+          "bytes": 453372
+        }
+      ],
+      "images": [
+        {
+          "uri": "grailb_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grailb_2_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grailb_hinges_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grailb_tex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grailb_tex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grailb_tex_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_huygens/Huygens.gltf",
+      "ok": true,
+      "bytes": 5444,
+      "sha256": "be1059ab900464a6456e07de5bad9f05b58f0b09391b24a93ee8815bad42cc32",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "huygens_probe.bin",
+          "bytes": 22368
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_hubble/Hubble.gltf",
+      "ok": true,
+      "bytes": 31917,
+      "sha256": "9fb332703e70212bc0f1a66419f7847490ce0de57044fb7daf78faf161280897",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 10,
+      "buffers": [
+        {
+          "uri": "hubble.bin",
+          "bytes": 1483904
+        }
+      ],
+      "images": [
+        {
+          "uri": "hubble_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hubble_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_light_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hubble_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hubble_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_tex_03_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hubble_tex_03_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "hubble_tex_03_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_image/image.gltf",
+      "ok": true,
+      "bytes": 19703,
+      "sha256": "c04ecb7cf55ec04f8b83807163071868f1f132685cec2499b8fcc4ab8453e12a",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "image.bin",
+          "bytes": 573580
+        }
+      ],
+      "images": [
+        {
+          "uri": "image_axial_ant_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_helix_ant_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_image_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_image_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_image_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_tex_body2_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "image_tex_body2_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_tex_body2_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_tex_body_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "image_tex_body_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "image_tex_body_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_insight/lander/insight.gltf",
+      "ok": true,
+      "bytes": 40714,
+      "sha256": "f82117b27184bfa31ab723ef878859dfca944a3bfaebe41c2ae951f4868586f4",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "insight.bin",
+          "bytes": 15773928
+        }
+      ],
+      "images": [
+        {
+          "uri": "insight_tex_01n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_tex_01.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_tex_01_r.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_02.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_05.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_04.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_03.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_06.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_tex_02n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_tex_02.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_tex_02r.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_01.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_08.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n 1.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "insight_ao_07.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_imap/imap.gltf",
+      "ok": true,
+      "bytes": 75565,
+      "sha256": "5578008146fccace57f42743973304c0122f4b86b3286f9b36caea254bf89f09",
+      "required": [
+        "EXT_texture_webp",
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "used": [
+        "EXT_texture_webp",
+        "KHR_draco_mesh_compression",
+        "KHR_materials_clearcoat",
+        "KHR_texture_basisu"
+      ],
+      "scenes": 1,
+      "nodes": 42,
+      "buffers": [
+        {
+          "uri": "imap.bin",
+          "bytes": 456575
+        }
+      ],
+      "images": [
+        {
+          "uri": "imap_norm.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "imap_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "imap_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "foil_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "spring_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ibex/iBEX.gltf",
+      "ok": true,
+      "bytes": 15255,
+      "sha256": "a359fe66994c85799a3ee7483366f7ec84407e04b8517284792cdc30de5f919d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "ibex.bin",
+          "bytes": 244192
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ibex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ibex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ibex_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ipex/IPEX.gltf",
+      "ok": true,
+      "bytes": 3449,
+      "sha256": "ed50c6342037f587eabae431c317c32f6fdecc9eeb8acd49cb9b1a8f833a6598",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "ipex.bin",
+          "bytes": 7588
+        }
+      ],
+      "images": [
+        {
+          "uri": "ipex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ipex_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ipex_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ixpe/ixpe.gltf",
+      "ok": true,
+      "bytes": 48767,
+      "sha256": "f74e49f9677a3bb555f7422de797510fc7de33a1d93a7d02367e4632de8f04a2",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 19,
+      "buffers": [
+        {
+          "uri": "ixpe.bin",
+          "bytes": 1524484
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ostm/ostm.gltf",
+      "ok": true,
+      "bytes": 9799,
+      "sha256": "76fc03389bcf8c861a2a8fb6fa4d406aa300b1a2a6783078146849bd1204a70b",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "ostm.bin",
+          "bytes": 105048
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "jason_2_ostm_dish_ao.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "jason_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "jason_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "jason_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf",
+      "ok": true,
+      "bytes": 56278,
+      "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "juno_closed.bin",
+          "bytes": 1779752
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "juno_transparent_crosses.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "juno_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "juno_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "juno_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "juno_array_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "juno_array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "juno_array_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_icesatii/ICESat2.gltf",
+      "ok": true,
+      "bytes": 32665,
+      "sha256": "b483ce1a50ebaeb3940c33be8f493030a4bbe6bf2a9796a5652050e07b18411b",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "icesat-2.bin",
+          "bytes": 1088820
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "icesat2_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "icesat2_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "icesat2_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_juice/juice.gltf",
+      "ok": true,
+      "bytes": 64129,
+      "sha256": "f40986b5f69e8ff70dc47d9b9c7700dfde14d6977846a5aa2cd5c8cd87e62633",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "juice.bin",
+          "bytes": 1920640
+        }
+      ],
+      "images": [
+        {
+          "uri": "juice_panels_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "juice_panels_rough.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "juice_blanketing_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_kepler/Kepler.gltf",
+      "ok": true,
+      "bytes": 19418,
+      "sha256": "498aa679752072b8e10486528f84b56d461c55fa6a2ac8b2720a49687295a31b",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "kepler.bin",
+          "bytes": 628296
+        }
+      ],
+      "images": [
+        {
+          "uri": "kepler_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "kepler_texture_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "kepler_texture_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "kepler_texture_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "kepler_ring_ao.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ladee/ladee.gltf",
+      "ok": true,
+      "bytes": 20477,
+      "sha256": "5835b2bdce6b3a5f438c851cd9debb4b0520d528dfd234c56ea4251aed003e5f",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "ladee.bin",
+          "bytes": 390680
+        }
+      ],
+      "images": [
+        {
+          "uri": "ladee_parts_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ladee_parts_02_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ladee_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ladee_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ladee_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ladee_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ladee_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ladee_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_landsat_7/LandSat7.gltf",
+      "ok": true,
+      "bytes": 23406,
+      "sha256": "4ba7b88a93b418ef12c08c06d67de8513b8374db5cf8273c9d7ced3197718836",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "landsat7.bin",
+          "bytes": 653312
+        }
+      ],
+      "images": [
+        {
+          "uri": "landsat7_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "landsat7_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "landsat7_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "reflective_square_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_landsat_8/LandSat8.gltf",
+      "ok": true,
+      "bytes": 45896,
+      "sha256": "e1fdb54bd6de633a39b70754271d980304a62e4598c36161d8152cdb6376e9cb",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "landsat8.bin",
+          "bytes": 683436
+        }
+      ],
+      "images": [
+        {
+          "uri": "reflective_square_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "landsat8_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "landsat8_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "landsat8_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_jwst/webb_deployed.gltf",
+      "ok": true,
+      "bytes": 217980,
+      "sha256": "213f4dfd8904760b8a487953059417e874a59ac5382579a89fa2b4a9fd46464c",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 87,
+      "buffers": [
+        {
+          "uri": "webb_deployed.bin",
+          "bytes": 3726080
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_landsat_9/Landsat9.gltf",
+      "ok": true,
+      "bytes": 24698,
+      "sha256": "eae29e894c3e16327de3edd0725539c8efd19a9ed95a60bb80380bbdb327ca5a",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 13,
+      "buffers": [
+        {
+          "uri": "Landsat9.bin",
+          "bytes": 1004644
+        }
+      ],
+      "images": [
+        {
+          "uri": "Landsat9_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarArray_norm_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solarArray_diff_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarArray_metalRough_jpg.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_lcross/lcross.gltf",
+      "ok": true,
+      "bytes": 24271,
+      "sha256": "32379a44a1878dbebdd988f59848a0980fb50a47c98072428d60fcd85c707ce7",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "lcross.bin",
+          "bytes": 274888
+        }
+      ],
+      "images": [
+        {
+          "uri": "lcross_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lcross_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lcross_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_iss/ISS_stationary.gltf",
+      "ok": true,
+      "bytes": 501729,
+      "sha256": "b8bb72810b9d511484bc6e6ac4f5784e733ad388fe13c71886835c1a918beaed",
+      "required": [],
+      "used": [
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "KHR_materials_ior"
+      ],
+      "scenes": 1,
+      "nodes": 150,
+      "buffers": [
+        {
+          "uri": "ISS_stationary.bin",
+          "bytes": 22186880
+        }
+      ],
+      "images": [
+        {
+          "uri": "ISS_03.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_06.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_01.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_02.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_02.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_04.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_01.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_03.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_01_n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_05.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_04.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_07.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_AO_08.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_03_n.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "COWVR_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "COWVR_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "COWVR_pbr.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "grid_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "grid_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "STP-H8_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ecostress.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ISS_commonHatch.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "BEAM_Logo.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_lucy/lucy.gltf",
+      "ok": true,
+      "bytes": 83571,
+      "sha256": "4f1e9197c1d1b0549c9b0b395e92a20f0a6e02e95fe1a3ccd9a23469d8f4b957",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 27,
+      "buffers": [
+        {
+          "uri": "lucy.bin",
+          "bytes": 3095108
+        }
+      ],
+      "images": [
+        {
+          "uri": "lucy_array_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lucy_array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lucy_array_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lucy_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lucy_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n_2.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_lunar_prospector/lunar_prospector.gltf",
+      "ok": true,
+      "bytes": 16126,
+      "sha256": "2ef1cf1c6ecc991814368ed7804c0eab4f41eea93a0fcfaf6b656e6cd803fad0",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "lunar_prospector.bin",
+          "bytes": 438092
+        }
+      ],
+      "images": [
+        {
+          "uri": "lunarprospector_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lunarprospector_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lunarprospector_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lunarprospector_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_lunar_reconnaissance_orbiter/LRO.gltf",
+      "ok": true,
+      "bytes": 25822,
+      "sha256": "65ad56603d7821484e3d7de27f2178b5522381db90db6a2d0fa25d0ddd17aafb",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "lro.bin",
+          "bytes": 570204
+        }
+      ],
+      "images": [
+        {
+          "uri": "lro_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lro_tex_01_albdeo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lro_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lro_tex_03_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lro_tex_03_albdeo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lro_tex_03_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lro_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lro_tex_02_albdeo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lro_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_lunar_flashlight/lunar_flashlight.gltf",
+      "ok": true,
+      "bytes": 66531,
+      "sha256": "d854cbeb2d7ebba98c54b923c3dfa1fe0fcad3c08f98d273c3b4cd67e05f6ea9",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 24,
+      "buffers": [
+        {
+          "uri": "lunar_flashlight.bin",
+          "bytes": 2285528
+        }
+      ],
+      "images": [
+        {
+          "uri": "lunar_flashlight_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "lunar_flashlight_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lunar_flashlight_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "lunar_flashlight_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "kapton-kapton_alpha.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_magellan/magellan.gltf",
+      "ok": true,
+      "bytes": 18542,
+      "sha256": "a403d1f88987d3387bad2b802c5e17ec881e6c00df9701c67ad4d9a3c69579d2",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "magellan.bin",
+          "bytes": 512664
+        }
+      ],
+      "images": [
+        {
+          "uri": "magellan_dish_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "magellan_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "magellan_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "magellan_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_marco/model.gltf",
+      "ok": true,
+      "bytes": 50639,
+      "sha256": "e394412d1b22c5624fd5c5662bcca38b84e6d980662df63f3898ad2d09a3f16b",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 19,
+      "buffers": [
+        {
+          "uri": "marco.bin",
+          "bytes": 251196
+        }
+      ],
+      "images": [
+        {
+          "uri": "marco_antenna_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marco_antenna_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marco_antenna_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marco_array_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marco_array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marco_array_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marco_bus_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marco_bus_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marco_bus_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mariner_2/mariner2.gltf",
+      "ok": true,
+      "bytes": 25774,
+      "sha256": "afdd71d092efd8dcb931ee517b9ccfe66cf268e3db22f61ad58d2d81de986c52",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 13,
+      "buffers": [
+        {
+          "uri": "mariner2.bin",
+          "bytes": 128397
+        }
+      ],
+      "images": [
+        {
+          "uri": "mariner2_ao_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_ao_bronze_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_ao_grey_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_ao_lightgrey_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "foil_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mesh_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_tex.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "mariner2_tex-1.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf",
+      "ok": true,
+      "bytes": 38564,
+      "sha256": "63f9d842d1f8bf1a46fa4f4d4e8cb2b5a35512b6136d137415562ac3270fc3ae",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 11,
+      "buffers": [
+        {
+          "uri": "msl_cruise_stage.bin",
+          "bytes": 1560076
+        }
+      ],
+      "images": [
+        {
+          "uri": "fins_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "supports_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "supports_2_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solar_rough.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "cone_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "back_shell_ao_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "back_shell_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "heat_shield_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "heat_shield_ao.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_global_surveyor/mars_global_surveyor.gltf",
+      "ok": true,
+      "bytes": 22946,
+      "sha256": "62fc15c20e5b52678c931cc4c1a873c63ce9508d7d5e40fc7b38315b4affd1f9",
+      "required": [],
+      "used": [
+        "KHR_materials_clearcoat"
+      ],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "mars_global_surveyor.bin",
+          "bytes": 210092
+        }
+      ],
+      "images": [
+        {
+          "uri": "marsglobalsurveyor_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marsglobalsurveyor_tex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marsglobalsurveyor_tex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marsglobalsurveyor_tex_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_express/mars_express.gltf",
+      "ok": true,
+      "bytes": 20390,
+      "sha256": "c28b800d5328b72a4c29b9885652cbd93d5784c8be92636d5de6cbfe60030ad2",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "mars_express.bin",
+          "bytes": 757484
+        }
+      ],
+      "images": [
+        {
+          "uri": "marsexpress_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marsexpress_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marsexpress_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marsexpress_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marsexpress_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marsexpress_tex_03_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "marsexpress_tex_03_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "marsexpress_tex_03_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf",
+      "ok": true,
+      "bytes": 43962,
+      "sha256": "25b5f0f2f1865a4646e274e26aa8bb806fc00ff365b166183e0529b577f886bd",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 16,
+      "buffers": [
+        {
+          "uri": "mpf_mera_merb_cruise.bin",
+          "bytes": 467136
+        }
+      ],
+      "images": [
+        {
+          "uri": "mpf_mer-a_mer-b_backshell_AO.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_other_AO.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_tex_01.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "nasa.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_fins_nozzle_AO.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_heat_shield_inside.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_ribs_AO.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpf_mer-a_mer-b_tex_01-1.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_odyssey/mars_odyssey.gltf",
+      "ok": true,
+      "bytes": 38394,
+      "sha256": "c6fa1cd0f12541d630203946e15338e034629298dc9213c5450cee38f7cabc46",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 11,
+      "buffers": [
+        {
+          "uri": "mars_odyssey.bin",
+          "bytes": 412904
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "box_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mars_odyssey_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mars_odyssey_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mars_odyssey_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_03_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mars_odyssey_tex_03_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_03_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_04_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mars_odyssey_tex_04_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_04_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mars_odyssey_tex_02_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "carbonfiber_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "carbonfiber_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "carbonfiber_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_maven/Maven.gltf",
+      "ok": true,
+      "bytes": 28970,
+      "sha256": "e5663fad1d62c360588c471e1c557e5a5871854382e5b077fac49005cda5013f",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "Maven.bin",
+          "bytes": 2141464
+        }
+      ],
+      "images": [
+        {
+          "uri": "dish_AO.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n_2.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "AO_parts_02.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "AO_parts_03.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "AO_parts_01.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "parts.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "AO_parts_04.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "Array_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Array_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "Array_metallic-Array_rougghness.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_01.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_reconnaissance_orbiter/MRO.gltf",
+      "ok": true,
+      "bytes": 42939,
+      "sha256": "25e1262dd383eb6ba4bb334058a2d8513f8314695cedd87839193c8b17c1afe9",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 13,
+      "buffers": [
+        {
+          "uri": "mro.bin",
+          "bytes": 617980
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "transparent.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_normals_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "array_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "arrayBack_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "arrayback_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "arrayback_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mcubed_2/M-Cubed2.gltf",
+      "ok": true,
+      "bytes": 6285,
+      "sha256": "15ba05179fb6304df6b9e10a5e77b4376499d332faffe457f5c2b3e0247e5b85",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "m-cubed_2.bin",
+          "bytes": 13644
+        }
+      ],
+      "images": [
+        {
+          "uri": "m-cubed2_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "m-cubed2_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "m-cubed2_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_messenger/Messenger.gltf",
+      "ok": true,
+      "bytes": 24619,
+      "sha256": "f881927b8d74c1d48afdc415c3e19b71566e9697fa4a361e8b02588a7fa27a28",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "messenger.bin",
+          "bytes": 497888
+        }
+      ],
+      "images": [
+        {
+          "uri": "messenger_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "messenger_02_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "noise_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "messenger_heatshield_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "messenger_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "messenger_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "messenger_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "messenger_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "messenger_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "messenger_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf",
+      "ok": true,
+      "bytes": 36007,
+      "sha256": "0e71c2dfe925218d98c7f3f483f96fb4430a98e4df0d9b8e6a6945bff16bd554",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "msl_cruisestage.bin",
+          "bytes": 1726864
+        }
+      ],
+      "images": [
+        {
+          "uri": "backshell_interior_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "backshell_interior_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "backshell_interior_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_cone_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mslcs_fins_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mslcs_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_supports_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_supports_2_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "heat_shield_inside_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mslcs_heat_shield_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mslcs_heat_shield_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mslcs_back_shell_ao_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mslcs_back_shell_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "back_shell_ao_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_near_shoemaker/near.gltf",
+      "ok": true,
+      "bytes": 11903,
+      "sha256": "8cb1d35d79252e284f901dd46c54d1cfc2dea7280ce004746494a522fd9ea773",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "near.bin",
+          "bytes": 529928
+        }
+      ],
+      "images": [
+        {
+          "uri": "near_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "near_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "near_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mms/MMS.gltf",
+      "ok": true,
+      "bytes": 68638,
+      "sha256": "45f227d68c3a3778b868ada7c61b0e0861f5540e7a2c2c6c2c0212be6e95d851",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 27,
+      "buffers": [
+        {
+          "uri": "mms.bin",
+          "bytes": 1232792
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mms_doodads_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mms_doodads_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mms_doodads_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mms_solar_array_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mms_solar_array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mms_solar_array_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_new_horizons/new_horizons.gltf",
+      "ok": true,
+      "bytes": 15407,
+      "sha256": "cc78afa44c372c65dd9766470bcb85a48b4ce4f277c7bf174b05c75f7d417edc",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "newhorizons.bin",
+          "bytes": 564460
+        }
+      ],
+      "images": [
+        {
+          "uri": "1_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "newhorizons_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "newhorizons_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "newhorizons_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "newhorizons_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "newhorizons_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "newhorizons_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_neo_surveyor/neosurveyor.gltf",
+      "ok": true,
+      "bytes": 12510,
+      "sha256": "0ebd002bae19d32d8da9dec55e7b718af87271e60797e6c9720de60a96eedcc8",
+      "required": [
+        "EXT_texture_webp",
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "EXT_texture_webp",
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu",
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "neosurveyor.bin",
+          "bytes": 513014
+        }
+      ],
+      "images": [
+        {
+          "uri": "corrugated_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "neosurveyor_norm.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "neosurveyor_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "neosurveyor_pbr.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_nisar/Nisar.gltf",
+      "ok": true,
+      "bytes": 91839,
+      "sha256": "8b506047c63067e2f93a89d78e4ed64562e3ddda63b5f051ae3327f3621d3dee",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 21,
+      "buffers": [
+        {
+          "uri": "Nisar.bin",
+          "bytes": 951036
+        }
+      ],
+      "images": [
+        {
+          "uri": "Nisar_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Nisar_diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "meshColor-Nisar_antenna.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_nustar/nustar.gltf",
+      "ok": true,
+      "bytes": 37409,
+      "sha256": "73b912a12c88073f5c81297be760a6f819cfdeb8c668f6d0cab6b97864f63b84",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 15,
+      "buffers": [
+        {
+          "uri": "nustar.bin",
+          "bytes": 6292704
+        }
+      ],
+      "images": [
+        {
+          "uri": "nustar_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_boom_ao_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_parts_ao_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_parts_ao_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_parts_ao_03_albedojpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_parts_ao_04_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_tex_01_albedo-1.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "nustar_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "nustar_tex_02_albedo-1.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_oco_2/oco2.gltf",
+      "ok": true,
+      "bytes": 28190,
+      "sha256": "a6d7afb15fdbd7ce5ca1f5ef68461b73f6ed729021133e658a6308546124b9bf",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "oco2.bin",
+          "bytes": 1698852
+        }
+      ],
+      "images": [
+        {
+          "uri": "oco2_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_topbottom_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_topbottom_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_grey_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_grey_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_grey_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_pace/pace.gltf",
+      "ok": true,
+      "bytes": 57328,
+      "sha256": "e40a1bc44fa67d57ecd88be1be1f04f4664e3ce5d4d8c4b52c590598e9c66008",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 36,
+      "buffers": [
+        {
+          "uri": "pace.bin",
+          "bytes": 1047292
+        }
+      ],
+      "images": [
+        {
+          "uri": "pace_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "pace_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "pace_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "spring_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_osiris_rex_v2/src/osiris_rex_heatshield.gltf",
+      "ok": true,
+      "bytes": 6137,
+      "sha256": "e73c869ce3a2cfb37f9bdebfc5dc037504cfb21f451e7ece5c1ea3d77b6c6630",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 3,
+      "buffers": [
+        {
+          "uri": "osiris_rex_heatshield.bin",
+          "bytes": 27708
+        }
+      ],
+      "images": [
+        {
+          "uri": "osirisrex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "osirisrex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "osirisrex_pbr.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_osiris_rex_v2/osiris_rex_articulated_panels.gltf",
+      "ok": true,
+      "bytes": 126793,
+      "sha256": "f66b9a5eac79660f4efb45c3e870ffeeb71f235baa2e68a5cdcb8d497cc47b1a",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 45,
+      "buffers": [
+        {
+          "uri": "osiris_rex_articulated_panels.bin",
+          "bytes": 2024500
+        }
+      ],
+      "images": [
+        {
+          "uri": "osirisrex_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "osirisrex_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "osirisrex_pbr.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "corrugated_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_parker_solar_probe/PSP.gltf",
+      "ok": true,
+      "bytes": 33099,
+      "sha256": "dfb36674a6cd0125015f4ec6496ea7d7e29bc9bd68e2dc2b1170fdcdc96ae28d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "PSP.bin",
+          "bytes": 1668776
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n_2.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "PSP_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "PSP_diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "PSP_Array_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "PSP_Array_MR.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "Image_0.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_pioneer/pioneer.gltf",
+      "ok": true,
+      "bytes": 22773,
+      "sha256": "d8b4707714ae037ef8dc2c43fca8761318d2fcd2ef615633b80965cfe0276de8",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 9,
+      "buffers": [
+        {
+          "uri": "pioneer.bin",
+          "bytes": 393652
+        }
+      ],
+      "images": [
+        {
+          "uri": "40_gray.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "40_gray-1.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "pioneer_1_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "pioneer_dish_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "pioneer_ao_rtg.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "pioneer_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n-1.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_phoenix/cruise/phoenix_cruise.gltf",
+      "ok": true,
+      "bytes": 51164,
+      "sha256": "f3c7fac84ca4b6555a84ad62643d073d9f2def7ab658163ec06081f3906328dd",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 16,
+      "buffers": [
+        {
+          "uri": "phoenix_cruise.bin",
+          "bytes": 568440
+        }
+      ],
+      "images": [
+        {
+          "uri": "mpl_phx_backshell_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_heat_shield_inside_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpl_phx_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_top_pieces_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_collar_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "mpl_phx_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "mpl_phx_heatshield_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_philae/philae.gltf",
+      "ok": true,
+      "bytes": 18771,
+      "sha256": "2009777faf41114ebc76e1c1e7e30efc17dc262f5a4da916019ea9c69af846c6",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "philae.bin",
+          "bytes": 219632
+        }
+      ],
+      "images": [
+        {
+          "uri": "rosetta_parts2_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_parts3_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "rosetta_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "rosetta_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_prefire/prefire.gltf",
+      "ok": true,
+      "bytes": 39035,
+      "sha256": "5fda6e70579a36fe00175c77d8068affb84d14ef617fc894c8057251c4440824",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 12,
+      "buffers": [
+        {
+          "uri": "prefire.bin",
+          "bytes": 687080
+        }
+      ],
+      "images": [
+        {
+          "uri": "prefire_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "prefire_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "prefire_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "spring_albedo.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_quikscat/QuikSCAT.gltf",
+      "ok": true,
+      "bytes": 14347,
+      "sha256": "d9d654059dba8b665f99826626a6599c8be467b84f997790faa3b064769deeb4",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "quikscat.bin",
+          "bytes": 1053300
+        }
+      ],
+      "images": [
+        {
+          "uri": "quikscat_dish_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "quikscat_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "quikscat_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "quikscat_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_polar/polar.gltf",
+      "ok": true,
+      "bytes": 13004,
+      "sha256": "aac784099043e13d08111030f2d888f4c76324d654b3ca9df8cb5836b9a5ea33",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "polar.bin",
+          "bytes": 834980
+        }
+      ],
+      "images": [
+        {
+          "uri": "polar_masts_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "polar_sp_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "polar_sp_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "polar_sp_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "polar_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "polar_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "polar_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_psyche/psyche.gltf",
+      "ok": true,
+      "bytes": 49216,
+      "sha256": "ed41df89f8a0b66e72e9c3d49fa639e90a92c78ba638437121bbd8fff172e511",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 27,
+      "buffers": [
+        {
+          "uri": "psyche.bin",
+          "bytes": 1305996
+        }
+      ],
+      "images": [
+        {
+          "uri": "psyche_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "psyche_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "psyche_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_2_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_rbsp/rbsp.gltf",
+      "ok": true,
+      "bytes": 11008,
+      "sha256": "7662edb8c73f31c4a65fd81cedbb45d4283722d6668cfa05408b0f2c19eb764d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "rbsp.bin",
+          "bytes": 378208
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rbsp_foil_grey_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "rbsp_albedo.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_raincube/Raincube.gltf",
+      "ok": true,
+      "bytes": 28669,
+      "sha256": "4230af8e588045d2a5ab00d3a9eddd7ea5aba15b28599aa3955e7d502dcc16f2",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "Raincube.bin",
+          "bytes": 1266404
+        }
+      ],
+      "images": [
+        {
+          "uri": "Array_Norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Array_Diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hgaFins_Diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "hgsMesh_Diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "HGA_Norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "HGA_Diff.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Raincube_Norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "Raincube_Diff.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_sac_d/aquarius.gltf",
+      "ok": true,
+      "bytes": 24787,
+      "sha256": "7aca732b91d5070749990e21ca9c5bf7267cf6463eacfa9f8a69f56df5db18cf",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 8,
+      "buffers": [
+        {
+          "uri": "aquarius.bin",
+          "bytes": 753364
+        }
+      ],
+      "images": [
+        {
+          "uri": "aquariusdish_dep_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aquarius_other_dep_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aquarius_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aquarius_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aquarius_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aquarius_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "aquarius_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "aquarius_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_sdo/sdo.gltf",
+      "ok": true,
+      "bytes": 44201,
+      "sha256": "77b8ceb4176e905d3029bd074b7e6a728197143f1821325241f2ddd31e11849d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 11,
+      "buffers": [
+        {
+          "uri": "sdo.bin",
+          "bytes": 591684
+        }
+      ],
+      "images": [
+        {
+          "uri": "sdo_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "sdo_tex_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "sdo_tex02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_roman_space_telescope/roman.gltf",
+      "ok": true,
+      "bytes": 125587,
+      "sha256": "20bfc5727a3d91c60ffcafc0e2d7afe93e9b1b4713240202a42e9c7a967de396",
+      "required": [],
+      "used": [
+        "KHR_materials_clearcoat"
+      ],
+      "scenes": 1,
+      "nodes": 67,
+      "buffers": [
+        {
+          "uri": "roman.bin",
+          "bytes": 32483664
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "column_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "column_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "plates_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "plates_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_color.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_pbr.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_rosetta/rosettaPhilae.gltf",
+      "ok": true,
+      "bytes": 58896,
+      "sha256": "56b3325b9ff45da5a03ba0c13b548b59de979c83ec3738085183d7dd1029fb76",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "rosetta-philae.bin",
+          "bytes": 1350420
+        }
+      ],
+      "images": [
+        {
+          "uri": "rosetta_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "rosetta_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_parts_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_parts2_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_parts3_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "rosetta_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_smap/SMAP.gltf",
+      "ok": true,
+      "bytes": 21142,
+      "sha256": "374bf7cfaea329054f9c757cc6aace7e730b8fa798af2113caa31f18a2138e0a",
+      "required": [
+        "KHR_draco_mesh_compression"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression"
+      ],
+      "scenes": 1,
+      "nodes": 10,
+      "buffers": [
+        {
+          "uri": "smap.bin",
+          "bytes": 489592
+        }
+      ],
+      "images": [
+        {
+          "uri": "smap_antenna_new_y.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "smap_antenna_new.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "smap_array2_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "smap_array2_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "smap_array2_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "smap_bus_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "smap_bus_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "smap_bus_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_soho/soho.gltf",
+      "ok": true,
+      "bytes": 36597,
+      "sha256": "1fc05391e6f0edaabf5205bfb3b019f9b27b384eb7b48e35c750303fe1d36a18",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 11,
+      "buffers": [
+        {
+          "uri": "soho.bin",
+          "bytes": 293244
+        }
+      ],
+      "images": [
+        {
+          "uri": "soho_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "soho_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "soho_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "soho_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_sentinel_6/Sentinel6.gltf",
+      "ok": true,
+      "bytes": 65325,
+      "sha256": "dc967a96d90f8d66f5b786f21d6d154cb481c5385e90e44ccf8436c1c33fdcd4",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "Sentinel6.bin",
+          "bytes": 882644
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_n_jpg.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "senitnel6_AO.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "sentinel6_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "sentinel6_occlusion.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarArray_norm.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solarArray_diff.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarArray_rough.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n_2.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_stardust/stardust_articulated.gltf",
+      "ok": true,
+      "bytes": 40759,
+      "sha256": "cb25bf4f634fe69bc7c7a9e28625aad5e68c66061df9059492461432ba93c114",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 14,
+      "buffers": [
+        {
+          "uri": "stardust_articulated.bin",
+          "bytes": 1139532
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "stardust_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "stardust_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "stardust_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "stardust_03_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "stardust_03_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "stardust_03_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "stardust_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "stardust_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "stardust_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_spitzer/SPITZER.gltf",
+      "ok": true,
+      "bytes": 23725,
+      "sha256": "9cc7434434968d00330a2358d6d0c671ef70e24d2f8570be6d3f3dcd17ca098b",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "spitzer.bin",
+          "bytes": 920660
+        }
+      ],
+      "images": [
+        {
+          "uri": "spitzer_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "spitzer_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "spitzer_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_sorce/sorce.gltf",
+      "ok": true,
+      "bytes": 19452,
+      "sha256": "975a49da4b7e3cc4f948e4c676c0217ab89c9db58cf04cf49d406dada2171fc6",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "sorce.bin",
+          "bytes": 459064
+        }
+      ],
+      "images": [
+        {
+          "uri": "sorce_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "sorce_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "reflective_dots_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "reflective_dots_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_stardust_src/stardust_capsule.gltf",
+      "ok": true,
+      "bytes": 14246,
+      "sha256": "dbde945f8bbefc3de54e3d4453ed4f54fa1a2dd6f7ac748292c8691ae3541305",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "stardust_capsule.bin",
+          "bytes": 173796
+        }
+      ],
+      "images": [
+        {
+          "uri": "stardust_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "stardust_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_starling/starling.gltf",
+      "ok": true,
+      "bytes": 6167,
+      "sha256": "19c932806acbb235c4a9638c96206250ff3947ad11fe53cf1d9b385c689e90ae",
+      "required": [],
+      "used": [
+        "KHR_materials_specular",
+        "KHR_materials_ior"
+      ],
+      "scenes": 1,
+      "nodes": 3,
+      "buffers": [
+        {
+          "uri": "starling.bin",
+          "bytes": 1018484
+        }
+      ],
+      "images": [
+        {
+          "uri": "body-normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "body-diffuse.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "body-metRough.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "wing-normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "wing-diffuse.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "wing-metRough.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_stereo_behind/stereo_b.gltf",
+      "ok": true,
+      "bytes": 19553,
+      "sha256": "9fc3f37f920494d523bff0b4a7d6bb5a9073ad90c385c126b4c754af424c1641",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "stereo_b.bin",
+          "bytes": 855292
+        }
+      ],
+      "images": [
+        {
+          "uri": "dark_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_tdrs/tdrs.gltf",
+      "ok": true,
+      "bytes": 13231,
+      "sha256": "a64cfb2121af7401e172f24d10067004fbf5f2a0492afff513e42236ac0ba911",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "tdrs.bin",
+          "bytes": 1167252
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tdrs_tex_01_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tdrs_tex_01_albedo-1.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tdrs_tex_02_albedo.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_stereo_ahead/stereo_a.gltf",
+      "ok": true,
+      "bytes": 19553,
+      "sha256": "380e4d229136fe4f5597c9826d77a9623914ee17474011665620e1befbbe8869",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "stereo_a.bin",
+          "bytes": 816460
+        }
+      ],
+      "images": [
+        {
+          "uri": "dark_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_spherex/spherex.gltf",
+      "ok": true,
+      "bytes": 99076,
+      "sha256": "964d237845f7bd130b983c935a68504791c9f2bc626a48b76ea3aa8cf1aa2467",
+      "required": [
+        "EXT_texture_webp",
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_materials_clearcoat",
+        "EXT_texture_webp",
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 59,
+      "buffers": [
+        {
+          "uri": "spherex.bin",
+          "bytes": 2846148
+        }
+      ],
+      "images": [
+        {
+          "uri": "spherex_normals.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "spherex_albedo_webp.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "spherex_pbr.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "corrugated_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_npp/NPP.gltf",
+      "ok": true,
+      "bytes": 18309,
+      "sha256": "60ee9a52563782e892aa69477825d8622a7855da589558ae7748c4f8f9636b58",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "npp.bin",
+          "bytes": 376532
+        }
+      ],
+      "images": [
+        {
+          "uri": "npp_01_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "npp_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "npp_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "npp_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "npp_tex_02_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "npp_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "npp_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_solar_1/swfo.gltf",
+      "ok": true,
+      "bytes": 115082,
+      "sha256": "e9b8f70b2be25c23d523e43c47b39811027f22e9385d8a837b5c771187516811",
+      "required": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "used": [
+        "KHR_draco_mesh_compression",
+        "KHR_texture_basisu"
+      ],
+      "scenes": 1,
+      "nodes": 64,
+      "buffers": [
+        {
+          "uri": "swfo.bin",
+          "bytes": 2965708
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "solarpanels_albedo.ktx2",
+          "mimeType": "image/ktx2"
+        },
+        {
+          "uri": "solarpanels_rough.ktx2",
+          "mimeType": "image/ktx2"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_tempo/tempo.gltf",
+      "ok": true,
+      "bytes": 103225,
+      "sha256": "02e6c31bb619ef585e9cb8e2be0322be8594bb8dff19195b10a5cee3e1601d7e",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 62,
+      "buffers": [
+        {
+          "uri": "tempo.bin",
+          "bytes": 2863688
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "array_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "array_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "array_rough.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "radial_dots.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_terra/Terra.gltf",
+      "ok": true,
+      "bytes": 32834,
+      "sha256": "16f6d121759c42e235b53cc1df5d15b32641bc16e150b6d170c2737a715c9499",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "terra.bin",
+          "bytes": 585464
+        }
+      ],
+      "images": [
+        {
+          "uri": "terra_dishes_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "terra_atlas_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "terra_atlas_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "terra_atlas_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "terra_doodads_ao.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_tess/TESS.gltf",
+      "ok": true,
+      "bytes": 14902,
+      "sha256": "0f80af20a059aadd28c03a0f3fe0d5928d3ac6276a24d7a31e39651f81741093",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 3,
+      "buffers": [
+        {
+          "uri": "tess.bin",
+          "bytes": 740104
+        }
+      ],
+      "images": [
+        {
+          "uri": "tess_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tess_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tess_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_themis/themis.gltf",
+      "ok": true,
+      "bytes": 10774,
+      "sha256": "981c19c64fb7b81b3b0bb2cb134a0c67d913fee57d23b878596ef178ab629dff",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "themis.bin",
+          "bytes": 355232
+        }
+      ],
+      "images": [
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "themis_albedo.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_trmm/TRMM.gltf",
+      "ok": true,
+      "bytes": 14264,
+      "sha256": "60d9febc8adf9a95bbfcf548d09eb35c5820c4d9885c9acf02b2699a484ad4b0",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 5,
+      "buffers": [
+        {
+          "uri": "trmm.bin",
+          "bytes": 507492
+        }
+      ],
+      "images": [
+        {
+          "uri": "trmm_dish_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "trmm_foil_white_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "trmm_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "trmm_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "trmm_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_swot_v2/swot.gltf",
+      "ok": true,
+      "bytes": 240111,
+      "sha256": "eeb45032338c9bb5d0c44206c452a8805419977061c7c5157a9dde1051606e83",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 107,
+      "buffers": [
+        {
+          "uri": "swot.bin",
+          "bytes": 2400864
+        }
+      ],
+      "images": [
+        {
+          "uri": "boomshield_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "reflectarraypanel_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "reflectarraypanel_pbr.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "corrugated_normal.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarpanel_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solarpanel_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solarpanel_pbr.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "radsfront_albedo.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_trace_gas_orbiter/TGO.gltf",
+      "ok": true,
+      "bytes": 67349,
+      "sha256": "a0c873cea3c8decf65045f615c4c5a56413f460dc008a7e7150069d532960aba",
+      "required": [
+        "KHR_texture_transform"
+      ],
+      "used": [
+        "KHR_texture_transform"
+      ],
+      "scenes": 1,
+      "nodes": 16,
+      "buffers": [
+        {
+          "uri": "tgo.bin",
+          "bytes": 777444
+        }
+      ],
+      "images": [
+        {
+          "uri": "tgo_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tgo_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tgo_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "corrugated_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_dish_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "foil_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tgo_dots_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "tgo_dots_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_ulysses/ulysses.gltf",
+      "ok": true,
+      "bytes": 19711,
+      "sha256": "82bb196a6e77f720afc1ae0f5517993289033e6b17f05116c17e950e4ed33237",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "ulysses.bin",
+          "bytes": 335200
+        }
+      ],
+      "images": [
+        {
+          "uri": "ulysses_other_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ulysses_dish_ao.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ulysses_dish_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ulysses_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "ulysses_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ulysses_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ulysses_tex_02_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "ulysses_tex_02_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_voyager/Voyager.gltf",
+      "ok": true,
+      "bytes": 9225,
+      "sha256": "628addd0bc0357eb6509533da2eb7117dc0b8e6f208e603606bb55f7ed0bf417",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 3,
+      "buffers": [
+        {
+          "uri": "voyager.bin",
+          "bytes": 1413796
+        }
+      ],
+      "images": [
+        {
+          "uri": "voyager_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "voyager_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "voyager_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_n.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dish_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "dish_other_ao.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_wind/wind.gltf",
+      "ok": true,
+      "bytes": 11721,
+      "sha256": "686ff3490ad7effadd784d720bc124ba73584e53f46ab7c0500419fa8098888d",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 4,
+      "buffers": [
+        {
+          "uri": "wind.bin",
+          "bytes": 621100
+        }
+      ],
+      "images": [
+        {
+          "uri": "wind_masts_ao.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "wind_tex_01_normal.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "wind_tex_01_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "wind_tex_01_pbr.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "foil_normal_png.png",
+          "mimeType": "image/png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_tropics/tropics.gltf",
+      "ok": true,
+      "bytes": 35259,
+      "sha256": "9814e252f584338289999cffe582693f3c8a83cfc2848393ad6c3868e15c46a1",
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 10,
+      "buffers": [
+        {
+          "uri": "tropics.bin",
+          "bytes": 1000060
+        }
+      ],
+      "images": [
+        {
+          "uri": "tropics_bus_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "tropics_bus_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "spring_albedo.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solar_normals.png",
+          "mimeType": "image/png"
+        },
+        {
+          "uri": "solor_albedo.jpg",
+          "mimeType": "image/jpeg"
+        },
+        {
+          "uri": "solar_pbr.jpg",
+          "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    }
+  ]
+}

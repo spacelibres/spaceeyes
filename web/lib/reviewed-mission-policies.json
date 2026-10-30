@@ -1,0 +1,311 @@
+{
+  "sc_biosentinel/sun/orb/def": {
+    "hash": "0464de2f4e3c2d469980e3addf7d379aa4b4cc70e2f142be12615f277267e0f2",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 6]],
+    "fixture": "sc_biosentinel__sun__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_biosentinel/sun/orb/def.dyn",
+    "sourceSha256": "0464de2f4e3c2d469980e3addf7d379aa4b4cc70e2f142be12615f277267e0f2",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_dscovr/earth/078": {
+    "hash": "f9765f196c025b6eef24e1e51dc7c2761319f703485db164fc3abf3cd2a10a79",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 9],
+      [9, 16]
+    ],
+    "fixture": "sc_dscovr__earth__078-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_dscovr/earth/078.dyn",
+    "sourceSha256": "9c33b2041615ac6092273993a726a769e8b6dadde420fb78439150bd9551f1ab",
+    "rawFixture": "sc_dscovr__earth__078-payload.dyn",
+    "layout": "Raw child payload, with unchanged original def header prepended for strict decoding"
+  },
+  "sc_escapade_blue/earth/def": {
+    "hash": "02f0d7a7506ceaf603e401deee0899adfc8f12525d40fbfdc96c9e11c467dd34",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [[0, 61]],
+    "fixture": "sc_escapade_blue__earth__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_escapade_blue/earth/def.dyn",
+    "sourceSha256": "02f0d7a7506ceaf603e401deee0899adfc8f12525d40fbfdc96c9e11c467dd34",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_escapade_gold/earth/def": {
+    "hash": "ad0dff81967e52eb4cbaa38b3511436d537a9971324d450a90917effc2710bba",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [[0, 68]],
+    "fixture": "sc_escapade_gold__earth__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_escapade_gold/earth/def.dyn",
+    "sourceSha256": "ad0dff81967e52eb4cbaa38b3511436d537a9971324d450a90917effc2710bba",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_euclid/earth/def": {
+    "hash": "3859f790c9dcc329c9ab9fa2a671513454ba0e6794f00588f4f0e235e25f302a",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [[0, 207]],
+    "fixture": "sc_euclid__earth__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_euclid/earth/def.dyn",
+    "sourceSha256": "3859f790c9dcc329c9ab9fa2a671513454ba0e6794f00588f4f0e235e25f302a",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_europa_clipper/sun/def": {
+    "hash": "595c82836fe15c3669419459bd37d773b1f31d40961fa70bc12ee6668f3ecfa0",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 12]],
+    "fixture": "sc_europa_clipper__sun__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_europa_clipper/sun/def.dyn",
+    "sourceSha256": "595c82836fe15c3669419459bd37d773b1f31d40961fa70bc12ee6668f3ecfa0",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_ibex/earth/590": {
+    "hash": "7b7af2f664fc92b6a4c0098d1d15e7af89a550f3a052bac1a9a767a860c7b7a1",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 2]],
+    "fixture": "sc_ibex__earth__590-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_ibex/earth/590.dyn",
+    "sourceSha256": "a531d77fb003c5a68552c63ecf79f87d06d73ab772bf52d8cb9d63680bbe3c25",
+    "rawFixture": "sc_ibex__earth__590-payload.dyn",
+    "layout": "Raw child payload, with unchanged original def header prepended for strict decoding"
+  },
+  "sc_juice/sun/def": {
+    "hash": "c03036e15002b10ff9733df3e721ce3f5b7b8c4749da65b7c08244ba89ff5544",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 23]],
+    "fixture": "sc_juice__sun__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/sun/def.dyn",
+    "sourceSha256": "c03036e15002b10ff9733df3e721ce3f5b7b8c4749da65b7c08244ba89ff5544",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_kepler/sun/orb/def": {
+    "hash": "ec3a7c8340424f50d1bc7a36d99657be5861f6fa209a1bf7f473a700525f5e30",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 8]],
+    "fixture": "sc_kepler__sun__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_kepler/sun/orb/def.dyn",
+    "sourceSha256": "ec3a7c8340424f50d1bc7a36d99657be5861f6fa209a1bf7f473a700525f5e30",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_lucy/sun/orb/def": {
+    "hash": "2b6bb1b987131e6f544bcd8ab988053492424514a737cfaa5e863a417d61f621",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 22],
+      [22, 37],
+      [37, 39]
+    ],
+    "fixture": "sc_lucy__sun__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/sun/orb/def.dyn",
+    "sourceSha256": "2b6bb1b987131e6f544bcd8ab988053492424514a737cfaa5e863a417d61f621",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_mars_2020/surface/lin/0019": {
+    "hash": "db47b55bc73c65d2008d2deee7edf245d227a6916e4afe0223d901684a2e6dd5",
+    "base": 12,
+    "stride": 32,
+    "flag": 1,
+    "windows": [[0, 160]],
+    "fixture": "sc_mars_2020__surface__lin__0019-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_mars_2020/surface/lin/0019.dyn",
+    "sourceSha256": "57bfb86418108a5dc75735f0eb0b9369302b71d762461a1e52b474147b065820",
+    "rawFixture": "sc_mars_2020__surface__lin__0019-payload.dyn",
+    "layout": "Raw child payload, with unchanged original def header prepended for strict decoding"
+  },
+  "sc_osiris_rex/sun/3/orb/def": {
+    "hash": "ad8dacc759e3460b22c4ed1fb544fe8b0c627a8bcf532f948000780d5e447d3e",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 7]],
+    "fixture": "sc_osiris_rex__sun__3__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_osiris_rex/sun/3/orb/def.dyn",
+    "sourceSha256": "ad8dacc759e3460b22c4ed1fb544fe8b0c627a8bcf532f948000780d5e447d3e",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_osiris_rex/sun/4/orb/def": {
+    "hash": "03beb285e34bae604f9312404b7ba4737cd4252b42ffe0af0b063eef4548fbae",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [[0, 73]],
+    "fixture": "sc_osiris_rex__sun__4__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_osiris_rex/sun/4/orb/def.dyn",
+    "sourceSha256": "03beb285e34bae604f9312404b7ba4737cd4252b42ffe0af0b063eef4548fbae",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_pioneer_10/sun/2/orb/def": {
+    "hash": "dc1f6f05f1bb1254c1f78d5605cd198655b912780a24c30ab830b8505b2cc769",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 20],
+      [21, 26]
+    ],
+    "fixture": "sc_pioneer_10__sun__2__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_pioneer_10/sun/2/orb/def.dyn",
+    "sourceSha256": "dc1f6f05f1bb1254c1f78d5605cd198655b912780a24c30ab830b8505b2cc769",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_pioneer_11/sun/3/orb/def": {
+    "hash": "c6bd41e8dee94f1988564921cb85f5a99bf6aee58160357160ef7422d6ac6697",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 14],
+      [14, 16],
+      [16, 23]
+    ],
+    "fixture": "sc_pioneer_11__sun__3__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_pioneer_11/sun/3/orb/def.dyn",
+    "sourceSha256": "c6bd41e8dee94f1988564921cb85f5a99bf6aee58160357160ef7422d6ac6697",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_roman_space_telescope/earth/def": {
+    "hash": "bbc1eadd836c2060fcc4a766178bd64525a1fa510a374c6dabddd24da41050bc",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [0, 18],
+      [18, 25]
+    ],
+    "fixture": "sc_roman_space_telescope__earth__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_roman_space_telescope/earth/def.dyn",
+    "sourceSha256": "bbc1eadd836c2060fcc4a766178bd64525a1fa510a374c6dabddd24da41050bc",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_soho/63": {
+    "hash": "095f72692a294e1ee377ababa66d3a23dbb31afcf387de6a1b1adfe28fed4c57",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [0, 10],
+      [10, 13]
+    ],
+    "fixture": "sc_soho__63-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_soho/63.dyn",
+    "sourceSha256": "eec17ea7283ab26d3c89bb7aca93e5f2db338af9f38c083f65197e1b25617846",
+    "rawFixture": "sc_soho__63-payload.dyn",
+    "layout": "Raw child payload, with unchanged original def header prepended for strict decoding"
+  },
+  "sc_spitzer/sun/orb/def": {
+    "hash": "fcb54b1184c64bb0bbf4913c17c3545c4da70c381838759f4c49be2e25fc27d8",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 9]],
+    "fixture": "sc_spitzer__sun__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_spitzer/sun/orb/def.dyn",
+    "sourceSha256": "fcb54b1184c64bb0bbf4913c17c3545c4da70c381838759f4c49be2e25fc27d8",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_stereo_ahead/sun/orb/def": {
+    "hash": "d47b89e4f57eaa8090ee2fffcccdd3095b9f91dc8349888d87c8a11ecf6617d9",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 14],
+      [15, 18]
+    ],
+    "fixture": "sc_stereo_ahead__sun__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_stereo_ahead/sun/orb/def.dyn",
+    "sourceSha256": "d47b89e4f57eaa8090ee2fffcccdd3095b9f91dc8349888d87c8a11ecf6617d9",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_solar_1/earth/def": {
+    "hash": "38186b86084ff15705b49ecc6bd9606ef45fa5beef1c301bc52eb27ff30e63ca",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [0, 42],
+      [42, 71]
+    ],
+    "fixture": "sc_solar_1__earth__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_solar_1/earth/def.dyn",
+    "sourceSha256": "38186b86084ff15705b49ecc6bd9606ef45fa5beef1c301bc52eb27ff30e63ca",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_tess/earth/orb/201": {
+    "hash": "c6bd89ffbd3d1826bf1591a3a379bca6d439822681b3f37f633b46eeddd24783",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [0, 20],
+      [20, 24]
+    ],
+    "fixture": "sc_tess__earth__orb__201-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_tess/earth/orb/201.dyn",
+    "sourceSha256": "ce4ecb5adc59983920faa06ddcc66175546f8f9878eedcfb985bc2029ae84eca",
+    "rawFixture": "sc_tess__earth__orb__201-payload.dyn",
+    "layout": "Raw child payload, with unchanged original def header prepended for strict decoding"
+  },
+  "s_2020_s_46/saturn/def": {
+    "hash": "25014b62a42ce6b66c74555a28642b77aa91822c83c704e6f5691d5e17e70a94",
+    "base": 28,
+    "stride": 8,
+    "flag": 0,
+    "windows": [[0, 104]],
+    "fixture": "s_2020_s_46__saturn__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/s_2020_s_46/saturn/def.dyn",
+    "sourceSha256": "25014b62a42ce6b66c74555a28642b77aa91822c83c704e6f5691d5e17e70a94",
+    "layout": "Exact upstream def payload"
+  },
+  "s_2020_s_47/saturn/def": {
+    "hash": "49ca3fc120e71f440fd659f8f9bbf6097505f27a4c86be8db3535708f8580fd9",
+    "base": 28,
+    "stride": 8,
+    "flag": 0,
+    "windows": [[0, 101]],
+    "fixture": "s_2020_s_47__saturn__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/s_2020_s_47/saturn/def.dyn",
+    "sourceSha256": "49ca3fc120e71f440fd659f8f9bbf6097505f27a4c86be8db3535708f8580fd9",
+    "layout": "Exact upstream def payload"
+  },
+  "s_2023_s_55/saturn/def": {
+    "hash": "7a1339d1e18e065834bce1183dd1b801a43e51eae62903a22a655d11c6dc5d46",
+    "base": 28,
+    "stride": 8,
+    "flag": 0,
+    "windows": [[0, 97]],
+    "fixture": "s_2023_s_55__saturn__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/s_2023_s_55/saturn/def.dyn",
+    "sourceSha256": "7a1339d1e18e065834bce1183dd1b801a43e51eae62903a22a655d11c6dc5d46",
+    "layout": "Exact upstream def payload"
+  },
+  "sc_osiris_rex/earth/sample_return/orb/def": {
+    "hash": "bf6010ce5add0da08c6eafc7c5fc046d4cad1f5f14c3f37c02277771f88e01e6",
+    "sourceSha256": "bf6010ce5add0da08c6eafc7c5fc046d4cad1f5f14c3f37c02277771f88e01e6",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [[0, 7]],
+    "fixture": "sc_osiris_rex__earth__sample_return__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_osiris_rex/earth/sample_return/orb/def.dyn",
+    "layout": "Exact upstream def payload"
+  }
+}
