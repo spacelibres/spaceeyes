@@ -28,3 +28,15 @@ DYN 服务端采用固定白名单、拒绝重定向、16 MiB 大小限制与格
 打开首页自动进入总览，加载总览位置和轨迹所必需的 DYN。总览只用运行时基础几何表示，不提前下载所有星球表面；选择地球才请求地球六面，选择土星才请求土星六面和上下环。未选择的天体不请求高清纹理，已访问的表示复用；退出销毁会话，缓存由 Bevy/浏览器各自生命周期管理，不声称退出立即清除浏览器 HTTP 缓存。
 
 字体源文件独立位于 web/resources/fonts/FiraMono-subset.ttf，准备脚本复制到 public/assets/fonts/FiraMono-subset.ttf，首次显示标签才请求。prepare-runtime 检查字体不内嵌 WASM，固定长度和 SHA256 见 docs/资源外置与按需加载.md。模型和科学数据同样从服务器按已触发的功能需求加载，新增功能禁止整目录预取。
+
+## WASM 发布构建（0.0.10）
+
+开发快速检查可沿用默认 debug。发布验证使用：
+
+```powershell
+pwsh -File tools/check-core.ps1 -Renderer -ReleaseWasm -Workspace -NativeCamera -Samples validation/.cache -JunoAssets -SolarAssets
+```
+
+发布配置位于 core/Cargo.toml 的 wasm-release，继承 release，使用 opt-level=z、fat LTO、codegen-units=1、strip=symbols、panic=abort。首次需重新编译依赖；不需要重复安装引擎或添加新工具。生成器从 wasm-release 目录导出，网页准备阶段继续核验外置字体，不再把 debug 目录当作唯一产物来源。CI 同样使用 -ReleaseWasm。
+
+优化编译不能替代实际浏览器 WebGL2 回归，也不等于资源已内嵌；资源仍由服务器按需求提供。

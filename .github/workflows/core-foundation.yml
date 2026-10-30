@@ -23,4 +23,4 @@ jobs:
       - run: npm ci --prefix web --ignore-scripts
       - name: Core and real WASM integration
         shell: pwsh
-        run: ./tools/check-core.ps1 -Renderer -Workspace
+        run: ./tools/check-core.ps1 -Renderer -ReleaseWasm -Workspace

@@ -1,4 +1,4 @@
-param([string]$Samples, [switch]$Renderer, [switch]$JunoAssets, [switch]$Workspace, [switch]$NativeCamera, [switch]$SolarAssets)
+param([string]$Samples, [switch]$Renderer, [switch]$JunoAssets, [switch]$Workspace, [switch]$NativeCamera, [switch]$SolarAssets, [switch]$ReleaseWasm)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 function Invoke-Check([string]$Executable, [string[]]$Arguments) {
@@ -7,6 +7,7 @@ function Invoke-Check([string]$Executable, [string[]]$Arguments) {
 }
 Push-Location $projectRoot
 try {
+    if ($ReleaseWasm -and -not $Renderer) { throw '-ReleaseWasm requires -Renderer.' }
     if ($Workspace -and -not $Renderer) { throw '-Workspace requires -Renderer.' }
     Invoke-Check cargo @('fmt', '--manifest-path', 'core/Cargo.toml', '--check')
     Invoke-Check cargo @('test', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'bevy-runtime')
@@ -19,9 +20,11 @@ try {
     Invoke-Check wasm-bindgen @('core/target/wasm32-unknown-unknown/debug/spaceeyes_core.wasm', '--target', 'web', '--out-dir', 'core/pkg-web')
     Invoke-Check node @('--test', 'platform/integration/wasm.test.ts')
     if ($Renderer) {
-        Invoke-Check cargo @('build', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--target', 'wasm32-unknown-unknown', '--jobs', '2')
+        $rendererProfile = if ($ReleaseWasm) { 'wasm-release' } else { 'dev' }
+        $rendererDirectory = if ($ReleaseWasm) { 'wasm-release' } else { 'debug' }
+        Invoke-Check cargo @('build', '--manifest-path', 'core/Cargo.toml', '--locked', '--profile', $rendererProfile, '--features', 'browser-render', '--target', 'wasm32-unknown-unknown', '--jobs', '2')
         Invoke-Check cargo @('clippy', '--manifest-path', 'core/Cargo.toml', '--locked', '--features', 'browser-render', '--target', 'wasm32-unknown-unknown', '--lib', '--', '-D', 'warnings')
-        Invoke-Check wasm-bindgen @('core/target/wasm32-unknown-unknown/debug/spaceeyes_core.wasm', '--target', 'web', '--out-dir', 'core/pkg-web')
+        Invoke-Check wasm-bindgen @("core/target/wasm32-unknown-unknown/$rendererDirectory/spaceeyes_core.wasm", '--target', 'web', '--out-dir', 'core/pkg-web')
         # Node tests exercise the real foundation WASM; they cannot run a GPU renderer.
         # Keep that Node binding and verify rendering with Web bindings, native tests and browser evidence.
         Write-Output 'Renderer Web WASM exported. Headless Node tests retain the foundation WASM; GPU checks remain separate.'
