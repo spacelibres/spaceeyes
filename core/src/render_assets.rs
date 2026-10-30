@@ -41,9 +41,6 @@ pub(crate) fn attach_visuals(
     assets: Res<AssetServer>,
     shared: Res<SharedVisuals>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut stellar_materials: ResMut<Assets<crate::stellar_render::StellarMaterial>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut prominence_materials: ResMut<Assets<crate::stellar_render::ProminenceMaterial>>,
     query: Query<(Entity, &SceneObject, Option<&AppliedVisual>)>,
 ) {
     let Ok(mut core) = store.0.lock() else {
@@ -262,31 +259,11 @@ pub(crate) fn attach_visuals(
             }
         };
         if let Some(stellar) = stellar.filter(|s| s.corona_intensity > 0.0) {
-            commands.spawn((
-                Mesh3d(meshes.add(crate::stellar_render::prominence_mesh())),
-                MeshMaterial3d(prominence_materials.add(
-                    crate::stellar_render::ProminenceMaterial {
-                        parameters: Vec4::new(stellar.corona_intensity, stellar.flow_speed, 0., 0.),
-                    },
-                )),
-                Transform::default(),
-                ChildOf(root),
-            ));
-            commands.spawn((
-                Mesh3d(shared.mesh.clone()),
-                MeshMaterial3d(
-                    stellar_materials.add(crate::stellar_render::StellarMaterial {
-                        parameters: Vec4::new(
-                            stellar.corona_intensity,
-                            stellar.flow_speed,
-                            0.0,
-                            0.0,
-                        ),
-                    }),
-                ),
-                Transform::from_scale(Vec3::splat(12.0)),
-                ChildOf(root),
-            ));
+            commands
+                .entity(root)
+                .insert(crate::stellar_render::StellarEmitter {
+                    parameters: Vec4::new(stellar.corona_intensity, stellar.flow_speed, 0., 0.),
+                });
         }
         if let Some((ids, inner, outer)) = ring {
             let Some(top_asset) = core.asset_descriptor(&ids[0]) else {

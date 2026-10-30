@@ -77,15 +77,15 @@ struct PlasmaOutput {
    let material_point=dir*(1.0+11.0*phase);
    let displacement=vec3<f32>(noise(material_point*2.1),noise(material_point*2.1+13.0),noise(material_point*2.1-7.0));
    let parcel_noise=0.7*noise(material_point*4.0+displacement*1.3)+0.3*noise(material_point*8.1+displacement);
-   let parcels=smoothstep(0.48,0.72,parcel_noise)*smoothstep(0.0,0.035,phase)*(1.0-smoothstep(0.965,1.0,phase));
-   // Relative n_e squared emissivity, then an explicit fourth-root display enhancement.
+   let parcels=smoothstep(0.53,0.77,parcel_noise)*smoothstep(0.0,0.035,phase)*(1.0-smoothstep(0.965,1.0,phase));
+   // Relative n_e squared emissivity, then an explicit power-law display enhancement.
    let relative_emission=physical.x*physical.x;
-   let wind=channels*parcels*4.0*pow(relative_emission,0.25)*(1.0-smoothstep(8.0,10.99,height));
-   let density=(flame+base+wind)*step*parameters.x*2.5;
+   let wind=channels*parcels*0.55*pow(relative_emission,0.30)*(1.0-smoothstep(8.0,10.99,height));
+   let density=(flame*0.75+base+wind)*step*parameters.x*2.5;
    let heat=clamp(flame*0.65+exp(-height*35.0)*0.5,0.0,1.0);
    // Front-to-back, premultiplied emission / display extinction.
    let alpha=1.0-exp(-density*0.8);
-   let emission=mix(vec3<f32>(0.7,0.012,0.001),vec3<f32>(2.0,0.65,0.06),heat);
+   let emission=mix(vec3<f32>(0.35,0.008,0.001),vec3<f32>(2.0,0.65,0.06),heat);
    light+=transmission*emission*alpha;
    transmission*=1.0-alpha;
   }

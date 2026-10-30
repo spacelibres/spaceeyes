@@ -138,3 +138,185 @@ mod tests {
         }
     }
 }
+
+/// Lightweight declaration; expensive geometry/materials exist only near the source.
+#[derive(Component)]
+pub(crate) struct StellarEmitter {
+    pub parameters: Vec4,
+}
+struct ActivePlasma {
+    root: Entity,
+    mesh: Handle<Mesh>,
+    volume: Handle<StellarMaterial>,
+    arches: Handle<ProminenceMaterial>,
+}
+#[derive(Resource, Default)]
+pub(crate) struct StellarLod(std::collections::HashMap<Entity, ActivePlasma>);
+
+fn plasma_near(distance: f32, active: bool) -> bool {
+    distance.is_finite() && distance >= 0. && distance < if active { 10. } else { 8. }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn sync_stellar_lod(
+    mut commands: Commands,
+    emitters: Query<(Entity, &GlobalTransform, &StellarEmitter)>,
+    cameras: Query<&GlobalTransform, With<crate::renderer::DisplayCamera>>,
+    shared: Res<crate::render_assets::SharedVisuals>,
+    mut state: ResMut<StellarLod>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut volumes: ResMut<Assets<StellarMaterial>>,
+    mut arches: ResMut<Assets<ProminenceMaterial>>,
+) {
+    let camera = cameras.iter().next().map(GlobalTransform::translation);
+    let mut retained = std::collections::HashSet::new();
+    for (entity, transform, emitter) in &emitters {
+        let radius = transform
+            .to_scale_rotation_translation()
+            .0
+            .abs()
+            .max_element();
+        let distance = camera
+            .filter(|_| radius.is_finite() && radius > 0.)
+            .map_or(f32::INFINITY, |p| {
+                p.distance(transform.translation()) / radius
+            });
+        if !plasma_near(distance, state.0.contains_key(&entity)) {
+            continue;
+        }
+        retained.insert(entity);
+        let active = state.0.entry(entity).or_insert_with(|| {
+            let mesh = meshes.add(prominence_mesh());
+            let volume = volumes.add(StellarMaterial {
+                parameters: emitter.parameters,
+            });
+            let material = arches.add(ProminenceMaterial {
+                parameters: emitter.parameters,
+            });
+            let root = commands
+                .spawn((Transform::default(), Visibility::Inherited, ChildOf(entity)))
+                .id();
+            commands.spawn((
+                Mesh3d(mesh.clone()),
+                MeshMaterial3d(material.clone()),
+                Transform::default(),
+                ChildOf(root),
+            ));
+            commands.spawn((
+                Mesh3d(shared.mesh.clone()),
+                MeshMaterial3d(volume.clone()),
+                Transform::from_scale(Vec3::splat(12.)),
+                ChildOf(root),
+            ));
+            ActivePlasma {
+                root,
+                mesh,
+                volume,
+                arches: material,
+            }
+        });
+        let mut parameters = emitter.parameters;
+        parameters.x *= ((10. - distance) / 4.).clamp(0., 1.);
+        if let Some(mut material) = volumes.get_mut(&active.volume) {
+            material.parameters = parameters;
+        }
+        if let Some(mut material) = arches.get_mut(&active.arches) {
+            material.parameters = parameters;
+        }
+    }
+    state.0.retain(|entity, active| {
+        if retained.contains(entity) {
+            return true;
+        }
+        commands.entity(active.root).try_despawn();
+        meshes.remove(active.mesh.id());
+        volumes.remove(active.volume.id());
+        arches.remove(active.arches.id());
+        false
+    });
+}
+
+#[cfg(test)]
+mod lod_tests {
+    use super::*;
+    #[test]
+    fn distance_gate_has_hysteresis_and_rejects_invalid_values() {
+        assert!(plasma_near(7.9, false));
+        assert!(!plasma_near(8., false));
+        assert!(plasma_near(9., true));
+        assert!(!plasma_near(10., true));
+        assert!(!plasma_near(f32::NAN, true));
+        assert!(!plasma_near(f32::INFINITY, false));
+        assert!(!plasma_near(-1., true));
+    }
+    #[test]
+    fn approach_departure_and_source_removal_manage_owned_assets() {
+        let mut app = App::new();
+        app.add_plugins(bevy::transform::TransformPlugin)
+            .init_resource::<Assets<Mesh>>()
+            .init_resource::<Assets<StellarMaterial>>()
+            .init_resource::<Assets<ProminenceMaterial>>()
+            .init_resource::<StellarLod>()
+            .add_systems(
+                PostUpdate,
+                sync_stellar_lod.after(bevy::transform::TransformSystems::Propagate),
+            );
+        let sphere = app
+            .world_mut()
+            .resource_mut::<Assets<Mesh>>()
+            .add(Sphere::new(1.));
+        app.insert_resource(crate::render_assets::SharedVisuals { mesh: sphere });
+        let source = app
+            .world_mut()
+            .spawn((
+                Transform::default(),
+                StellarEmitter {
+                    parameters: Vec4::ONE,
+                },
+            ))
+            .id();
+        let camera = app
+            .world_mut()
+            .spawn((
+                crate::renderer::DisplayCamera,
+                Transform::from_xyz(0., 0., 20.),
+            ))
+            .id();
+        app.update();
+        assert!(app.world().resource::<StellarLod>().0.is_empty());
+        assert_eq!(app.world().resource::<Assets<Mesh>>().len(), 1);
+        let mut first = None;
+        for (distance, expected) in [(7., 1), (9., 1), (11., 0), (6., 1)] {
+            app.world_mut()
+                .entity_mut(camera)
+                .insert(Transform::from_xyz(0., 0., distance));
+            app.update();
+            let state = app.world().resource::<StellarLod>();
+            assert_eq!(state.0.len(), expected);
+            if distance == 7. {
+                first = Some(state.0[&source].root);
+            }
+            if distance == 9. {
+                assert_eq!(first, Some(state.0[&source].root));
+            }
+            assert_eq!(
+                app.world().resource::<Assets<StellarMaterial>>().len(),
+                expected
+            );
+            assert_eq!(
+                app.world().resource::<Assets<ProminenceMaterial>>().len(),
+                expected
+            );
+            assert_eq!(app.world().resource::<Assets<Mesh>>().len(), 1 + expected);
+        }
+        app.world_mut().entity_mut(source).despawn();
+        app.update();
+        assert!(app.world().resource::<StellarLod>().0.is_empty());
+        assert_eq!(app.world().resource::<Assets<StellarMaterial>>().len(), 0);
+        assert_eq!(
+            app.world().resource::<Assets<ProminenceMaterial>>().len(),
+            0
+        );
+        assert_eq!(app.world().resource::<Assets<Mesh>>().len(), 1);
+    }
+}

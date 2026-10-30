@@ -101,6 +101,11 @@ pub(crate) fn create_browser_app(
     .add_systems(Update, crate::sky_render::sync_sky.after(sync_scene))
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
+    .init_resource::<crate::stellar_render::StellarLod>()
+    .add_systems(
+        PostUpdate,
+        crate::stellar_render::sync_stellar_lod.after(bevy::transform::TransformSystems::Propagate),
+    )
     .init_resource::<OrbitView>()
     .init_resource::<crate::face_texture::FaceCache>()
     .add_systems(Startup, setup)
