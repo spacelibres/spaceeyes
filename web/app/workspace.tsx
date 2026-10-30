@@ -148,6 +148,8 @@ export default function Workspace() {
         });
       }}
       galaxy={state.galaxy}
+      lighting={state.lighting}
+      onLighting={(mode) => action((value) => value.lighting(mode))}
       fovDegrees={state.fovDegrees}
       onFov={(degrees) => action((value) => value.fieldOfView(degrees))}
       onGalaxy={() => action((value) => value.galaxy(!state.galaxy.enabled))}
@@ -217,9 +219,7 @@ export default function Workspace() {
         )
       }
       onPlay={() => action((value) => value.play(!state.playing, state.rate))}
-      onRate={(rate) =>
-        action((value) => value.play(true, Number(rate)))
-      }
+      onRate={(rate) => action((value) => value.play(true, Number(rate)))}
       onJump={() =>
         action((value) => {
           if (!jump.trim()) throw new Error("请输入 J2000 TDB 秒");

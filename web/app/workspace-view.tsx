@@ -34,6 +34,8 @@ export type WorkspaceViewProps = {
     loadedTiles?: number;
     gpuBytes?: number;
   };
+  lighting?: "natural" | "shadow" | "flood";
+  onLighting?: (mode: "natural" | "shadow" | "flood") => void;
   fovDegrees: number;
   onFov: (degrees: number) => void;
   onGalaxy: () => void;
@@ -98,6 +100,50 @@ export type WorkspaceViewProps = {
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
   const [timeExpanded, setTimeExpanded] = useState(true);
+  const screen = useRef<HTMLElement>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState("");
+  useEffect(() => {
+    const element = screen.current;
+    setFullscreenSupported(
+      Boolean(document.fullscreenEnabled && screen.current?.requestFullscreen),
+    );
+    const changed = () => {
+      setFullscreen(document.fullscreenElement === screen.current);
+      setFullscreenError("");
+    };
+    const failed = () =>
+      setFullscreenError("无法进入全屏，请检查浏览器权限或窗口状态");
+    document.addEventListener("fullscreenchange", changed);
+    document.addEventListener("fullscreenerror", failed);
+    return () => {
+      document.removeEventListener("fullscreenchange", changed);
+      document.removeEventListener("fullscreenerror", failed);
+      if (element && document.fullscreenElement === element)
+        void document.exitFullscreen().catch(() => {});
+    };
+  }, []);
+  useEffect(() => {
+    if (!p.active && document.fullscreenElement === screen.current)
+      void document
+        .exitFullscreen()
+        .catch(() => setFullscreenError("无法退出全屏，请按 Esc"));
+  }, [p.active]);
+  const toggleFullscreen = () => {
+    setFullscreenError("");
+    try {
+      const request =
+        document.fullscreenElement === screen.current
+          ? document.exitFullscreen()
+          : screen.current?.requestFullscreen();
+      void request?.catch(() =>
+        setFullscreenError("全屏请求被浏览器拒绝，请检查权限"),
+      );
+    } catch {
+      setFullscreenError("当前浏览器无法切换全屏");
+    }
+  };
   const touch = useRef(new TouchCamera());
   const gesture = useRef(new SceneGesture());
   const pickRevision = useRef(0);
@@ -149,11 +195,22 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   );
   return (
     <main
+      ref={screen}
       className={`immersive ${timeExpanded ? "time-expanded" : "time-collapsed"}`}
       onKeyDown={(event) => {
         if (event.key === "Escape" && panel) {
           event.stopPropagation();
           closePanel();
+        }
+        if (
+          event.key === "Escape" &&
+          document.fullscreenElement === screen.current
+        ) {
+          void document
+            .exitFullscreen()
+            .catch(() =>
+              setFullscreenError("无法退出全屏，请使用浏览器的退出全屏操作"),
+            );
         }
       }}
     >
@@ -186,6 +243,14 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           </button>
           <button disabled={!p.active} onClick={p.onOverview}>
             太阳系总览
+          </button>
+          <button
+            disabled={!fullscreenSupported || !p.active}
+            aria-pressed={fullscreen}
+            title={fullscreenSupported ? "切换全屏" : "当前浏览器不支持全屏"}
+            onClick={toggleFullscreen}
+          >
+            {fullscreen ? "退出全屏" : "全屏"}
           </button>
           <a href="/diagnostics">数据诊断</a>
         </div>
@@ -397,6 +462,22 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </div>
           )}
           <div className="view-controls">
+            <label>
+              光照
+              <select
+                disabled={!p.active}
+                value={p.lighting ?? "natural"}
+                onChange={(e) =>
+                  p.onLighting?.(
+                    e.target.value as "natural" | "shadow" | "flood",
+                  )
+                }
+              >
+                <option value="natural">自然光</option>
+                <option value="shadow">暗面补光</option>
+                <option value="flood">强补光</option>
+              </select>
+            </label>
             <button
               disabled={!p.active}
               aria-label="放大"
@@ -809,6 +890,11 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           当前时间
         </button>
       </section>
+      {fullscreenError && (
+        <p className="error" role="alert">
+          {fullscreenError}
+        </p>
+      )}
       {p.error && (
         <p className="error" role="alert">
           {p.error}

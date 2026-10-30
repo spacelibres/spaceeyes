@@ -4,6 +4,8 @@ import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
+  camera_lighting?(session: string, plugin: string, mode: string): void;
+  camera_lighting_mode?(): string;
   camera_observe?(session: string, plugin: string, json: string): void;
   camera_observation?(): string;
   camera_orbit?(
@@ -78,6 +80,17 @@ export interface WasmCoreBinding {
 }
 
 export class WasmCorePort implements CorePort {
+  cameraLighting(
+    request: Parameters<NonNullable<CorePort["cameraLighting"]>>[0],
+  ): void {
+    if (!this.#binding.camera_lighting)
+      throw Error("camera lighting unavailable");
+    this.#binding.camera_lighting(
+      request.sessionId,
+      request.pluginId,
+      request.mode,
+    );
+  }
   cameraObserve(
     request: Parameters<NonNullable<CorePort["cameraObserve"]>>[0],
   ): void {

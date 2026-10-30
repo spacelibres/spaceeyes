@@ -31,3 +31,11 @@ SDK trajectory style新增kind:'orbit'|'trail'（默认orbit）、trailDurationS
 并行修复set_annotation原子性、活动请求场景取消、加载中播放控件禁用、返回总览保留播放状态。测试先行，再通过完整tools/check-core.ps1集中检查和真实GPU后递增补丁、CHANGELOG、提交推送、gh跟踪。
 
 补充审查发现表面转换缓存可强持有64张8MiB图像并保留CPU副本，潜在载荷约1GiB；首批一并按64MiB缓存界限及上传后释放CPU像素修复，活跃材质引用不强删。
+
+## 2026-10-31迭代核验进度
+
+第一批b2e18fb26、第二批040e487e3、第三批b45bf712a已分别提交推送，详见各版CHANGELOG和GPU证据。第一批远端CI成功，后续状态以gh实时核验为准。
+
+地球场景四个不可用项目Rumba(sc_cluster_ii_fm5)、Samba(sc_cluster_ii_fm7)、Tango(sc_cluster_ii_fm8)、GRIFEX(sc_grifex)通过本地真实DYN接口复核，在TDB846663824.5均返回Outside source coverage。是当前时刻不在源覆盖范围，不是贴图加载失败，也不能靠伪造轨道解决；现有“前往有效观测时间”入口应作为该状态的恢复方式。之后对每个任务按真实覆盖验收。
+
+第四批按NASA光照语义及宿主全屏继续；仍需第五批有界缓存/压力、姿态与逐场景数值/视觉证据。不因前几批通过就勾选全部第一版验收。

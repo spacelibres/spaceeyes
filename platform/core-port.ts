@@ -12,6 +12,11 @@ export interface FocusRequest {
   readonly targetId: string;
 }
 export interface CorePort {
+  cameraLighting?(request: {
+    readonly sessionId: string;
+    readonly pluginId: string;
+    readonly mode: "natural" | "shadow" | "flood";
+  }): void;
   cameraObserve?(request: FocusRequest & CameraObservation): void;
   cameraOrbit?(request: {
     readonly pluginId: string;

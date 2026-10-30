@@ -16,6 +16,7 @@ description: Use when authoring or reviewing SPACEEYES TypeScript plugins using 
 - `pluginId`：宿主提供的插件身份。
 - `signal`：本次会话的 AbortSignal，传给支持取消的异步操作。
 - `onDispose(callback)`：登记释放订阅、请求和其他资源的回调。
+- `camera.lighting(mode)`：同步受控照明意图，需声明并获批 `camera.control`，严格接受 `natural`（自然太阳光）、`shadow`（弱相机补光）、`flood`（强相机补光）；shadow不是阴影开关。请求复制并冻结，Rust再次验证权限并登记所属会话；拥有者释放恢复natural。未知值拒绝且不改变状态，停用后的旧SDK拒绝调用。该接口不暴露灯光实体、Transform或Bevy内部结构。WASM精确传递session、plugin、mode；只声明照明参数映射，不代表物理照度等价或全部自定义材质支持补光。
 - `camera.focus(targetId)`：请求聚焦一个对象，需清单声明且宿主批准 `camera.control`。目标标识为 1～256 个 ASCII 字符，首字符为字母或数字，其余允许字母、数字、冒号、点、下划线、斜杠及连字符；该标识不是文件路径或 URL。核心负责核验目标存在性及实际相机执行。
 - `requireCapability(name)`：检查当前会话及能力，不能用它推断尚未实现的 API 可用。
 - `data.publish(targetId, state)`、`data.remove(targetId)`：需 `data.publish`。状态包含 positionKm 三元数组、正数 radiusKm、epochTdbSeconds、coverageTdbSeconds 二元数组、frame 固定 ICRF、非空 source。时间为 J2000 起算 TDB 秒，数值必须有限，采样时刻在覆盖内。发布时复制并冻结数据；Rust 再校验权限与归属。当前不提交姿态或轨迹。

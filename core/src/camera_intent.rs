@@ -9,6 +9,25 @@ pub struct CameraObservation {
     pub follow_id: Option<String>,
 }
 impl Core {
+    pub fn camera_lighting(&self) -> &str {
+        self.camera_lighting
+            .as_ref()
+            .map_or("natural", |(_, mode)| mode.as_str())
+    }
+    pub fn set_camera_lighting(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        mode: &str,
+    ) -> Result<(), CoreError> {
+        self.input_authorize(session, plugin)?;
+        if !["natural", "shadow", "flood"].contains(&mode) {
+            return Err(CoreError::InvalidState);
+        }
+        self.camera_lighting = Some((session.into(), mode.into()));
+        Ok(())
+    }
+
     pub fn camera_observation(&self) -> Option<&CameraObservation> {
         self.observation.as_ref().map(|(_, v)| v)
     }
@@ -134,6 +153,36 @@ mod tests {
             .unwrap();
         }
         c
+    }
+    #[test]
+    fn lighting_requires_permission_validates_and_releases_owner() {
+        let mut c = core();
+        assert_eq!(c.camera_lighting(), "natural");
+        assert_eq!(
+            c.set_camera_lighting("missing", "p", "flood"),
+            Err(CoreError::InactiveSession)
+        );
+        assert_eq!(
+            c.set_camera_lighting("s", "other", "flood"),
+            Err(CoreError::WrongOwner)
+        );
+        c.open_session_with_permissions("reader", "reader", crate::SessionPermissions::default())
+            .unwrap();
+        assert_eq!(
+            c.set_camera_lighting("reader", "reader", "flood"),
+            Err(CoreError::PermissionDenied)
+        );
+        for mode in ["shadow", "flood", "natural"] {
+            c.set_camera_lighting("s", "p", mode).unwrap();
+            assert_eq!(c.camera_lighting(), mode);
+        }
+        c.set_camera_lighting("s", "p", "shadow").unwrap();
+        assert!(c.set_camera_lighting("s", "p", "SHADOW").is_err());
+        assert_eq!(c.camera_lighting(), "shadow");
+        c.release_session("reader");
+        assert_eq!(c.camera_lighting(), "shadow");
+        c.release_session("s");
+        assert_eq!(c.camera_lighting(), "natural");
     }
     #[test]
     fn input_authorization_bounds_consumption_and_release() {

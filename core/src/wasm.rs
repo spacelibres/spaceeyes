@@ -261,6 +261,19 @@ impl WasmCore {
             .camera_zoom(s, p, d)
             .map_err(|e| format!("{e:?}"))
     }
+    pub fn camera_lighting(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        mode: &str,
+    ) -> Result<(), String> {
+        self.lock()?
+            .set_camera_lighting(session, plugin, mode)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn camera_lighting_mode(&self) -> Result<String, String> {
+        Ok(self.lock()?.camera_lighting().into())
+    }
     pub fn camera_view(&mut self, session: &str, plugin: &str, mode: &str) -> Result<(), String> {
         self.lock()?
             .set_camera_view(session, plugin, mode)

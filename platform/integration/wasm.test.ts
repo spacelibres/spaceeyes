@@ -578,3 +578,74 @@ test("camera observation intents reach real WASM and restore nearby on focus", a
     core.free();
   }
 });
+
+test("lighting SDK controls real WASM and disposal restores natural lighting", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  let reader!: PluginContext;
+  try {
+    host.register(
+      {
+        id: "integration.lighting",
+        apiVersion: 1,
+        capabilities: ["camera.control"],
+      },
+      (ctx) => {
+        sdk = ctx;
+      },
+    );
+    host.register(
+      { id: "integration.reader", apiVersion: 1, capabilities: [] },
+      (ctx) => {
+        reader = ctx;
+      },
+    );
+    await host.enable("integration.lighting", ["camera.control"]);
+    await host.enable("integration.reader", []);
+    assert.equal(core.camera_lighting_mode(), "natural");
+    sdk.camera.lighting("flood");
+    assert.equal(core.camera_lighting_mode(), "flood");
+    assert.throws(() => sdk.camera.lighting("invalid" as never), /invalid/);
+    assert.equal(core.camera_lighting_mode(), "flood");
+    assert.throws(() => reader.camera.lighting("shadow"), /permission/);
+    assert.equal(core.camera_lighting_mode(), "flood");
+    // Also exercise the Rust validation boundary independently of the SDK guard.
+    core.open_session(
+      "lighting-direct",
+      "integration.direct",
+      true,
+      false,
+      false,
+      false,
+    );
+    assert.throws(() =>
+      core.camera_lighting("lighting-direct", "integration.direct", "invalid"),
+    );
+    assert.equal(core.camera_lighting_mode(), "flood");
+    core.open_session(
+      "lighting-reader",
+      "integration.direct-reader",
+      false,
+      false,
+      false,
+      false,
+    );
+    assert.throws(() =>
+      core.camera_lighting(
+        "lighting-reader",
+        "integration.direct-reader",
+        "shadow",
+      ),
+    );
+    assert.equal(core.camera_lighting_mode(), "flood");
+    await host.disable("integration.lighting");
+    assert.equal(core.camera_lighting_mode(), "natural");
+    assert.throws(() => sdk.camera.lighting("flood"), /inactive/);
+    core.release_session("lighting-direct");
+    core.release_session("lighting-reader");
+  } finally {
+    await host.shutdown();
+    core.free();
+  }
+});

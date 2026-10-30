@@ -1084,3 +1084,31 @@ test("workspace starts at real rate with LIVE when current coverage is available
     await app.dispose();
   }
 });
+
+test("host lighting publishes validated mode and resets snapshot on disposal", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    assert.equal(states.at(-1)!.lighting, "natural");
+    app.lighting("shadow");
+    assert.equal(states.at(-1)!.lighting, "shadow");
+    app.lighting("flood");
+    assert.equal(states.at(-1)!.lighting, "flood");
+    assert.throws(() => app.lighting("bad" as "natural"));
+    assert.equal(states.at(-1)!.lighting, "flood");
+  } finally {
+    await app.dispose();
+  }
+  assert.equal(states.at(-1)!.lighting, "natural");
+  assert.throws(() => app.lighting("natural"));
+});

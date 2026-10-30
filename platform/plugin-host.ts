@@ -43,6 +43,7 @@ export interface PluginContext {
   readonly pluginId: string;
   readonly signal: AbortSignal;
   readonly camera: {
+    lighting(mode: "natural" | "shadow" | "flood"): void;
     observe(
       targetId: string,
       mode: CameraObservationMode,
@@ -374,6 +375,13 @@ export class PluginHost {
         },
       }),
       camera: Object.freeze({
+        lighting(mode: "natural" | "shadow" | "flood") {
+          requireCapability("camera.control");
+          if (mode !== "natural" && mode !== "shadow" && mode !== "flood")
+            throw Error("invalid camera lighting mode");
+          if (!core?.cameraLighting) throw Error("camera lighting unavailable");
+          core.cameraLighting(Object.freeze({ sessionId, pluginId: id, mode }));
+        },
         observe(
           targetId: string,
           mode: CameraObservationMode,

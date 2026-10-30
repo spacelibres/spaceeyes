@@ -133,6 +133,7 @@ pub struct Core {
     observation: Option<(String, CameraObservation)>,
     camera_input: [f32; 3],
     camera_input_owner: Option<String>,
+    camera_lighting: Option<(String, String)>,
     camera_view: String,
     camera_fov: Option<f32>,
     camera_fov_owner: Option<String>,
@@ -627,6 +628,13 @@ impl Core {
     }
 
     pub fn release_session(&mut self, id: &str) {
+        if self
+            .camera_lighting
+            .as_ref()
+            .is_some_and(|(owner, _)| owner == id)
+        {
+            self.camera_lighting = None;
+        }
         if self.camera_input_owner.as_deref() == Some(id) {
             self.camera_input = [0.; 3];
             self.camera_input_owner = None;

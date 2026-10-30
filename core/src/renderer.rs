@@ -156,6 +156,12 @@ pub(crate) fn create_browser_app(
     )
     .add_observer(world_ready)
     .add_systems(Update, update_illumination.after(sync_scene))
+    .add_systems(
+        Update,
+        update_camera_fill
+            .after(enforce_camera_collision)
+            .after(update_illumination),
+    )
     .add_systems(Update, stop_renderer)
     .add_systems(
         PostUpdate,
@@ -187,6 +193,7 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         Transform::from_xyz(0.0, 0.0, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
     commands.spawn((
+        SolarDirectionalLight,
         DirectionalLight {
             illuminance: 10_000.0,
             shadow_maps_enabled: false,
@@ -194,6 +201,45 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
         },
         Transform::from_xyz(4.0, 4.0, 8.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
+    commands.spawn((
+        CameraFillLight,
+        DirectionalLight {
+            illuminance: 0.,
+            shadow_maps_enabled: false,
+            ..default()
+        },
+        Transform::default(),
+    ));
+}
+
+#[derive(Component)]
+struct SolarDirectionalLight;
+#[derive(Component)]
+struct CameraFillLight;
+type CameraFillLights<'w, 's> = Query<
+    'w,
+    's,
+    (&'static mut Transform, &'static mut DirectionalLight),
+    (With<CameraFillLight>, Without<DisplayCamera>),
+>;
+fn update_camera_fill(
+    store: Res<CoreStore>,
+    camera: Query<&Transform, (With<DisplayCamera>, Without<CameraFillLight>)>,
+    mut lights: CameraFillLights,
+) {
+    let Ok(core) = store.0.lock() else { return };
+    let Some(camera) = camera.iter().next() else {
+        return;
+    };
+    let illuminance = match core.camera_lighting() {
+        "shadow" => 1500.,
+        "flood" => 10000.,
+        _ => 0.,
+    };
+    for (mut transform, mut light) in &mut lights {
+        transform.rotation = camera.rotation;
+        light.illuminance = illuminance;
+    }
 }
 
 #[derive(Default)]
@@ -604,6 +650,103 @@ fn follow_display_direction(relative: DVec3) -> Vec3 {
 #[cfg(test)]
 mod camera_intent_render_tests {
     use super::*;
+    #[test]
+    fn camera_fill_tracks_final_camera_without_rotating_solar_light() {
+        let mut c = crate::Core::default();
+        c.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let shared = Arc::new(std::sync::Mutex::new(c));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .insert_resource(DisplaySettings {
+                origin_km: DVec3::new(1e12, 0., 0.),
+                ..default()
+            })
+            .add_systems(Update, (update_illumination, update_camera_fill).chain());
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default()))
+            .id();
+        let sun = app
+            .world_mut()
+            .spawn((
+                SolarDirectionalLight,
+                DirectionalLight {
+                    illuminance: 10000.,
+                    ..default()
+                },
+                Transform::default(),
+            ))
+            .id();
+        let fill = app
+            .world_mut()
+            .spawn((
+                CameraFillLight,
+                DirectionalLight::default(),
+                Transform::default(),
+            ))
+            .id();
+        for (mode, power) in [("natural", 0.), ("shadow", 1500.), ("flood", 10000.)] {
+            shared
+                .lock()
+                .unwrap()
+                .set_camera_lighting("s", "p", mode)
+                .unwrap();
+            let rotation = Quat::from_rotation_y(power / 10000.);
+            app.world_mut()
+                .get_mut::<Transform>(camera)
+                .unwrap()
+                .rotation = rotation;
+            app.update();
+            assert_eq!(
+                app.world()
+                    .get::<DirectionalLight>(fill)
+                    .unwrap()
+                    .illuminance,
+                power
+            );
+            assert_eq!(
+                app.world().get::<Transform>(fill).unwrap().rotation,
+                rotation
+            );
+            assert_eq!(
+                app.world()
+                    .get::<DirectionalLight>(sun)
+                    .unwrap()
+                    .illuminance,
+                10000.
+            );
+            assert!(
+                app.world()
+                    .get::<Transform>(sun)
+                    .unwrap()
+                    .forward()
+                    .dot(Vec3::X)
+                    > 0.999
+            );
+        }
+        app.world_mut().resource_mut::<DisplaySettings>().origin_km = DVec3::new(0., 1e12, 0.);
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(sun)
+                .unwrap()
+                .forward()
+                .dot(-Vec3::Z)
+                > 0.999
+        );
+        assert_eq!(
+            app.world().get::<Transform>(fill).unwrap().rotation,
+            app.world().get::<Transform>(camera).unwrap().rotation
+        );
+    }
     #[test]
     fn observation_modes_frame_large_origin_and_follow_moving_reference() {
         let mut core = crate::Core::default();
@@ -1848,7 +1991,7 @@ mod repeated_focus_tests {
 // grant plugins an environment-light API through emissive material settings.
 fn update_illumination(
     settings: Res<DisplaySettings>,
-    mut lights: Query<&mut Transform, With<DirectionalLight>>,
+    mut lights: Query<&mut Transform, (With<SolarDirectionalLight>, Without<CameraFillLight>)>,
 ) {
     let toward = -settings.origin_km;
     if toward.length_squared() < 1e-12 {

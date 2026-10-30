@@ -45,6 +45,7 @@ export type SolarSnapshot = {
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
   live: boolean;
+  lighting: "natural" | "shadow" | "flood";
   fovDegrees: number;
   galaxy: {
     enabled: boolean;
@@ -82,6 +83,7 @@ export type SolarSnapshot = {
 export const initialSnapshot: SolarSnapshot = {
   observationMode: "nearby",
   live: false,
+  lighting: "natural",
   fovDegrees: 45,
   galaxy: { enabled: false, phase: "disabled" },
   starfield: {
@@ -123,6 +125,7 @@ export const workspaceCatalog = solarCatalog
   }));
 export interface WorkspaceRuntime {
   tuneStellar(settings: Record<string, number>): void;
+  lighting(mode: "natural" | "shadow" | "flood"): void;
   fieldOfView(degrees: number): void;
   galaxy(enabled: boolean): void;
   starfield(enabled: boolean): Promise<void>;
@@ -455,6 +458,7 @@ export async function createWorkspace(
           ...state,
           active: false,
           live: false,
+          lighting: "natural",
           busy: false,
           playing: false,
           galaxy: { enabled: false, phase: "disabled" },
@@ -782,6 +786,12 @@ export async function createWorkspace(
       const tuning = buildStellarTuning(next);
       sdk.visual.stellar("sun", tuning);
       stellarSettings = next;
+    },
+    lighting(mode) {
+      assertLive();
+      sdk.camera.lighting(mode);
+      state.lighting = mode;
+      emit();
     },
     fieldOfView(degrees) {
       assertLive();
