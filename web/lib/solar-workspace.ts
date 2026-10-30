@@ -19,6 +19,7 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  startupMs?: number;
   active: boolean;
   busy: boolean;
   phase: string;
@@ -74,6 +75,7 @@ export async function createWorkspace(
   update: (state: SolarSnapshot) => void,
   signal: AbortSignal,
   options: {
+    onStartup?: (phase: string) => void;
     loadCore?: () => Promise<{
       default(): Promise<unknown>;
       WasmCore: new () => HostCore;
@@ -83,6 +85,9 @@ export async function createWorkspace(
     cancelFrame?: typeof cancelAnimationFrame;
   } = {},
 ): Promise<WorkspaceRuntime> {
+  const startupAt = performance.now();
+  signal.throwIfAborted();
+  options.onStartup?.("加载三维核心模块");
   const url = "/wasm/spaceeyes_core.js";
   const module = (
     options.loadCore
@@ -92,6 +97,8 @@ export async function createWorkspace(
     default(): Promise<unknown>;
     WasmCore: new () => HostCore;
   };
+  signal.throwIfAborted();
+  options.onStartup?.("下载并初始化 WASM");
   await module.default();
   signal.throwIfAborted();
   const requestFrame =
@@ -138,7 +145,11 @@ export async function createWorkspace(
     disposal: Promise<void> | undefined;
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
-  const state = { ...initialSnapshot, busy: true, phase: "加载真实太阳系数据" };
+  const state: SolarSnapshot = {
+    ...initialSnapshot,
+    busy: true,
+    phase: "加载真实太阳系数据",
+  };
   const emit = () => {
     if (closed) return;
     state.epoch = core.epoch();
@@ -200,7 +211,7 @@ export async function createWorkspace(
           active: false,
           busy: false,
           playing: false,
-          phase: "工作区已释放，请刷新重新进入",
+          phase: "工作区已释放，可重新进入",
         });
       }
     })());
@@ -479,10 +490,13 @@ export async function createWorkspace(
       "scene.visual",
     ]);
     assertLive();
+    options.onStartup?.("加载总览所需轨道数据");
     await reload(core.utc_to_tdb(Date.now() / 1000));
     assertLive();
     sdk.camera.view("overview");
+    options.onStartup?.("启动三维渲染器");
     core.start_renderer(canvas);
+    state.startupMs = Math.max(0, performance.now() - startupAt);
     state.active = true;
     emit();
     const tick = (now: number) => {

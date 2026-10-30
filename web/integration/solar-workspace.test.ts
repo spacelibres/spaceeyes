@@ -330,3 +330,26 @@ test("overview leaves surfaces external and selection requests only that body's 
     await app.dispose();
   }
 });
+
+test("cancelled module loading does not initialize WASM or start a renderer", async () => {
+  const controller = new AbortController();
+  let init = 0;
+  const phases: string[] = [];
+  await assert.rejects(
+    createWorkspace("#test", () => {}, controller.signal, {
+      ...harness(),
+      onStartup: (phase) => phases.push(phase),
+      loadCore: async () => {
+        controller.abort();
+        return {
+          default: async () => {
+            init++;
+          },
+          WasmCore: class {} as unknown as new () => HostCore,
+        };
+      },
+    }),
+  );
+  assert.equal(init, 0);
+  assert.deepEqual(phases, ["加载三维核心模块"]);
+});

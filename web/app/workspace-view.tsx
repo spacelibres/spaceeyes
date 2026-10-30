@@ -10,6 +10,7 @@ export type WorkspaceViewProps = {
   selected: string;
   search: string;
   setSearch: (v: string) => void;
+  startupMs?: number;
   active: boolean;
   busy: boolean;
   phase: string;
@@ -67,6 +68,12 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
       <div className="workspace-status" role="status">
         <span className={p.active ? "status-dot live" : "status-dot"} />
         {p.phase}
+        {p.active && p.startupMs !== undefined && (
+          <small>
+            本次初始化 {(p.startupMs / 1000).toFixed(2)}{" "}
+            秒（不含首帧及贴图就绪）
+          </small>
+        )}
         <button onClick={p.busy || p.active ? p.onStop : p.onStart}>
           {p.busy ? "取消加载" : p.active ? "退出工作区" : "进入工作区"}
         </button>
@@ -126,10 +133,24 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           </div>
           {!p.active && (
             <div className="viewport-empty">
-              <h2>从太阳系出发</h2>
-              <p>进入工作区，选择天体、观察关联对象并探索时间。</p>
+              <h2>
+                {p.busy
+                  ? "正在准备三维场景"
+                  : p.phase.startsWith("启动失败")
+                    ? "暂时无法进入场景"
+                    : "从太阳系出发"}
+              </h2>
+              <p>
+                {p.busy
+                  ? p.phase
+                  : "进入工作区，选择天体、观察关联对象并探索时间。"}
+              </p>
               <button disabled={p.busy} onClick={p.onStart}>
-                进入三维工作区 →
+                {p.busy
+                  ? "正在加载…"
+                  : p.phase.startsWith("启动失败")
+                    ? "重新进入工作区 →"
+                    : "进入三维工作区 →"}
               </button>
             </div>
           )}

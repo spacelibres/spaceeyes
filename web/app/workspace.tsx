@@ -69,6 +69,12 @@ export default function Workspace() {
           if (mounted.current) setState(value);
         },
         controller.current.signal,
+        {
+          onStartup: (phase) => {
+            if (mounted.current && !controller.current?.signal.aborted)
+              setState((current) => ({ ...current, busy: true, phase }));
+          },
+        },
       );
     } catch (error) {
       if (mounted.current)
@@ -78,8 +84,8 @@ export default function Workspace() {
           busy: false,
           error: controller.current?.signal.aborted ? "" : String(error),
           phase: controller.current?.signal.aborted
-            ? "工作区已释放，请刷新重新进入"
-            : "启动失败，请刷新重试",
+            ? "工作区已取消，可重新进入"
+            : "启动失败，可点击重新进入",
         }));
     }
   };
@@ -98,6 +104,7 @@ export default function Workspace() {
       selected={state.selected}
       search={search}
       setSearch={setSearch}
+      startupMs={state.startupMs}
       active={state.active}
       busy={state.busy}
       phase={state.phase}
