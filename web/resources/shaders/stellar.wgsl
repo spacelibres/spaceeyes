@@ -16,7 +16,6 @@ fn noise(p:vec3<f32>)->f32 {
  let i=floor(p); let f=fract(p); let u=f*f*(3.0-2.0*f);
  return mix(mix(mix(hash(i),hash(i+vec3<f32>(1,0,0)),u.x),mix(hash(i+vec3<f32>(0,1,0)),hash(i+vec3<f32>(1,1,0)),u.x),u.y),mix(mix(hash(i+vec3<f32>(0,0,1)),hash(i+vec3<f32>(1,0,1)),u.x),mix(hash(i+vec3<f32>(0,1,1)),hash(i+vec3<f32>(1,1,1)),u.x),u.y),u.z);
 }
-fn fbm(p:vec3<f32>)->f32 { return noise(p)*0.57+noise(p*2.03+7.1)*0.28+noise(p*4.11-3.7)*0.15; }
 @vertex fn vertex(v:Vertex)->Out {
  let model=get_world_from_local(v.instance_index);
  let center=model[3].xyz;
@@ -51,12 +50,16 @@ struct PlasmaOutput {
  let t=globals.time*parameters.y;
  var light=vec3<f32>(0.0);
  var transmission=1.0;
- for(var j=0;j<48;j=j+1) {
-  let u0=f32(j)/48.0; let u1=f32(j+1)/48.0;
+ // Hard per-fragment budget: twelve samples, at most four noise calls per sample.
+ for(var j=0;j<12;j=j+1) {
+  if(transmission<0.02) {break;}
+  let u0=f32(j)/12.0; let u1=f32(j+1)/12.0;
   // Bias integration toward the solar surface without a screen-space expansion.
   let a=1.0-(1.0-u0)*(1.0-u0); let z=1.0-(1.0-u1)*(1.0-u1);
   let step=extent*(z-a);
-  let p=v.eye+ray*(start+extent*(a+z)*0.5);
+  // Fixed spatial jitter avoids coherent bands without time-dependent flicker.
+  let jitter=0.45+0.1*hash(vec3<f32>(v.clip.xy,f32(j)));
+  let p=v.eye+ray*(start+extent*mix(a,z,jitter));
   let r=length(p); let height=r-1.0;
   if(height>0.0 && height<10.99) {
    let physical=solar_wind_state(r);
@@ -65,7 +68,7 @@ struct PlasmaOutput {
    if(height<0.8) {
     let warp=noise(dir*7.0+vec3<f32>(t*0.3,0,0));
     let stream=noise(dir*32.0+warp*3.0-vec3<f32>(0,height*35.0-t*2.0,0));
-    let reach=0.10+0.7*pow(noise(dir*9.0+warp+vec3<f32>(0,t*0.16,0)),2.0);
+    let reach=0.10+0.7*warp*warp;
     flame=(1.0-smoothstep(reach*0.4,reach,height))*smoothstep(0.42,0.78,stream);
    }
    let base=0.045*exp(-height*9.0);
@@ -75,8 +78,7 @@ struct PlasmaOutput {
    let flight_span=WIND_TRAVEL[63];
    let phase=fract((physical.y-model_time)/flight_span);
    let material_point=dir*(1.0+11.0*phase);
-   let displacement=vec3<f32>(noise(material_point*2.1),noise(material_point*2.1+13.0),noise(material_point*2.1-7.0));
-   let parcel_noise=0.7*noise(material_point*4.0+displacement*1.3)+0.3*noise(material_point*8.1+displacement);
+   let parcel_noise=noise(material_point*4.0);
    let parcels=smoothstep(0.53,0.77,parcel_noise)*smoothstep(0.0,0.035,phase)*(1.0-smoothstep(0.965,1.0,phase));
    // Relative n_e squared emissivity, then an explicit power-law display enhancement.
    let relative_emission=physical.x*physical.x;

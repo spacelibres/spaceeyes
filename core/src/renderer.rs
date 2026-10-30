@@ -89,6 +89,15 @@ pub(crate) fn create_browser_app(
                 ..default()
             }),
     )
+    .insert_resource(bevy::winit::WinitSettings {
+        // Animation needs a bounded cadence; do not saturate high-refresh displays.
+        focused_mode: bevy::winit::UpdateMode::reactive_low_power(
+            std::time::Duration::from_secs_f64(1. / 30.),
+        ),
+        unfocused_mode: bevy::winit::UpdateMode::reactive_low_power(
+            std::time::Duration::from_secs_f64(1. / 5.),
+        ),
+    })
     .add_plugins(CoreScenePlugin(core))
     .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
     .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
