@@ -14,9 +14,21 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
-  stellarSettings?:Record<string,number>;
-  onStellar?:(settings:Record<string,number>)=>void;
-  galaxy: { enabled: boolean; phase: string; detail?: string };
+  stellarSettings?: Record<string, number>;
+  onStellar?: (settings: Record<string, number>) => void;
+  galaxy: {
+    enabled: boolean;
+    phase: string;
+    detail?: string;
+    desiredLod?: number;
+    readyLod?: number;
+    currentLod?: number;
+    blend?: number;
+    loadedTiles?: number;
+    gpuBytes?: number;
+  };
+  fovDegrees: number;
+  onFov: (degrees: number) => void;
   onGalaxy: () => void;
   onRetryGalaxy: () => void;
   starfield: StarfieldProgress;
@@ -293,6 +305,19 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           )}
           <div className="view-controls">
             <label>
+              观测视场 {p.fovDegrees}°
+              <input
+                aria-label="观测视场（度）"
+                type="range"
+                min="10"
+                max="100"
+                step="1"
+                disabled={!p.active}
+                value={p.fovDegrees}
+                onChange={(e) => p.onFov(Number(e.target.value))}
+              />
+            </label>
+            <label>
               观察视角
               <select
                 disabled={!p.active}
@@ -339,7 +364,18 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <dd>{p.dataStatus}</dd>
             <dt>科学来源</dt>
             <dd>{p.source}</dd>
-            {p.selected === "sun" && <><dt>太阳风模型</dt><dd>Parker 等温跨声速模型 · {p.stellarSettings?.temperatureMK ?? 1.5} MK、1 AU 密度 {p.stellarSettings?.densityCm3 ?? 5} cm⁻³ 为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整 MHD。</dd></>}
+            {p.selected === "sun" && (
+              <>
+                <dt>太阳风模型</dt>
+                <dd>
+                  Parker 等温跨声速模型 ·{" "}
+                  {p.stellarSettings?.temperatureMK ?? 1.5} MK、1 AU 密度{" "}
+                  {p.stellarSettings?.densityCm3 ?? 5} cm⁻³
+                  为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整
+                  MHD。
+                </dd>
+              </>
+            )}
             <dt>有效覆盖 · J2000 TDB 秒</dt>
             <dd>{p.coverage}</dd>
             {object && (
@@ -378,7 +414,13 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 ))}
             </section>
           )}
-          {p.selected === "sun" && p.onStellar && <SolarTuningPanel active={p.active && !p.busy} onApply={p.onStellar} initial={p.stellarSettings} />}
+          {p.selected === "sun" && p.onStellar && (
+            <SolarTuningPanel
+              active={p.active && !p.busy}
+              onApply={p.onStellar}
+              initial={p.stellarSettings}
+            />
+          )}
           <h3>显示图层</h3>
           <label className="toggle">
             <input
@@ -431,6 +473,33 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               </button>
             </div>
           )}
+          <details className="muted">
+            <summary>深空数据诊断</summary>
+            <dl aria-label="深空资源诊断">
+              <dt>目标 / 就绪 / 当前层级</dt>
+              <dd>
+                {[p.galaxy.desiredLod, p.galaxy.readyLod, p.galaxy.currentLod]
+                  .map((v) => (v === undefined || v < 0 ? "—" : String(v + 1)))
+                  .join(" / ")}
+              </dd>
+              <dt>过渡进度</dt>
+              <dd>
+                {p.galaxy.blend === undefined
+                  ? "—"
+                  : `${Math.round(p.galaxy.blend * 100)}%`}
+              </dd>
+              <dt>已载入瓦片</dt>
+              <dd>{p.galaxy.loadedTiles ?? "—"}</dd>
+              <dt>背景纹理显存</dt>
+              <dd>
+                {p.galaxy.gpuBytes === undefined
+                  ? "—"
+                  : `${(p.galaxy.gpuBytes / 1048576).toFixed(2)} MiB / 64 MiB`}
+              </dd>
+              <dt>资源错误</dt>
+              <dd>{p.galaxy.detail || p.starfield.error || "无"}</dd>
+            </dl>
+          </details>
           <label className="toggle">
             <input
               type="checkbox"

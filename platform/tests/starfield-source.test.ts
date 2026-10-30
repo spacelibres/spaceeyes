@@ -99,3 +99,31 @@ test("hash mismatch is isolated from good layers and explicit retry recovers", a
   assert.equal(source.status().error, "");
   source.dispose();
 });
+
+test("LOD fetches bounded stellar prefixes, preserves raw samples and separates galaxies", async () => {
+  const { layers, ctx } = fixture();
+  let reads = 0;
+  const source = new StarfieldSource(ctx, () => {}, {
+    entries,
+    fetch: async () => {
+      reads++;
+      return new Response(bytes);
+    },
+  });
+  await assert.rejects(source.setLod(7));
+  await source.setLod(0);
+  await source.enable(true);
+  assert.equal(reads, 2);
+  assert.equal(layers.size, 2);
+  assert.equal(layers.get("stars.0.bin").kind, "star");
+  assert.equal(layers.get("galaxies.0.bin").kind, "galaxy");
+  await source.setLod(6);
+  assert.equal(reads, 7);
+  assert.equal(layers.size, 7);
+  await source.setLod(0);
+  assert.equal(reads, 7);
+  await source.enable(false);
+  assert.equal(layers.size, 0);
+  source.dispose();
+  await assert.rejects(source.enable(true));
+});

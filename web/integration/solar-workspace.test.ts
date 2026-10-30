@@ -1,4 +1,5 @@
-import {solarWorkspaceSettings} from "../lib/solar-settings.ts";
+import { StarfieldSource } from "../../platform/starfield-source.ts";
+import { solarWorkspaceSettings } from "../lib/solar-settings.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -41,10 +42,10 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function harness() {
+function harness(initialNullEnvironmentStatus = false) {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
   const focusCalls: string[] = [];
-  const solar:Record<string,number>[]=[];
+  const solar: Record<string, number>[] = [];
   const trails: {
     id: string;
     epochs: number[];
@@ -54,6 +55,8 @@ function harness() {
   let core: HostCore;
   let freed = 0;
   let picked: string | undefined;
+  let desiredLod = 0;
+  let environmentStatusReads = 0;
   let callback: FrameRequestCallback | undefined;
   let pauseSignal: (() => void) | undefined;
   class TestCore {
@@ -62,6 +65,11 @@ function harness() {
       core = new Proxy(actual, {
         get(target, property) {
           // Rendering is replaced in this harness; GPU projection is checked separately.
+          if (property === "environment_status")
+            return () =>
+              initialNullEnvironmentStatus && environmentStatusReads++ === 0
+                ? "null"
+                : JSON.stringify({ phase: "disabled", desiredLod });
           if (property === "pick_object") return () => picked;
           if (property === "start_renderer" || property === "stop_renderer")
             return () => {};
@@ -91,7 +99,11 @@ function harness() {
               });
               return result;
             };
-          if(property==="tune_stellar") return (...args:any[])=>{solar.push(JSON.parse(args[3]).settings);return Reflect.apply(value,target,args);};
+          if (property === "tune_stellar")
+            return (...args: any[]) => {
+              solar.push(JSON.parse(args[3]).settings);
+              return Reflect.apply(value, target, args);
+            };
           if (property === "set_visual")
             return (...args: any[]) => {
               visuals.push({ id: args[2], spec: JSON.parse(args[3]) });
@@ -114,6 +126,9 @@ function harness() {
     }
   }
   return {
+    setDesiredLod: (level: number) => {
+      desiredLod = level;
+    },
     backgroundStars: false,
     backgroundGalaxy: false,
     loadCore: async () => ({
@@ -129,7 +144,7 @@ function harness() {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
-    solar:()=>solar,
+    solar: () => solar,
     focusCalls: () => focusCalls,
     trails: () => trails,
     setPick: (id: string | undefined) => {
@@ -612,18 +627,186 @@ test("cancelled module loading does not initialize WASM or start a renderer", as
   assert.deepEqual(phases, ["加载三维核心模块"]);
 });
 
+test("solar configuration is published on startup and survives selection, overview and visual upgrades", async () => {
+  for (const custom of [
+    undefined,
+    {
+      ...solarWorkspaceSettings(),
+      surfaceGain: 0.8,
+      temperatureMK: 2,
+      observationStyle: 0,
+    },
+  ]) {
+    const fixtures = harness();
+    const app = await createWorkspace(
+      "#test",
+      () => {},
+      new AbortController().signal,
+      {
+        ...fixtures,
+        stellarSettings: custom,
+        fetch: async (input) =>
+          new Response(sample(String(input).includes("type=ori"))),
+      },
+    );
+    try {
+      const expected = solarWorkspaceSettings(custom);
+      assert.ok(
+        fixtures.solar().length > 0,
+        "startup must publish solar settings before selection",
+      );
+      assert.deepEqual(fixtures.solar().at(-1), expected);
+      await app.select("sun");
+      app.overview();
+      await app.select("earth");
+      await app.select("sun");
+      for (const settings of fixtures.solar())
+        assert.deepEqual(settings, expected);
+      assert.ok(
+        fixtures
+          .visuals()
+          .filter((v) => v.id === "sun")
+          .every((v) => !v.spec.faceAssets),
+        "Sun never switches to NASA photograph faces",
+      );
+    } finally {
+      await app.dispose();
+    }
+  }
+});
 
-test("solar configuration is published on startup and survives selection, overview and visual upgrades",async()=>{
- for(const custom of [undefined,{...solarWorkspaceSettings(),surfaceGain:.8,temperatureMK:2,observationStyle:0}]){
-  const fixtures=harness();
-  const app=await createWorkspace('#test',()=>{},new AbortController().signal,{...fixtures,stellarSettings:custom,fetch:async input=>new Response(sample(String(input).includes('type=ori')))});
-  try{
-   const expected=solarWorkspaceSettings(custom);
-   assert.ok(fixtures.solar().length>0,'startup must publish solar settings before selection');
-   assert.deepEqual(fixtures.solar().at(-1),expected);
-   await app.select('sun');app.overview();await app.select('earth');await app.select('sun');
-   for(const settings of fixtures.solar())assert.deepEqual(settings,expected);
-   assert.ok(fixtures.visuals().filter(v=>v.id==='sun').every(v=>!v.spec.faceAssets),'Sun never switches to NASA photograph faces');
-  }finally{await app.dispose();}
- }
+test("shared stellar LOD keeps updating while galaxy is disabled", async () => {
+  const original = StarfieldSource.prototype.setLod;
+  const levels: number[] = [];
+  StarfieldSource.prototype.setLod = function (level: number) {
+    levels.push(level);
+    return original.call(this, level);
+  };
+  const fixtures = harness();
+  let latest: SolarSnapshot | undefined;
+  const app = await createWorkspace(
+    "#test",
+    (state) => {
+      latest = state;
+    },
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    fixtures.setDesiredLod(6);
+    fixtures.step(1000);
+    assert.ok(levels.includes(6));
+    assert.equal(latest?.galaxy.enabled, false);
+  } finally {
+    await app.dispose();
+    StarfieldSource.prototype.setLod = original;
+  }
+});
+
+test("galaxy enable requests manifest and disabling aborts without old preview assets", async () => {
+  const fixtures = harness();
+  const requests: string[] = [];
+  let manifestSignal: AbortSignal | undefined;
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input, options) => {
+        const path = String(input);
+        requests.push(path);
+        if (path === "/api/galaxy-manifest") {
+          manifestSignal = options?.signal as AbortSignal;
+          return new Promise<Response>((_resolve, reject) =>
+            manifestSignal!.addEventListener(
+              "abort",
+              () => reject(Error("cancelled")),
+              { once: true },
+            ),
+          );
+        }
+        return new Response(sample(path.includes("type=ori")));
+      },
+    },
+  );
+  try {
+    app.galaxy(true);
+    assert.ok(requests.includes("/api/galaxy-manifest"));
+    assert.equal(manifestSignal?.aborted, false);
+    app.galaxy(false);
+    assert.equal(manifestSignal?.aborted, true);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(requests.every((path) => !path.includes("milkyway-preview")));
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("observation FOV SDK updates real WASM and rejects invalid values", async () => {
+  const fixtures = harness();
+  let latest: SolarSnapshot | undefined;
+  const app = await createWorkspace(
+    "#test",
+    (state) => {
+      latest = state;
+    },
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    app.fieldOfView(22);
+    assert.equal(latest?.fovDegrees, 22);
+    assert.equal(
+      (
+        fixtures.core() as HostCore & { camera_fov_degrees(): number }
+      ).camera_fov_degrees(),
+      22,
+    );
+    for (const value of [NaN, Infinity, 9, 101])
+      assert.throws(() => app.fieldOfView(value));
+    assert.equal(
+      (
+        fixtures.core() as HostCore & { camera_fov_degrees(): number }
+      ).camera_fov_degrees(),
+      22,
+    );
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("null environment status before first frame does not prevent workspace startup", async () => {
+  const fixtures = harness(true);
+  let latest: SolarSnapshot | undefined;
+  const app = await createWorkspace(
+    "#test",
+    (state) => {
+      latest = state;
+    },
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    assert.equal(latest?.error, "");
+    assert.equal(latest?.active, true);
+    fixtures.setDesiredLod(4);
+    fixtures.step(1000);
+    assert.equal(latest?.galaxy.desiredLod, 4);
+    assert.equal(latest?.error, "");
+  } finally {
+    await app.dispose();
+  }
 });

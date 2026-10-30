@@ -22,9 +22,13 @@ pub use deep_space::EnvironmentSpec;
 mod starfield;
 pub use starfield::StarfieldSpec;
 #[cfg(feature = "browser-render")]
+mod deep_lod;
+#[cfg(feature = "browser-render")]
 mod deep_render;
 #[cfg(feature = "browser-render")]
 mod face_texture;
+#[cfg(feature = "browser-render")]
+mod hdr_assets;
 mod orbit_lines;
 mod picking;
 #[cfg(feature = "browser-render")]
@@ -121,6 +125,8 @@ pub struct Core {
     states: HashMap<String, ObjectState>,
     focus: Option<(String, String)>,
     camera_view: String,
+    camera_fov: Option<f32>,
+    camera_fov_owner: Option<String>,
     focus_revision: u64,
     trajectories: HashMap<String, Vec<[f64; 3]>>,
     trajectory_epochs: HashMap<String, Vec<f64>>,
@@ -522,6 +528,26 @@ impl Core {
     pub fn focus_revision(&self) -> u64 {
         self.focus_revision
     }
+    pub fn camera_fov_degrees(&self) -> f32 {
+        self.camera_fov.unwrap_or(45.0)
+    }
+    pub fn set_camera_fov(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        degrees: f32,
+    ) -> Result<(), CoreError> {
+        let permissions = self.authorize(session, plugin)?;
+        if !permissions.camera_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !degrees.is_finite() || !(10.0..=100.0).contains(&degrees) {
+            return Err(CoreError::InvalidState);
+        }
+        self.camera_fov = Some(degrees);
+        self.camera_fov_owner = Some(session.to_owned());
+        Ok(())
+    }
     pub fn camera_view(&self) -> &str {
         &self.camera_view
     }
@@ -561,6 +587,10 @@ impl Core {
     }
 
     pub fn release_session(&mut self, id: &str) {
+        if self.camera_fov_owner.as_deref() == Some(id) {
+            self.camera_fov = None;
+            self.camera_fov_owner = None;
+        }
         if self.environment.as_ref().is_some_and(|v| v.owner == id) {
             self.environment = None;
             self.environment_status = serde_json::json!({"phase":"disabled"});
@@ -645,3 +675,44 @@ mod solar_surface;
 
 #[cfg(feature = "browser-render")]
 mod camera_collision;
+
+#[cfg(test)]
+mod fov_tests {
+    use super::*;
+    #[test]
+    fn fov_is_authorized_bounded_and_released_without_refocus() {
+        let mut c = Core::default();
+        assert_eq!(c.camera_fov_degrees(), 45.0);
+        c.open_session_with_permissions(
+            "camera",
+            "plugin",
+            SessionPermissions {
+                camera_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        c.open_session_with_permissions("reader", "reader", SessionPermissions::default())
+            .unwrap();
+        let revision = c.focus_revision();
+        assert_eq!(
+            c.set_camera_fov("reader", "reader", 20.0),
+            Err(CoreError::PermissionDenied)
+        );
+        for value in [f32::NAN, f32::INFINITY, 9.99, 100.01] {
+            assert_eq!(
+                c.set_camera_fov("camera", "plugin", value),
+                Err(CoreError::InvalidState)
+            );
+        }
+        for value in [10.0, 100.0, 30.0] {
+            c.set_camera_fov("camera", "plugin", value).unwrap();
+            assert_eq!(c.camera_fov_degrees(), value);
+            assert_eq!(c.focus_revision(), revision);
+        }
+        c.release_session("reader");
+        assert_eq!(c.camera_fov_degrees(), 30.0);
+        c.release_session("camera");
+        assert_eq!(c.camera_fov_degrees(), 45.0);
+    }
+}

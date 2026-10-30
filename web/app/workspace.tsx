@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {solarWorkspaceSettings,restoreSolarWorkspaceSettings} from "../lib/solar-settings";
+import {
+  solarWorkspaceSettings,
+  restoreSolarWorkspaceSettings,
+} from "../lib/solar-settings";
 import WorkspaceView from "./workspace-view";
 import {
   createWorkspace,
@@ -11,7 +14,9 @@ import {
 
 export default function Workspace() {
   const [state, setState] = useState(initialSnapshot);
-  const [stellarSettings,setStellarSettings]=useState(solarWorkspaceSettings);
+  const [stellarSettings, setStellarSettings] = useState(
+    solarWorkspaceSettings,
+  );
   const [actionError, setActionError] = useState("");
   const actionRevision = useRef(0);
   const [search, setSearch] = useState("");
@@ -29,14 +34,18 @@ export default function Workspace() {
     };
     // Scrollable HTML controls overlay the canvas. Keep their wheel events out
     // of winit's window-level input listeners while preserving native scrolling.
-    const uiWheel = (event:WheelEvent) => {
-      if(event.target instanceof Element && event.target.closest("#info-panel,#catalog-panel,#time-panel")) event.stopImmediatePropagation();
+    const uiWheel = (event: WheelEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("#info-panel,#catalog-panel,#time-panel")
+      )
+        event.stopImmediatePropagation();
     };
-    window.addEventListener("wheel",uiWheel,{capture:true,passive:true});
+    window.addEventListener("wheel", uiWheel, { capture: true, passive: true });
     window.addEventListener("pagehide", leave);
     return () => {
       mounted.current = false;
-      window.removeEventListener("wheel",uiWheel,true);
+      window.removeEventListener("wheel", uiWheel, true);
       window.removeEventListener("pagehide", leave);
       leave();
     };
@@ -75,9 +84,14 @@ export default function Workspace() {
       phase: "正在进入太阳系工作区",
     }));
     try {
-      let initialSolar=solarWorkspaceSettings();
-      try {initialSolar=restoreSolarWorkspaceSettings(localStorage.getItem("spaceeyes.solar-tuning.v1"));}
-      catch(error){setActionError(`本机太阳配置无效，已采用推荐参数：${String(error)}`);}
+      let initialSolar = solarWorkspaceSettings();
+      try {
+        initialSolar = restoreSolarWorkspaceSettings(
+          localStorage.getItem("spaceeyes.solar-tuning.v1"),
+        );
+      } catch (error) {
+        setActionError(`本机太阳配置无效，已采用推荐参数：${String(error)}`);
+      }
       setStellarSettings(initialSolar);
       runtime.current = await createWorkspace(
         "#spaceeyes-canvas",
@@ -118,8 +132,16 @@ export default function Workspace() {
   return (
     <WorkspaceView
       stellarSettings={stellarSettings}
-      onStellar={(settings)=>{void action(value=>{const next=solarWorkspaceSettings(settings);value.tuneStellar(next);setStellarSettings(next);});}}
+      onStellar={(settings) => {
+        void action((value) => {
+          const next = solarWorkspaceSettings(settings);
+          value.tuneStellar(next);
+          setStellarSettings(next);
+        });
+      }}
       galaxy={state.galaxy}
+      fovDegrees={state.fovDegrees}
+      onFov={(degrees) => action((value) => value.fieldOfView(degrees))}
       onGalaxy={() => action((value) => value.galaxy(!state.galaxy.enabled))}
       onRetryGalaxy={() => action((value) => value.galaxy(true))}
       starfield={state.starfield}

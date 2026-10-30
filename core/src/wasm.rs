@@ -208,6 +208,14 @@ impl WasmCore {
             .set_layers(session, plugin, labels, trajectories)
             .map_err(|e| format!("{e:?}"))
     }
+    pub fn camera_fov(&mut self, session: &str, plugin: &str, degrees: f32) -> Result<(), String> {
+        self.lock()?
+            .set_camera_fov(session, plugin, degrees)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn camera_fov_degrees(&self) -> Result<f32, String> {
+        Ok(self.lock()?.camera_fov_degrees())
+    }
     pub fn camera_view(&mut self, session: &str, plugin: &str, mode: &str) -> Result<(), String> {
         self.lock()?
             .set_camera_view(session, plugin, mode)

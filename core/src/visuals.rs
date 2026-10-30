@@ -100,7 +100,7 @@ impl AssetDescriptor {
         let lower = path.to_ascii_lowercase();
         let extensions: &[&str] = match self.kind {
             AssetKind::Model => &[".glb", ".gltf"],
-            AssetKind::Texture => &[".png", ".jpg", ".jpeg", ".webp"],
+            AssetKind::Texture => &[".png", ".jpg", ".jpeg", ".webp", ".sehdr"],
         };
         extensions
             .iter()

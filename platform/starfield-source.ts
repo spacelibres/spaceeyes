@@ -25,6 +25,7 @@ export class StarfieldSource {
   #generation = 0;
   #closed = false;
   #enabled = false;
+  #lod: number | undefined;
   #loading = false;
   #pending: Promise<void> = Promise.resolve();
   #update: (status: StarfieldProgress) => void;
@@ -57,6 +58,15 @@ export class StarfieldSource {
       { fetch: options.fetch, cacheBytes: 0 },
     );
     ctx.onDispose(() => this.dispose());
+  }
+  setLod(level: number): Promise<void> {
+    if (!Number.isInteger(level) || level < 0 || level > 6)
+      return Promise.reject(Error("invalid starfield LOD"));
+    if (level === this.#lod) return this.#pending;
+    this.#lod = level;
+    if (!this.#enabled) return Promise.resolve();
+    this.#enabled = false;
+    return this.enable(true);
   }
   status(): StarfieldProgress {
     return {
@@ -96,11 +106,17 @@ export class StarfieldSource {
     const live = () =>
       !this.#closed && generation === this.#generation && !signal.aborted;
     this.#emit();
+    const entries = this.#entries.filter(
+      (e) =>
+        this.#lod === undefined ||
+        e.file.startsWith("galaxies.") ||
+        Number(e.file.split(".")[1]) <= Math.min(this.#lod, 5),
+    );
     let next = 0;
     this.#pending = Promise.all(
       Array.from({ length: 2 }, async () => {
-        while (live() && next < this.#entries.length) {
-          const entry = this.#entries[next++];
+        while (live() && next < entries.length) {
+          const entry = entries[next++];
           try {
             if (this.#published.has(entry.file)) continue;
             let spec = this.#cache.get(entry.file);
@@ -137,7 +153,10 @@ export class StarfieldSource {
               this.#cache.set(entry.file, spec);
             }
             if (!live()) return;
-            this.#ctx.visual.starfield(entry.file, spec);
+            this.#ctx.visual.starfield(entry.file, {
+              ...spec,
+              kind: entry.file.startsWith("galaxies.") ? "galaxy" : "star",
+            });
             this.#published.add(entry.file);
             this.#emit();
           } catch (error) {

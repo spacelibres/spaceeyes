@@ -1,4 +1,4 @@
-import {snapshotStellarTuning,type StellarTuning} from './stellar-tuning.ts';
+import { snapshotStellarTuning, type StellarTuning } from "./stellar-tuning.ts";
 import { snapshotStarfield, type StarfieldSpec } from "./starfield-contract.ts";
 import {
   snapshotEnvironment,
@@ -33,6 +33,7 @@ export interface PluginContext {
   readonly pluginId: string;
   readonly signal: AbortSignal;
   readonly camera: {
+    fieldOfView(degrees: number): void;
     view(mode: "overview" | "top" | "front" | "side" | "orbit"): void;
     focus(targetId: string): void;
   };
@@ -50,7 +51,7 @@ export interface PluginContext {
     ): void;
     label(targetId: string, text: string): void;
     layers(layers: { labels: boolean; trajectories: boolean }): void;
-    stellar(targetId:string,tuning:StellarTuning):void;
+    stellar(targetId: string, tuning: StellarTuning): void;
     set(targetId: string, spec: VisualSpec): void;
     clear(targetId: string): void;
     status(targetId: string): Readonly<VisualStatus> | null;
@@ -313,12 +314,19 @@ export class PluginHost {
             trajectories: layers.trajectories,
           });
         },
-        stellar(targetId:string,tuning:StellarTuning) {
+        stellar(targetId: string, tuning: StellarTuning) {
           requireCapability("scene.visual");
           validateTargetId(targetId);
-          const snapshot=snapshotStellarTuning(tuning);
-          if(!core?.tuneStellar)throw Error("stellar tuning unavailable");
-          core.tuneStellar(Object.freeze({pluginId:id,sessionId,targetId,tuning:snapshot}));
+          const snapshot = snapshotStellarTuning(tuning);
+          if (!core?.tuneStellar) throw Error("stellar tuning unavailable");
+          core.tuneStellar(
+            Object.freeze({
+              pluginId: id,
+              sessionId,
+              targetId,
+              tuning: snapshot,
+            }),
+          );
         },
         set(targetId: string, spec: VisualSpec) {
           requireCapability("scene.visual");
@@ -353,6 +361,13 @@ export class PluginHost {
         },
       }),
       camera: Object.freeze({
+        fieldOfView(degrees: number) {
+          requireCapability("camera.control");
+          if (!Number.isFinite(degrees) || degrees < 10 || degrees > 100)
+            throw Error("invalid camera FOV");
+          if (!core?.cameraFov) throw Error("camera FOV unavailable");
+          core.cameraFov({ pluginId: id, sessionId, degrees });
+        },
         view(mode: "overview" | "top" | "front" | "side" | "orbit") {
           requireCapability("camera.control");
           if (!core?.cameraView) throw new Error("camera view unavailable");

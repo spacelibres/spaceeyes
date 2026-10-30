@@ -1,5 +1,9 @@
-import {solarWorkspaceSettings} from './solar-settings.ts';
-import {buildStellarTuning} from '../../platform/stellar-tuning.ts';
+import {
+  snapshotEnvironment,
+  type EnvironmentSpec,
+} from "../../platform/environment-contract.ts";
+import { solarWorkspaceSettings } from "./solar-settings.ts";
+import { buildStellarTuning } from "../../platform/stellar-tuning.ts";
 import { PluginHost, type PluginContext } from "../../platform/plugin-host.ts";
 import {
   WasmCorePort,
@@ -37,7 +41,18 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
-  galaxy: { enabled: boolean; phase: string; detail?: string };
+  fovDegrees: number;
+  galaxy: {
+    enabled: boolean;
+    phase: string;
+    detail?: string;
+    desiredLod?: number;
+    readyLod?: number;
+    currentLod?: number;
+    blend?: number;
+    loadedTiles?: number;
+    gpuBytes?: number;
+  };
   starfield: StarfieldProgress;
   startupMs?: number;
   parentId?: string;
@@ -58,6 +73,7 @@ export type SolarSnapshot = {
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
+  fovDegrees: 45,
   galaxy: { enabled: false, phase: "disabled" },
   starfield: {
     enabled: false,
@@ -94,7 +110,8 @@ export const workspaceCatalog = solarCatalog
     parentId: body.parentId ?? undefined,
   }));
 export interface WorkspaceRuntime {
-  tuneStellar(settings:Record<string,number>):void;
+  tuneStellar(settings: Record<string, number>): void;
+  fieldOfView(degrees: number): void;
   galaxy(enabled: boolean): void;
   starfield(enabled: boolean): Promise<void>;
   retryStarfield(): Promise<void>;
@@ -118,7 +135,7 @@ export async function createWorkspace(
   signal: AbortSignal,
   options: {
     onStartup?: (phase: string) => void;
-    stellarSettings?: Record<string,number>;
+    stellarSettings?: Record<string, number>;
     backgroundStars?: boolean;
     backgroundGalaxy?: boolean;
     loadCore?: () => Promise<{
@@ -152,13 +169,93 @@ export async function createWorkspace(
     options.cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const core = new module.WasmCore(),
     host = new PluginHost(new WasmCorePort(core));
-  core.register_asset(
-    "environment:milkyway:4k",
-    "deep-space/milkyway.webp",
-    "texture",
-  );
-  core.register_asset("environment:milkyway:preview", "deep-space/milkyway-preview.webp", "texture");
-  let galaxyPreview = false;
+  let galaxySpec: EnvironmentSpec | undefined;
+  let galaxyGeneration = 0;
+  let galaxyAbort = new AbortController();
+  const loadGalaxy = async () => {
+    const requestSignal = AbortSignal.any([signal, galaxyAbort.signal]);
+    const response = await (options.fetch ?? fetch)("/api/galaxy-manifest", {
+      signal: requestSignal,
+    });
+    if (!response.ok) throw Error("Galaxy manifest unavailable");
+    const manifest = await response.json();
+    signal.throwIfAborted();
+    requestSignal.throwIfAborted();
+    if (
+      manifest.schemaVersion !== 1 ||
+      manifest.tileSize !== 256 ||
+      manifest.border !== 2 ||
+      !/^[a-f0-9]{64}$/.test(manifest.source?.sha256) ||
+      manifest.source.width !== 8192 ||
+      manifest.source.height !== 4096
+    )
+      throw Error("Invalid galaxy manifest");
+    for (const l of manifest.levels)
+      for (const t of l.tiles)
+        if (
+          t.assetId !== `galaxy:l${l.level}:${t.x}:${t.y}` ||
+          t.path !== `deep-space/galaxy-l${l.level}-${t.x}-${t.y}.sehdr`
+        )
+          throw Error("Galaxy tile identity mismatch");
+    if (
+      manifest.diffuse.assetId !== "galaxy:diffuse" ||
+      manifest.specular.assetId !== "galaxy:specular" ||
+      manifest.diffuse.path !== "deep-space/galaxy-diffuse.sehdr" ||
+      manifest.specular.path !== "deep-space/galaxy-specular.sehdr"
+    )
+      throw Error("Galaxy IBL identity mismatch");
+    const records = [
+      ...manifest.levels.flatMap((l: { tiles: unknown[] }) => l.tiles),
+      manifest.diffuse,
+      manifest.specular,
+    ];
+    if (records.length > 1026) throw Error("Galaxy manifest budget");
+    const seen = new Set<string>();
+    for (const r of records) {
+      if (
+        !r ||
+        !/^deep-space\/galaxy-(?:l[0-6]-[0-9]+-[0-9]+|diffuse|specular)\.sehdr$/.test(
+          r.path,
+        ) ||
+        !/^galaxy:(?:l[0-6]:[0-9]+:[0-9]+|diffuse|specular)$/.test(r.assetId) ||
+        !/^[a-f0-9]{64}$/.test(r.sha256) ||
+        !Number.isInteger(r.bytes) ||
+        r.bytes < 16 ||
+        r.bytes > 16 * 1024 * 1024 ||
+        seen.has(r.assetId)
+      )
+        throw Error("Invalid galaxy resource");
+      seen.add(r.assetId);
+    }
+    const spec = snapshotEnvironment({
+      assetId: manifest.levels[0].tiles[0].assetId,
+      frame: "ICRF",
+      intensity: 1,
+      lod: {
+        tileSize: 256,
+        border: 2,
+        levels: manifest.levels.map(
+          (l: {
+            level: number;
+            width: number;
+            height: number;
+            tiles: { x: number; y: number; assetId: string }[];
+          }) => ({
+            ...l,
+            tiles: l.tiles.map((t) => ({ x: t.x, y: t.y, assetId: t.assetId })),
+          }),
+        ),
+        diffuseAssetId: manifest.diffuse.assetId,
+        specularAssetId: manifest.specular.assetId,
+        exposureEv: 0,
+        blackLevel: 0,
+        iblIntensity: 1,
+      },
+    });
+    for (const r of records) core.register_asset(r.assetId, r.path, "texture");
+    galaxySpec = spec;
+    return spec;
+  };
   for (const body of eyesCatalog) {
     const definition = getEyesDefinition(body.id);
     if (definition?.model)
@@ -233,15 +330,36 @@ export async function createWorkspace(
   };
   const emit = () => {
     if (closed) return;
-    if (state.galaxy.enabled && core.environment_status) {
-      const status = JSON.parse(core.environment_status());
-      if (galaxyPreview && status.phase === "ready") {
-        galaxyPreview = false;
-        galaxySdk.visual.environment({assetId: "environment:milkyway:4k", frame: "ICRF", intensity: 1});
-      }
-      if (status && ["pending", "ready", "failed"].includes(status.phase))
+    if (core.environment_status) {
+      const status = JSON.parse(core.environment_status()) ?? {};
+      state.galaxy = {
+        ...state.galaxy,
+        desiredLod: status.desiredLod,
+        readyLod: status.readyLod,
+        currentLod: status.currentLod,
+        blend: status.blend,
+        loadedTiles: status.loadedTiles,
+        gpuBytes: status.gpuBytes,
+      };
+      if (
+        Number.isInteger(status.desiredLod) &&
+        status.desiredLod >= 0 &&
+        status.desiredLod <= 6
+      )
+        void stars?.setLod(status.desiredLod).catch(() => {});
+      if (
+        state.galaxy.enabled &&
+        status &&
+        ["pending", "ready", "failed"].includes(status.phase)
+      )
         state.galaxy = {
           enabled: true,
+          desiredLod: status.desiredLod,
+          readyLod: status.readyLod,
+          currentLod: status.currentLod,
+          blend: status.blend,
+          loadedTiles: status.loadedTiles,
+          gpuBytes: status.gpuBytes,
           phase: status.phase,
           ...(status.detail
             ? { detail: String(status.detail).slice(0, 240) }
@@ -436,7 +554,8 @@ export async function createWorkspace(
                   }
                 : {}),
             });
-          if(body.id === "sun" && stellarSettings) sdk.visual.stellar(body.id,buildStellarTuning(stellarSettings));
+          if (body.id === "sun" && stellarSettings)
+            sdk.visual.stellar(body.id, buildStellarTuning(stellarSettings));
           if (upgrade) detailedBodies.add(body.id);
           sdk.visual.label(
             body.id,
@@ -568,21 +687,40 @@ export async function createWorkspace(
   const runtime: WorkspaceRuntime = {
     tuneStellar(settings) {
       assertLive();
-      const next=solarWorkspaceSettings(settings);
-      const tuning=buildStellarTuning(next);
-      sdk.visual.stellar("sun",tuning);
-      stellarSettings=next;
+      const next = solarWorkspaceSettings(settings);
+      const tuning = buildStellarTuning(next);
+      sdk.visual.stellar("sun", tuning);
+      stellarSettings = next;
+    },
+    fieldOfView(degrees) {
+      assertLive();
+      sdk.camera.fieldOfView(degrees);
+      state.fovDegrees = degrees;
+      emit();
     },
     galaxy(enabled) {
       assertLive();
-      galaxyPreview = enabled;
+      const generation = ++galaxyGeneration;
+      galaxyAbort.abort();
+      galaxyAbort = new AbortController();
       galaxySdk.visual.environment(null);
       if (enabled)
-        galaxySdk.visual.environment({
-          assetId: "environment:milkyway:preview",
-          frame: "ICRF",
-          intensity: 1,
-        });
+        void (galaxySpec ? Promise.resolve(galaxySpec) : loadGalaxy())
+          .then((spec) => {
+            if (closed || generation !== galaxyGeneration || signal.aborted)
+              return;
+            galaxySdk.visual.environment(spec);
+            emit();
+          })
+          .catch((error) => {
+            if (closed || generation !== galaxyGeneration) return;
+            state.galaxy = {
+              enabled: true,
+              phase: "failed",
+              detail: String(error),
+            };
+            emit();
+          });
       state.galaxy = { enabled, phase: enabled ? "pending" : "disabled" };
       emit();
     },
@@ -785,6 +923,7 @@ export async function createWorkspace(
     state.active = true;
     if (options.backgroundGalaxy !== false) runtime.galaxy(true);
     emit();
+    void stars.setLod(0);
     if (options.backgroundStars !== false)
       void stars.enable(true).catch((error) => {
         if (!closed) {

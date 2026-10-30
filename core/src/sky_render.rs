@@ -11,6 +11,8 @@ use bevy::{
 pub(crate) struct SkyMaterial {
     #[uniform(0)]
     observer: Vec4,
+    #[uniform(1)]
+    lod: Vec4,
 }
 impl Material for SkyMaterial {
     fn vertex_shader() -> ShaderRef {
@@ -38,13 +40,18 @@ impl Material for SkyMaterial {
 pub(crate) struct SkyLayer {
     key: (String, String),
     revision: u64,
+    born_seconds: f64,
     mesh: Handle<Mesh>,
     material: Handle<SkyMaterial>,
 }
+// Bevy injects independent ECS resources and queries into this system.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn sync_sky(
     mut commands: Commands,
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
+    time: Option<Res<Time>>,
+    lod: Option<Res<crate::deep_lod::DeepSpaceLod>>,
     cameras: Query<&Transform, With<crate::renderer::DisplayCamera>>,
     existing: Query<(Entity, &SkyLayer)>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -60,6 +67,12 @@ pub(crate) fn sync_sky(
         (-p.y * 1e-13) as f32,
         0.0,
     );
+    let limits = [6.0, 6.4, 6.8, 7.25, 7.58, 7.82, 8.03];
+    let level = lod.as_ref().map_or(6, |l| l.current.min(6)) as usize;
+    let threshold = limits[level];
+    let now = time.as_ref().map_or(0.0, |t| t.elapsed_secs_f64());
+    let next = lod.as_ref().map_or(6, |l| l.ready.min(6)) as usize;
+    let shared_blend = lod.as_ref().map_or(1., |l| l.blend);
     for (entity, layer) in &existing {
         if core
             .starfields
@@ -71,6 +84,12 @@ pub(crate) fn sync_sky(
             materials.remove(layer.material.id());
         } else if let Some(mut m) = materials.get_mut(&layer.material) {
             m.observer = observer;
+            m.lod = Vec4::new(
+                threshold,
+                limits[next],
+                shared_blend,
+                ((now - layer.born_seconds) * 3.0).clamp(0.0, 1.0) as f32,
+            );
         }
     }
     for (key, layer) in &core.starfields {
@@ -83,6 +102,7 @@ pub(crate) fn sync_sky(
         let mut positions = Vec::new();
         let mut colors = Vec::new();
         let mut uv = Vec::new();
+        let mut source = Vec::new();
         let mut indices = Vec::new();
         for (i, p) in layer.spec.positions_km.chunks_exact(3).enumerate() {
             let pos = [
@@ -98,6 +118,14 @@ pub(crate) fn sync_sky(
                 positions.push(pos);
                 colors.push([c[0], c[1], c[2], lum]);
                 uv.push(corner);
+                source.push([
+                    layer.spec.magnitudes[i],
+                    if layer.spec.kind == crate::starfield::StarfieldKind::Galaxy {
+                        1.0f32
+                    } else {
+                        0.0
+                    },
+                ]);
             }
             let b = i as u32 * 4;
             indices.extend([b, b + 1, b + 2, b, b + 2, b + 3]);
@@ -109,9 +137,13 @@ pub(crate) fn sync_sky(
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_1, source);
         mesh.insert_indices(Indices::U32(indices));
         let mesh = meshes.add(mesh);
-        let material = materials.add(SkyMaterial { observer });
+        let material = materials.add(SkyMaterial {
+            observer,
+            lod: Vec4::new(threshold, limits[next], shared_blend, 0.),
+        });
         commands.spawn((
             Mesh3d(mesh.clone()),
             MeshMaterial3d(material.clone()),
@@ -120,6 +152,7 @@ pub(crate) fn sync_sky(
             SkyLayer {
                 key: key.clone(),
                 revision: layer.revision,
+                born_seconds: now,
                 mesh,
                 material,
             },
@@ -149,6 +182,7 @@ mod tests {
                 "s",
                 "a",
                 Some(crate::StarfieldSpec {
+                    kind: crate::starfield::StarfieldKind::Star,
                     frame: "ICRF".into(),
                     source: "test".into(),
                     positions_km: vec![1e13; 30],

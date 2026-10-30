@@ -1,4 +1,5 @@
 export interface StarfieldSpec {
+  readonly kind?: "star" | "galaxy";
   readonly frame: "ICRF";
   readonly source: string;
   readonly positionsKm: readonly number[];
@@ -10,6 +11,7 @@ export function snapshotStarfield(
   spec: StarfieldSpec,
 ): Readonly<StarfieldSpec> {
   const keys = [
+    "kind",
     "frame",
     "source",
     "positionsKm",
@@ -23,6 +25,9 @@ export function snapshotStarfield(
     Reflect.ownKeys(spec).some(
       (k) => typeof k !== "string" || !keys.includes(k),
     ) ||
+    (spec.kind !== undefined &&
+      spec.kind !== "star" &&
+      spec.kind !== "galaxy") ||
     spec.frame !== "ICRF" ||
     typeof spec.source !== "string" ||
     !spec.source.trim() ||
@@ -64,6 +69,7 @@ export function snapshotStarfield(
       throw new Error("invalid starfield point");
   }
   return Object.freeze({
+    ...(spec.kind === undefined ? {} : { kind: spec.kind }),
     frame: "ICRF",
     source: spec.source,
     positionsKm: Object.freeze([...spec.positionsKm]),

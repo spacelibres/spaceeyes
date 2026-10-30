@@ -1,0 +1,30 @@
+{
+  "directionalSamples": 384,
+  "directionalCosine": 0.9000719831718968,
+  "roughnessVariance": [
+    0.00009412832564310567,
+    0.0000743642772079438,
+    0.0000485364628551988,
+    0.000029325961171333105,
+    0.00001813800803036867,
+    0.000011924665863495936,
+    0.000005903391225998565,
+    9.825349412427358e-7
+  ],
+  "source": {
+    "url": "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_8k.exr",
+    "sha256": "361d1961647af073b3b3e4aea4fca85f15b3c9d915e0c8c4befb02520dadd10a",
+    "bytes": 137307727,
+    "width": 8192,
+    "height": 4096
+  },
+  "tiles": 684,
+  "hdrChannelsAbove1": 0,
+  "sourceRangeNote": "Official NASA source RGB range is [0,1]; no artificial gain applied. Synthetic codec tests independently verify >1 retention.",
+  "exactZeroChannels": 79671,
+  "minHalfBits": 0,
+  "maxHalfBits": 15360,
+  "gutters": "every edge pixel including longitude wrap and pole clamp verified",
+  "ibl": "Filament cmgen v1.79.0 1024 samples, no-mirror; diffuse32 and specular128 full8mips",
+  "passed": true
+}

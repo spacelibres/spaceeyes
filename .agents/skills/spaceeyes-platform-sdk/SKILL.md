@@ -178,3 +178,11 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 
 网页0.0.32统一太阳入口：宿主初始化就发布已恢复参数，不等到选择或面板打开；旧SDK模式保持兼容，但工作区规范化为同一观测显示。太阳表面保留同一个轻量材质，远景通过shader平滑减细节并跳过噪声，不切回照片；近景日冕/日珥仍独立距离门控并回收。宿主不再给Sun绑定NASA六面图；其他天体按需资源规则不变。
+
+## 银河七级 HDR 与观察视场
+
+`camera.fieldOfView(degrees)` 需 `camera.control`，有限值10～100度，默认45度；改变观察视场不会改变聚焦修订或移动科学坐标。滚轮继续控制相机距离。
+
+`visual.environment(spec)` 的可选 `lod` 按 `platform/environment-contract.ts` 严格定义七级128×64到8192×4096、256像素瓦片及2像素边缘。只能引用宿主登记资源，不接受URL、路径、shader或任意Bevy结构。线性半浮点图像、漫反射与GGX镜面环境图均由服务器提供，不进入WASM。曝光[-6,6]EV，黑位[0,0.02]，IBL强度[0,2]。停用释放渲染资源。
+
+`visual.starfield` 可选 `kind: 'star' | 'galaxy'`，默认star；保留源位置与星等。`StarfieldSource.setLod(0..6)` 控制累计星表读取，缓存仍受五万点上限约束；六份恒星文件不代表六个LOD，galaxies文件是独立角色。恒星与银河共享投影与层级过渡；迟到点层另有短渐入，关闭银河不关闭恒星LOD。不得把银河背景伪造成近距离三维视差。

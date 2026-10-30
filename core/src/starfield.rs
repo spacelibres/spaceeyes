@@ -3,12 +3,21 @@ use std::sync::Arc;
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct StarfieldSpec {
+    #[serde(default)]
+    pub kind: StarfieldKind,
     pub frame: String,
     pub source: String,
     pub positions_km: Vec<f64>,
     pub colors_rgb: Vec<f32>,
     pub magnitudes: Vec<f32>,
     pub absolute_magnitudes: Vec<f32>,
+}
+#[derive(Debug, Default, Clone, Copy, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StarfieldKind {
+    #[default]
+    Star,
+    Galaxy,
 }
 impl StarfieldSpec {
     pub fn validate(&self) -> Result<(), CoreError> {
@@ -113,6 +122,7 @@ mod tests {
     use super::*;
     fn spec(n: usize) -> StarfieldSpec {
         StarfieldSpec {
+            kind: StarfieldKind::Star,
             frame: "ICRF".into(),
             source: "test".into(),
             positions_km: vec![1.; n * 3],

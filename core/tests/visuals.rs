@@ -265,3 +265,27 @@ fn multipart_visual_ready_waits_for_both_rings_and_failure_is_terminal() {
         VisualPhase::Pending
     );
 }
+
+#[test]
+fn trusted_host_registers_external_hdr_without_allowing_urls() {
+    use spaceeyes_core::{AssetDescriptor, AssetKind, Core, CoreError};
+    let mut core = Core::default();
+    core.register_asset(
+        "galaxy:l0:0:0",
+        AssetDescriptor {
+            path: "deep-space/galaxy-l0-0-0.sehdr".into(),
+            kind: AssetKind::Texture,
+        },
+    )
+    .unwrap();
+    assert_eq!(
+        core.register_asset(
+            "galaxy:unsafe",
+            AssetDescriptor {
+                path: "https://external.test/image.sehdr".into(),
+                kind: AssetKind::Texture
+            }
+        ),
+        Err(CoreError::InvalidAsset)
+    );
+}

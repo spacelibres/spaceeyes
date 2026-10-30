@@ -107,8 +107,19 @@ pub(crate) fn create_browser_app(
         MaterialPlugin::<crate::stellar_render::StellarMaterial>::default(),
         MaterialPlugin::<crate::stellar_render::ProminenceMaterial>::default(),
     ))
-    .add_systems(Update, crate::deep_render::sync_environment)
-    .add_systems(Update, crate::sky_render::sync_sky.after(sync_scene))
+    .register_asset_loader(crate::hdr_assets::SeHdrLoader)
+    .init_resource::<crate::deep_lod::DeepSpaceLod>()
+    .add_systems(Update, crate::deep_lod::update_lod.after(update_focus))
+    .add_systems(
+        Update,
+        crate::deep_render::sync_environment.after(crate::deep_lod::update_lod),
+    )
+    .add_systems(
+        Update,
+        crate::sky_render::sync_sky
+            .after(sync_scene)
+            .after(crate::deep_render::sync_environment),
+    )
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
     .init_resource::<crate::solar_surface::SolarSurfaceLod>()
@@ -250,6 +261,11 @@ fn update_focus(
     let Ok(mut core) = store.0.lock() else {
         return;
     };
+    for (_, mut projection) in camera.iter_mut() {
+        if let Projection::Perspective(p) = &mut *projection {
+            p.fov = core.camera_fov_degrees().to_radians();
+        }
+    }
     let old_settings = settings.clone();
     let key = format!(
         "{}:{}:{}",

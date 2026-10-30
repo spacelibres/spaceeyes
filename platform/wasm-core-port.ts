@@ -4,6 +4,7 @@ import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
+  camera_fov?(session: string, plugin: string, degrees: number): void;
   set_environment?(plugin: string, session: string, specJson?: string): void;
   environment_status?(): string;
   set_starfield?(
@@ -52,7 +53,12 @@ export interface WasmCoreBinding {
     playing: boolean,
     rate: number,
   ): void;
-  tune_stellar?(session:string,plugin:string,target:string,tuningJson:string):void;
+  tune_stellar?(
+    session: string,
+    plugin: string,
+    target: string,
+    tuningJson: string,
+  ): void;
   set_visual(
     session: string,
     plugin: string,
@@ -63,6 +69,18 @@ export interface WasmCoreBinding {
 }
 
 export class WasmCorePort implements CorePort {
+  cameraFov(request: {
+    pluginId: string;
+    sessionId: string;
+    degrees: number;
+  }): void {
+    if (!this.#binding.camera_fov) throw Error("camera FOV unavailable");
+    this.#binding.camera_fov(
+      request.sessionId,
+      request.pluginId,
+      request.degrees,
+    );
+  }
   environment(
     request: Parameters<NonNullable<CorePort["environment"]>>[0],
   ): void {
@@ -99,9 +117,16 @@ export class WasmCorePort implements CorePort {
   releaseSession(sessionId: string): void {
     this.#binding.release_session(sessionId);
   }
-  tuneStellar(request:Parameters<NonNullable<CorePort["tuneStellar"]>>[0]):void {
-    if(!this.#binding.tune_stellar)throw Error("stellar tuning unavailable");
-    this.#binding.tune_stellar(request.sessionId,request.pluginId,request.targetId,JSON.stringify(request.tuning));
+  tuneStellar(
+    request: Parameters<NonNullable<CorePort["tuneStellar"]>>[0],
+  ): void {
+    if (!this.#binding.tune_stellar) throw Error("stellar tuning unavailable");
+    this.#binding.tune_stellar(
+      request.sessionId,
+      request.pluginId,
+      request.targetId,
+      JSON.stringify(request.tuning),
+    );
   }
   setVisual(
     request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null },

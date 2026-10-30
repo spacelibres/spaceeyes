@@ -5,6 +5,35 @@ pub struct EnvironmentSpec {
     pub asset_id: String,
     pub frame: String,
     pub intensity: f32,
+    #[serde(default)]
+    pub lod: Option<EnvironmentLod>,
+}
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnvironmentLod {
+    pub tile_size: u32,
+    pub border: u32,
+    pub levels: Vec<EnvironmentLevel>,
+    pub diffuse_asset_id: String,
+    pub specular_asset_id: String,
+    pub exposure_ev: f32,
+    pub black_level: f32,
+    pub ibl_intensity: f32,
+}
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnvironmentLevel {
+    pub level: u32,
+    pub width: u32,
+    pub height: u32,
+    pub tiles: Vec<EnvironmentTile>,
+}
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct EnvironmentTile {
+    pub x: u32,
+    pub y: u32,
+    pub asset_id: String,
 }
 #[derive(Debug, Clone)]
 pub(crate) struct EnvironmentLayer {
@@ -48,6 +77,50 @@ impl Core {
                 != AssetKind::Texture
             {
                 return Err(CoreError::InvalidAsset);
+            }
+        }
+        if let Some(lod) = spec.as_ref().and_then(|s| s.lod.as_ref()) {
+            if lod.tile_size != 256
+                || lod.border != 2
+                || lod.levels.len() != 7
+                || !lod.exposure_ev.is_finite()
+                || !(-6.0..=6.0).contains(&lod.exposure_ev)
+                || !lod.black_level.is_finite()
+                || !(0.0..=0.02).contains(&lod.black_level)
+                || !lod.ibl_intensity.is_finite()
+                || !(0.0..=2.0).contains(&lod.ibl_intensity)
+            {
+                return Err(CoreError::InvalidVisual);
+            }
+            let mut ids = vec![&lod.diffuse_asset_id, &lod.specular_asset_id];
+            for (i, l) in lod.levels.iter().enumerate() {
+                let (w, h) = (128u32 << i, 64u32 << i);
+                if l.level != i as u32
+                    || l.width != w
+                    || l.height != h
+                    || l.tiles.len() != (w.div_ceil(256) * h.div_ceil(256)) as usize
+                {
+                    return Err(CoreError::InvalidVisual);
+                }
+                let mut seen = std::collections::HashSet::new();
+                for t in &l.tiles {
+                    if t.x >= w.div_ceil(256) || t.y >= h.div_ceil(256) || !seen.insert((t.x, t.y))
+                    {
+                        return Err(CoreError::InvalidVisual);
+                    }
+                    ids.push(&t.asset_id);
+                }
+            }
+            if ids.len() > 1026 {
+                return Err(CoreError::CapacityExceeded);
+            }
+            if spec.as_ref().unwrap().asset_id != lod.levels[0].tiles[0].asset_id {
+                return Err(CoreError::InvalidVisual);
+            }
+            for id in ids {
+                if self.assets.get(id).ok_or(CoreError::UnknownAsset)?.kind != AssetKind::Texture {
+                    return Err(CoreError::InvalidAsset);
+                }
             }
         }
         let next_revision = self
@@ -95,6 +168,7 @@ mod tests {
             asset_id: "sky".into(),
             frame: "ICRF".into(),
             intensity: 1.,
+            lod: None,
         };
         core.set_environment("a", "a", Some(spec())).unwrap();
         assert_eq!(
