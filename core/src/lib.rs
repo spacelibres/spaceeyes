@@ -16,8 +16,10 @@ pub struct TrajectoryStyle {
 mod runtime;
 #[cfg(feature = "bevy-runtime")]
 pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
+mod camera_intent;
 #[cfg(feature = "browser-render")]
 mod camera_motion;
+pub use camera_intent::CameraObservation;
 mod clock;
 mod deep_space;
 #[cfg(feature = "browser-render")]
@@ -128,6 +130,9 @@ pub struct Core {
     objects: HashMap<String, String>,
     states: HashMap<String, ObjectState>,
     focus: Option<(String, String)>,
+    observation: Option<(String, CameraObservation)>,
+    camera_input: [f32; 3],
+    camera_input_owner: Option<String>,
     camera_view: String,
     camera_fov: Option<f32>,
     camera_fov_owner: Option<String>,
@@ -230,6 +235,7 @@ impl Core {
         self.visual_statuses.remove(object_id);
         self.visual_parts.remove(object_id);
         if self.focused_object() == Some(object_id) {
+            self.observation = None;
             self.focus = None;
         }
         Ok(())
@@ -393,6 +399,7 @@ impl Core {
             .focus_revision
             .checked_add(1)
             .ok_or(CoreError::CapacityExceeded)?;
+        self.observation = None;
         self.focus = Some((session_id.to_owned(), target_id.to_owned()));
         Ok(())
     }
@@ -602,6 +609,7 @@ impl Core {
             return Err(CoreError::InvalidState);
         }
         if mode == "overview" {
+            self.observation = None;
             self.focus = None;
         }
         self.camera_view = mode.to_owned();
@@ -614,10 +622,22 @@ impl Core {
     #[cfg(feature = "browser-render")]
     pub(crate) fn camera_zoom_to_overview(&mut self) {
         self.focus = None;
+        self.observation = None;
         self.camera_view = "overview".into();
     }
 
     pub fn release_session(&mut self, id: &str) {
+        if self.camera_input_owner.as_deref() == Some(id) {
+            self.camera_input = [0.; 3];
+            self.camera_input_owner = None;
+        }
+        if self
+            .observation
+            .as_ref()
+            .is_some_and(|(owner, _)| owner == id)
+        {
+            self.observation = None;
+        }
         if self.camera_fov_owner.as_deref() == Some(id) {
             self.camera_fov = None;
             self.camera_fov_owner = None;
@@ -657,6 +677,7 @@ impl Core {
             .as_ref()
             .is_some_and(|(owner, target)| owner == id || !self.objects.contains_key(target))
         {
+            self.observation = None;
             self.focus = None;
         }
     }

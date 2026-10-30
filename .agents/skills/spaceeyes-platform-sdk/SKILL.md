@@ -194,3 +194,9 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 无originId的点是ICRF绝对位置；有originId表示数据插件在每个采样时刻扣除父体位置的相对轨迹，显示时平移到父体当前位置，不可称为惯性历史。数据插件负责真实覆盖、阶段和采样；Rust按统一TDB时刻绘制过去窗口并沿时间渐隐，不画未来、不制造闭环，暂停/倒放/跳时可复现。不能传任意mesh/material/shader。
 
 卫星拖尾与行星轨道是独立显示开关。新增界面入口不授权插件绕过核心时间、坐标或资源归属。
+
+## 相机观察和输入意图
+
+`camera.observe(targetId, mode, options?)`需要camera.control。nearby仅目标；system需要options.members为最多128个唯一已登记当前有效对象ID且含targetId；follow需要不同于targetId的有效followId，不接受members。System以选中对象为中心取景，Follow仍锚定选中对象但随指定对象方向变化，不等于再次focus。`focus`恢复nearby，overview清理观察模式；退出清理会话意图。
+
+`camera.orbit(yawRadians,pitchRadians)`每分量有限[-0.5,0.5]；`camera.zoom(delta)`有限[-1,1]，负值靠近。核心有界累计，每帧只消费一次并执行惯性和碰撞，不授予Transform、原始Bevy对象或穿透能力。鼠标、按钮、键盘、触摸经同一受控意图协作，不能绕过核心科学坐标。

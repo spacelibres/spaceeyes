@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import SolarTuningPanel from "./solar-tuning-panel";
+import { TouchCamera } from "../lib/touch-camera";
 import { SceneGesture } from "../lib/scene-gesture";
 import type { StarfieldProgress } from "../../platform/starfield-source";
 export type CatalogEntry = {
@@ -53,13 +54,24 @@ export type WorkspaceViewProps = {
   view: string;
   labels: boolean;
   trajectories: boolean;
+  moons?: boolean;
+  spacecraft?: boolean;
+  onGroups?: (moons: boolean, spacecraft: boolean) => void;
   trails: boolean;
   onStart: () => void;
   onStop: () => void;
   onSelect: (id: string) => void;
   onPick: (u: number, v: number) => Promise<boolean>;
   onFocus: () => void;
-  onFollow: () => void;
+  onFollow: (referenceId?: string) => void;
+  observationMode?: "nearby" | "system" | "follow";
+  followId?: string;
+  onObservation?: (
+    mode: "nearby" | "system" | "follow",
+    referenceId?: string,
+  ) => void;
+  onOrbit?: (yaw: number, pitch: number) => void;
+  onZoom?: (delta: number) => void;
   onOverview: () => void;
   onView: (v: string) => void;
   onPlay: () => void;
@@ -78,12 +90,14 @@ export type WorkspaceViewProps = {
   onTrails: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
+  const touch = useRef(new TouchCamera());
   const gesture = useRef(new SceneGesture());
   const pickRevision = useRef(0);
   useEffect(
     () => () => {
       pickRevision.current++;
       gesture.current.cancel();
+      touch.current.clear();
     },
     [p.active],
   );
@@ -249,13 +263,82 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         <section className="viewport" aria-label="Bevy太阳系三维画布">
           <canvas
             id="spaceeyes-canvas"
+            tabIndex={0}
+            aria-label="三维场景：方向键环绕，加减缩放，Home近景，空格播放"
+            onKeyDown={(event) => {
+              if (!p.active || p.busy) return;
+              const orbit: Record<string, [number, number]> = {
+                ArrowLeft: [-0.06, 0],
+                ArrowRight: [0.06, 0],
+                ArrowUp: [0, -0.06],
+                ArrowDown: [0, 0.06],
+              };
+              if (orbit[event.key]) p.onOrbit?.(...orbit[event.key]);
+              else if (event.key === "+" || event.key === "=")
+                p.onZoom?.(-0.15);
+              else if (event.key === "-") p.onZoom?.(0.15);
+              else if (event.key === "Home") p.onObservation?.("nearby");
+              else if (event.key === " ") p.onPlay();
+              else return;
+              event.preventDefault();
+              event.stopPropagation();
+            }}
             style={{ visibility: p.active ? "visible" : "hidden" }}
-            onPointerDown={(event) => gesture.current.begin(event)}
-            onPointerMove={(event) => gesture.current.move(event)}
-            onPointerCancel={() => gesture.current.cancel()}
-            onPointerLeave={() => gesture.current.cancel()}
+            onPointerDown={(event) => {
+              if (
+                touch.current.begin(
+                  event.pointerId,
+                  event.clientX,
+                  event.clientY,
+                  event.pointerType,
+                )
+              ) {
+                event.preventDefault();
+                event.stopPropagation();
+                gesture.current.cancel();
+                event.currentTarget.setPointerCapture(event.pointerId);
+                return;
+              }
+              event.currentTarget.focus();
+              gesture.current.begin(event);
+            }}
+            onPointerMove={(event) => {
+              if (event.pointerType === "touch") {
+                event.preventDefault();
+                event.stopPropagation();
+                const intent = touch.current.move(
+                  event.pointerId,
+                  event.clientX,
+                  event.clientY,
+                );
+                if (p.active && !p.busy) {
+                  if (intent?.orbit) p.onOrbit?.(...intent.orbit);
+                  if (intent?.zoom !== undefined) p.onZoom?.(intent.zoom);
+                }
+                return;
+              }
+              gesture.current.move(event);
+            }}
+            onPointerCancel={() => {
+              gesture.current.cancel();
+              touch.current.clear();
+            }}
+            onPointerLeave={() => {
+              gesture.current.cancel();
+              touch.current.clear();
+            }}
             onPointerUp={(event) => {
-              const point = gesture.current.end(event);
+              let point: [number, number] | undefined;
+              if (event.pointerType === "touch") {
+                event.preventDefault();
+                event.stopPropagation();
+                touch.current.move(
+                  event.pointerId,
+                  event.clientX,
+                  event.clientY,
+                );
+                point = touch.current.end(event.pointerId);
+              } else point = gesture.current.end(event);
               if (!p.active || !point) return;
               const rect = event.currentTarget.getBoundingClientRect();
               if (rect.width <= 0 || rect.height <= 0) return;
@@ -306,6 +389,54 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </div>
           )}
           <div className="view-controls">
+            <button
+              disabled={!p.active}
+              aria-label="放大"
+              onClick={() => p.onZoom?.(-0.2)}
+            >
+              +
+            </button>
+            <button
+              disabled={!p.active}
+              aria-label="缩小"
+              onClick={() => p.onZoom?.(0.2)}
+            >
+              −
+            </button>
+            <label>
+              观察模式
+              <select
+                disabled={!canObserve || p.busy}
+                value={p.observationMode ?? "nearby"}
+                onChange={(e) =>
+                  p.onObservation?.(
+                    e.target.value as "nearby" | "system" | "follow",
+                    p.followId,
+                  )
+                }
+              >
+                <option value="nearby">Nearby · 近景</option>
+                <option value="system">System · 系统</option>
+                <option value="follow">Follow · 跟随</option>
+              </select>
+            </label>
+            <label>
+              跟随参考
+              <select
+                disabled={!canObserve || p.busy}
+                value={p.followId ?? ""}
+                onChange={(e) => p.onFollow(e.target.value)}
+              >
+                <option value="">所属父体</option>
+                {p.catalog
+                  .filter((o) => o.id !== p.selected)
+                  .map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
             <label>
               观测视场 {p.fovDegrees}°
               <input
@@ -357,7 +488,10 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <button disabled={!canObserve || p.busy} onClick={p.onFocus}>
               聚焦
             </button>
-            <button disabled={!canObserve || p.busy} onClick={p.onFollow}>
+            <button
+              disabled={!canObserve || p.busy}
+              onClick={() => p.onFollow()}
+            >
               跟随
             </button>
           </div>
@@ -424,6 +558,26 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             />
           )}
           <h3>显示图层</h3>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              disabled={!p.active || p.busy}
+              checked={p.moons ?? true}
+              onChange={(e) =>
+                p.onGroups?.(e.target.checked, p.spacecraft ?? true)
+              }
+            />
+            天然卫星
+          </label>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              disabled={!p.active || p.busy}
+              checked={p.spacecraft ?? true}
+              onChange={(e) => p.onGroups?.(p.moons ?? true, e.target.checked)}
+            />
+            人造卫星与飞船
+          </label>
           <label className="toggle">
             <input
               type="checkbox"

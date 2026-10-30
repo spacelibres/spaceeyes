@@ -386,3 +386,14 @@
     bottom: calc(100% + 8px);
   }
 }
+
+#spaceeyes-canvas {
+  touch-action: none;
+}
+#spaceeyes-canvas:focus-visible {
+  outline: 2px solid var(--primary, #38bdf8);
+  outline-offset: -3px;
+}
+.view-controls {
+  flex-wrap: wrap;
+}

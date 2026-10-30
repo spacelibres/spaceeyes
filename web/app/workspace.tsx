@@ -168,6 +168,11 @@ export default function Workspace() {
       view={state.view}
       labels={state.labels}
       trajectories={state.trajectories}
+      moons={state.moons}
+      spacecraft={state.spacecraft}
+      onGroups={(moons, spacecraft) =>
+        action((value) => value.groups(moons, spacecraft))
+      }
       trails={state.trails}
       onTrails={() => action((value) => value.trails(!state.trails))}
       jump={jump}
@@ -186,7 +191,14 @@ export default function Workspace() {
         Boolean(await action((value) => value.pick(u, v)))
       }
       onFocus={() => action((value) => value.focus())}
-      onFollow={() => action((value) => value.follow())}
+      observationMode={state.observationMode}
+      followId={state.followId}
+      onObservation={(mode, reference) =>
+        action((value) => value.observation(mode, reference))
+      }
+      onOrbit={(yaw, pitch) => action((value) => value.orbit(yaw, pitch))}
+      onZoom={(delta) => action((value) => value.zoom(delta))}
+      onFollow={(reference) => action((value) => value.follow(reference))}
       onOverview={() => action((value) => value.overview())}
       onView={(mode) =>
         action((value) =>

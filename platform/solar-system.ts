@@ -84,6 +84,8 @@ export class SolarSystemData {
   #ori = new Map<string, DecodedDyn>();
   #states = new Map<string, SolarStatus>();
   #generation = 0;
+  // Scene requests can be cancelled without invalidating a transaction rollback.
+  #loadGeneration = 0;
   #retained: Set<string> | undefined;
   #published = new Set<string>();
   #pending = new Map<string, Promise<void>>();
@@ -263,7 +265,7 @@ export class SolarSystemData {
       : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
   }
   retain(ids: readonly string[]) {
-    this.#generation++;
+    this.#loadGeneration++;
     this.#pending.clear();
     this.#queueAbort.abort(new Error("Scene changed"));
     this.#queueAbort = new AbortController();
@@ -304,7 +306,7 @@ export class SolarSystemData {
     epoch = 0,
     orientationIds: readonly string[] = ids,
   ) {
-    const generation = this.#generation;
+    const generation = this.#loadGeneration;
     await Promise.all(
       ids.map(async (id) => {
         const item = solarCatalog.find((x) => x.id === id);
@@ -326,7 +328,7 @@ export class SolarSystemData {
               ...orientationIds,
             ]);
           if (
-            generation !== this.#generation ||
+            generation !== this.#loadGeneration ||
             this.#abort.signal.aborted ||
             (this.#retained && !this.#retained.has(id))
           )
@@ -397,7 +399,7 @@ export class SolarSystemData {
             if (epoch < d.coverage.start || epoch > d.coverage.end)
               throw Error("Outside source coverage");
             if (
-              generation !== this.#generation ||
+              generation !== this.#loadGeneration ||
               (this.#retained && !this.#retained.has(id))
             )
               return;
@@ -417,12 +419,12 @@ export class SolarSystemData {
                     `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
                   ),
                 );
-              if (generation === this.#generation) this.#ori.set(id, ori);
+              if (generation === this.#loadGeneration) this.#ori.set(id, ori);
             } catch {
               /* Position remains available without attitude. */
             }
           if (
-            generation !== this.#generation ||
+            generation !== this.#loadGeneration ||
             (this.#retained && !this.#retained.has(id))
           )
             return;
@@ -438,7 +440,7 @@ export class SolarSystemData {
           });
         } catch (e) {
           if (
-            generation === this.#generation &&
+            generation === this.#loadGeneration &&
             (!this.#retained || this.#retained.has(id))
           )
             this.#states.set(id, {
@@ -772,6 +774,7 @@ export class SolarSystemData {
   }
   dispose() {
     this.#generation++;
+    this.#loadGeneration++;
     this.#abort.abort();
     for (const id of this.#published)
       try {

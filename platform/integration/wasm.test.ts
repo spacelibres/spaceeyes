@@ -526,3 +526,55 @@ test("trail SDK reaches real WASM with strict metadata and ordinary orbit compat
     core.free();
   }
 });
+
+test("camera observation intents reach real WASM and restore nearby on focus", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  host.register(
+    {
+      id: "integration.observer",
+      apiVersion: 1,
+      capabilities: ["data.publish", "camera.control"],
+    },
+    (ctx) => {
+      sdk = ctx;
+    },
+  );
+  try {
+    await host.enable("integration.observer", [
+      "data.publish",
+      "camera.control",
+    ]);
+    for (const [id, x] of [
+      ["earth", 0],
+      ["moon", 50],
+    ] as const)
+      sdk.data.publish(id, {
+        positionKm: [x, 0, 0],
+        radiusKm: 1,
+        epochTdbSeconds: 0,
+        coverageTdbSeconds: [0, 10],
+        frame: "ICRF",
+        source: "synthetic camera integration",
+      });
+    sdk.camera.observe("earth", "system", { members: ["earth", "moon"] });
+    assert.equal(JSON.parse(core.camera_observation()).mode, "system");
+    sdk.camera.observe("earth", "follow", { followId: "moon" });
+    assert.equal(JSON.parse(core.camera_observation()).followId, "moon");
+    assert.throws(() =>
+      core.camera_observe("invalid", "invalid", " ".repeat(65537)),
+    );
+    sdk.camera.orbit(0.1, -0.1);
+    sdk.camera.zoom(-0.3);
+    sdk.camera.focus("earth");
+    assert.equal(JSON.parse(core.camera_observation()), null);
+    assert.throws(() =>
+      sdk.camera.observe("earth", "follow", { followId: "earth" }),
+    );
+    await host.shutdown();
+    assert.equal(JSON.parse(core.camera_observation()), null);
+  } finally {
+    core.free();
+  }
+});

@@ -1,4 +1,10 @@
 import {
+  snapshotObservation,
+  cameraInput,
+  type CameraObservationMode,
+  type CameraObservationOptions,
+} from "./camera-contract.ts";
+import {
   snapshotTrajectoryStyle,
   type TrajectoryStyle,
 } from "./trajectory-contract.ts";
@@ -37,6 +43,13 @@ export interface PluginContext {
   readonly pluginId: string;
   readonly signal: AbortSignal;
   readonly camera: {
+    observe(
+      targetId: string,
+      mode: CameraObservationMode,
+      options?: CameraObservationOptions,
+    ): void;
+    orbit(yawRadians: number, pitchRadians: number): void;
+    zoom(delta: number): void;
     fieldOfView(degrees: number): void;
     view(mode: "overview" | "top" | "front" | "side" | "orbit"): void;
     focus(targetId: string): void;
@@ -361,6 +374,39 @@ export class PluginHost {
         },
       }),
       camera: Object.freeze({
+        observe(
+          targetId: string,
+          mode: CameraObservationMode,
+          options?: CameraObservationOptions,
+        ) {
+          requireCapability("camera.control");
+          const snapshot = snapshotObservation(targetId, mode, options);
+          if (!core?.cameraObserve)
+            throw Error("camera observation unavailable");
+          core.cameraObserve(
+            Object.freeze({ pluginId: id, sessionId, ...snapshot }),
+          );
+        },
+        orbit(yawRadians: number, pitchRadians: number) {
+          requireCapability("camera.control");
+          cameraInput(yawRadians, 0.5);
+          cameraInput(pitchRadians, 0.5);
+          if (!core?.cameraOrbit) throw Error("camera orbit unavailable");
+          core.cameraOrbit(
+            Object.freeze({
+              pluginId: id,
+              sessionId,
+              yawRadians,
+              pitchRadians,
+            }),
+          );
+        },
+        zoom(delta: number) {
+          requireCapability("camera.control");
+          cameraInput(delta, 1);
+          if (!core?.cameraZoom) throw Error("camera zoom unavailable");
+          core.cameraZoom(Object.freeze({ pluginId: id, sessionId, delta }));
+        },
         fieldOfView(degrees: number) {
           requireCapability("camera.control");
           if (!Number.isFinite(degrees) || degrees < 10 || degrees > 100)

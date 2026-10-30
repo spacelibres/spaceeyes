@@ -353,6 +353,10 @@ test("checkpoint restores retention and published ownership alongside data state
   assert.equal(states.size, 0);
   restore();
   source.publishAt(0);
+  assert.ok(
+    states.has("sun"),
+    "rollback must restore a removed published object",
+  );
   source.retain([]);
   assert.equal(states.size, 0);
 });

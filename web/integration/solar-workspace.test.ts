@@ -389,7 +389,7 @@ test("complete host flow uses real Rust WASM for selection, time, layers and rel
     earth.positionKm.map((value: number) => value * 2),
   );
   app.view("top");
-  app.follow();
+  await app.follow();
   assert.equal(states.at(-1)!.view, "orbit");
   app.layers(false, false);
   assert.equal(states.at(-1)!.labels, false);
@@ -870,6 +870,124 @@ test("natural and artificial satellite trajectories are real timed trail intents
       .at(-1)!;
     assert.equal(craft.kind, "trail");
     assert.ok(craft.duration! > 0);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("observation retains selection, reference dependencies, and parent surface", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (value) => states.push(value),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("sc_iss");
+    assert.ok(
+      fixtures.visuals().some((v) => v.id === "earth" && v.spec.faceAssets),
+    );
+    await app.observation("system");
+    assert.equal(states.at(-1)!.selected, "sc_iss");
+    await app.follow("earth");
+    assert.equal(states.at(-1)!.selected, "sc_iss");
+    assert.equal(states.at(-1)!.followId, "earth");
+    await app.seek(states.at(-1)!.epoch + 1);
+    assert.equal(states.at(-1)!.observationMode, "follow");
+    await assert.rejects(app.follow("sc_iss"));
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("latest observation intent wins for the same target and focus cancels pending observation", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("earth");
+    const first = app.observation("follow", "moon");
+    const second = app.observation("system");
+    await Promise.all([first, second]);
+    assert.equal(states.at(-1)!.observationMode, "system");
+    assert.equal(states.at(-1)!.followId, undefined);
+    const pending = app.observation("follow", "moon");
+    app.focus();
+    await pending;
+    assert.equal(states.at(-1)!.observationMode, "nearby");
+    assert.equal(states.at(-1)!.followId, undefined);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("unavailable follow reference restores nearby without changing selection or time", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        String(input).includes("iss")
+          ? new Response("unavailable", { status: 503 })
+          : new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("earth");
+    await app.follow("moon");
+    const epoch = states.at(-1)!.epoch;
+    await assert.rejects(app.follow("sc_iss"));
+    assert.equal(states.at(-1)!.selected, "earth");
+    assert.equal(states.at(-1)!.epoch, epoch);
+    assert.equal(states.at(-1)!.observationMode, "nearby");
+    assert.equal(states.at(-1)!.followId, undefined);
+    assert.match(states.at(-1)!.error, /近景/);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("follow reference dependencies stop at the solar scene root", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const requests: string[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) => {
+        requests.push(String(input));
+        return new Response(sample(String(input).includes("type=ori")));
+      },
+    },
+  );
+  try {
+    await app.select("earth");
+    await app.follow("moon");
+    assert.equal(states.at(-1)!.followId, "moon");
+    assert.doesNotMatch(states.at(-1)!.error, /Observable Universe|Milky Way/);
+    assert.ok(requests.every((url) => !/universe|milky|galaxy/i.test(url)));
   } finally {
     await app.dispose();
   }

@@ -226,6 +226,41 @@ impl WasmCore {
     pub fn camera_fov_degrees(&self) -> Result<f32, String> {
         Ok(self.lock()?.camera_fov_degrees())
     }
+    pub fn camera_observe(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        json: &str,
+    ) -> Result<(), String> {
+        if json.len() > 65536 {
+            return Err("InvalidState".into());
+        }
+        let v: crate::CameraObservation =
+            serde_json::from_str(json).map_err(|_| "InvalidState".to_string())?;
+        self.lock()?
+            .set_camera_observation(
+                session,
+                plugin,
+                &v.target_id,
+                &v.mode,
+                v.members,
+                v.follow_id,
+            )
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn camera_observation(&self) -> Result<String, String> {
+        serde_json::to_string(&self.lock()?.camera_observation()).map_err(|e| e.to_string())
+    }
+    pub fn camera_orbit(&mut self, s: &str, p: &str, y: f32, x: f32) -> Result<(), String> {
+        self.lock()?
+            .camera_orbit(s, p, y, x)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn camera_zoom(&mut self, s: &str, p: &str, d: f32) -> Result<(), String> {
+        self.lock()?
+            .camera_zoom(s, p, d)
+            .map_err(|e| format!("{e:?}"))
+    }
     pub fn camera_view(&mut self, session: &str, plugin: &str, mode: &str) -> Result<(), String> {
         self.lock()?
             .set_camera_view(session, plugin, mode)

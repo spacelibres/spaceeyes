@@ -41,6 +41,8 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  observationMode: "nearby" | "system" | "follow";
+  followId?: string;
   fovDegrees: number;
   galaxy: {
     enabled: boolean;
@@ -67,6 +69,8 @@ export type SolarSnapshot = {
   view: string;
   labels: boolean;
   trajectories: boolean;
+  moons: boolean;
+  spacecraft: boolean;
   trails: boolean;
   source: string;
   coverage: string;
@@ -74,6 +78,7 @@ export type SolarSnapshot = {
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
+  observationMode: "nearby",
   fovDegrees: 45,
   galaxy: { enabled: false, phase: "disabled" },
   starfield: {
@@ -95,6 +100,8 @@ export const initialSnapshot: SolarSnapshot = {
   view: "orbit",
   labels: true,
   trajectories: true,
+  moons: true,
+  spacecraft: true,
   trails: true,
   source: "NASA Eyes DYN · 按需获取",
   coverage: "由实际数据确定",
@@ -121,13 +128,20 @@ export interface WorkspaceRuntime {
   pick(u: number, v: number): Promise<boolean>;
   select(id: string): Promise<void>;
   focus(): void;
-  follow(): void;
+  observation(
+    mode: "nearby" | "system" | "follow",
+    followId?: string,
+  ): Promise<void>;
+  orbit(yaw: number, pitch: number): void;
+  zoom(delta: number): void;
+  follow(referenceId?: string): Promise<void>;
   overview(): void;
   view(mode: "orbit" | "top" | "front" | "side"): void;
   play(playing: boolean, rate: number): void;
   seek(epoch: number): Promise<void>;
   seekUtc(value: string): Promise<void>;
   now(): Promise<void>;
+  groups(moons: boolean, spacecraft: boolean): Promise<void>;
   trails(enabled: boolean): void;
   layers(labels: boolean, trajectories: boolean): void;
   dispose(): Promise<void>;
@@ -320,6 +334,7 @@ export async function createWorkspace(
     revision = 0,
     lastFrame: number | undefined,
     lastEmit = 0;
+  let observationToken = 0;
   let queue: Promise<void> = Promise.resolve(),
     disposal: Promise<void> | undefined;
   let stellarSettings = solarWorkspaceSettings(options.stellarSettings);
@@ -417,6 +432,7 @@ export async function createWorkspace(
   };
   const dispose = () =>
     (disposal ??= (async () => {
+      observationToken++;
       closed = true;
       revision++;
       cancelFrame(frame);
@@ -472,20 +488,31 @@ export async function createWorkspace(
       for (const body of eyesCatalog
         .filter(
           (body) =>
-            body.kind === "moon" &&
-            body.subcategory === "Major Moon" &&
+            ((state.spacecraft && body.kind === "spacecraft") ||
+              (state.moons &&
+                body.kind === "moon" &&
+                body.subcategory === "Major Moon")) &&
             parentAt(body.id, epoch) === system,
         )
-        .slice(0, 24))
+        .slice(0, 128))
         ids.add(body.id);
     }
+    let reference = state.followId;
+    const seen = new Set<string>();
+    while (reference && !seen.has(reference)) {
+      seen.add(reference);
+      ids.add(reference);
+      if (reference === "sun") break;
+      reference = parentAt(reference, epoch) ?? undefined;
+    }
+    if (ids.size > 256) throw Error("当前场景超出对象预算（256）");
     return [...ids];
   };
   const refreshTrajectory = (id: string) => {
     const count = data.status().filter((s) => s.status === "ready").length;
     const ordinary = state.selected
-      ? Math.min(128, Math.max(8, Math.floor(2048 / Math.max(1, count - 1))))
-      : Math.min(256, Math.max(8, Math.floor(4096 / Math.max(1, count))));
+      ? Math.min(128, Math.max(0, Math.floor(2048 / Math.max(1, count - 1))))
+      : Math.min(256, Math.max(0, Math.floor(4096 / Math.max(1, count))));
     const isTrail = ["moon", "spacecraft"].includes(
       solarCatalog.find((body) => body.id === id)!.kind,
     );
@@ -541,7 +568,10 @@ export async function createWorkspace(
       if (data.status(body.id)?.status !== "ready") continue;
       try {
         const upgrade =
-          state.selected === body.id && !detailedBodies.has(body.id);
+          (state.selected === body.id ||
+            (body.kind === "planet" &&
+              parentAt(state.selected, core.epoch()) === body.id)) &&
+          !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
         if (!sdk.visual.status(body.id) || upgrade) {
           const model = getEyesDefinition(body.id)?.model;
@@ -617,6 +647,20 @@ export async function createWorkspace(
       labels: state.labels,
       trajectories: state.trajectories || state.trails,
     });
+  };
+  const validateFollow = () => {
+    if (state.observationMode !== "follow" || !state.followId) return;
+    try {
+      if (data.status(state.followId)?.status !== "ready")
+        throw Error("reference unavailable");
+      core.state_at(state.followId, core.epoch());
+    } catch {
+      if (state.selected && data.status(state.selected)?.status === "ready")
+        sdk.camera.observe(state.selected, "nearby");
+      state.observationMode = "nearby";
+      state.followId = undefined;
+      state.error = "跟随参考对象在当前时刻无有效数据，已恢复近景观察";
+    }
   };
   const reload = (epoch: number) => {
     if (closed || signal.aborted)
@@ -710,6 +754,7 @@ export async function createWorkspace(
           state.error = unavailable.length
             ? `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`
             : "";
+          validateFollow();
         } finally {
           if (!closed && current === revision) {
             state.busy = false;
@@ -791,8 +836,11 @@ export async function createWorkspace(
     },
     async select(id) {
       assertLive();
+      observationToken++;
       if (!solarCatalog.some((body) => body.id === id))
         throw new Error("未知对象");
+      state.observationMode = "nearby";
+      state.followId = undefined;
       state.selected = id;
       const pending = reload(core.epoch()),
         ownedRevision = revision;
@@ -814,23 +862,100 @@ export async function createWorkspace(
     },
     focus() {
       assertLive();
+      observationToken++;
       if (!state.selected) throw new Error("请先选择对象");
-      sdk.camera.focus(state.selected);
+      sdk.camera.observe(state.selected, "nearby");
+      state.observationMode = "nearby";
+      state.followId = undefined;
       emit();
     },
-    follow() {
+    orbit(yaw, pitch) {
       assertLive();
-      if (!state.selected) throw new Error("请先选择对象");
-      sdk.camera.focus(state.selected);
-      sdk.camera.view("orbit");
-      state.view = "orbit";
-      state.phase = "跟随选中对象";
-      emit();
+      sdk.camera.orbit(yaw, pitch);
+    },
+    zoom(delta) {
+      assertLive();
+      sdk.camera.zoom(delta);
+    },
+    async observation(mode, followId) {
+      assertLive();
+      const token = ++observationToken;
+      const target = state.selected;
+      if (!target) throw Error("请先选择观察对象");
+      const reference =
+        mode === "follow"
+          ? (followId ?? parentAt(target, core.epoch()) ?? undefined)
+          : undefined;
+      if (
+        mode === "follow" &&
+        (!reference ||
+          reference === target ||
+          !solarCatalog.some((body) => body.id === reference))
+      )
+        throw Error("请选择不同且已登记的跟随参考对象");
+      state.followId = reference;
+      try {
+        await reload(core.epoch());
+        assertLive();
+        if (state.selected !== target || token !== observationToken) return;
+        if (
+          mode === "follow" &&
+          (!reference || data.status(reference)?.status !== "ready")
+        )
+          throw Error("跟随参考对象在当前时刻无有效数据");
+        const members = sceneIds(core.epoch()).filter(
+          (id) =>
+            id === target ||
+            (parentAt(id, core.epoch()) === target &&
+              data.status(id)?.status === "ready" &&
+              solarCatalog.find((body) => body.id === id)?.kind ===
+                (target === "sun" ? "planet" : "moon")),
+        );
+        sdk.camera.observe(
+          target,
+          mode,
+          mode === "system"
+            ? { members }
+            : mode === "follow"
+              ? { followId: reference }
+              : undefined,
+        );
+        state.observationMode = mode;
+        if (mode === "follow") {
+          sdk.camera.view("orbit");
+          state.view = "orbit";
+        }
+        emit();
+      } catch (error) {
+        if (
+          !closed &&
+          token === observationToken &&
+          state.selected === target
+        ) {
+          state.observationMode = "nearby";
+          state.followId = undefined;
+          try {
+            if (data.status(target)?.status === "ready")
+              sdk.camera.observe(target, "nearby");
+          } catch {
+            /* Preserve the original observation error. */
+          }
+          state.error = `观察模式不可用，已恢复近景：${String(error)}`;
+          emit();
+        }
+        throw error;
+      }
+    },
+    follow(referenceId) {
+      return runtime.observation("follow", referenceId);
     },
     overview() {
       assertLive();
+      observationToken++;
       const ownedRevision = ++revision;
       sdk.time.setPlayback(desiredPlaying, state.rate);
+      state.observationMode = "nearby";
+      state.followId = undefined;
       state.selected = "";
       data.retain(baseSolarIds);
       configure();
@@ -883,6 +1008,12 @@ export async function createWorkspace(
     now() {
       assertLive();
       return reload(core.utc_to_tdb(Date.now() / 1000));
+    },
+    async groups(moons, spacecraft) {
+      assertLive();
+      state.moons = moons;
+      state.spacecraft = spacecraft;
+      await reload(core.epoch());
     },
     trails(enabled) {
       assertLive();
@@ -1013,6 +1144,7 @@ export async function createWorkspace(
             });
           } else {
             data.publishAt(epoch);
+            validateFollow();
             if (
               (state.trajectories || state.trails) &&
               now - lastTrajectoryRefresh > 100

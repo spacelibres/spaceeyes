@@ -1,3 +1,4 @@
+import type { CameraObservation } from "./camera-contract.ts";
 import type { StellarTuning } from "./stellar-tuning.ts";
 import type { StarfieldSpec } from "./starfield-contract.ts";
 import type { EnvironmentSpec } from "./environment-contract.ts";
@@ -11,6 +12,18 @@ export interface FocusRequest {
   readonly targetId: string;
 }
 export interface CorePort {
+  cameraObserve?(request: FocusRequest & CameraObservation): void;
+  cameraOrbit?(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly yawRadians: number;
+    readonly pitchRadians: number;
+  }): void;
+  cameraZoom?(request: {
+    readonly pluginId: string;
+    readonly sessionId: string;
+    readonly delta: number;
+  }): void;
   cameraFov?(request: {
     pluginId: string;
     sessionId: string;

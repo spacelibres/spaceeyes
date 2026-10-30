@@ -331,6 +331,7 @@ fn update_focus(
                 _ => {}
             }
         }
+        apply_controlled_input(&mut core, &mut orbit, delta.unwrap_or(1. / 60.));
         for (mut transform, mut projection) in &mut camera {
             let surface = (central_surface / AU_KM) as f32;
             let mut distance = orbit.distance.max(surface * 1.001);
@@ -359,10 +360,11 @@ fn update_focus(
         }
         return;
     }
-    let Some(id) = core.focused_object() else {
+    let focused_id = core.focused_object().map(str::to_owned);
+    let Some(id) = focused_id.as_deref() else {
         return;
     };
-    let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
+    let Ok(state) = core.object_state_at(id, core.clock().epoch()).cloned() else {
         return;
     };
     let distance_km = orbit.distance as f64 * state.radius_km;
@@ -390,6 +392,7 @@ fn update_focus(
             ..default()
         };
     }
+    apply_controlled_input(&mut core, &mut orbit, delta.unwrap_or(1. / 60.));
     let mut center = Vec3::ZERO;
     let mut radius = core
         .visual_assignment(id)
@@ -446,6 +449,21 @@ fn update_focus(
             radius = ((max - min).length() * 0.5).max(1e-7);
         }
     }
+    if let Some(observation) = core.camera_observation()
+        && observation.mode == "system"
+    {
+        radius = observation
+            .members
+            .iter()
+            .filter_map(|member| core.object_state_at(member, core.clock().epoch()).ok())
+            .map(|member| {
+                ((DVec3::from_array(member.position_km) - settings.origin_km).length()
+                    + member.radius_km) as f32
+                    / state.radius_km as f32
+            })
+            .fold(radius, f32::max);
+        center = Vec3::ZERO;
+    }
     for (mut transform, mut projection) in &mut camera {
         let is_model = core
             .visual_assignment(id)
@@ -487,7 +505,30 @@ fn update_focus(
         let position = Quat::from_rotation_y(orbit.yaw)
             * Quat::from_rotation_x(orbit.pitch)
             * Vec3::new(0.0, 0.0, distance * radius);
-        let desired = Transform::from_translation(center + position).looking_at(center, Vec3::Y);
+        let mut desired =
+            Transform::from_translation(center + position).looking_at(center, Vec3::Y);
+        if let Some(observation) = core.camera_observation()
+            && observation.mode == "follow"
+            && let Some(reference) = observation.follow_id.as_deref()
+            && let Ok(reference) = core.object_state_at(reference, core.clock().epoch())
+        {
+            let direction = follow_display_direction(
+                DVec3::from_array(reference.position_km) - settings.origin_km,
+            );
+            if direction.length_squared() > 0.5 {
+                let side = direction.cross(Vec3::Y).try_normalize().unwrap_or(Vec3::X);
+                let fov = core.camera_fov_degrees().to_radians();
+                orbit.yaw = orbit.yaw.clamp(-0.45 * fov, 0.45 * fov);
+                orbit.pitch = orbit.pitch.clamp(-0.4 * fov, 0.4 * fov);
+                let offset = -direction * distance * radius + side * radius * 1.5;
+                desired = Transform::from_translation(offset).looking_to(
+                    Quat::from_axis_angle(Vec3::Y, orbit.yaw)
+                        * Quat::from_axis_angle(side, orbit.pitch)
+                        * direction,
+                    Vec3::Y,
+                );
+            }
+        }
         *transform = blend.apply(&key, *transform, desired, &old_settings, &settings, delta);
         if let Projection::Perspective(p) = &mut *projection {
             p.far = p.far.max(transform.translation.length() * 2.0);
@@ -556,6 +597,179 @@ fn enforce_camera_collision(
     }
 }
 
+fn follow_display_direction(relative: DVec3) -> Vec3 {
+    let v = relative.normalize_or_zero();
+    Vec3::new(v.x as f32, v.z as f32, -v.y as f32)
+}
+#[cfg(test)]
+mod camera_intent_render_tests {
+    use super::*;
+    #[test]
+    fn observation_modes_frame_large_origin_and_follow_moving_reference() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let state = |position| crate::ObjectState {
+            position_km: position,
+            radius_km: 1.,
+            epoch_tdb_seconds: 0.,
+            coverage_tdb_seconds: [0., 1.],
+            frame: "ICRF".into(),
+            source: "test".into(),
+            orientation_wxyz: None,
+        };
+        let origin = [1e12, 1e12, 1e12];
+        for (id, position) in [("target", origin), ("reference", [1e12 + 50., 1e12, 1e12])] {
+            core.register_object("s", id).unwrap();
+            core.set_object_state("s", id, state(position)).unwrap();
+        }
+        let shared = Arc::new(std::sync::Mutex::new(core));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, (update_focus, enforce_camera_collision).chain());
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()))
+            .id();
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_observation("s", "p", "target", "nearby", vec![], None)
+            .unwrap();
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .length()
+                < 10.
+        );
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_observation(
+                "s",
+                "p",
+                "target",
+                "system",
+                vec!["target".into(), "reference".into()],
+                None,
+            )
+            .unwrap();
+        app.update();
+        let t = app.world().get::<Transform>(camera).unwrap();
+        assert!(t.translation.length() > 50.);
+        assert!(t.forward().dot((-t.translation).normalize()) > 0.9999);
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_observation(
+                "s",
+                "p",
+                "target",
+                "follow",
+                vec![],
+                Some("reference".into()),
+            )
+            .unwrap();
+        app.update();
+        let t = app.world().get::<Transform>(camera).unwrap();
+        assert!(t.forward().dot(Vec3::X) > 0.99);
+        assert!(t.translation.is_finite() && t.translation.length() > 1.);
+        shared
+            .lock()
+            .unwrap()
+            .set_object_state("s", "reference", state([1e12, 1e12 + 50., 1e12]))
+            .unwrap();
+        app.update();
+        let t = app.world().get::<Transform>(camera).unwrap();
+        assert!(t.forward().dot(-Vec3::Z) > 0.99);
+        assert!(t.translation.is_finite() && t.translation.length() > 1.);
+        assert_eq!(
+            shared
+                .lock()
+                .unwrap()
+                .object_state_at("target", 0.)
+                .unwrap()
+                .position_km,
+            origin
+        );
+        shared
+            .lock()
+            .unwrap()
+            .set_object_state("s", "reference", state(origin))
+            .unwrap();
+        assert!(
+            shared
+                .lock()
+                .unwrap()
+                .set_camera_observation(
+                    "s",
+                    "p",
+                    "target",
+                    "follow",
+                    vec![],
+                    Some("reference".into())
+                )
+                .is_err()
+        );
+    }
+    #[test]
+    fn follow_uses_display_basis_and_changes_with_reference() {
+        assert_eq!(follow_display_direction(DVec3::X), Vec3::X);
+        assert_eq!(follow_display_direction(DVec3::Y), -Vec3::Z);
+        assert_eq!(follow_display_direction(DVec3::Z), Vec3::Y);
+        assert_eq!(follow_display_direction(DVec3::ZERO), Vec3::ZERO);
+    }
+    #[test]
+    fn controlled_zoom_is_queued_once_independent_of_frame_duration() {
+        for dt in [1. / 30., 1. / 60., 1. / 120.] {
+            let mut c = crate::Core::default();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                crate::SessionPermissions {
+                    camera_control: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            c.camera_zoom("s", "p", 0.3).unwrap();
+            let mut orbit = OrbitView::default();
+            let before = orbit.distance;
+            apply_controlled_input(&mut c, &mut orbit, dt);
+            assert_eq!(orbit.distance, before);
+            apply_controlled_input(&mut c, &mut orbit, dt);
+            assert_eq!(c.take_camera_input(), [0.; 3]);
+            assert!(orbit.motion.zoom_step(dt) > 0.);
+        }
+    }
+}
+
+fn apply_controlled_input(core: &mut crate::Core, orbit: &mut OrbitView, dt: f32) {
+    let input = core.take_camera_input();
+    if input == [0.; 3] {
+        return;
+    }
+    orbit.input_active = true;
+    orbit.yaw += input[0];
+    orbit.pitch = (orbit.pitch + input[1]).clamp(-1.5, 1.5);
+    if input[0] != 0. || input[1] != 0. {
+        orbit.motion.drag([input[0], input[1]], dt);
+    }
+    orbit.motion.zoom(input[2]);
+}
+
 fn orbit_input(
     buttons: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
@@ -566,6 +780,7 @@ fn orbit_input(
     mut drag_gate: Local<crate::camera_motion::DragGate>,
 ) {
     let dt = time.delta_secs();
+    let focused = windows.iter().all(|w| w.focused);
     let available = !windows
         .iter()
         .any(|w| !w.focused || w.cursor_position().is_none());
@@ -575,12 +790,12 @@ fn orbit_input(
         buttons.just_pressed(MouseButton::Left),
     );
     orbit.input_active = dragging;
-    if !available {
+    if !focused {
         orbit.motion.clear();
         wheel.clear();
         return;
     }
-    if buttons.just_pressed(MouseButton::Left) {
+    if available && buttons.just_pressed(MouseButton::Left) {
         orbit.motion.clear();
     }
     let delta = if dragging {
@@ -592,7 +807,7 @@ fn orbit_input(
     };
     orbit.yaw += delta[0];
     orbit.pitch = (orbit.pitch + delta[1]).clamp(-1.5, 1.5);
-    for event in wheel.read() {
+    for event in wheel.read().filter(|_| available) {
         let amount = match event.unit {
             MouseScrollUnit::Line => event.y,
             MouseScrollUnit::Pixel => event.y * 0.01,

@@ -4,6 +4,15 @@ import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
+  camera_observe?(session: string, plugin: string, json: string): void;
+  camera_observation?(): string;
+  camera_orbit?(
+    session: string,
+    plugin: string,
+    yaw: number,
+    pitch: number,
+  ): void;
+  camera_zoom?(session: string, plugin: string, delta: number): void;
   camera_fov?(session: string, plugin: string, degrees: number): void;
   set_environment?(plugin: string, session: string, specJson?: string): void;
   environment_status?(): string;
@@ -69,6 +78,39 @@ export interface WasmCoreBinding {
 }
 
 export class WasmCorePort implements CorePort {
+  cameraObserve(
+    request: Parameters<NonNullable<CorePort["cameraObserve"]>>[0],
+  ): void {
+    if (!this.#binding.camera_observe)
+      throw Error("camera observation unavailable");
+    const { targetId, mode, members, followId } = request;
+    this.#binding.camera_observe(
+      request.sessionId,
+      request.pluginId,
+      JSON.stringify({ targetId, mode, members, followId }),
+    );
+  }
+  cameraOrbit(
+    request: Parameters<NonNullable<CorePort["cameraOrbit"]>>[0],
+  ): void {
+    if (!this.#binding.camera_orbit) throw Error("camera orbit unavailable");
+    this.#binding.camera_orbit(
+      request.sessionId,
+      request.pluginId,
+      request.yawRadians,
+      request.pitchRadians,
+    );
+  }
+  cameraZoom(
+    request: Parameters<NonNullable<CorePort["cameraZoom"]>>[0],
+  ): void {
+    if (!this.#binding.camera_zoom) throw Error("camera zoom unavailable");
+    this.#binding.camera_zoom(
+      request.sessionId,
+      request.pluginId,
+      request.delta,
+    );
+  }
   cameraFov(request: {
     pluginId: string;
     sessionId: string;
