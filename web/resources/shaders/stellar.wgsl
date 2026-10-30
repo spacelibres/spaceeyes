@@ -6,6 +6,7 @@ struct Out {
  @builtin(position) clip:vec4<f32>,
  @location(0) p:vec3<f32>,
  @location(1) @interpolate(flat) eye:vec3<f32>,
+ @location(2) @interpolate(flat) center_radius:vec4<f32>,
 }
 fn hash(p:vec3<f32>)->f32 { return fract(sin(dot(p,vec3<f32>(127.1,311.7,74.7)))*43758.5453); }
 fn noise(p:vec3<f32>)->f32 {
@@ -20,13 +21,26 @@ fn fbm(p:vec3<f32>)->f32 { return noise(p)*0.57+noise(p*2.03+7.1)*0.28+noise(p*4
  let radius=length(model[0].xyz)/2.8;
  var o:Out; o.clip=view.clip_from_world*world;
  o.p=(world.xyz-center)/radius; o.eye=(view.world_position-center)/radius;
+ o.center_radius=vec4<f32>(center,radius);
  return o;
 }
-@fragment fn fragment(v:Out)->@location(0) vec4<f32> {
+struct PlasmaOutput {
+ @location(0) color:vec4<f32>,
+ @builtin(frag_depth) depth:f32,
+}
+@fragment fn fragment(v:Out)->PlasmaOutput {
  let ray=normalize(v.p-v.eye);
  let b=dot(v.eye,ray); let c=dot(v.eye,v.eye)-7.84;
  let h=sqrt(max(b*b-c,0.0));
- let start=max(-b-h,0.0); let end=-b+h;
+ let start=max(-b-h,0.0); var end=-b+h;
+ // Integrate the foreground corona, stopping at the opaque solar surface.
+ // The rasterized back shell is only a proxy, never the depth of the volume.
+ let surface_discriminant=b*b-dot(v.eye,v.eye)+1.0;
+ if(surface_discriminant>=0.0) {
+  let surface_hit=-b-sqrt(surface_discriminant);
+  if(surface_hit>=0.0) { end=min(end,surface_hit); }
+ }
+ if(end<=start) {discard;}
  let step=(end-start)/32.0;
  // Physical transport uses Parker flight time. 3600 model seconds per visual second;
  // flowSpeed=0 freezes the visualization. This is explicitly time-compressed.
@@ -55,5 +69,12 @@ fn fbm(p:vec3<f32>)->f32 { return noise(p)*0.57+noise(p*2.03+7.1)*0.28+noise(p*4
    light+=mix(vec3<f32>(0.7,0.012,0.001),vec3<f32>(2.0,0.65,0.06),heat)*density;
   }
  }
- return vec4<f32>(light,0.0);
+ var out:PlasmaOutput;
+ out.color=vec4<f32>(light,0.0);
+ let entry_world=v.center_radius.xyz+(v.eye+ray*start)*v.center_radius.w;
+ let entry_clip=view.clip_from_world*vec4<f32>(entry_world,1.0);
+ // Bevy uses reverse Z: an observer inside the volume starts at near depth.
+ out.depth=1.0;
+ if(start>0.000001 && entry_clip.w>0.0) {out.depth=clamp(entry_clip.z/entry_clip.w,0.0,1.0);}
+ return out;
 }
