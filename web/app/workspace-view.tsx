@@ -343,10 +343,10 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               disabled={!p.active}
               onChange={p.onTrajectories}
             />
-            科学轨迹
+            轨道线
           </label>
           <p className="muted">
-            轨迹仅使用有效科学样本；缺少覆盖时显示明确反馈。
+            椭圆显示当前状态推导的瞬时轨道，不代表完整周期的实测路径；非闭合轨道保留有效时间路径。
           </p>
         </aside>
       </div>

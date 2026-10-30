@@ -13,7 +13,7 @@ function rotate(v: V, q: readonly number[]): V {
     v[2] + w * t[2] + x * t[1] - y * t[0],
   ];
 }
-function propagate(r: DynOrbRecord, t: number): V {
+function propagateState(r: DynOrbRecord, t: number): { position: V; velocity: V } {
   const e = r.eccentricity,
     a = r.semiMajorAxis;
   if (e < 0 || e >= 1 || a <= 0) throw Error("Unsupported nonelliptic orbit");
@@ -26,10 +26,11 @@ function propagate(r: DynOrbRecord, t: number): V {
     E -= d;
     if (Math.abs(d) < 0.00174532925) break;
   }
-  return rotate(
-    [a * (Math.cos(E) - e), a * Math.sqrt(1 - e * e) * Math.sin(E), 0],
-    r.orientation,
-  );
+  const rate = r.meanAngularMotion / (1 - e * Math.cos(E));
+  return {
+    position: rotate([a * (Math.cos(E) - e), a * Math.sqrt(1 - e * e) * Math.sin(E), 0], r.orientation),
+    velocity: rotate([-a * Math.sin(E) * rate, a * Math.sqrt(1 - e * e) * Math.cos(E) * rate, 0], r.orientation),
+  };
 }
 /** Recovered Eyes algorithm; segment-interior errors of thousands of km are documented. */
 export function evaluateOrb(d: DecodedDyn, t: number, body = 0): V {
@@ -47,8 +48,8 @@ export function evaluateOrb(d: DecodedDyn, t: number, body = 0): V {
   const a = d.records[lo],
     b = d.records[hi],
     u = (t - a.time) / (b.time - a.time),
-    p = propagate(a, t),
-    q = propagate(b, t);
+    p = propagateState(a, t).position,
+    q = propagateState(b, t).position;
   const mu1 = d.gravitationalParameter1!,
     mu2 = d.gravitationalParameter2!;
   const scale =
@@ -61,6 +62,19 @@ export function evaluateOrb(d: DecodedDyn, t: number, body = 0): V {
           : NaN;
   if (!Number.isFinite(scale)) throw Error("Invalid body");
   return p.map((v, i) => (v + (q[i] - v) * u) * scale) as V;
+}
+/** Eyes OrbPoint blends propagated endpoint velocities, not the derivative of the blended positions. */
+export function evaluateOrbVelocity(d: DecodedDyn, t: number): V {
+  if (d.kind !== "inline" || d.type !== "orb" || !Number.isFinite(t) || t < d.coverage.start || t > d.coverage.end)
+    throw Error("Outside DYN coverage");
+  let lo = 0, hi = d.records.length - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (d.records[mid].time <= t) lo = mid; else hi = mid;
+  }
+  const a = d.records[lo], b = d.records[hi], u = (t - a.time) / (b.time - a.time);
+  const p = propagateState(a, t).velocity, q = propagateState(b, t).velocity;
+  return p.map((v, i) => v + (q[i] - v) * u) as V;
 }
 /** Nonincremental recovered Eyes attitude: propagate both endpoints then slerp. */
 export function evaluateOri(

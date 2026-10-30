@@ -234,6 +234,7 @@ export async function createWorkspace(
       core.epoch(),
       state.selected === id ? 2048 : 256,
       state.selected === id,
+        "instantaneous",
     );
     sdk.visual.trajectory(id, trail.points, trail.epochsTdbSeconds, {
       originId: trail.originId,

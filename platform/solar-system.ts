@@ -1,5 +1,6 @@
 import { decodeDyn, type DecodedDyn } from "./dyn-decoder.ts";
-import { evaluateOrb, evaluateOri } from "./dyn-evaluator.ts";
+import { evaluateOrb, evaluateOrbVelocity, evaluateOri } from "./dyn-evaluator.ts";
+import { osculatingOrbit } from "./osculating-orbit.ts";
 import type { PluginContext } from "./plugin-host.ts";
 // Display styling only; colors do not describe measured surface spectra.
 const displayColors: Record<string, [number, number, number, number]> = {
@@ -348,9 +349,22 @@ export class SolarSystemData {
       this.position(id, start + ((end - start) * i) / (count - 1)),
     );
   }
-  trajectorySamples(id: string, epoch: number, count = 256, detailed = false) {
+  trajectorySamples(id: string, epoch: number, count = 256, detailed = false, mode: "history" | "instantaneous" = "history") {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
+    if (mode === "instantaneous") {
+      const d = this.#data.get(id);
+      if (!d || d.kind !== "inline" || d.type !== "orb") throw Error("Orbit unavailable");
+      const orbit = osculatingOrbit(evaluateOrb(d,epoch), evaluateOrbVelocity(d,epoch),
+        (d.gravitationalParameter1 ?? 0)+(d.gravitationalParameter2 ?? 0), epoch,count,detailed);
+      if (orbit) {
+        const parentId = solarCatalog.find(body=>body.id===id)?.parentId;
+        const interval = orbit.period/(detailed ? 4096 : 1024);
+        return { ...orbit, originId: parentId && parentId !== "sun" ? parentId : undefined,
+          refreshRange: [Math.max(d.coverage.start,epoch-interval),Math.min(d.coverage.end,epoch+interval)] as [number,number] };
+      }
+      // Unbound or degenerate states remain open covered paths; never fabricate a closed orbit.
+    }
     const [start, end] = this.trajectoryRange(id, epoch);
     if (!Number.isFinite(epoch) || epoch < start || epoch > end || start >= end)
       throw Error("Outside trajectory coverage");

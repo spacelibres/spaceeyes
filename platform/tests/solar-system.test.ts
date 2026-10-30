@@ -89,6 +89,10 @@ test("moon displayed orbit remains parent-relative while world state includes Ea
     trail.points[i].map((v, j) => v + earth[j]),
     p,
   );
+  const ellipse = source.trajectorySamples("moon", 5, 256, false, "instantaneous");
+  assert.equal(ellipse.originId,"earth");
+  assert.deepEqual(ellipse.points[0],ellipse.points.at(-1));
+  assert.deepEqual(ellipse.points[ellipse.epochsTdbSeconds.indexOf(5)].map((v,j)=>v+earth[j]),p);
   source.dispose();
 });
 
@@ -117,6 +121,28 @@ test("trajectory sampling contains the exact current epoch, refines locally and 
   assert.notDeepEqual(trail.points[0], trail.points.at(-1));
   source.dispose();
 });
+test("instantaneous ellipse closes beyond DYN coverage without publishing extrapolated states", async () => {
+  const { ctx, states } = context();
+  const bytes = orb(10), view = new DataView(bytes.buffer);
+  // A circular two-body fixture: mu=1+2=3, n=sqrt(mu/a^3).
+  const n = Math.sqrt(3 / 1000);
+  for (let i = 0; i < 2; i++) {
+    view.setFloat64(28 + i * 72 + 24, n, true);
+    view.setFloat64(28 + i * 72 + 32, n * i * 10, true);
+  }
+  const source = new SolarSystemData(ctx, { fetch: async () => new Response(bytes) });
+  await source.load(["neptune"], 5, []);
+  const before = structuredClone([...states]);
+  const trail = source.trajectorySamples("neptune", 5, 256, false, "instantaneous");
+  assert.deepEqual(trail.points[0], trail.points.at(-1));
+  assert.ok(trail.points.every(p => Math.abs(Math.hypot(...p) - 10) < 1e-8));
+  assert.deepEqual(trail.points[trail.epochsTdbSeconds.indexOf(5)], source.position("neptune", 5));
+  assert.ok(trail.epochsTdbSeconds[0] < 0 && trail.epochsTdbSeconds.at(-1)! > 10);
+  assert.deepEqual([...states], before);
+  assert.throws(() => source.position("neptune", 11), /coverage/);
+  source.dispose();
+});
+
 test("disposed delayed fetch cannot resurrect objects", async () => {
   const { ctx, states } = context();
   let release!: () => void;

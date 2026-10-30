@@ -25,8 +25,8 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
     cursor += 8;
   };
   if (!orientation) {
-    number(1);
-    number(2);
+    number(100); // n^2*a^3 for this circular fixture, in km^3/s^2.
+    number(0);
   }
   bytes[cursor++] = 1;
   view.setInt32(cursor, 2, true);
@@ -42,7 +42,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 
 function harness() {
   const visuals: { id: string; spec: Record<string, any> }[] = [];
-  const trails: { id: string; epochs: number[]; count: number }[] = [];
+  const trails: { id: string; epochs: number[]; count: number; closed: boolean }[] = [];
   let core: HostCore;
   let freed = 0;
   let picked: string | undefined;
@@ -71,6 +71,7 @@ function harness() {
                 id: args[2],
                 epochs: payload.epochs,
                 count: payload.points.length,
+                closed: JSON.stringify(payload.points[0]) === JSON.stringify(payload.points.at(-1)),
               });
               return result;
             };
@@ -183,6 +184,7 @@ test("timed trajectory detail switches from a late catalog object without exceed
   );
   try {
     await app.select("neptune");
+      assert.equal(fixtures.trails().filter(t=>t.id==="neptune").at(-1)!.closed,true);
     await app.select("mercury");
     const trail = fixtures
       .trails()
@@ -190,6 +192,7 @@ test("timed trajectory detail switches from a late catalog object without exceed
       .at(-1)!;
     assert.ok(trail.count > 1024 && trail.count <= 2048);
     assert.ok(trail.epochs.includes(fixtures.core().epoch()));
+      assert.equal(trail.closed,true);
     assert.equal(fixtures.focused(), "mercury");
   } finally {
     await app.dispose();

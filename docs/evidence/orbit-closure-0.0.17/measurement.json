@@ -1,0 +1,96 @@
+{
+  "epoch": 846619082.605,
+  "rows": [
+    {
+      "id": "mercury",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "oldVisibleYears": 0.24084597809858932,
+      "modelPeriodYears": 0.24084601426319202,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "earth",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "oldVisibleYears": 0.9991282987199854,
+      "modelPeriodYears": 1.0000932762497603,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "moon",
+      "coverage": [
+        836169537.7186799,
+        852615807.5075626
+      ],
+      "oldVisibleYears": 0.07509334210090426,
+      "modelPeriodYears": 0.07412630187050738,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "earth",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "jupiter",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "oldVisibleYears": 11.858136224630304,
+      "modelPeriodYears": 11.866150364161632,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "saturn",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "oldVisibleYears": 29.532806022093858,
+      "modelPeriodYears": 29.46699303380503,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "uranus",
+      "coverage": [
+        -3155716758.816,
+        3155025667.1836557
+      ],
+      "oldVisibleYears": 84.62362142144575,
+      "modelPeriodYears": 84.37499189195843,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    },
+    {
+      "id": "neptune",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ],
+      "oldVisibleYears": 156.4701896602966,
+      "modelPeriodYears": 166.55434720587917,
+      "modelClosed": true,
+      "vertices": 255,
+      "parent": "sun",
+      "currentEpochIncluded": true
+    }
+  ]
+}
