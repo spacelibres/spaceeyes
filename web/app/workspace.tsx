@@ -148,6 +148,7 @@ export default function Workspace() {
         });
       }}
       galaxy={state.galaxy}
+      dataCache={state.dataCache}
       lighting={state.lighting}
       onLighting={(mode) => action((value) => value.lighting(mode))}
       fovDegrees={state.fovDegrees}
@@ -175,6 +176,7 @@ export default function Workspace() {
       rate={String(state.rate)}
       source={state.source}
       coverage={state.coverage}
+      attitude={state.attitude}
       dataStatus={state.dataStatus}
       view={state.view}
       labels={state.labels}

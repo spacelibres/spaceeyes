@@ -1,3 +1,4 @@
+import { SolarSystemData } from "../solar-system.ts";
 import { buildStellarTuning, stellarDefaults } from "../stellar-tuning.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -644,6 +645,61 @@ test("lighting SDK controls real WASM and disposal restores natural lighting", a
     assert.throws(() => sdk.camera.lighting("flood"), /inactive/);
     core.release_session("lighting-direct");
     core.release_session("lighting-reader");
+  } finally {
+    await host.shutdown();
+    core.free();
+  }
+});
+
+function rollbackOrb(radius: number) {
+  const b = new Uint8Array(28 + 144),
+    v = new DataView(b.buffer);
+  v.setInt16(0, 2, true);
+  b.set([111, 114, 98, 0, 3], 2);
+  v.setFloat64(7, 1, true);
+  v.setFloat64(15, 2, true);
+  b[23] = 1;
+  v.setInt32(24, 2, true);
+  for (let i = 0; i < 2; i++) {
+    const p = 28 + i * 72;
+    [i * 10, radius, 0, 0, 0, 1, 0, 0, 0].forEach((x, j) =>
+      v.setFloat64(p + j * 8, x, true),
+    );
+  }
+  return b;
+}
+test("rollback clears newly published object from real Rust core", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let source!: SolarSystemData;
+  try {
+    host.register(
+      {
+        id: "regression.rollback",
+        apiVersion: 1,
+        capabilities: ["data.publish"],
+      },
+      (ctx) => {
+        source = new SolarSystemData(ctx, {
+          fetch: async () => new Response(rollbackOrb(10)),
+        });
+      },
+    );
+    await host.enable("regression.rollback", ["data.publish"]);
+    source.retain(["earth"]);
+    await source.load(["earth"], 5, []);
+    source.publishAt(5);
+    const restore = source.checkpoint();
+    source.retain(["mars"]);
+    await source.load(["mars"], 5, []);
+    source.publishAt(5);
+    assert.doesNotThrow(() => core.state_at("mars", 5));
+    restore();
+    assert.throws(() => core.state_at("mars", 5));
+    source.publishAt(5);
+    assert.doesNotThrow(() => core.state_at("earth", 5));
+    source.dispose();
+    assert.throws(() => core.state_at("earth", 5));
   } finally {
     await host.shutdown();
     core.free();

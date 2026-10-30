@@ -1112,3 +1112,86 @@ test("host lighting publishes validated mode and resets snapshot on disposal", a
   assert.equal(states.at(-1)!.lighting, "natural");
   assert.throws(() => app.lighting("natural"));
 });
+
+test("scene cache diagnostics stay bounded across scene changes and failed time rollback", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"), 1e9)),
+    },
+  );
+  try {
+    app.play(false, 1);
+    await app.seek(100);
+    await app.select("earth");
+    await app.select("jupiter");
+    const before = states.at(-1)!.dataCache;
+    assert.ok(before.records > 0 && before.records <= before.maxRecords);
+    assert.ok(before.positionEntries > 0 && before.positionEntries <= 256);
+    await assert.rejects(app.seek(2e9));
+    assert.equal(states.at(-1)!.epoch, 100);
+    assert.ok(states.at(-1)!.dataCache.records <= before.maxRecords);
+  } finally {
+    await app.dispose();
+  }
+  assert.equal(states.at(-1)!.dataCache.records, 0);
+});
+
+test("missing dynamic orientation keeps position ready and reports attitude unavailable", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        String(input).includes("type=ori")
+          ? new Response("missing orientation", { status: 503 })
+          : new Response(sample()),
+    },
+  );
+  try {
+    await app.select("earth");
+    assert.match(states.at(-1)!.dataStatus, /^ready/);
+    assert.match(states.at(-1)!.attitude, /姿态不可用/);
+    assert.match(states.at(-1)!.attitude, /不作真实姿态声明/);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("overview warnings describe retained scene failures only", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (state) => states.push(state),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        /sc_iss|mars/.test(String(input))
+          ? new Response("unavailable", { status: 503 })
+          : new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await assert.rejects(app.select("sc_iss"));
+    app.overview();
+    assert.doesNotMatch(
+      states.at(-1)!.error,
+      /ISS|International Space Station|国际空间站/i,
+    );
+    assert.match(states.at(-1)!.error, /火星|Mars/);
+  } finally {
+    await app.dispose();
+  }
+});

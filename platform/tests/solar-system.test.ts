@@ -549,3 +549,182 @@ test("retained pending planet retries immediately after scene cancellation", asy
   assert.deepEqual(source.position("earth", 5), [10, 0, 0]);
   source.dispose();
 });
+
+test("decoded caches and evidence are bounded by retained scene and record budget", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    maxCachedRecords: 2,
+    fetch: async () => new Response(orb(10)),
+  });
+  source.retain(["earth"]);
+  await source.load(["earth"], 5, []);
+  assert.equal(source.cacheStats().records, 2);
+  assert.equal(source.provenance("earth").length, 1);
+  assert.throws(() => source.retain(["unknown"]));
+  assert.throws(() => source.retain(["earth", "earth"]));
+  assert.equal(source.cacheStats().records, 2);
+  source.retain(["earth", "mars"]);
+  await source.load(["mars"], 5, []);
+  assert.equal(source.status("mars")?.status, "failed");
+  assert.equal(source.cacheStats().records, 2);
+  assert.equal(source.provenance("mars").length, 0);
+  const restore = source.checkpoint();
+  source.retain(["mars"]);
+  assert.equal(source.cacheStats().records, 0);
+  restore();
+  assert.equal(source.cacheStats().records, 2);
+  const discard = source.checkpoint();
+  discard.discard();
+  source.retain([]);
+  discard();
+  assert.equal(source.cacheStats().records, 0);
+  source.dispose();
+  assert.equal(source.cacheStats().provenance, 0);
+});
+
+test("replacement and repeated epochs retain only latest accepted evidence", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    maxCachedRecords: 2,
+    fetch: async (input) => {
+      const epoch = Number(
+        new URL(String(input), "http://test").searchParams.get("epoch"),
+      );
+      const bytes = orb(10);
+      const view = new DataView(bytes.buffer);
+      view.setFloat64(28, epoch, true);
+      view.setFloat64(100, epoch + 10, true);
+      return new Response(bytes);
+    },
+  });
+  source.retain(["earth"]);
+  for (const epoch of [0, 20, 40, 60]) {
+    await source.load(["earth"], epoch, []);
+    assert.equal(source.cacheStats().records, 2);
+    assert.equal(source.provenance("earth").length, 1);
+    assert(source.provenance("earth")[0].url.endsWith("epoch=" + epoch));
+  }
+  const restore = source.checkpoint();
+  source.retain([]);
+  restore();
+  source.retain([]);
+  restore();
+  assert.equal(source.cacheStats().records, 0);
+  source.dispose();
+});
+test("rollback aborts in-flight requests without reviving cancelled results", async () => {
+  const { ctx } = context();
+  let finish!: (r: Response) => void;
+  let wait = false;
+  let started!: () => void;
+  const fetched = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const source = new SolarSystemData(ctx, {
+    fetch: async () =>
+      wait
+        ? await new Promise<Response>((r) => {
+            finish = r;
+            started();
+          })
+        : new Response(orb(10)),
+  });
+  source.retain(["earth"]);
+  await source.load(["earth"], 5, []);
+  const prior = source.provenance("earth");
+  const restore = source.checkpoint();
+  wait = true;
+  source.retain(["mars"]);
+  const pending = source.load(["mars"], 5, []);
+  await fetched;
+  restore();
+  finish(new Response(orb(20)));
+  await pending;
+  assert.deepEqual(source.provenance("earth"), prior);
+  assert.equal(source.provenance("mars").length, 0);
+  assert.equal(source.status("mars"), undefined);
+  assert.equal(source.cacheStats().records, 2);
+  source.dispose();
+});
+test("invalid cache budgets and oversized retain reject without mutations", () => {
+  const { ctx } = context();
+  for (const value of [0, -1, NaN, Infinity, 1.5, 1000001])
+    assert.throws(() => new SolarSystemData(ctx, { maxCachedRecords: value }));
+  const source = new SolarSystemData(ctx);
+  source.retain(["sun"]);
+  assert.throws(() => source.retain(Array(257).fill("sun")));
+  assert.equal(source.cacheStats().records, 0);
+  source.dispose();
+  assert(Object.isFrozen(source.cacheStats()));
+});
+
+function orientation(start = 0) {
+  const bytes = new Uint8Array(12 + 128);
+  const view = new DataView(bytes.buffer);
+  view.setInt16(0, 2, true);
+  bytes.set([111, 114, 105, 0, 3, 1], 2);
+  view.setInt32(8, 2, true);
+  for (let i = 0; i < 2; i++)
+    [start + i * 10, 1, 0, 0, 0, 0, 0, 0].forEach((value, j) =>
+      view.setFloat64(12 + i * 64 + j * 8, value, true),
+    );
+  return bytes;
+}
+test("orientation budget and coverage failure are explicit while position remains ready", async () => {
+  for (const outside of [false, true]) {
+    const { ctx } = context();
+    const source = new SolarSystemData(ctx, {
+      maxCachedRecords: outside ? 4 : 2,
+      fetch: async (input) =>
+        new Response(
+          String(input).includes("type=ori")
+            ? orientation(outside ? 20 : 0)
+            : orb(10),
+        ),
+    });
+    await source.load(["earth"], 5);
+    assert.equal(source.status("earth")?.status, "ready");
+    assert.equal(source.status("earth")?.orientationStatus, "unavailable");
+    assert.match(
+      source.status("earth")?.orientationError ?? "",
+      outside ? /coverage/ : /budget/,
+    );
+    assert.equal(source.cacheStats().orientationEntries, 0);
+    assert.equal(source.provenance("earth").length, 1);
+    source.dispose();
+  }
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) =>
+      new Response(
+        String(input).includes("type=ori") ? orientation() : orb(10),
+      ),
+  });
+  await source.load(["earth"], 5);
+  assert.equal(source.status("earth")?.orientationStatus, "ready");
+  await source.load(["earth"], 5, []);
+  assert.equal(source.status("earth")?.orientationStatus, "not-requested");
+  source.dispose();
+});
+
+test("rollback removes newly published scene objects before restoring ownership", async () => {
+  const { ctx, states } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response(orb(10)),
+  });
+  source.retain(["earth"]);
+  await source.load(["earth"], 5, []);
+  source.publishAt(5);
+  const restore = source.checkpoint();
+  source.retain(["mars"]);
+  await source.load(["mars"], 5, []);
+  source.publishAt(5);
+  assert(states.has("mars"));
+  restore();
+  assert(!states.has("mars"));
+  source.publishAt(5);
+  assert(states.has("earth"));
+  assert(!states.has("mars"));
+  source.dispose();
+  assert.equal(states.size, 0);
+});

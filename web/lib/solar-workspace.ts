@@ -2,6 +2,7 @@ import {
   snapshotEnvironment,
   type EnvironmentSpec,
 } from "../../platform/environment-contract.ts";
+import { activeController } from "../../platform/eyes-controllers.ts";
 import { isLive } from "./time-controls.ts";
 import { solarWorkspaceSettings } from "./solar-settings.ts";
 import { buildStellarTuning } from "../../platform/stellar-tuning.ts";
@@ -44,6 +45,13 @@ export interface HostCore extends WasmCoreBinding {
 export type SolarSnapshot = {
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
+  dataCache: {
+    records: number;
+    positionEntries: number;
+    orientationEntries: number;
+    provenance: number;
+    maxRecords: number;
+  };
   live: boolean;
   lighting: "natural" | "shadow" | "flood";
   fovDegrees: number;
@@ -77,11 +85,19 @@ export type SolarSnapshot = {
   trails: boolean;
   source: string;
   coverage: string;
+  attitude: string;
   dataStatus: string;
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
   observationMode: "nearby",
+  dataCache: {
+    records: 0,
+    positionEntries: 0,
+    orientationEntries: 0,
+    provenance: 0,
+    maxRecords: 1000000,
+  },
   live: false,
   lighting: "natural",
   fovDegrees: 45,
@@ -110,6 +126,7 @@ export const initialSnapshot: SolarSnapshot = {
   trails: true,
   source: "NASA Eyes DYN · 按需获取",
   coverage: "由实际数据确定",
+  attitude: "未选择对象",
   dataStatus: "尚未加载",
   utc: "",
 };
@@ -390,6 +407,7 @@ export async function createWorkspace(
             : {}),
         };
     }
+    if (data) state.dataCache = data.cacheStats();
     state.epoch = core.epoch();
     state.playing = core.playing();
     state.live = isLive(
@@ -402,6 +420,14 @@ export async function createWorkspace(
     if (state.selected && data) {
       state.parentId = data.parentAt(state.selected, state.epoch) ?? undefined;
       const status = data.status(state.selected);
+      state.attitude =
+        status?.orientationStatus === "ready"
+          ? "NASA Eyes DYN 姿态数据可用（精度未验收）"
+          : status?.orientationStatus === "unavailable"
+            ? `姿态不可用：${status.orientationError ?? "源数据未就绪"}；不作真实姿态声明`
+            : status?.orientationStatus === "not-requested"
+              ? "姿态按需加载，尚未请求；不作真实姿态声明"
+              : "未提供动态姿态；固定控制器姿态待核验，不作真实姿态声明";
       state.dataStatus =
         (status?.status ?? "未加载") +
         (status?.error ? ` · ${status.error}` : "");
@@ -428,6 +454,7 @@ export async function createWorkspace(
       }
     }
     if (!state.selected && data) {
+      state.attitude = "未选择对象";
       const loaded = data.status().filter((item) => item.status === "ready");
       const shown = loaded.filter((item) => {
         try {
@@ -458,6 +485,8 @@ export async function createWorkspace(
           ...state,
           active: false,
           live: false,
+          attitude: "工作区已释放",
+          dataCache: { ...initialSnapshot.dataCache },
           lighting: "natural",
           busy: false,
           playing: false,
@@ -518,6 +547,23 @@ export async function createWorkspace(
       ids.add(reference);
       if (reference === "sun") break;
       reference = parentAt(reference, epoch) ?? undefined;
+    }
+    // Retain exactly the scene dependency closure, stopping parent ancestry at Sun.
+    for (const id of ids) {
+      if (id !== "sun") {
+        const parent = parentAt(id, epoch);
+        if (parent) ids.add(parent);
+      }
+      for (const controller of activeController(
+        id,
+        epoch,
+        "rotateByEntityOrientation",
+      )) {
+        const reference =
+          controller.entityForOrientation ?? parentAt(id, epoch);
+        if (reference && reference !== id) ids.add(reference);
+      }
+      if (ids.size > 256) throw Error("当前场景依赖超出对象预算（256）");
     }
     if (ids.size > 256) throw Error("当前场景超出对象预算（256）");
     return [...ids];
@@ -662,6 +708,18 @@ export async function createWorkspace(
       trajectories: state.trajectories || state.trails,
     });
   };
+  const refreshDataWarning = () => {
+    const unavailable = data
+      .status()
+      .filter((item) => item.status !== "ready")
+      .map(
+        (item) =>
+          solarCatalog.find((body) => body.id === item.id)?.name ?? item.id,
+      );
+    state.error = unavailable.length
+      ? `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`
+      : "";
+  };
   const validateFollow = () => {
     if (state.observationMode !== "follow" || !state.followId) return;
     try {
@@ -754,22 +812,13 @@ export async function createWorkspace(
           const available = data
             .status()
             .filter((item) => item.status === "ready").length;
-          const unavailable = data
-            .status()
-            .filter((item) => item.status !== "ready")
-            .map(
-              (item) =>
-                solarCatalog.find((body) => body.id === item.id)?.name ??
-                item.id,
-            );
           state.phase = `当前场景：${available}/${data.status().length} 个对象可用 · 目录 ${workspaceCatalog.length} 项`;
           if (selectedUnavailable)
             state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
-          state.error = unavailable.length
-            ? `部分源数据暂不可用：${unavailable.join("、")}。选择对象查看具体原因。`
-            : "";
+          refreshDataWarning();
           validateFollow();
         } finally {
+          restore.discard();
           if (!closed && current === revision) {
             state.busy = false;
             lastFrame = undefined;
@@ -978,6 +1027,7 @@ export async function createWorkspace(
       state.followId = undefined;
       state.selected = "";
       data.retain(baseSolarIds);
+      refreshDataWarning();
       configure();
       sdk.camera.view("overview");
       state.view = "orbit";
@@ -988,6 +1038,7 @@ export async function createWorkspace(
           .finally(() => {
             if (closed || revision !== ownedRevision) return;
             data.retain(baseSolarIds);
+            refreshDataWarning();
             data.publishAt(core.epoch());
             configure();
             state.busy = false;

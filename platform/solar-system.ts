@@ -73,9 +73,12 @@ export type SolarStatus = {
     | "canceled"
     | "unsupported";
   error?: string;
+  orientationStatus?: "ready" | "unavailable" | "not-requested";
+  orientationError?: string;
   coverage?: [number, number];
 };
 export class SolarSystemData {
+  #maxCachedRecords: number;
   #ctx: PluginContext;
   #fetch: typeof fetch;
   #abort = new AbortController();
@@ -92,6 +95,7 @@ export class SolarSystemData {
   #provenance = new Map<
     string,
     {
+      url: string;
       sha256: string;
       fetchedAt: string;
       sourceSha256?: string;
@@ -185,7 +189,8 @@ export class SolarSystemData {
       at += c.length;
     }
     const hash = await crypto.subtle.digest("SHA-256", bytes);
-    this.#provenance.set(url, {
+    signal.throwIfAborted();
+    const evidence = {
       sha256: Array.from(new Uint8Array(hash), (x) =>
         x.toString(16).padStart(2, "0"),
       ).join(""),
@@ -196,22 +201,30 @@ export class SolarSystemData {
             selection: r.headers.get("x-dyn-selection") ?? undefined,
           }
         : {}),
-    });
-    return bytes;
+    };
+    return { bytes, evidence, url };
   }
   constructor(
     ctx: PluginContext,
     options: {
       fetch?: typeof fetch;
+      maxCachedRecords?: number;
     } = {},
   ) {
+    this.#maxCachedRecords = options.maxCachedRecords ?? 1_000_000;
+    if (
+      !Number.isSafeInteger(this.#maxCachedRecords) ||
+      this.#maxCachedRecords < 1 ||
+      this.#maxCachedRecords > 1_000_000
+    )
+      throw Error("Invalid decoded record budget");
     this.#ctx = ctx;
     this.#fetch = options.fetch ?? globalThis.fetch.bind(globalThis);
     ctx.onDispose(() => this.dispose());
     ctx.signal.addEventListener("abort", () => this.dispose(), { once: true });
   }
   /** Internal transaction snapshot; frozen DYN payloads remain shared. */
-  checkpoint(): () => void {
+  checkpoint(): (() => void) & { discard(): void } {
     const generation = this.#generation;
     const published = new Set(this.#published);
     const data = new Map(this.#data);
@@ -234,8 +247,26 @@ export class SolarSystemData {
     const provenance = new Map(
       [...this.#provenance].map(([url, value]) => [url, { ...value }]),
     );
-    return () => {
-      if (generation !== this.#generation || this.#abort.signal.aborted) return;
+    let used = false;
+    const release = () => {
+      data.clear();
+      dataParents.clear();
+      ori.clear();
+      states.clear();
+      provenance.clear();
+      published.clear();
+    };
+    const restore = () => {
+      if (used) return;
+      used = true;
+      if (generation !== this.#generation || this.#abort.signal.aborted) {
+        release();
+        return;
+      }
+      this.#cancelLoads();
+      for (const id of this.#published) {
+        if (!published.has(id)) this.#ctx.data.remove(id);
+      }
       this.#published = new Set(published);
       this.#data = new Map(data);
       this.#dataParents = new Map(dataParents);
@@ -245,7 +276,13 @@ export class SolarSystemData {
       this.#provenance = new Map(
         [...provenance].map(([url, value]) => [url, { ...value }]),
       );
+      release();
     };
+    restore.discard = () => {
+      used = true;
+      release();
+    };
+    return restore;
   }
   status(id: string): SolarStatus | undefined;
   status(): SolarStatus[];
@@ -256,8 +293,8 @@ export class SolarSystemData {
   }
   provenance(id: string) {
     return [...this.#provenance.entries()]
-      .filter(([url]) => url.startsWith(`/api/solar-dyn/${id}?`))
-      .map(([url, value]) => ({ url, ...value }));
+      .filter(([key]) => key === id + ":orb" || key === id + ":ori")
+      .map(([, value]) => ({ ...value }));
   }
   parentAt(id: string, epoch: number): string | null {
     return eyesDefinitions[id]
@@ -265,11 +302,20 @@ export class SolarSystemData {
       : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
   }
   retain(ids: readonly string[]) {
-    this.#loadGeneration++;
-    this.#pending.clear();
-    this.#queueAbort.abort(new Error("Scene changed"));
-    this.#queueAbort = new AbortController();
     const keep = new Set(ids);
+    if (
+      !Array.isArray(ids) ||
+      ids.length > 256 ||
+      keep.size !== ids.length ||
+      ids.some((id) => !solarCatalog.some((item) => item.id === id))
+    )
+      throw Error("Invalid retained scene");
+    this.#cancelLoads();
+    for (const map of [this.#data, this.#ori, this.#dataParents])
+      for (const id of map.keys()) if (!keep.has(id)) map.delete(id);
+    for (const key of this.#provenance.keys())
+      if (!keep.has(key.slice(0, key.lastIndexOf(":"))))
+        this.#provenance.delete(key);
     this.#retained = keep;
     for (const id of this.#states.keys())
       if (!keep.has(id)) {
@@ -279,6 +325,39 @@ export class SolarSystemData {
           this.#published.delete(id);
         }
       }
+  }
+  #cancelLoads() {
+    this.#loadGeneration++;
+    this.#pending.clear();
+    this.#queueAbort.abort(new Error("Scene changed"));
+    this.#queueAbort = new AbortController();
+  }
+  cacheStats() {
+    const count = (map: Map<string, DecodedDyn>) =>
+      [...map.values()].reduce(
+        (n, d) =>
+          n + (d.kind === "inline" ? d.records.length : d.segments.length),
+        0,
+      );
+    return Object.freeze({
+      records: count(this.#data) + count(this.#ori),
+      positionEntries: this.#data.size,
+      orientationEntries: this.#ori.size,
+      provenance: this.#provenance.size,
+      maxRecords: this.#maxCachedRecords,
+    });
+  }
+  #cache(map: Map<string, DecodedDyn>, id: string, value: DecodedDyn) {
+    const ids = new Set([...this.#data.keys(), ...this.#ori.keys(), id]);
+    if (ids.size > 256) throw Error("DYN cached object budget exceeded");
+    const count = (d?: DecodedDyn) =>
+      d ? (d.kind === "inline" ? d.records.length : d.segments.length) : 0;
+    if (
+      this.cacheStats().records - count(map.get(id)) + count(value) >
+      this.#maxCachedRecords
+    )
+      throw Error("DYN cached record budget exceeded");
+    map.set(id, value);
   }
   coverage(id: string) {
     return this.#states.get(id)?.coverage;
@@ -311,6 +390,10 @@ export class SolarSystemData {
       ids.map(async (id) => {
         const item = solarCatalog.find((x) => x.id === id);
         if (!item) throw Error("Unknown object");
+        if (this.#abort.signal.aborted || generation !== this.#loadGeneration)
+          return;
+        if (this.#retained && !this.#retained.has(id))
+          throw Error("Object outside retained scene dependency closure");
         if (eyesCatalog.find((x) => x.id === id)?.unsupported) {
           this.#states.set(id, {
             id,
@@ -392,9 +475,10 @@ export class SolarSystemData {
           if (d && (epoch < d.coverage.start || epoch > d.coverage.end))
             d = undefined;
           if (!d) {
-            d = decodeDyn(
-              await this.#read(`/api/solar-dyn/${id}?epoch=${epoch}`),
+            const result = await this.#read(
+              `/api/solar-dyn/${id}?epoch=${epoch}`,
             );
+            d = decodeDyn(result.bytes);
             if (d.kind !== "inline") throw Error("Unresolved index");
             if (epoch < d.coverage.start || epoch > d.coverage.end)
               throw Error("Outside source coverage");
@@ -403,9 +487,16 @@ export class SolarSystemData {
               (this.#retained && !this.#retained.has(id))
             )
               return;
-            this.#data.set(id, d);
+            this.#cache(this.#data, id, d);
+            this.#provenance.set(id + ":orb", {
+              url: result.url,
+              ...result.evidence,
+            });
             this.#dataParents.set(id, currentParent);
           }
+          let orientationStatus: "ready" | "unavailable" | "not-requested" =
+            "not-requested";
+          let orientationError: string | undefined;
           if (orientationIds.includes(id))
             try {
               let ori = this.#ori.get(id);
@@ -413,15 +504,41 @@ export class SolarSystemData {
                 !ori ||
                 epoch < ori.coverage.start ||
                 epoch > ori.coverage.end
-              )
-                ori = decodeDyn(
-                  await this.#read(
-                    `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
-                  ),
+              ) {
+                const result = await this.#read(
+                  `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
                 );
-              if (generation === this.#loadGeneration) this.#ori.set(id, ori);
-            } catch {
-              /* Position remains available without attitude. */
+                ori = decodeDyn(result.bytes);
+                if (ori.kind !== "inline" || ori.type !== "ori")
+                  throw Error("Invalid orientation payload");
+                if (epoch < ori.coverage.start || epoch > ori.coverage.end)
+                  throw Error("Outside orientation source coverage");
+                if (
+                  generation !== this.#loadGeneration ||
+                  this.#abort.signal.aborted ||
+                  (this.#retained && !this.#retained.has(id))
+                )
+                  return;
+                this.#cache(this.#ori, id, ori);
+                this.#provenance.set(id + ":ori", {
+                  url: result.url,
+                  ...result.evidence,
+                });
+              }
+              orientationStatus = "ready";
+            } catch (error) {
+              orientationStatus = "unavailable";
+              orientationError = String(error);
+              if (generation === this.#loadGeneration) {
+                const old = this.#ori.get(id);
+                if (
+                  old &&
+                  (epoch < old.coverage.start || epoch > old.coverage.end)
+                ) {
+                  this.#ori.delete(id);
+                  this.#provenance.delete(id + ":ori");
+                }
+              }
             }
           if (
             generation !== this.#loadGeneration ||
@@ -431,6 +548,8 @@ export class SolarSystemData {
           this.#states.set(id, {
             id,
             status: "ready",
+            orientationStatus,
+            ...(orientationError ? { orientationError } : {}),
             coverage: this.#phaseCoverage(
               id,
               epoch,
@@ -784,5 +903,8 @@ export class SolarSystemData {
     this.#states.clear();
     this.#data.clear();
     this.#ori.clear();
+    this.#dataParents.clear();
+    this.#provenance.clear();
+    this.#pending.clear();
   }
 }

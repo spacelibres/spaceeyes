@@ -34,6 +34,13 @@ export type WorkspaceViewProps = {
     loadedTiles?: number;
     gpuBytes?: number;
   };
+  dataCache?: {
+    records: number;
+    positionEntries: number;
+    orientationEntries: number;
+    provenance: number;
+    maxRecords: number;
+  };
   lighting?: "natural" | "shadow" | "flood";
   onLighting?: (mode: "natural" | "shadow" | "flood") => void;
   fovDegrees: number;
@@ -59,6 +66,7 @@ export type WorkspaceViewProps = {
   rate: string;
   source: string;
   coverage: string;
+  attitude?: string;
   dataStatus: string;
   view: string;
   labels: boolean;
@@ -587,6 +595,8 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           <dl>
             <dt>数据状态</dt>
             <dd>{p.dataStatus}</dd>
+            <dt>姿态来源与状态</dt>
+            <dd>{p.attitude ?? "尚未核验姿态来源"}</dd>
             <dt>科学来源</dt>
             <dd>{p.source}</dd>
             {p.selected === "sun" && (
@@ -719,7 +729,24 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </div>
           )}
           <details className="muted">
-            <summary>深空数据诊断</summary>
+            <summary>场景与深空数据诊断</summary>
+            <dl aria-label="DYN缓存诊断">
+              <dt>缓存记录 / 上限</dt>
+              <dd>
+                {p.dataCache?.records ?? 0} /{" "}
+                {p.dataCache?.maxRecords ?? 1000000}
+              </dd>
+              <dt>位置 / 姿态缓存项</dt>
+              <dd>
+                {p.dataCache?.positionEntries ?? 0} /{" "}
+                {p.dataCache?.orientationEntries ?? 0}
+              </dd>
+              <dt>来源项</dt>
+              <dd>{p.dataCache?.provenance ?? 0}</dd>
+            </dl>
+            <p className="muted">
+              统计解码记录与缓存项数量，非 JavaScript 堆内存字节。
+            </p>
             <dl aria-label="深空资源诊断">
               <dt>目标 / 就绪 / 当前层级</dt>
               <dd>
