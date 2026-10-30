@@ -5,6 +5,10 @@ pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TrajectoryStyle {
+    pub kind: Option<String>,
+    pub trail_duration_seconds: Option<f64>,
+    #[serde(default)]
+    pub break_indices: Vec<usize>,
     pub origin_id: Option<String>,
     pub color_rgba: Option<[f32; 4]>,
 }
@@ -407,6 +411,12 @@ impl Core {
         if self.objects.get(id).ok_or(CoreError::UnknownObject)? != session {
             return Err(CoreError::WrongOwner);
         }
+        if label
+            .as_ref()
+            .is_some_and(|s| s.chars().count() > 256 || s.chars().any(|c| c.is_control()))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
         if let Some(points) = points {
             let used: usize = self
                 .trajectories
@@ -460,6 +470,24 @@ impl Core {
         epochs: Vec<f64>,
         style: TrajectoryStyle,
     ) -> Result<(), CoreError> {
+        let trail = style.kind.as_deref() == Some("trail");
+        if style
+            .kind
+            .as_deref()
+            .is_some_and(|k| k != "orbit" && k != "trail")
+            || (trail
+                && !style
+                    .trail_duration_seconds
+                    .is_some_and(|d| d.is_finite() && (1.0..=315576000.0).contains(&d)))
+            || (!trail && style.trail_duration_seconds.is_some())
+            || style
+                .break_indices
+                .iter()
+                .any(|&i| i == 0 || i >= points.len())
+            || style.break_indices.windows(2).any(|w| w[0] >= w[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
         if let Some(origin) = &style.origin_id {
             if origin == id {
                 return Err(CoreError::InvalidVisual);
@@ -482,6 +510,9 @@ impl Core {
             return Err(CoreError::InvalidVisual);
         }
         self.set_annotation(session, plugin, id, Some(points), None)?;
+        if epochs.is_empty() {
+            return Ok(());
+        }
         self.trajectory_epochs.insert(id.to_owned(), epochs);
         self.trajectory_styles.insert(id.to_owned(), style);
         Ok(())

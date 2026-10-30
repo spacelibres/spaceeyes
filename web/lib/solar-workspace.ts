@@ -67,6 +67,7 @@ export type SolarSnapshot = {
   view: string;
   labels: boolean;
   trajectories: boolean;
+  trails: boolean;
   source: string;
   coverage: string;
   dataStatus: string;
@@ -94,6 +95,7 @@ export const initialSnapshot: SolarSnapshot = {
   view: "orbit",
   labels: true,
   trajectories: true,
+  trails: true,
   source: "NASA Eyes DYN · 按需获取",
   coverage: "由实际数据确定",
   dataStatus: "尚未加载",
@@ -126,6 +128,7 @@ export interface WorkspaceRuntime {
   seek(epoch: number): Promise<void>;
   seekUtc(value: string): Promise<void>;
   now(): Promise<void>;
+  trails(enabled: boolean): void;
   layers(labels: boolean, trajectories: boolean): void;
   dispose(): Promise<void>;
 }
@@ -482,15 +485,35 @@ export async function createWorkspace(
     const count = data.status().filter((s) => s.status === "ready").length;
     const ordinary = state.selected
       ? Math.min(128, Math.max(8, Math.floor(2048 / Math.max(1, count - 1))))
-      : 256;
-    const trail = data.trajectorySamples(
-      id,
-      core.epoch(),
-      state.selected === id ? 2048 : ordinary,
-      state.selected === id,
-      "instantaneous",
+      : Math.min(256, Math.max(8, Math.floor(4096 / Math.max(1, count))));
+    const isTrail = ["moon", "spacecraft"].includes(
+      solarCatalog.find((body) => body.id === id)!.kind,
     );
+    const history = isTrail
+      ? data.trailSamples(
+          id,
+          core.epoch(),
+          state.selected === id ? 2048 : ordinary,
+          state.selected === id,
+        )
+      : undefined;
+    const trail =
+      history ??
+      data.trajectorySamples(
+        id,
+        core.epoch(),
+        state.selected === id ? 2048 : ordinary,
+        state.selected === id,
+        "instantaneous",
+      );
     sdk.visual.trajectory(id, trail.points, trail.epochsTdbSeconds, {
+      ...(history
+        ? {
+            kind: "trail" as const,
+            trailDurationSeconds: history.durationSeconds,
+            breakIndices: history.breakIndices,
+          }
+        : {}),
       originId: trail.originId,
       colorRgba: solarCatalog.find((body) => body.id === id)!.color,
     });
@@ -499,6 +522,17 @@ export async function createWorkspace(
   const configure = () => {
     for (const id of trajectoryWindows.keys())
       if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
+    for (const id of trajectoryWindows.keys()) {
+      const kind = solarCatalog.find((body) => body.id === id)?.kind;
+      if (
+        kind === "moon" || kind === "spacecraft"
+          ? !state.trails
+          : !state.trajectories
+      ) {
+        sdk.visual.trajectory(id, []);
+        trajectoryWindows.delete(id);
+      }
+    }
     // Shrink the previous target's trail before growing the new one; retain the session budget.
     for (const body of [...solarCatalog].sort(
       (a, b) =>
@@ -563,7 +597,9 @@ export async function createWorkspace(
           );
         }
         if (
-          state.trajectories &&
+          (body.kind === "moon" || body.kind === "spacecraft"
+            ? state.trails
+            : state.trajectories) &&
           body.id !== "sun" &&
           data.parentAt(body.id, core.epoch()) &&
           (baseSolarIds.includes(body.id) ||
@@ -579,7 +615,7 @@ export async function createWorkspace(
     }
     sdk.visual.layers({
       labels: state.labels,
-      trajectories: state.trajectories,
+      trajectories: state.trajectories || state.trails,
     });
   };
   const reload = (epoch: number) => {
@@ -794,8 +830,7 @@ export async function createWorkspace(
     overview() {
       assertLive();
       const ownedRevision = ++revision;
-      desiredPlaying = false;
-      sdk.time.setPlayback(false, state.rate);
+      sdk.time.setPlayback(desiredPlaying, state.rate);
       state.selected = "";
       data.retain(baseSolarIds);
       configure();
@@ -811,6 +846,7 @@ export async function createWorkspace(
             data.publishAt(core.epoch());
             configure();
             state.busy = false;
+            sdk.time.setPlayback(desiredPlaying, state.rate);
             state.phase = "太阳系总览";
             emit();
           })
@@ -847,6 +883,12 @@ export async function createWorkspace(
     now() {
       assertLive();
       return reload(core.utc_to_tdb(Date.now() / 1000));
+    },
+    trails(enabled) {
+      assertLive();
+      state.trails = enabled;
+      configure();
+      emit();
     },
     layers(labels, trajectories) {
       assertLive();
@@ -971,7 +1013,10 @@ export async function createWorkspace(
             });
           } else {
             data.publishAt(epoch);
-            if (state.trajectories && now - lastTrajectoryRefresh > 100) {
+            if (
+              (state.trajectories || state.trails) &&
+              now - lastTrajectoryRefresh > 100
+            ) {
               for (const [id, window] of trajectoryWindows) {
                 if (epoch < window[0] || epoch > window[1])
                   refreshTrajectory(id);

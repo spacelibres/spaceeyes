@@ -51,6 +51,8 @@ function harness(initialNullEnvironmentStatus = false) {
     epochs: number[];
     count: number;
     closed: boolean;
+    kind?: string;
+    duration?: number;
   }[] = [];
   let core: HostCore;
   let freed = 0;
@@ -89,13 +91,16 @@ function harness(initialNullEnvironmentStatus = false) {
             return (...args: any[]) => {
               const result = Reflect.apply(value, target, args);
               const payload = JSON.parse(args[3]);
+              const points = Array.isArray(payload) ? payload : payload.points;
               trails.push({
                 id: args[2],
+                kind: payload.kind,
+                duration: payload.trailDurationSeconds,
                 epochs: payload.epochs,
-                count: payload.points.length,
+                count: points.length,
                 closed:
-                  JSON.stringify(payload.points[0]) ===
-                  JSON.stringify(payload.points.at(-1)),
+                  points.length > 1 &&
+                  JSON.stringify(points[0]) === JSON.stringify(points.at(-1)),
               });
               return result;
             };
@@ -806,6 +811,65 @@ test("null environment status before first frame does not prevent workspace star
     fixtures.step(1000);
     assert.equal(latest?.galaxy.desiredLod, 4);
     assert.equal(latest?.error, "");
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("overview preserves playback and trail visibility is independent", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace(
+    "#test",
+    (v) => states.push(v),
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    app.play(true, 60);
+    app.overview();
+    assert.equal(states.at(-1)!.playing, true);
+    assert.equal(states.at(-1)!.trails, true);
+    app.trails(false);
+    assert.equal(states.at(-1)!.trails, false);
+    assert.equal(states.at(-1)!.trajectories, true);
+  } finally {
+    await app.dispose();
+  }
+});
+
+test("natural and artificial satellite trajectories are real timed trail intents", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
+  try {
+    await app.select("moon");
+    const moon = fixtures
+      .trails()
+      .filter((t) => t.id === "moon" && t.count > 0)
+      .at(-1)!;
+    assert.equal(moon.kind, "trail");
+    assert.ok(moon.duration! > 0);
+    assert.ok(moon.epochs.length > 2);
+    await app.select("sc_juno");
+    const craft = fixtures
+      .trails()
+      .filter((t) => t.id === "sc_juno" && t.count > 0)
+      .at(-1)!;
+    assert.equal(craft.kind, "trail");
+    assert.ok(craft.duration! > 0);
   } finally {
     await app.dispose();
   }

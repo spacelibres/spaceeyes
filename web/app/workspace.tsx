@@ -168,6 +168,8 @@ export default function Workspace() {
       view={state.view}
       labels={state.labels}
       trajectories={state.trajectories}
+      trails={state.trails}
+      onTrails={() => action((value) => value.trails(!state.trails))}
       jump={jump}
       onJumpInput={setJump}
       utc={state.utc}

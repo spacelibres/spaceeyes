@@ -53,6 +53,7 @@ export type WorkspaceViewProps = {
   view: string;
   labels: boolean;
   trajectories: boolean;
+  trails: boolean;
   onStart: () => void;
   onStop: () => void;
   onSelect: (id: string) => void;
@@ -74,6 +75,7 @@ export type WorkspaceViewProps = {
   onUtcJump: () => void;
   onLabels: () => void;
   onTrajectories: () => void;
+  onTrails: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
   const gesture = useRef(new SceneGesture());
@@ -518,8 +520,17 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             />
             轨道线
           </label>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={p.trails}
+              disabled={!p.active}
+              onChange={p.onTrails}
+            />
+            卫星拖尾
+          </label>
           <p className="muted">
-            椭圆显示当前状态推导的瞬时轨道，不代表完整周期的实测路径；非闭合轨道保留有效时间路径。
+            行星椭圆是当前状态推导的瞬时轨道；卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
           </p>
         </aside>
       </div>
@@ -529,13 +540,13 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           <output>{p.utc || "尚未设置时间"}</output>
           <small>{p.epoch.toFixed(3)} J2000 TDB s</small>
         </div>
-        <button disabled={!p.active} onClick={p.onPlay}>
+        <button disabled={!p.active || p.busy} onClick={p.onPlay}>
           {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
         </button>
         <label>
           播放速率
           <select
-            disabled={!p.active}
+            disabled={!p.active || p.busy}
             value={p.rate}
             onChange={(e) => p.onRate(e.target.value)}
           >

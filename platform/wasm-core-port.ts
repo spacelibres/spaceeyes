@@ -162,6 +162,9 @@ export class WasmCorePort implements CorePort {
               epochs: request.epochsTdbSeconds,
               originId: request.originId,
               colorRgba: request.colorRgba,
+              kind: request.kind,
+              trailDurationSeconds: request.trailDurationSeconds,
+              breakIndices: request.breakIndices,
             }
           : request.points,
       ),

@@ -1210,33 +1210,31 @@ fn draw_annotations(
             let color = style
                 .and_then(|s| s.color_rgba)
                 .unwrap_or([0.35, 0.55, 0.7, 1.]);
-            crate::orbit_lines::visit_segments(
+            crate::orbit_lines::visit_styled_segments(
                 points,
                 core.trajectory_epochs(id),
                 core.clock().epoch(),
                 current,
-                |a, b| {
+                style,
+                |a, b, alpha_a, alpha_b| {
                     let a = to_display(std::array::from_fn(|i| a[i] + origin[i]));
                     let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
                     if a.is_finite() && b.is_finite() {
                         let selected = core.focused_object() == Some(id);
-                        gizmos.line(
+                        let opacity = orbit_visibility
+                            * color[3]
+                            * if selected {
+                                0.65
+                            } else if core.focused_object().is_some() {
+                                0.3
+                            } else {
+                                0.6
+                            };
+                        gizmos.line_gradient(
                             a,
                             b,
-                            Color::srgba(
-                                color[0],
-                                color[1],
-                                color[2],
-                                orbit_visibility
-                                    * color[3]
-                                    * if selected {
-                                        0.65
-                                    } else if core.focused_object().is_some() {
-                                        0.3
-                                    } else {
-                                        0.6
-                                    },
-                            ),
+                            Color::srgba(color[0], color[1], color[2], opacity * alpha_a),
+                            Color::srgba(color[0], color[1], color[2], opacity * alpha_b),
                         );
                     }
                 },

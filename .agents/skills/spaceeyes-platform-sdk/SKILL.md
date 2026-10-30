@@ -186,3 +186,11 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 `visual.environment(spec)` 的可选 `lod` 按 `platform/environment-contract.ts` 严格定义七级128×64到8192×4096、256像素瓦片及2像素边缘。只能引用宿主登记资源，不接受URL、路径、shader或任意Bevy结构。线性半浮点图像、漫反射与GGX镜面环境图均由服务器提供，不进入WASM。曝光[-6,6]EV，黑位[0,0.02]，IBL强度[0,2]。停用释放渲染资源。
 
 `visual.starfield` 可选 `kind: 'star' | 'galaxy'`，默认star；保留源位置与星等。`StarfieldSource.setLod(0..6)` 控制累计星表读取，缓存仍受五万点上限约束；六份恒星文件不代表六个LOD，galaxies文件是独立角色。恒星与银河共享投影与层级过渡；迟到点层另有短渐入，关闭银河不关闭恒星LOD。不得把银河背景伪造成近距离三维视差。
+
+## 有时间语义的卫星拖尾
+
+`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～315576000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，整会话4096点预算不变；空点数组清除轨迹及样式。
+
+无originId的点是ICRF绝对位置；有originId表示数据插件在每个采样时刻扣除父体位置的相对轨迹，显示时平移到父体当前位置，不可称为惯性历史。数据插件负责真实覆盖、阶段和采样；Rust按统一TDB时刻绘制过去窗口并沿时间渐隐，不画未来、不制造闭环，暂停/倒放/跳时可复现。不能传任意mesh/material/shader。
+
+卫星拖尾与行星轨道是独立显示开关。新增界面入口不授权插件绕过核心时间、坐标或资源归属。

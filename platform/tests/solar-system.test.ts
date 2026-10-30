@@ -439,3 +439,109 @@ test("declared orbital elements expose finite covered trajectory history", async
   assert.ok(path.points.length <= 8);
   assert.ok(path.points.every((p) => p.every(Number.isFinite)));
 });
+
+test("trail samples include the current epoch and covered future cache", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => {
+      const bytes = orb(2);
+      const view = new DataView(bytes.buffer);
+      for (let i = 0; i < 2; i++) view.setFloat64(28 + i * 72 + 24, 0.1, true);
+      return new Response(bytes);
+    },
+  });
+  assert.throws(() => source.trailSamples("moon", 5));
+  await source.load(["moon"], 5, []);
+  const trail = source.trailSamples("moon", 5, 32);
+  assert.equal(trail.originId, "earth");
+  assert.ok(trail.epochsTdbSeconds.includes(5));
+  assert.ok(trail.epochsTdbSeconds.at(-1)! > 5);
+  assert.ok(trail.epochsTdbSeconds[0] >= 0);
+  assert.ok(trail.epochsTdbSeconds.at(-1)! <= 10);
+  assert.ok(trail.points.length <= 32);
+  assert.ok(trail.points.every((p) => p.every(Number.isFinite)));
+  for (const count of [NaN, Infinity, 7, 4097])
+    assert.throws(() => source.trailSamples("moon", 5, count));
+  source.dispose();
+});
+
+test("trail uses a full past period against a moving parent and caches future", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => {
+      const b = orb(String(input).includes("/moon?") ? 2 : 10000);
+      const v = new DataView(b.buffer);
+      for (let i = 0; i < 2; i++) {
+        v.setFloat64(28 + i * 72, i * 1000, true);
+        v.setFloat64(28 + i * 72 + 24, (2 * Math.PI) / 100, true);
+        v.setFloat64(28 + i * 72 + 32, i * 20 * Math.PI, true);
+      }
+      return new Response(b);
+    },
+  });
+  await source.load(["moon"], 500, []);
+  const trail = source.trailSamples("moon", 500, 128);
+  assert.ok(Math.abs(trail.durationSeconds - 100) < 1e-8);
+  assert.ok(Math.abs(trail.epochsTdbSeconds[0] - 400) < 1e-8);
+  assert.ok(Math.abs(trail.epochsTdbSeconds.at(-1)! - 525) < 1e-8);
+  for (let i = 0; i < trail.points.length; i++) {
+    const t = trail.epochsTdbSeconds[i];
+    assert.deepEqual(
+      trail.points[i],
+      source
+        .position("moon", t)
+        .map((v, j) => v - source.position("earth", t)[j]),
+    );
+  }
+  source.dispose();
+});
+test("retain aborts active transport requests", async () => {
+  const { ctx } = context();
+  let active!: AbortSignal;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (_input, init) => {
+      active = init!.signal!;
+      return await new Promise<Response>((_resolve, reject) =>
+        active.addEventListener("abort", () => reject(active.reason), {
+          once: true,
+        }),
+      );
+    },
+  });
+  const loading = source.load(["earth"], 5, []);
+  while (!active) await Promise.resolve();
+  source.retain([]);
+  assert.equal(active.aborted, true);
+  await loading;
+  source.dispose();
+});
+
+test("retained pending planet retries immediately after scene cancellation", async () => {
+  const { ctx } = context();
+  let requests = 0;
+  let firstSignal!: AbortSignal;
+  const source = new SolarSystemData(ctx, {
+    fetch: async (_input, init) => {
+      requests++;
+      if (requests > 1) return new Response(orb(10));
+      firstSignal = init!.signal!;
+      return await new Promise<Response>((_resolve, reject) =>
+        firstSignal.addEventListener(
+          "abort",
+          () => reject(firstSignal.reason),
+          { once: true },
+        ),
+      );
+    },
+  });
+  const first = source.load(["earth"], 5, []);
+  while (!firstSignal) await Promise.resolve();
+  source.retain(["earth"]);
+  const second = source.load(["earth"], 5, []);
+  await Promise.all([first, second]);
+  assert.equal(firstSignal.aborted, true);
+  assert.equal(requests, 2);
+  assert.equal(source.status("earth")?.status, "ready");
+  assert.deepEqual(source.position("earth", 5), [10, 0, 0]);
+  source.dispose();
+});

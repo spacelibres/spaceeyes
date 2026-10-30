@@ -70,3 +70,106 @@ mod tests {
         assert_eq!(lines, vec![(points[0], points[1]), (points[1], points[2])]);
     }
 }
+
+/// Clip cached scientific samples to the past, preserving explicit discontinuities.
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn visit_styled_segments(
+    points: &[[f64; 3]],
+    epochs: Option<&[f64]>,
+    epoch: f64,
+    current: [f64; 3],
+    style: Option<&crate::TrajectoryStyle>,
+    mut draw: impl FnMut([f64; 3], [f64; 3], f32, f32),
+) {
+    let breaks = style.map(|s| s.break_indices.as_slice()).unwrap_or(&[]);
+    if let Some(duration) = style
+        .filter(|s| s.kind.as_deref() == Some("trail"))
+        .and_then(|s| s.trail_duration_seconds)
+    {
+        let Some(times) = epochs.filter(|t| t.len() == points.len()) else {
+            return;
+        };
+        for (i, pair) in points.windows(2).enumerate() {
+            if breaks.binary_search(&(i + 1)).is_ok() {
+                continue;
+            }
+            let lo = times[i].max(epoch - duration);
+            let hi = times[i + 1].min(epoch);
+            if lo >= hi {
+                continue;
+            }
+            let sample = |t: f64| {
+                if t == epoch {
+                    current
+                } else {
+                    let u = (t - times[i]) / (times[i + 1] - times[i]);
+                    std::array::from_fn(|j| pair[0][j] + u * (pair[1][j] - pair[0][j]))
+                }
+            };
+            draw(
+                sample(lo),
+                sample(hi),
+                ((lo - epoch + duration) / duration) as f32,
+                ((hi - epoch + duration) / duration) as f32,
+            );
+        }
+    } else {
+        for (i, pair) in points.windows(2).enumerate() {
+            if breaks.binary_search(&(i + 1)).is_ok() {
+                continue;
+            }
+            let times = epochs.map(|t| &t[i..=i + 1]);
+            visit_segments(pair, times, epoch, current, |a, b| draw(a, b, 1., 1.));
+        }
+    }
+}
+
+#[cfg(test)]
+mod trail_tests {
+    use super::*;
+    #[test]
+    fn clips_past_window_and_never_bridges_breaks_or_uncovered_future() {
+        let points = [[0., 0., 0.], [10., 0., 0.], [20., 0., 0.]];
+        let mut style = crate::TrajectoryStyle {
+            kind: Some("trail".into()),
+            trail_duration_seconds: Some(6.),
+            ..Default::default()
+        };
+        let mut lines = vec![];
+        visit_styled_segments(
+            &points,
+            Some(&[0., 10., 20.]),
+            15.,
+            [15., 2., 0.],
+            Some(&style),
+            |a, b, x, y| lines.push((a, b, x, y)),
+        );
+        assert_eq!(lines.len(), 2);
+        assert_eq!(lines[0].0, [9., 0., 0.]);
+        assert_eq!(lines[1].1, [15., 2., 0.]);
+        assert_eq!(lines[0].2, 0.);
+        assert_eq!(lines[1].3, 1.);
+        style.break_indices = vec![2];
+        lines.clear();
+        visit_styled_segments(
+            &points,
+            Some(&[0., 10., 20.]),
+            15.,
+            [15., 2., 0.],
+            Some(&style),
+            |a, b, x, y| lines.push((a, b, x, y)),
+        );
+        assert_eq!(lines.len(), 1);
+        assert_eq!(lines[0].1, points[1]);
+        lines.clear();
+        visit_styled_segments(
+            &points,
+            Some(&[0., 10., 20.]),
+            30.,
+            [30., 2., 0.],
+            Some(&style),
+            |a, b, x, y| lines.push((a, b, x, y)),
+        );
+        assert!(lines.is_empty());
+    }
+}

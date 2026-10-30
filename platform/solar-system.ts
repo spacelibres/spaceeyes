@@ -132,7 +132,7 @@ export class SolarSystemData {
     });
     try {
       queueSignal.throwIfAborted();
-      return await this.#readUnbounded(url);
+      return await this.#readUnbounded(url, queueSignal);
     } finally {
       this.#networkActive--;
       while (this.#networkQueue.length && this.#networkActive < 4) {
@@ -143,8 +143,9 @@ export class SolarSystemData {
       }
     }
   }
-  async #readUnbounded(url: string) {
+  async #readUnbounded(url: string, queueSignal: AbortSignal) {
     const signal = AbortSignal.any([
+      queueSignal,
       this.#abort.signal,
       AbortSignal.timeout(25000),
     ]);
@@ -262,6 +263,8 @@ export class SolarSystemData {
       : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
   }
   retain(ids: readonly string[]) {
+    this.#generation++;
+    this.#pending.clear();
     this.#queueAbort.abort(new Error("Scene changed"));
     this.#queueAbort = new AbortController();
     const keep = new Set(ids);
@@ -288,9 +291,9 @@ export class SolarSystemData {
         const key = id + ":" + epoch + ":" + orientationIds.includes(id);
         const existing = this.#pending.get(key);
         if (existing) return existing;
-        const task = this.#load([id], epoch, orientationIds).finally(() =>
-          this.#pending.delete(key),
-        );
+        const task = this.#load([id], epoch, orientationIds).finally(() => {
+          if (this.#pending.get(key) === task) this.#pending.delete(key);
+        });
         this.#pending.set(key, task);
         return task;
       }),
@@ -683,6 +686,87 @@ export class SolarSystemData {
       refreshRange: [
         Math.max(start, epoch - (end - start) / (detailed ? 1024 : 4)),
         Math.min(end, epoch + (end - start) / (detailed ? 1024 : 4)),
+      ] as [number, number],
+    };
+  }
+  trailSamples(id: string, epoch: number, count = 256, detailed = false) {
+    if (!Number.isInteger(count) || count < 8 || count > 4096)
+      throw Error("Trajectory sample budget");
+    if (!Number.isFinite(epoch) || this.status(id)?.status !== "ready")
+      throw Error("Trail unavailable");
+    const [rangeStart, rangeEnd] = this.trajectoryRange(id, epoch);
+    if (epoch < rangeStart || epoch > rangeEnd || rangeStart >= rangeEnd)
+      throw Error("Outside trajectory coverage");
+    const d = this.#data.get(id);
+    const declared = activeController(id, epoch, "orbitalElements").at(-1);
+    let motion = declared?.meanAngularMotion;
+    if (d?.kind === "inline" && d.type === "orb") {
+      let record = d.records[0];
+      for (const sample of d.records) {
+        if (sample.time > epoch) break;
+        record = sample;
+      }
+      motion = record.meanAngularMotion;
+    }
+    const period = motion
+      ? (2 * Math.PI) / Math.abs(motion)
+      : rangeEnd - rangeStart;
+    const durationSeconds = Math.min(30 * 86400, period);
+    let [coveredStart, coveredEnd] = this.#phaseCoverage(
+      id,
+      epoch,
+      d?.coverage.start ?? Number(declared?.coverage?.[0] ?? -Infinity),
+      d?.coverage.end ?? Number(declared?.coverage?.[1] ?? Infinity),
+    );
+    const visited = new Set<string>([id]);
+    let ancestor = this.parentAt(id, epoch);
+    while (ancestor && ancestor !== "sun" && !visited.has(ancestor)) {
+      visited.add(ancestor);
+      const coverage = this.coverage(ancestor);
+      if (!coverage) throw Error("Trail ancestor unavailable");
+      coveredStart = Math.max(coveredStart, coverage[0]);
+      coveredEnd = Math.min(coveredEnd, coverage[1]);
+      ancestor = this.parentAt(ancestor, epoch);
+    }
+    const start = Math.max(coveredStart, epoch - durationSeconds);
+    const end = Math.min(coveredEnd, epoch + durationSeconds / 4);
+    const times = [epoch];
+    for (let i = 0; i < count - 1; i++)
+      times.push(start + ((end - start) * i) / (count - 2));
+    const originId = this.parentAt(id, epoch) || undefined;
+    const epochsTdbSeconds: number[] = [];
+    const points: [number, number, number][] = [];
+    const breakIndices: number[] = [];
+    let gap = false;
+    for (const t of [...new Set(times)].sort((a, b) => a - b)) {
+      try {
+        const world = this.position(id, t);
+        const parent = originId ? this.position(originId, t) : [0, 0, 0];
+        const point = world.map((v, i) => v - parent[i]) as [
+          number,
+          number,
+          number,
+        ];
+        if (!point.every(Number.isFinite)) throw Error("Invalid trail point");
+        if (gap && points.length) breakIndices.push(points.length);
+        points.push(point);
+        epochsTdbSeconds.push(t);
+        gap = false;
+      } catch (error) {
+        if (t === epoch) throw error;
+        gap = true;
+      }
+    }
+    if (points.length < 2) throw Error("Trail unavailable");
+    return {
+      points,
+      epochsTdbSeconds,
+      originId,
+      breakIndices,
+      durationSeconds,
+      refreshRange: [
+        epoch,
+        Math.min(end, epoch + durationSeconds / (detailed ? 1024 : 16)),
       ] as [number, number],
     };
   }

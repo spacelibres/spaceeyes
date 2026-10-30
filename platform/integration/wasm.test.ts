@@ -1,4 +1,4 @@
-import {buildStellarTuning,stellarDefaults} from '../stellar-tuning.ts';
+import { buildStellarTuning, stellarDefaults } from "../stellar-tuning.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -278,34 +278,251 @@ test("clock epochs survive 1000 JSON publications without stale state", () => {
   }
 });
 
+test("real WASM stellar tuning is owned, bounded, revocable and does not reload visual revision", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  try {
+    host.register(
+      {
+        id: "integration.solar-tuning",
+        apiVersion: 1,
+        capabilities: ["data.publish", "scene.visual"],
+      },
+      (ctx) => {
+        sdk = ctx;
+      },
+    );
+    await host.enable("integration.solar-tuning", [
+      "data.publish",
+      "scene.visual",
+    ]);
+    sdk.data.publish("sun", {
+      positionKm: [0, 0, 0],
+      radiusKm: 695500,
+      epochTdbSeconds: 0,
+      coverageTdbSeconds: [0, 1],
+      frame: "ICRF",
+      source: "fixture",
+    });
+    sdk.visual.set("sun", {
+      kind: "sphere",
+      stellar: { coronaIntensity: 1, flowSpeed: 0.15 },
+    });
+    const revision = sdk.visual.status("sun")!.revision;
+    const tuning = buildStellarTuning({
+      ...stellarDefaults(),
+      windGain: 0,
+      temperatureMK: 2,
+    });
+    sdk.visual.stellar("sun", tuning);
+    assert.equal(sdk.visual.status("sun")!.revision, revision);
+    assert.throws(() =>
+      core.tune_stellar(
+        "unknown",
+        "spoof.plugin",
+        "sun",
+        JSON.stringify(tuning),
+      ),
+    );
+    // Independently bypass TS validation to prove the Rust boundary rejects bad payloads.
+    core.open_session("rust-solar", "rust.solar", false, true, false, true);
+    core.publish_object(
+      "rust-solar",
+      "rust.solar",
+      "fixture",
+      JSON.stringify({
+        positionKm: [0, 0, 0],
+        radiusKm: 1,
+        epochTdbSeconds: 0,
+        coverageTdbSeconds: [0, 1],
+        frame: "ICRF",
+        source: "fixture",
+      }),
+    );
+    core.set_visual(
+      "rust-solar",
+      "rust.solar",
+      "fixture",
+      JSON.stringify({
+        kind: "sphere",
+        stellar: { coronaIntensity: 1, flowSpeed: 0.15 },
+      }),
+    );
+    core.tune_stellar(
+      "rust-solar",
+      "rust.solar",
+      "fixture",
+      JSON.stringify(tuning),
+    );
+    const legacySettings = Object.fromEntries(
+      Object.entries(tuning.settings).filter(
+        ([key]) =>
+          ![
+            "surfaceContrast",
+            "surfaceDetail",
+            "surfaceSpeed",
+            "activeRegionGain",
+            "activeRegionSize",
+            "limbGlowGain",
+            "prominenceHeightKm",
+            "prominenceWidthKm",
+            "prominenceLengthKm",
+            "prominenceFlowKmS",
+            "prominenceTau",
+            "prominenceSource",
+            "prominenceTimeScale",
+            "coronaExtent",
+            "observationStyle",
+            "coronaGain",
+          ].includes(key),
+      ),
+    );
+    assert.equal(Object.keys(legacySettings).length, 58);
+    core.tune_stellar(
+      "rust-solar",
+      "rust.solar",
+      "fixture",
+      JSON.stringify({ ...tuning, settings: legacySettings }),
+    );
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "fixture",
+          JSON.stringify({
+            ...tuning,
+            settings: { ...legacySettings, injected: 1 },
+          }),
+        ),
+      /InvalidVisual/,
+    );
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "fixture",
+          JSON.stringify({
+            ...tuning,
+            settings: { ...tuning.settings, prominenceWidthKm: 451 },
+          }),
+        ),
+      /InvalidVisual/,
+    );
 
-test("real WASM stellar tuning is owned, bounded, revocable and does not reload visual revision",async()=>{
- const core=new WasmCore();const host=new PluginHost(new WasmCorePort(core));let sdk!:PluginContext;
- try{
-  host.register({id:"integration.solar-tuning",apiVersion:1,capabilities:["data.publish","scene.visual"]},ctx=>{sdk=ctx});
-  await host.enable("integration.solar-tuning",["data.publish","scene.visual"]);
-  sdk.data.publish("sun",{positionKm:[0,0,0],radiusKm:695500,epochTdbSeconds:0,coverageTdbSeconds:[0,1],frame:"ICRF",source:"fixture"});
-  sdk.visual.set("sun",{kind:"sphere",stellar:{coronaIntensity:1,flowSpeed:.15}});
-  const revision=sdk.visual.status("sun")!.revision;
-  const tuning=buildStellarTuning({...stellarDefaults(),windGain:0,temperatureMK:2});sdk.visual.stellar("sun",tuning);
-  assert.equal(sdk.visual.status("sun")!.revision,revision);
-  assert.throws(()=>core.tune_stellar("unknown","spoof.plugin","sun",JSON.stringify(tuning)));
-  // Independently bypass TS validation to prove the Rust boundary rejects bad payloads.
-  core.open_session("rust-solar","rust.solar",false,true,false,true);
-  core.publish_object("rust-solar","rust.solar","fixture",JSON.stringify({positionKm:[0,0,0],radiusKm:1,epochTdbSeconds:0,coverageTdbSeconds:[0,1],frame:"ICRF",source:"fixture"}));
-  core.set_visual("rust-solar","rust.solar","fixture",JSON.stringify({kind:"sphere",stellar:{coronaIntensity:1,flowSpeed:.15}}));
-  core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify(tuning));
-  const legacySettings = Object.fromEntries(Object.entries(tuning.settings).filter(([key])=>!['surfaceContrast','surfaceDetail','surfaceSpeed','activeRegionGain','activeRegionSize','limbGlowGain','prominenceHeightKm','prominenceWidthKm','prominenceLengthKm','prominenceFlowKmS','prominenceTau','prominenceSource','prominenceTimeScale','coronaExtent','observationStyle','coronaGain'].includes(key)));
-  assert.equal(Object.keys(legacySettings).length,58);
-  core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:legacySettings}));
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...legacySettings,injected:1}})),/InvalidVisual/);
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,prominenceWidthKm:451}})),/InvalidVisual/);
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "sun",
+          JSON.stringify(tuning),
+        ),
+      /WrongOwner/,
+    );
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "fixture",
+          JSON.stringify({
+            ...tuning,
+            settings: { ...tuning.settings, sampleCount: 25 },
+          }),
+        ),
+      /InvalidVisual/,
+    );
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "fixture",
+          JSON.stringify({
+            ...tuning,
+            settings: {
+              ...tuning.settings,
+              enterDistance: 12,
+              exitDistance: 10,
+            },
+          }),
+        ),
+      /InvalidVisual/,
+    );
+    core.release_session("rust-solar");
+    assert.throws(
+      () =>
+        core.tune_stellar(
+          "rust-solar",
+          "rust.solar",
+          "fixture",
+          JSON.stringify(tuning),
+        ),
+      /InactiveSession/,
+    );
+    await host.shutdown();
+    assert.throws(() => sdk.visual.stellar("sun", tuning), /inactive/);
+  } finally {
+    await host.shutdown();
+    core.free();
+  }
+});
 
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","sun",JSON.stringify(tuning)),/WrongOwner/);
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,sampleCount:25}})),/InvalidVisual/);
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify({...tuning,settings:{...tuning.settings,enterDistance:12,exitDistance:10}})),/InvalidVisual/);
-  core.release_session("rust-solar");
-  assert.throws(()=>core.tune_stellar("rust-solar","rust.solar","fixture",JSON.stringify(tuning)),/InactiveSession/);
-  await host.shutdown();assert.throws(()=>sdk.visual.stellar("sun",tuning),/inactive/);
- }finally{await host.shutdown();core.free();}
+test("trail SDK reaches real WASM with strict metadata and ordinary orbit compatibility", async () => {
+  const core = new WasmCore();
+  const host = new PluginHost(new WasmCorePort(core));
+  let sdk!: PluginContext;
+  host.register(
+    {
+      id: "integration.trail",
+      apiVersion: 1,
+      capabilities: ["data.publish", "scene.visual"],
+    },
+    (ctx) => {
+      sdk = ctx;
+    },
+  );
+  try {
+    await host.enable("integration.trail", ["data.publish", "scene.visual"]);
+    for (const id of ["earth", "moon"])
+      sdk.data.publish(id, {
+        positionKm: [1, 0, 0],
+        radiusKm: 1,
+        epochTdbSeconds: 0,
+        coverageTdbSeconds: [0, 10],
+        frame: "ICRF",
+        source: "synthetic trail integration",
+      });
+    sdk.visual.trajectory(
+      "moon",
+      [
+        [0, 0, 0],
+        [1, 0, 0],
+        [2, 0, 0],
+      ],
+      [0, 1, 2],
+      {
+        kind: "trail",
+        trailDurationSeconds: 60,
+        breakIndices: [2],
+        originId: "earth",
+      },
+    );
+    sdk.visual.trajectory(
+      "earth",
+      [
+        [0, 0, 0],
+        [1, 0, 0],
+      ],
+      [0, 1],
+      { colorRgba: [1, 1, 1, 1] },
+    );
+    sdk.visual.trajectory("moon", [], []);
+    await host.shutdown();
+  } finally {
+    core.free();
+  }
 });

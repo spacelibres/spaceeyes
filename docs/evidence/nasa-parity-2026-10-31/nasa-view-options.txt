@@ -1,0 +1,174 @@
+- generic: Sun
+- generic: Earth
+- generic: Observable universe
+- generic: Milky way
+- generic: Mercury
+- generic: Venus
+- generic: Mars
+- generic: Jupiter
+- generic: Saturn
+- generic: Uranus
+- generic: Neptune
+- generic: J2000 Ecliptic
+- generic: Euclid
+- generic: Nancy Grace Roman Space Telescope
+- generic: SOLAR-1
+- generic: ESCAPADE Blue
+- generic: ESCAPADE Gold
+- generic: Europa Clipper
+- generic: Juice
+- generic: Pioneer 10
+- generic: Pioneer 11
+- generic: Voyager 1
+- generic: Voyager 2
+- generic: Lucy
+- generic: New Horizons
+- generic: OSIRIS-APEX
+- generic: Psyche
+- generic: BioSentinel
+- generic: Parker Solar Probe
+- generic: STEREO Ahead
+- generic: L1
+- generic: L2
+- generic: Moon
+- generic: Triton
+- generic: ACS3
+- generic: ACE
+- generic: Chandra X-ray Observatory
+- generic: DSCOVR
+- generic: Hubble Space Telescope
+- generic: IBEX
+- generic: IMAP
+- generic: Aqua
+- generic: Aura
+- generic: CYGNSS 1
+- generic: CYGNSS 2
+- generic: CYGNSS 3
+- generic: CYGNSS 4
+- generic: CYGNSS 5
+- generic: CYGNSS 7
+- generic: CYGNSS 8
+- generic: GRACE-FO1
+- generic: GPM
+- generic: GRACE-FO2
+- generic: ICESat-2
+- generic: IXPE
+- generic: MMS 1
+- generic: Landsat 9
+- generic: MMS 2
+- generic: MMS 3
+- generic: NISAR
+- generic: MMS 4
+- generic: PREFIRE-1
+- generic: PREFIRE-2
+- generic: PACE
+- generic: Sentinel-6B
+- generic: SOHO
+- generic: International Space Station
+- generic: Jason-3
+- generic: James Webb Space Telescope
+- generic: Landsat 8
+- generic: SPHEREx
+- generic: Starling-1
+- generic: NuSTAR
+- generic: OCO-2
+- generic: Starling-2
+- generic: Starling-3
+- generic: Starling-4
+- generic: Solar Dynamics Observatory
+- generic: Sentinel-6 Michael Freilich
+- generic: SMAP
+- generic: TDRS-13
+- generic: Suomi NPP
+- generic: TDRS-11
+- generic: TEMPO
+- generic: SWOT
+- generic: TESS
+- generic: TDRS-3
+- generic: TDRS-5
+- generic: THEMIS-A
+- generic: TDRS-6
+- generic: TDRS-7
+- generic: TDRS-8
+- generic: TDRS-9
+- generic: THEMIS-D
+- generic: WIND
+- generic: TDRS-10
+- generic: Ganymede
+- generic: TDRS-12
+- generic: Terra
+- generic: THEMIS-E
+- generic: Lunar Reconnaissance Orbiter
+- generic: ARTEMIS P1
+- generic: ARTEMIS P2
+- generic: ▣ Re-framing follow camera
+- banner:
+  - navigation:
+    - button "Share": Share
+    - navigation:
+      - button "Menu": Menu
+  - navigation:
+    - navigation:
+      - heading "Eyes on the Solar System" [level=1]
+    - navigation:
+      - generic: Earth
+- button "show info panel"
+- button "toggle layers"
+- button "zoom in zoom out":
+  - button "zoom in"
+  - button "zoom out"
+- button "toggle light modes"
+- button "toggle fullscreen"
+- button "show or hide settings"
+- alert:
+  - generic: TOAST!
+  - button "Close alert"
+- article:
+  - button
+  - button "Collapse content panel"
+  - navigation:
+    - tablist:
+      - tab "Info"
+      - tab "Toolbox"
+      - tab "View Options" [active]
+  - main:
+    - tabpanel "View Options":
+      - heading "Camera View" [level=5]
+      - radiogroup:
+        - radio "Nearby"
+        - generic: Nearby
+        - radio "System"
+        - generic: System
+        - radio "Follow"
+        - generic: Follow
+      - heading "Surface Map" [level=5]
+      - paragraph: Select the map you would like to be projected onto the surface of the globe.
+      - list:
+        - radio "Default Map" [checked]
+        - generic: Default Map
+        - radio "High-quality global mosaic from yesterday"
+        - generic: High-quality global mosaic from yesterday
+      - heading "Layer Visibility" [level=5]
+      - paragraph: Select the related content you would like to be visible in the 3D view.
+      - list:
+        - generic: Earth Orbiters
+        - generic: Major Moon
+      - heading "Texture Quality" [level=5]
+      - paragraph
+      - list:
+        - generic: High Definition
+- navigation:
+  - button "Expand time controls"
+  - navigation:
+    - time
+    - time
+    - heading "real rate" [level=3]
+    - slider "Drag time slider thumb": "50"
+    - generic: Drag time slider thumb
+  - time:
+    - generic: Oct 31, 2026
+    - generic: 03:10:05
+    - generic: am
+    - text: Input custom time
+- navigation:
+  - generic: live

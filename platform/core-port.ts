@@ -35,6 +35,9 @@ export interface CorePort {
       epochsTdbSeconds?: readonly number[];
       originId?: string;
       colorRgba?: readonly number[];
+      kind?: "orbit" | "trail";
+      trailDurationSeconds?: number;
+      breakIndices?: readonly number[];
     },
   ): void;
   label?(request: FocusRequest & { text: string }): void;

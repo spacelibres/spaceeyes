@@ -151,6 +151,10 @@ impl WasmCore {
             epochs: Vec<f64>,
             origin_id: Option<String>,
             color_rgba: Option<[f32; 4]>,
+            kind: Option<String>,
+            trail_duration_seconds: Option<f64>,
+            #[serde(default)]
+            break_indices: Vec<usize>,
         }
         #[derive(serde::Deserialize)]
         #[serde(untagged)]
@@ -172,6 +176,9 @@ impl WasmCore {
                 epochs,
                 origin_id,
                 color_rgba,
+                kind,
+                trail_duration_seconds,
+                break_indices,
             }) => core.set_trajectory_with_style(
                 session,
                 plugin,
@@ -181,6 +188,9 @@ impl WasmCore {
                 crate::TrajectoryStyle {
                     origin_id,
                     color_rgba,
+                    kind,
+                    trail_duration_seconds,
+                    break_indices,
                 },
             ),
         }

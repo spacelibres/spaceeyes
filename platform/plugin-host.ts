@@ -1,3 +1,7 @@
+import {
+  snapshotTrajectoryStyle,
+  type TrajectoryStyle,
+} from "./trajectory-contract.ts";
 import { snapshotStellarTuning, type StellarTuning } from "./stellar-tuning.ts";
 import { snapshotStarfield, type StarfieldSpec } from "./starfield-contract.ts";
 import {
@@ -44,10 +48,7 @@ export interface PluginContext {
       targetId: string,
       points: [number, number, number][],
       epochsTdbSeconds?: number[],
-      style?: {
-        originId?: string;
-        colorRgba?: [number, number, number, number];
-      },
+      style?: TrajectoryStyle,
     ): void;
     label(targetId: string, text: string): void;
     layers(layers: { labels: boolean; trajectories: boolean }): void;
@@ -223,10 +224,7 @@ export class PluginHost {
           targetId: string,
           points: [number, number, number][],
           epochsTdbSeconds?: number[],
-          style?: {
-            originId?: string;
-            colorRgba?: [number, number, number, number];
-          },
+          style?: TrajectoryStyle,
         ) {
           requireCapability("scene.visual");
           validateTargetId(targetId);
@@ -243,14 +241,9 @@ export class PluginHost {
             throw new Error("invalid trajectory");
           if (!core?.trajectory) throw new Error("trajectory unavailable");
           if (style !== undefined) {
-            if (
-              !style ||
-              Object.keys(style).some(
-                (k) => k !== "originId" && k !== "colorRgba",
-              ) ||
-              !epochsTdbSeconds
-            )
+            if (!style || !epochsTdbSeconds)
               throw new Error("invalid trajectory style");
+            style = snapshotTrajectoryStyle(style, points.length);
             if (style.originId !== undefined) validateTargetId(style.originId);
             if (
               style.colorRgba !== undefined &&
@@ -284,6 +277,13 @@ export class PluginHost {
               : {}),
             ...(style?.originId ? { originId: style.originId } : {}),
             ...(style?.colorRgba ? { colorRgba: [...style.colorRgba] } : {}),
+            ...(style?.kind ? { kind: style.kind } : {}),
+            ...(style?.trailDurationSeconds !== undefined
+              ? { trailDurationSeconds: style.trailDurationSeconds }
+              : {}),
+            ...(style?.breakIndices
+              ? { breakIndices: [...style.breakIndices] }
+              : {}),
           });
         },
         label(targetId: string, text: string) {

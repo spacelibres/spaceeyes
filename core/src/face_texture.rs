@@ -6,7 +6,27 @@ use bevy::{
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
 };
 #[derive(Resource, Default)]
-pub(crate) struct FaceCache(std::collections::HashMap<Vec<AssetId<Image>>, Handle<Image>>);
+pub(crate) struct FaceCache(std::collections::VecDeque<(Vec<AssetId<Image>>, Handle<Image>)>);
+// Bounds cache-owned generated payload only; active materials retain their own handles.
+const GENERATED_TEXTURE_BYTES: usize = 2048 * 1024 * 4;
+const FACE_CACHE_BYTES: usize = 64 * 1024 * 1024;
+impl FaceCache {
+    fn get(&self, key: &[AssetId<Image>]) -> Option<&Handle<Image>> {
+        self.0.iter().find(|(k, _)| k == key).map(|(_, h)| h)
+    }
+    fn insert(&mut self, key: Vec<AssetId<Image>>, handle: Handle<Image>) {
+        if let Some(index) = self.0.iter().position(|(k, _)| *k == key) {
+            self.0.remove(index);
+        }
+        while self.0.len() >= FACE_CACHE_BYTES / GENERATED_TEXTURE_BYTES {
+            self.0.pop_front();
+        }
+        self.0.push_back((key, handle));
+    }
+    fn clear(&mut self) {
+        self.0.clear();
+    }
+}
 #[derive(Component)]
 pub(crate) struct PendingFaces {
     pub pixels: Vec<u8>,
@@ -126,7 +146,7 @@ fn convert_rows(
         TextureDimension::D2,
         std::mem::take(data),
         TextureFormat::Rgba8UnormSrgb,
-        RenderAssetUsages::default(),
+        RenderAssetUsages::RENDER_WORLD,
     )))
 }
 pub(crate) fn resolve_faces(
@@ -141,6 +161,9 @@ pub(crate) fn resolve_faces(
     let Ok(mut core) = store.0.lock() else {
         return;
     };
+    if core.object_ids().next().is_none() {
+        cache.clear();
+    }
     let mut converted_this_frame = false;
     let mut order: Vec<_> = roots
         .iter()
@@ -188,7 +211,7 @@ pub(crate) fn resolve_faces(
             continue;
         }
         let key: Vec<_> = pending.handles.iter().map(Handle::id).collect();
-        if let Some(handle) = cache.0.get(&key) {
+        if let Some(handle) = cache.get(&key) {
             if let Some(mut material) = materials.get_mut(&pending.material) {
                 material.base_color_texture = Some(handle.clone());
                 material.emissive_texture = Some(handle.clone());
@@ -220,10 +243,7 @@ pub(crate) fn resolve_faces(
             Ok(None) => {}
             Ok(Some(image)) => {
                 let handle = images.add(image);
-                if cache.0.len() >= 64 {
-                    cache.0.clear();
-                }
-                cache.0.insert(key, handle.clone());
+                cache.insert(key, handle.clone());
                 if let Some(mut material) = materials.get_mut(&pending.material) {
                     material.base_color_texture = Some(handle.clone());
                     material.emissive_texture = Some(handle);
@@ -312,6 +332,7 @@ mod batching_tests {
         assert_eq!(row, 1024);
         assert!(pixels.is_empty());
         assert_eq!(actual.data, expected.data);
+        assert_eq!(actual.asset_usage, RenderAssetUsages::RENDER_WORLD);
     }
     #[test]
     fn rgba_source_fast_path_preserves_exact_bytes() {
@@ -344,5 +365,36 @@ mod closed_face_tests {
         assert_eq!(face_uv(Vec3::new(-1., -1., 0.)).0, 3);
         assert_eq!(face_uv(Vec3::new(1., 1., 1.)).0, 4);
         assert_eq!(face_uv(Vec3::new(1., 1., -1.)).0, 5);
+    }
+}
+
+#[cfg(test)]
+mod cache_tests {
+    use super::*;
+    #[test]
+    fn fifo_budget_reuse_and_clear_preserve_material_assets() {
+        let mut images = Assets::<Image>::default();
+        let mut cache = FaceCache::default();
+        let handles: Vec<_> = (0..9).map(|_| images.add(Image::default())).collect();
+        let key = |i: usize| vec![handles[i].id()];
+        let mut material = StandardMaterial::default();
+        material.base_color_texture = Some(handles[0].clone());
+        for i in 0..8 {
+            cache.insert(key(i), handles[i].clone());
+        }
+        assert_eq!(cache.get(&key(0)), Some(&handles[0]));
+        cache.insert(key(8), handles[8].clone());
+        assert!(cache.get(&key(0)).is_none());
+        assert_eq!(cache.get(&key(1)), Some(&handles[1]));
+        assert_eq!(cache.0.len() * GENERATED_TEXTURE_BYTES, FACE_CACHE_BYTES);
+        cache.insert(key(8), handles[8].clone());
+        assert_eq!(cache.0.len(), 8);
+        cache.clear();
+        assert!(cache.0.is_empty());
+        assert!(
+            images
+                .get(material.base_color_texture.as_ref().unwrap())
+                .is_some()
+        );
     }
 }
