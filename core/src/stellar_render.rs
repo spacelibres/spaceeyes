@@ -16,7 +16,7 @@ impl Material for StellarMaterial {
         "shaders/stellar.wgsl".into()
     }
     fn alpha_mode(&self) -> AlphaMode {
-        AlphaMode::Add
+        AlphaMode::Premultiplied
     }
     fn enable_prepass() -> bool {
         false

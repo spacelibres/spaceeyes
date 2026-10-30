@@ -284,7 +284,7 @@ pub(crate) fn attach_visuals(
                         ),
                     }),
                 ),
-                Transform::from_scale(Vec3::splat(2.8)),
+                Transform::from_scale(Vec3::splat(12.0)),
                 ChildOf(root),
             ));
         }

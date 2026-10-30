@@ -27,3 +27,11 @@ export function parkerWind(config:ParkerConfig) {
  }
  return {soundSpeedMS,sonicRadiusM,at};
 }
+
+/** Camera-independent 3D Lagrangian label used by the external volume shader. */
+export function windMaterialPoint(positionR:readonly [number,number,number],flightSeconds:number,timeSeconds:number,periodSeconds:number):[number,number,number] {
+ if(![...positionR,flightSeconds,timeSeconds,periodSeconds].every(Number.isFinite)||periodSeconds<=0) throw Error('Invalid wind transport');
+ const radius=Math.hypot(...positionR); if(radius<1||radius>12.000001)throw Error('Outside visual volume');
+ const q=(flightSeconds-timeSeconds)/periodSeconds, phase=q-Math.floor(q);
+ return positionR.map(v=>v/radius*(1+11*phase)) as [number,number,number];
+}

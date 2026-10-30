@@ -12,23 +12,19 @@ export async function prepareSolarWind() {
   profile.push({...state,flightTimeSeconds:travel});previous=state;
  }
  const local=[];travel=0;previous=base;
- for(let i=0;i<32;i++) {
-  const state=model.at(config.solarRadiusM*(1+1.8*i/31));
+ for(let i=0;i<64;i++) {
+  const state=model.at(config.solarRadiusM*(12**(i/63)));
   if(i)travel+=(state.radiusM-previous.radiusM)*0.5*(1/state.speedMS+1/previous.speedMS);
   local.push({r:state.radiusM/config.solarRadiusM,logDensity:Math.log(state.electronDensityM3/base.electronDensityM3),travel});previous=state;
  }
  const f=(v:number)=>Number(v).toExponential(9);
- const array=(name:string,values:number[])=>`const ${name}:array<f32,32>=array<f32,32>(${values.map(f).join(',')});\n`;
+ const array=(name:string,values:number[])=>`const ${name}:array<f32,64>=array<f32,64>(${values.map(f).join(',')});\n`;
  const generated='// Generated Parker isothermal profile; SI seconds, density relative to base.\n'+array('WIND_R',local.map(s=>s.r))+array('WIND_LOG_N',local.map(s=>s.logDensity))+array('WIND_TRAVEL',local.map(s=>s.travel))+`
  fn solar_wind_state(radius:f32)->vec2<f32> {
-  let r=clamp(radius,1.0,2.8);
-  for(var i=0;i<31;i=i+1) {
-   if(r<=WIND_R[i+1]) {
-    let a=(r-WIND_R[i])/(WIND_R[i+1]-WIND_R[i]);
-    return vec2<f32>(exp(mix(WIND_LOG_N[i],WIND_LOG_N[i+1],a)),mix(WIND_TRAVEL[i],WIND_TRAVEL[i+1],a));
-   }
-  }
-  return vec2<f32>(exp(WIND_LOG_N[31]),WIND_TRAVEL[31]);
+  let r=clamp(radius,1.0,12.0);
+  let i=min(u32(log(r)/log(12.0)*63.0),62u);
+  let a=clamp((r-WIND_R[i])/(WIND_R[i+1]-WIND_R[i]),0.0,1.0);
+  return vec2<f32>(exp(mix(WIND_LOG_N[i],WIND_LOG_N[i+1],a)),mix(WIND_TRAVEL[i],WIND_TRAVEL[i+1],a));
  }
  `;
  const root=new URL('../web/public/assets/',import.meta.url);
