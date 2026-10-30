@@ -148,7 +148,9 @@ pub(crate) fn create_browser_app(
     .add_systems(Update, stop_renderer)
     .add_systems(
         PostUpdate,
-        draw_annotations.after(bevy::transform::TransformSystems::Propagate),
+        draw_annotations
+            .after(bevy::transform::TransformSystems::Propagate)
+            .after(bevy::camera::CameraUpdateSystems),
     );
     app
 }
@@ -1224,9 +1226,7 @@ fn draw_annotations(
                 },
             );
         }
-        if let Some(text) = label.filter(|text| {
-            !text.is_empty() && crate::label_visibility::overview_label_allowed(id, solar_overview)
-        }) {
+        if let Some(text) = label.filter(|text| !text.is_empty()) {
             let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
                 continue;
             };

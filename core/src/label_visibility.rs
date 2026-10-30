@@ -114,27 +114,7 @@ mod selection_tests {
     }
 }
 
-/// Wide Sun focus is still the solar-system overview; its one anchor is SUN.
+/// Wide Sun focus is still overview for the near/selection fade rule.
 pub(crate) fn solar_overview(focused: Option<&str>, near: bool) -> bool {
     focused.is_none() || (focused == Some("sun") && !near)
-}
-pub(crate) fn overview_label_allowed(id: &str, overview: bool) -> bool {
-    !overview || id == "sun"
-}
-#[cfg(test)]
-mod overview_tests {
-    use super::*;
-    #[test]
-    fn wide_solar_views_only_show_the_solar_anchor() {
-        for focused in [None, Some("sun")] {
-            assert!(solar_overview(focused, false));
-            assert!(overview_label_allowed("sun", true));
-            for id in ["earth", "mars", "jupiter", "moon"] {
-                assert!(!overview_label_allowed(id, true));
-            }
-        }
-        assert!(!solar_overview(Some("earth"), true));
-        assert!(!solar_overview(Some("sun"), true));
-        assert!(overview_label_allowed("moon", false));
-    }
 }

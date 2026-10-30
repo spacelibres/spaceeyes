@@ -32,13 +32,40 @@ pub(crate) fn place_labels_measured(
             .get(&id)
             .copied()
             .unwrap_or_else(|| label_size(&text));
-        for offset in [
-            Vec2::new(12., -11.),
-            Vec2::new(12., 16.),
-            Vec2::new(-size.x - 12., -11.),
-            Vec2::new(-size.x - 12., 16.),
-        ] {
-            let lo = anchor + offset;
+        if !anchor.is_finite()
+            || anchor.x < 0.
+            || anchor.y < 0.
+            || anchor.x > viewport.x
+            || anchor.y > viewport.y
+        {
+            continue;
+        }
+        let min = Vec2::new(8., 30.);
+        let max = viewport - Vec2::new(8., 45.) - size;
+        if !size.is_finite() || size.min_element() <= 0. || max.x < min.x || max.y < min.y {
+            continue;
+        }
+        // Search nearby rows and columns each frame instead of dropping a name
+        // after four occupied slots. Font bounds, viewport edges and padding all
+        // participate in the same rectangle collision test.
+        let mut candidates = Vec::with_capacity(52);
+        for row in -6i32..=6 {
+            for column in [0i32, -1, 1, -2] {
+                let x = if column >= 0 {
+                    12. + column as f32 * (size.x + 12.)
+                } else {
+                    column as f32 * (size.x + 12.)
+                };
+                let offset = Vec2::new(x, -size.y * 0.5 + row as f32 * (size.y + 8.));
+                let lo = (anchor + offset).clamp(min, max);
+                candidates.push(lo);
+            }
+        }
+        candidates.sort_by(|a, b| {
+            (anchor.distance_squared(*a + size * 0.5))
+                .total_cmp(&anchor.distance_squared(*b + size * 0.5))
+        });
+        for lo in candidates {
             let hi = lo + size;
             if lo.x < 8. || lo.y < 30. || hi.x > viewport.x - 8. || hi.y > viewport.y - 45. {
                 continue;
@@ -67,7 +94,11 @@ mod tests {
             .collect();
         let placed = place_labels(items, Vec2::new(400., 350.), Some("9"));
         assert_eq!(placed[0].0, "9");
-        assert!(placed.len() > 1 && placed.len() < 12);
+        assert_eq!(
+            placed.len(),
+            12,
+            "collision avoidance must retain this fitting cluster"
+        );
         for (i, a) in placed.iter().enumerate() {
             for b in &placed[i + 1..] {
                 assert!(
@@ -99,5 +130,54 @@ mod measured_tests {
         let items = vec![("a".into(), "A".into(), Vec2::new(100., 100.))];
         let measured = std::collections::HashMap::from([("a".into(), Vec2::new(500., 30.))]);
         assert!(place_labels_measured(items, Vec2::new(400., 300.), None, &measured).is_empty());
+    }
+}
+
+#[cfg(test)]
+mod moving_cluster_tests {
+    use super::*;
+    #[test]
+    fn dense_planet_names_relocate_each_frame_without_overlapping_or_disappearing() {
+        let names = [
+            "SUN", "MERCURY", "VENUS", "EARTH", "MOON", "MARS", "JUPITER", "SATURN", "URANUS",
+            "NEPTUNE",
+        ];
+        for frame in 0..60 {
+            let phase = frame as f32 * 0.1;
+            let items = names
+                .iter()
+                .enumerate()
+                .map(|(i, name)| {
+                    (
+                        name.to_string(),
+                        name.to_string(),
+                        Vec2::new(
+                            160. + (phase + i as f32).sin() * 8.,
+                            120. + (phase * 0.7 + i as f32).cos() * 8.,
+                        ),
+                    )
+                })
+                .collect();
+            let result = place_labels(items, Vec2::new(320., 280.), Some("SUN"));
+            assert_eq!(result.len(), names.len(), "frame {frame}");
+            for (i, a) in result.iter().enumerate() {
+                let lo = a.2 + Vec2::new(8., -8.);
+                let hi = lo + label_size(&a.1);
+                assert!(lo.x >= 8. && lo.y >= 30. && hi.x <= 312. && hi.y <= 235.);
+                for b in &result[i + 1..] {
+                    let blo = b.2 + Vec2::new(8., -8.);
+                    let bhi = blo + label_size(&b.1);
+                    assert!(
+                        lo.x >= bhi.x + 5.
+                            || hi.x + 5. <= blo.x
+                            || lo.y >= bhi.y + 4.
+                            || hi.y + 4. <= blo.y,
+                        "frame {frame}: {} / {}",
+                        a.0,
+                        b.0
+                    );
+                }
+            }
+        }
     }
 }
