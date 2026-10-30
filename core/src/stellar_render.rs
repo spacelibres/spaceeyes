@@ -9,6 +9,9 @@ pub(crate) struct StellarMaterial {
     pub parameters: Vec4,
 }
 impl Material for StellarMaterial {
+    fn vertex_shader() -> ShaderRef {
+        "shaders/stellar.wgsl".into()
+    }
     fn fragment_shader() -> ShaderRef {
         "shaders/stellar.wgsl".into()
     }
@@ -55,13 +58,13 @@ pub(crate) fn prominence_mesh() -> Mesh {
         let height = 0.07 + (arch % 7) as f32 * 0.025;
         for strand in 0..5 {
             let base = positions.len() as u32;
-            let lane = (strand as f32 - 2.) * 0.003;
+            let lane = (strand as f32 - 2.) * 0.009;
             for step in 0..=48 {
                 let t = step as f32 / 48.;
                 let a = (t * 2. - 1.) * spread;
                 let foot = (n + tangent * a + binormal * lane).normalize();
                 let center = foot * (0.998 + height * (std::f32::consts::PI * t).sin());
-                let width = 0.0015 + 0.002 * (std::f32::consts::PI * t).sin();
+                let width = 0.003 + 0.009 * (std::f32::consts::PI * t).sin();
                 for side in 0..=6 {
                     let theta = side as f32 / 6. * std::f32::consts::TAU;
                     let radial = binormal * theta.cos() + foot * theta.sin();
