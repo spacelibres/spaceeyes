@@ -264,9 +264,13 @@ fn update_focus(
     if core.focused_object().is_none() {
         // The current host's heliocentric scene is centered on its scientific origin.
         let mut radius = 0.0_f64;
+        let mut central_surface = 0.0_f64;
         for id in core.object_ids() {
             if let Ok(state) = core.object_state_at(id, core.clock().epoch()) {
                 let p = DVec3::from_array(state.position_km);
+                if p.length() < state.radius_km {
+                    central_surface = central_surface.max(state.radius_km + p.length());
+                }
                 let extent = core
                     .visual_assignment(id)
                     .and_then(|v| match v.spec {
@@ -308,9 +312,10 @@ fn update_focus(
             }
         }
         for (mut transform, mut projection) in &mut camera {
-            let mut distance = orbit.distance;
+            let surface = (central_surface / AU_KM) as f32;
+            let mut distance = orbit.distance.max(surface * 1.001);
             if let Projection::Perspective(p) = &mut *projection {
-                p.near = (distance * 0.001).clamp(1e-12, 0.001);
+                p.near = ((distance - surface) * 0.1).clamp(1e-12, 0.001);
                 let half_fov = (p.fov * 0.5)
                     .tan()
                     .min((p.fov * 0.5).tan() * p.aspect_ratio)
@@ -587,6 +592,19 @@ mod framing_tests {
                     > 0.99999
             );
         }
+        // Wheel zoom in overview must never pass through its central physical body.
+        for _ in 0..3 {
+            app.world_mut().resource_mut::<OrbitView>().distance = 1e-12;
+            app.update();
+            let transform = app.world().get::<Transform>(camera).unwrap();
+            assert!(transform.translation.length() > (1. / AU_KM) as f32);
+            let Projection::Perspective(projection) =
+                app.world().get::<Projection>(camera).unwrap()
+            else {
+                panic!("perspective")
+            };
+            assert!(projection.near < transform.translation.length() - (1. / AU_KM) as f32);
+        }
         shared.lock().unwrap().focus("s", "p", "planet").unwrap();
         app.update();
         app.world_mut().resource_mut::<OrbitView>().distance = 1000.;
@@ -804,6 +822,30 @@ mod camera_lifecycle_tests {
     }
 }
 
+fn stellar_marker_color(color: u32) -> [f32; 4] {
+    [
+        ((color >> 16) & 255) as f32 / 255.,
+        ((color >> 8) & 255) as f32 / 255.,
+        (color & 255) as f32 / 255.,
+        1.,
+    ]
+}
+
+#[cfg(test)]
+mod solar_marker_tests {
+    #[test]
+    fn distant_marker_keeps_surface_palette_instead_of_legacy_gold() {
+        assert_eq!(
+            super::stellar_marker_color(0xff4400),
+            [1., 68. / 255., 0., 1.]
+        );
+        assert_eq!(
+            super::stellar_marker_color(0x123456),
+            [18. / 255., 52. / 255., 86. / 255., 1.]
+        );
+    }
+}
+
 #[derive(Component)]
 struct AnnotationLabel {
     object: String,
@@ -1008,6 +1050,11 @@ fn draw_annotations(
             VisualSpec::Sphere { emissive_rgba, .. } => emissive_rgba,
             _ => None,
         });
+        let emissive = emissive.map(|fallback| {
+            core.stellar_tuning(id).map_or(fallback, |tuning| {
+                stellar_marker_color(tuning.value("surfaceColor") as u32)
+            })
+        });
         let opacity = ((6. - projected_radius) / 3.).clamp(0., 1.);
         let (size, color) = if let Some(c) = emissive {
             (14., Color::srgba(c[0], c[1], c[2], opacity))
@@ -1018,7 +1065,16 @@ fn draw_annotations(
         if emissive.is_some() {
             marker_nodes.insert(
                 format!("{id}:halo"),
-                (pixel, 30., Color::srgba(1., 0.65, 0.2, 0.12 * opacity)),
+                (
+                    pixel,
+                    30.,
+                    Color::srgba(
+                        color.to_srgba().red,
+                        color.to_srgba().green,
+                        color.to_srgba().blue,
+                        0.12 * opacity,
+                    ),
+                ),
             );
         }
     }
@@ -1132,6 +1188,7 @@ fn draw_annotations(
                 let alpha = fades.entry(id.to_owned()).or_default().update(
                     coverage,
                     allowed,
+                    core.focused_object() == Some(id),
                     time.delta_secs(),
                 );
                 if !blocked && alpha > 0.02 {

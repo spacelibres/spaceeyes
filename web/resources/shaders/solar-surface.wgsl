@@ -24,9 +24,8 @@ fn linear_color(c:vec3<f32>)->vec3<f32>{return select(c/12.92,pow((c+vec3<f32>(0
  // Recover body coordinates; texture and active regions remain anchored during orbiting.
 
  let color=u32(p(4u));let baseline=vec3<f32>(f32((color>>16u)&255u),f32((color>>8u)&255u),f32(color&255u))/255.0;
- // One material at every distance: expensive detail fades out before the far branch.
- let detail=1.0-smoothstep(p(57u),p(56u),parameters.y);
- if(detail<=0.0){return vec4<f32>(linear_color(baseline)*p(3u),1.0);}
+ // Distance never changes the palette. Small distant discs cover few fragments;
+ // filter only unresolved spatial detail, keeping its mean value unchanged.
  let n=normalize(v.local);
  let t=parameters.x*p(60u)*3.0;
  // Camera-independent analytic swirl guides the four bounded noise samples.
@@ -42,8 +41,10 @@ fn linear_color(c:vec3<f32>)->vec3<f32>{return select(c/12.92,pow((c+vec3<f32>(0
  let q=n*max(p(59u),0.1)+flow*0.025;
  let a=noise(q*9.0+flow*0.15);
  let b=noise(q*47.0+flow*0.55);
- let c=noise(q*173.0+flow*1.1+t*0.05);
- let d=noise(q*397.0+flow*1.7-t*0.08);
+ let footprint=fwidth(q);
+ let footprintMax=max(footprint.x,max(footprint.y,footprint.z));
+ let c=mix(noise(q*173.0+flow*1.1+t*0.05),0.5,smoothstep(0.6,1.5,footprintMax*173.0));
+ let d=mix(noise(q*397.0+flow*1.7-t*0.08),0.5,smoothstep(0.6,1.5,footprintMax*397.0));
  // Broad dark channels, then narrow curved ridges and fine grain; avoid uniform salt noise.
  let grain=a*0.20+b*0.25+c*0.35+d*0.20;
  let intensity=clamp((grain-0.48)*p(58u)*1.6+0.42+activity*p(61u)*0.36,0.0,1.0);
@@ -58,6 +59,6 @@ fn linear_color(c:vec3<f32>)->vec3<f32>{return select(c/12.92,pow((c+vec3<f32>(0
  let facing=abs(dot(normalize(v.world_normal),normalize(view.world_position-v.world_position.xyz)));
  let limb=1.0+pow(1.0-facing,5.0)*p(63u)*0.25*(0.5+grain);
  // Palette values are sRGB; the render target expects linear emission.
- let linear=linear_color(mix(baseline,radiance,detail));
+ let linear=linear_color(radiance);
  return vec4<f32>(linear*p(3u)*limb,1.0);
 }

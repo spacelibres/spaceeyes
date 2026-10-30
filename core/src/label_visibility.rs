@@ -34,8 +34,13 @@ pub(crate) struct Fade {
     visible: bool,
 }
 impl Fade {
-    pub fn update(&mut self, coverage: f32, allowed: bool, dt: f32) -> f32 {
-        self.visible = allowed && coverage < if self.visible { 0.38 } else { 0.32 };
+    pub fn update(&mut self, coverage: f32, allowed: bool, selected: bool, dt: f32) -> f32 {
+        if selected {
+            self.visible = false;
+            self.alpha = 0.;
+            return 0.;
+        }
+        self.visible = allowed && coverage < if self.visible { 0.12 } else { 0.10 };
         let target = if self.visible { 1. } else { 0. };
         self.alpha += (target - self.alpha) * (1. - (-dt.clamp(0., 0.1) / 0.09).exp());
         self.alpha
@@ -55,16 +60,16 @@ mod tests {
     fn near_far_hysteresis_and_interaction_threshold() {
         let mut f = Fade::default();
         for _ in 0..30 {
-            f.update(0.2, true, 0.016);
+            f.update(0.08, true, false, 0.016);
         }
         assert!(f.alpha > 0.9);
-        f.update(0.35, true, 0.016);
+        f.update(0.11, true, false, 0.016);
         assert!(f.visible);
         for _ in 0..30 {
-            f.update(0.4, true, 0.016);
+            f.update(0.13, true, false, 0.016);
         }
         assert!(f.alpha < 0.1);
-        f.update(0.35, true, 0.016);
+        f.update(0.11, true, false, 0.016);
         assert!(!f.visible);
     }
 }
@@ -76,13 +81,35 @@ mod regression_tests {
     fn disallowed_label_declines_and_projection_reset_restarts_fade() {
         let mut fade = Fade::default();
         for _ in 0..50 {
-            fade.update(0., true, 0.016);
+            fade.update(0., true, false, 0.016);
         }
         let previous = fade.alpha;
-        let declining = fade.update(0., false, 0.016);
+        let declining = fade.update(0., false, false, 0.016);
         assert!(declining > 0.5 && declining < previous);
         // Projection rejection discards this state, so re-entry starts translucent.
         let mut reset = Fade::default();
-        assert!(reset.update(0., true, 0.016) < 0.5);
+        assert!(reset.update(0., true, false, 0.016) < 0.5);
+    }
+}
+
+#[cfg(test)]
+mod selection_tests {
+    use super::*;
+    #[test]
+    fn selecting_hides_immediately_and_deselecting_only_restores_at_distance() {
+        let mut f = Fade::default();
+        for _ in 0..40 {
+            f.update(0.01, true, false, 0.016);
+        }
+        assert!(f.alpha > 0.9);
+        assert_eq!(f.update(0.01, true, true, 0.016), 0.);
+        for _ in 0..40 {
+            f.update(0.2, true, false, 0.016);
+        }
+        assert_eq!(f.alpha, 0.);
+        for _ in 0..40 {
+            f.update(0.05, true, false, 0.016);
+        }
+        assert!(f.alpha > 0.9);
     }
 }
