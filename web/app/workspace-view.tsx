@@ -27,6 +27,7 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  planetPreparation?: { ready: number; total: number; failed: number };
   cameraDebug?: Readonly<Record<string, unknown>>;
   shareUrl?: string;
   onShare?: () => void;
@@ -399,6 +400,16 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
       <div className="workspace-status" role="status">
         <span className={p.active ? "status-dot live" : "status-dot"} />
         <span className="phase-text">{p.phase}</span>
+        {p.active && p.planetPreparation && (
+          <small role="status" aria-label="八大行星资源准备">
+            行星资源 {p.planetPreparation.ready}/{p.planetPreparation.total}
+            {p.planetPreparation.failed > 0
+              ? ` · ${p.planetPreparation.failed}项失败`
+              : p.planetPreparation.ready === p.planetPreparation.total
+                ? " · 已就绪"
+                : " · 初始化预载中"}
+          </small>
+        )}
         {p.active && p.startupMs !== undefined && (
           <small>
             本次初始化 {(p.startupMs / 1000).toFixed(2)}{" "}

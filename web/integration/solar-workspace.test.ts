@@ -206,7 +206,7 @@ test("scene hit reuses real WASM selection while empty hits do not load and stal
         .visuals()
         .filter(({ spec }) => spec.faceAssets)
         .map(({ id }) => id),
-      ["earth"],
+      ["mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"],
     );
     fixtures.setPick("moon");
     const pending = app.pick(0.5, 0.5);
@@ -527,7 +527,7 @@ for (const partial of [false, true]) {
   );
 }
 
-test("overview leaves surfaces external and selection requests only that body's resources once", async () => {
+test("startup retains eight detailed planets and selection does not recreate their resources", async () => {
   const fixtures = harness();
   const requested: string[] = [];
   const app = await createWorkspace(
@@ -543,49 +543,57 @@ test("overview leaves surfaces external and selection requests only that body's 
     },
   );
   try {
-    assert.equal(
-      fixtures.visuals().some(({ spec }) => spec.faceAssets || spec.ringAssets),
-      false,
-    );
-    assert.equal(
-      requested.some((url) => url.includes("type=ori")),
-      false,
-    );
-    await app.select("earth");
+    const planets = [
+      "mercury",
+      "venus",
+      "earth",
+      "mars",
+      "jupiter",
+      "saturn",
+      "uranus",
+      "neptune",
+    ];
+    const detailed = () =>
+      fixtures.visuals().filter(({ spec }) => spec.faceAssets);
     assert.deepEqual(
-      fixtures
-        .visuals()
-        .filter(({ spec }) => spec.faceAssets)
-        .map(({ id }) => id),
-      ["earth"],
+      detailed().map(({ id }) => id),
+      planets,
     );
-    await app.select("saturn");
-    assert.deepEqual(
+    assert.equal(
+      detailed().find(({ id }) => id === "saturn")!.spec.ringAssets.length,
+      2,
+    );
+    const orientationIds = () =>
       requested
         .filter((url) => url.includes("type=ori"))
-        .map((url) => url.split("/").at(-1)?.split("?")[0]),
-      ["earth", "saturn"],
+        .map((url) => url.split("/").at(-1)?.split("?")[0]);
+    for (const id of planets)
+      assert.ok(orientationIds().includes(id), `${id} orientation preloaded`);
+    const planetRequests = () =>
+      requested.filter((url) =>
+        planets.some((id) => url.includes(`/solar-dyn/${id}?`)),
+      );
+    const before = planetRequests();
+    assert.ok(
+      before.length >= planets.length,
+      "track real planet DYN requests",
     );
-    const detailed = fixtures.visuals().filter(({ spec }) => spec.faceAssets);
-    assert.deepEqual(
-      detailed.map(({ id }) => id),
-      ["earth", "saturn"],
-    );
-    assert.equal(detailed[1].spec.ringAssets.length, 2);
-    await app.select("earth");
+    for (const id of planets) await app.select(id);
     app.overview();
     await app.seek(0);
     app.layers(false, false);
-    assert.equal(
-      fixtures.visuals().filter(({ spec }) => spec.faceAssets).length,
-      2,
-    );
+    assert.equal(detailed().length, 8);
     assert.equal(
       fixtures
         .visuals()
         .some(({ id, spec }) => id === "moon" && spec.faceAssets),
       false,
     );
+    assert.equal(
+      fixtures.visuals().some(({ spec }) => spec.kind === "model"),
+      false,
+    );
+    assert.deepEqual(planetRequests(), before);
   } finally {
     await app.dispose();
   }

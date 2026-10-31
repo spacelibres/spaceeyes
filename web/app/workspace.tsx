@@ -227,6 +227,7 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      planetPreparation={state.planetPreparation}
       cameraDebug={state.cameraDebug}
       shareUrl={shareUrl}
       onShare={() =>

@@ -226,3 +226,7 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 4096 input sample budget. This display model does not extend scientific coverage or certify predictions.
 
 核心实例最多同时保留256条解析轨道，替换不增加计数；清除或释放所属对象归还预算。每条最多360段，总计不超过92160段。
+
+## 宿主行星预载策略（2026-10-31用户确认）
+
+宿主初始化通过既有受控接口发布八大行星的轨道、姿态、高清表面及土星环，保持资源驻留以避免选择时重复绑定；界面用visual.status展示准备进度。资源仍在服务器，禁止嵌入WASM。太阳为程序化表面，月球和航天器模型按需。此策略不扩展插件权限，也不允许插件绕过宿主登记或直接操作Bevy。未解析为可见模型像素的卫星仍可用点标记表示，名称按有效性、视野、遮挡和碰撞显示，不代表所有名字必须同时可见。

@@ -54,6 +54,7 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  planetPreparation: { ready: number; total: number; failed: number };
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
   cameraDebug?: Readonly<Record<string, unknown>>;
@@ -103,6 +104,7 @@ export type SolarSnapshot = {
   utc: string;
 };
 export const initialSnapshot: SolarSnapshot = {
+  planetPreparation: { ready: 0, total: 8, failed: 0 },
   observationMode: "nearby",
   dataCache: {
     records: 0,
@@ -392,6 +394,25 @@ export async function createWorkspace(
   };
   const emit = () => {
     if (closed) return;
+    const planets = solarCatalog.filter(
+      (body) => body.kind === "planet" && baseSolarIds.includes(body.id),
+    );
+    const planetPhase = (id: string) => {
+      try {
+        return sdk?.visual.status(id)?.phase;
+      } catch {
+        return undefined;
+      } // Not yet published during the startup progress callbacks.
+    };
+    state.planetPreparation = {
+      total: planets.length,
+      ready: planets.filter((body) => planetPhase(body.id) === "ready").length,
+      failed: planets.filter(
+        (body) =>
+          data?.status(body.id)?.status === "failed" ||
+          planetPhase(body.id) === "failed",
+      ).length,
+    };
     if (core.environment_status) {
       const status = JSON.parse(core.environment_status()) ?? {};
       state.galaxy = {
@@ -520,7 +541,7 @@ export async function createWorkspace(
           return false;
         }
       }).length;
-      state.dataStatus = `${loaded.length}/${solarCatalog.length} 个对象数据可用 · ${shown} 个显示表示就绪 · 高清表面仅选择时加载`;
+      state.dataStatus = `${loaded.length}/${solarCatalog.length} 个对象数据可用 · ${shown} 个显示表示就绪 · 八大行星表面初始化预载`;
       state.source = "NASA Eyes 动态数据与固定表面资源 · 近似星历精度未验收";
       state.coverage = "选择对象查看其真实有效范围";
     }
@@ -547,6 +568,7 @@ export async function createWorkspace(
           live: false,
           attitude: "工作区已释放",
           dataCache: { ...initialSnapshot.dataCache },
+          planetPreparation: { ...initialSnapshot.planetPreparation },
           lighting: "natural",
           busy: false,
           playing: false,
@@ -570,7 +592,13 @@ export async function createWorkspace(
   const assertLive = () => {
     if (closed || signal.aborted) throw new Error("工作区已关闭");
   };
-  const detailedBodies = new Set<string>();
+  const detailedBodies = new Set<string>(
+    solarCatalog
+      .filter(
+        (body) => body.kind === "planet" && baseSolarIds.includes(body.id),
+      )
+      .map((body) => body.id),
+  );
   const trajectoryWindows = new Map<string, [number, number]>();
   const sceneIds = (epoch: number) => {
     const ids = new Set(baseSolarIds);
@@ -1469,7 +1497,7 @@ export async function createWorkspace(
     );
     await host.enable("spaceeyes.background-galaxy", ["scene.visual"]);
     assertLive();
-    options.onStartup?.("加载总览所需轨道数据");
+    options.onStartup?.("加载八大行星轨道、姿态和表面资源");
     await reload(core.utc_to_tdb(Date.now() / 1000));
     assertLive();
     if (

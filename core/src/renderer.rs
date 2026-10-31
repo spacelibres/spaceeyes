@@ -1857,7 +1857,6 @@ fn draw_annotations(
     mut fades: Local<std::collections::HashMap<String, crate::label_visibility::Fade>>,
     time: Res<Time>,
     mut near_focus: Local<bool>,
-    mut raster_visibility: Local<std::collections::HashMap<String, bool>>,
     mut markers: Query<
         (Entity, &BodyMarker, &mut Node, &mut BackgroundColor),
         Without<AnnotationLabel>,
@@ -1974,7 +1973,6 @@ fn draw_annotations(
     let mut depths = std::collections::HashMap::new();
     let mut marker_nodes = std::collections::HashMap::new();
     label_layout.priorities.clear();
-    raster_visibility.retain(|id, _| core.object_ids().any(|alive| alive == id));
     let mut visible_objects = std::collections::HashSet::new();
     for id in core.object_ids() {
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
@@ -2062,13 +2060,8 @@ fn draw_annotations(
         if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
             continue;
         }
-        if id.starts_with("sc_") {
-            let previous = raster_visibility.get(id).copied().unwrap_or(false);
-            let visible = crate::label_visibility::raster_visible(previous, projected_radius);
-            raster_visibility.insert(id.to_owned(), visible);
-            if !visible {
-                continue;
-            }
+        if !crate::label_visibility::marker_projection_valid(projected_radius) {
+            continue;
         }
         visible_objects.insert(id.to_owned());
         {

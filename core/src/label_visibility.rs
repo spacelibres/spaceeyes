@@ -119,18 +119,19 @@ pub(crate) fn solar_overview(focused: Option<&str>, near: bool) -> bool {
     focused.is_none() || (focused == Some("sun") && !near)
 }
 
-/// Raster visibility hysteresis, independent of the NASA distance interval.
-pub(crate) fn raster_visible(previous: bool, radius_px: f32) -> bool {
-    radius_px.is_finite() && radius_px >= if previous { 0.8 } else { 1.2 }
+/// A subpixel body is represented by a screen marker, not removed.
+pub(crate) fn marker_projection_valid(radius_px: f32) -> bool {
+    radius_px.is_finite() && radius_px >= 0.
 }
 #[cfg(test)]
 mod raster_tests {
     #[test]
-    fn subpixel_boundary_does_not_flap() {
-        use super::raster_visible;
-        assert!(!raster_visible(false, 1.));
-        assert!(raster_visible(false, 1.2));
-        assert!(raster_visible(true, 1.));
-        assert!(!raster_visible(true, 0.79));
+    fn subpixel_satellite_keeps_its_marker() {
+        use super::marker_projection_valid;
+        assert!(marker_projection_valid(0.000001));
+        assert!(marker_projection_valid(1.2));
+        assert!(marker_projection_valid(1.));
+        assert!(marker_projection_valid(0.000001));
+        assert!(!marker_projection_valid(f32::NAN));
     }
 }
