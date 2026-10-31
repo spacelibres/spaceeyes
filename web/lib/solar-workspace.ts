@@ -823,7 +823,7 @@ export async function createWorkspace(
       state.error = "跟随参考对象在当前时刻无有效数据，已恢复近景观察";
     }
   };
-  const reload = (epoch: number) => {
+  const reload = (epoch: number, prioritizeSelection = false) => {
     if (closed || signal.aborted)
       return Promise.reject(new Error("工作区已关闭"));
     if (!Number.isFinite(epoch) || Math.abs(epoch) > 1e12)
@@ -852,7 +852,10 @@ export async function createWorkspace(
             if (parent === "sun") break;
             parent = parentAt(parent, epoch);
           }
-          await data.load(ids, epoch, [...orientationIds]);
+          const primaryIds = prioritizeSelection && state.selected
+            ? ids.filter((id) => id === state.selected || parentSeen.has(id))
+            : ids;
+          await data.load(primaryIds, epoch, [...orientationIds]);
           assertLive();
           if (current !== revision) {
             restore();
@@ -912,6 +915,20 @@ export async function createWorkspace(
             state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
           refreshDataWarning();
           validateFollow();
+          if (prioritizeSelection && !selectedUnavailable) {
+            const remaining = ids.filter((id) => !primaryIds.includes(id));
+            void data.load(remaining, epoch, [...orientationIds]).then(() => {
+              if (closed || signal.aborted || current !== revision) return;
+              data.publishAt(core.epoch());
+              configure();
+              refreshDataWarning();
+              emit();
+            }).catch((error) => {
+              if (closed || signal.aborted || current !== revision) return;
+              state.error = error instanceof Error ? error.message : String(error);
+              emit();
+            });
+          }
           if (
             state.selected &&
             !selectedUnavailable &&
@@ -1146,7 +1163,7 @@ export async function createWorkspace(
       state.observationMode = "nearby";
       state.followId = undefined;
       state.selected = id;
-      const pending = reload(core.epoch()),
+      const pending = reload(core.epoch(), true),
         ownedRevision = revision;
       await pending;
       assertLive();

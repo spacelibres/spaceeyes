@@ -1468,9 +1468,14 @@ test("unselected coverage gaps are informational while HTTP failures and selecte
   const fixtures = harness();
   const states: SolarSnapshot[] = [];
   let broken = false;
+  let coveragePublished!: () => void;
+  const coverageReady = new Promise<void>((resolve) => { coveragePublished = resolve; });
   const app = await createWorkspace(
     "#test",
-    (s) => states.push(s),
+    (s) => {
+      states.push(s);
+      if (/项当前时间无覆盖/.test(s.phase)) coveragePublished();
+    },
     new AbortController().signal,
     {
       ...fixtures,
@@ -1489,6 +1494,7 @@ test("unselected coverage gaps are informational while HTTP failures and selecte
   );
   try {
     await app.select("earth");
+    await coverageReady;
     assert.doesNotMatch(states.at(-1)!.error, /Rumba/);
     assert.match(states.at(-1)!.phase, /项当前时间无覆盖/);
     await assert.rejects(app.select("sc_cluster_ii_fm5"));
@@ -1557,6 +1563,92 @@ test("pause during high-rate coverage reload is honored when loading finishes", 
     assert.equal(fixtures.core().playing(), false);
     assert.equal(fixtures.core().epoch(), 200);
   } finally {
+    await app.dispose();
+  }
+});
+
+
+test("selection focuses before supplementary spacecraft data completes", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  let blocked = false;
+  let backgroundPublished: (() => void) | undefined;
+  const app = await createWorkspace("#test", (value) => {
+    states.push(value);
+    backgroundPublished?.();
+  }, new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => {
+      const url = String(input);
+      if (url.includes("sc_")) { blocked = true; await gate; }
+      return new Response(sample(url.includes("type=ori")));
+    },
+  });
+  try {
+    await app.select("earth");
+    assert.equal(fixtures.focused(), "earth");
+    assert.equal(states.at(-1)!.busy, false);
+    // Supplementary work is still scheduled while the selected target is usable.
+    assert.equal(blocked, true);
+    app.play(true, 60);
+    fixtures.step(0);
+    fixtures.step(1000);
+    const advanced = fixtures.core().epoch();
+    const published = new Promise<void>((resolve) => { backgroundPublished = resolve; });
+    release();
+    await published;
+    backgroundPublished = undefined;
+    assert.equal(fixtures.core().epoch(), advanced);
+    assert.equal(JSON.parse(fixtures.core().state_at("earth", advanced)).epochTdbSeconds, advanced);
+    assert.equal(fixtures.focused(), "earth");
+    await app.select("mercury");
+    assert.equal(fixtures.focused(), "mercury");
+  } finally {
+    release();
+    await app.dispose();
+  }
+});
+
+
+test("superseded supplementary load cannot restore the previous selection", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  let blocked = false;
+  let drained!: () => void;
+  const completed = new Promise<void>((resolve) => { drained = resolve; });
+  const app = await createWorkspace("#test", (value) => states.push(value), new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input, options) => {
+      const url = String(input);
+      if (url.includes("sc_")) {
+        blocked = true;
+        await Promise.race([
+          gate,
+          new Promise<void>((resolve) => options?.signal?.addEventListener("abort", () => resolve(), { once: true })),
+        ]);
+        drained();
+      }
+      return new Response(sample(url.includes("type=ori")));
+    },
+  });
+  try {
+    await app.select("earth");
+    assert.equal(blocked, true);
+    await app.select("mars");
+    assert.equal(fixtures.focused(), "mars");
+    release();
+    await completed;
+    // Flush completion callbacks without advancing the simulation clock.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(fixtures.focused(), "mars");
+    assert.equal(states.at(-1)!.selected, "mars");
+    assert.equal(states.at(-1)!.busy, false);
+  } finally {
+    release();
     await app.dispose();
   }
 });

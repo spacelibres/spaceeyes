@@ -1593,6 +1593,7 @@ fn maintain_labels(
     desired: Vec<(String, String, Vec2)>,
     font: Handle<Font>,
     opacity: &std::collections::HashMap<String, f32>,
+    alive: Option<&std::collections::HashSet<String>>,
 ) {
     let mut desired: std::collections::HashMap<_, _> = desired
         .into_iter()
@@ -1605,12 +1606,17 @@ fn maintain_labels(
             }
             node.left = Val::Px(pixel.x + 8.0);
             node.top = Val::Px(pixel.y - 8.0);
+            commands.entity(entity).insert(Visibility::Inherited);
             commands.entity(entity).insert(TextColor(Color::srgba(
                 1.,
                 1.,
                 1.,
                 opacity.get(&label.object).copied().unwrap_or(1.),
             )));
+        } else if alive.is_some_and(|ids| ids.contains(&label.object)) {
+            // Preserve glyph metrics and the entity through temporary collision,
+            // occlusion or distance hiding, like NASA's persistent label divs.
+            commands.entity(entity).insert(Visibility::Hidden);
         } else {
             commands.entity(entity).despawn();
         }
@@ -1620,6 +1626,7 @@ fn maintain_labels(
         commands.spawn((
             AnnotationLabel { object },
             Text::new(text),
+            TextLayout::no_wrap(),
             TextFont {
                 font: FontSource::Handle(font.clone()),
                 font_size: FontSize::Px(14.0),
@@ -1645,6 +1652,7 @@ fn draw_annotations(
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
     mut label_font: Local<Option<Handle<Font>>>,
+    mut label_layout: Local<crate::screen_layout::LabelLayout>,
     mut fades: Local<std::collections::HashMap<String, crate::label_visibility::Fade>>,
     time: Res<Time>,
     mut near_focus: Local<bool>,
@@ -1674,6 +1682,7 @@ fn draw_annotations(
             Vec::new(),
             Handle::default(),
             &opacity,
+            None,
         );
         return;
     };
@@ -1684,6 +1693,7 @@ fn draw_annotations(
             Vec::new(),
             Handle::default(),
             &opacity,
+            None,
         );
         return;
     };
@@ -1944,8 +1954,12 @@ fn draw_annotations(
             })
         })
     });
+    let alive_labels = core
+        .annotations()
+        .filter_map(|(id, label, _)| label.filter(|text| !text.is_empty()).map(|_| id.to_owned()))
+        .collect();
     let desired_labels =
-        crate::screen_layout::place_labels_measured(desired_labels, viewport, priority, &measured);
+        label_layout.place(desired_labels, viewport, priority, &measured, &alive_labels);
     for (id, text, anchor) in &desired_labels {
         if opacity.get(id).copied().unwrap_or(0.) < 0.5 {
             continue;
@@ -1975,7 +1989,14 @@ fn draw_annotations(
             .get_or_insert_with(|| assets.load("fonts/FiraMono-subset.ttf"))
             .clone()
     };
-    maintain_labels(&mut commands, &mut labels, desired_labels, font, &opacity);
+    maintain_labels(
+        &mut commands,
+        &mut labels,
+        desired_labels,
+        font,
+        &opacity,
+        Some(&alive_labels),
+    );
 }
 
 #[cfg(test)]
@@ -2104,10 +2125,13 @@ mod label_persistence_tests {
     use super::*;
     #[derive(Resource, Default)]
     struct DesiredLabels(Vec<(String, String, Vec2)>);
+    #[derive(Resource, Default)]
+    struct AliveLabels(Option<std::collections::HashSet<String>>);
     fn update_labels(
         mut commands: Commands,
         mut labels: AnnotationLabels,
         desired: Res<DesiredLabels>,
+        alive: Res<AliveLabels>,
     ) {
         maintain_labels(
             &mut commands,
@@ -2115,12 +2139,14 @@ mod label_persistence_tests {
             desired.0.clone(),
             Handle::default(),
             &std::collections::HashMap::from([("earth".to_owned(), 0.2)]),
+            alive.0.as_ref(),
         );
     }
     #[test]
     fn label_entities_survive_frames_and_are_removed_only_when_absent() {
         let mut app = App::new();
         app.init_resource::<DesiredLabels>()
+            .init_resource::<AliveLabels>()
             .add_systems(Update, update_labels);
         app.world_mut().resource_mut::<DesiredLabels>().0 =
             vec![("earth".into(), "EARTH".into(), Vec2::ZERO)];
@@ -2141,6 +2167,22 @@ mod label_persistence_tests {
         assert!((app.world().get::<TextColor>(entity).unwrap().0.alpha() - 0.2).abs() < 1e-5);
         assert_eq!(app.world().get::<Text>(entity).unwrap().0, "EARTH updated");
         assert_eq!(app.world().get::<Node>(entity).unwrap().left, Val::Px(18.));
+        app.world_mut().resource_mut::<AliveLabels>().0 =
+            Some(["earth".to_owned()].into_iter().collect());
+        app.world_mut().resource_mut::<DesiredLabels>().0.clear();
+        app.update();
+        assert_eq!(
+            *app.world().get::<Visibility>(entity).unwrap(),
+            Visibility::Hidden
+        );
+        app.world_mut().resource_mut::<DesiredLabels>().0 =
+            vec![("earth".into(), "EARTH".into(), Vec2::ZERO)];
+        app.update();
+        assert_eq!(
+            *app.world().get::<Visibility>(entity).unwrap(),
+            Visibility::Inherited
+        );
+        app.world_mut().resource_mut::<AliveLabels>().0 = None;
         app.world_mut().resource_mut::<DesiredLabels>().0.clear();
         app.update();
         assert!(app.world().get::<AnnotationLabel>(entity).is_none());
