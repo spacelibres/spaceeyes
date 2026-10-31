@@ -1,5 +1,21 @@
 //! Temporal polyline attachment uses core state, never a nearest spatial guess.
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn parent_trail_visibility(
+    near_visibility: f32,
+    style: Option<&crate::TrajectoryStyle>,
+    focused: Option<&str>,
+) -> f32 {
+    if focused.is_some_and(|focus| {
+        style.is_some_and(|s| {
+            s.kind.as_deref() == Some("trail") && s.origin_id.as_deref() == Some(focus)
+        })
+    }) {
+        1.
+    } else {
+        near_visibility
+    }
+}
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
 pub(crate) fn path_scale_fade(
     points: &[[f64; 3]],
     focus_range: Option<f64>,
@@ -171,6 +187,18 @@ pub(crate) fn visit_styled_segments(
 #[cfg(test)]
 mod trail_tests {
     use super::*;
+    #[test]
+    fn parent_inspection_keeps_child_trails_but_craft_inspection_hides_them() {
+        let style = crate::TrajectoryStyle {
+            kind: Some("trail".into()),
+            origin_id: Some("earth".into()),
+            ..Default::default()
+        };
+        assert_eq!(parent_trail_visibility(0., Some(&style), Some("earth")), 1.);
+        assert_eq!(parent_trail_visibility(0., Some(&style), Some("iss")), 0.);
+        assert_eq!(parent_trail_visibility(0., None, Some("earth")), 0.);
+        assert_eq!(parent_trail_visibility(0.6, Some(&style), None), 0.6);
+    }
     #[test]
     fn clips_past_window_and_never_bridges_breaks_or_uncovered_future() {
         let points = [[0., 0., 0.], [10., 0., 0.], [20., 0., 0.]];

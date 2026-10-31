@@ -60,3 +60,6 @@ SDK trajectory style新增kind:'orbit'|'trail'（默认orbit）、trailDurationS
 
 
 0.0.48补齐目标优先切换和稳定标签生命周期，对照用户提供的本地NASA源码；完整检查与实际GPU暂停标签像素核验见evidence/switch-labels-0.0.48。长时GPU预算、首帧受控计时与全目录逐任务验收继续保留。
+
+
+0.0.49修复航天器稀疏历史采样造成的长弦折线：保持会话4096点预算，以源状态曲率检查缩短可显示历史，缺口/突变保留断点；父体近景不再把其航天器拖尾一并隐藏。真实DYN与GPU证据见evidence/trail-sampling-0.0.49。尚未声称实现NASA可变线宽或全目录全时刻数学误差认证。

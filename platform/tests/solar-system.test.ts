@@ -485,7 +485,7 @@ test("trail uses a full past period against a moving parent and caches future", 
     },
   });
   await source.load(["moon"], 500, []);
-  const trail = source.trailSamples("moon", 500, 128);
+  const trail = source.trailSamples("moon", 500, 256);
   assert.ok(Math.abs(trail.durationSeconds - 100) < 1e-8);
   assert.ok(Math.abs(trail.epochsTdbSeconds[0] - 400) < 1e-8);
   assert.ok(Math.abs(trail.epochsTdbSeconds.at(-1)! - 525) < 1e-8);
@@ -1150,3 +1150,107 @@ test("spin source anchor survives checkpoint and clears with retained scene", as
     eyesDefinitions.moon.controllers = original;
   }
 });
+
+test("finite trail budget shortens accelerating source arcs and retains exact source states", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => {
+      const bytes = orb(2);
+      const view = new DataView(bytes.buffer);
+      for (let i = 0; i < 2; i++) view.setFloat64(28 + i * 72 + 24, 0.01, true);
+      return new Response(bytes);
+    },
+  });
+  await source.load(["moon"], 5, []);
+  const original = source.position.bind(source);
+  // An accelerating curved evaluator has zero instantaneous velocity at epoch;
+  // local-rate-only sizing misses all of its historical curvature.
+  source.position = (id, t) => {
+    if (id !== "moon") return original(id, t);
+    const parent = original("earth", t);
+    const phase = 4 * (t - 5) ** 2;
+    return parent.map(
+      (v, i) => v + [2 * Math.cos(phase), 2 * Math.sin(phase), 0][i],
+    ) as [number, number, number];
+  };
+  const trail = source.trailSamples("moon", 5, 24);
+  assert.ok(trail.points.length <= 24);
+  assert.ok(trail.durationSeconds < 1);
+  assert.ok(trail.epochsTdbSeconds.includes(5));
+  assert.ok(trail.epochsTdbSeconds.at(-1)! > 5);
+  for (let i = 0; i < trail.points.length; i++) {
+    const t = trail.epochsTdbSeconds[i];
+    assert.deepEqual(
+      trail.points[i],
+      source
+        .position("moon", t)
+        .map((v, k) => v - source.position("earth", t)[k]),
+    );
+    if (i && !trail.breakIndices.includes(i)) {
+      assert.ok(
+        Math.hypot(
+          ...trail.points[i].map((v, k) => v - trail.points[i - 1][k]),
+        ) <
+          2 * 0.053,
+      );
+    }
+  }
+  source.dispose();
+});
+
+for (const mode of [
+  "interior gap",
+  "parent interior gap",
+  "unresolved discontinuity",
+] as const) {
+  test(`trail never bridges ${mode} after bounded refinement`, async () => {
+    const { ctx } = context();
+    const source = new SolarSystemData(ctx, {
+      fetch: async () => {
+        const bytes = orb(2),
+          view = new DataView(bytes.buffer);
+        for (let i = 0; i < 2; i++)
+          view.setFloat64(28 + i * 72 + 24, 0.01, true);
+        return new Response(bytes);
+      },
+    });
+    await source.load(["moon"], 5, []);
+    const original = source.position.bind(source);
+    source.position = (id, t) => {
+      if (
+        mode === "parent interior gap" &&
+        id === "earth" &&
+        t > 4.1 &&
+        t < 4.2
+      )
+        throw Error("Synthetic parent coverage gap");
+      if (id !== "moon") return original(id, t);
+      if (mode === "interior gap" && t > 4.1 && t < 4.2)
+        throw Error("Synthetic interior coverage gap");
+      const parent = original("earth", t);
+      const x = mode === "unresolved discontinuity" && t < 5 ? -2 : 2;
+      return [parent[0] + x, parent[1], parent[2]];
+    };
+    const trail = source.trailSamples("moon", 5, 8);
+    assert.ok(trail.points.length <= 8);
+    assert.ok(trail.epochsTdbSeconds.includes(5));
+    if (mode === "unresolved discontinuity") {
+      const current = trail.epochsTdbSeconds.indexOf(5);
+      assert.ok(current > 0);
+      assert.ok(
+        trail.breakIndices.includes(current),
+        "unresolved jump must remain a line break",
+      );
+    } else {
+      for (let i = 1; i < trail.epochsTdbSeconds.length; i++) {
+        if (trail.breakIndices.includes(i)) continue;
+        assert.ok(
+          trail.epochsTdbSeconds[i] <= 4.1 ||
+            trail.epochsTdbSeconds[i - 1] >= 4.2,
+          "unbroken segment must not span known gap",
+        );
+      }
+    }
+    source.dispose();
+  });
+}

@@ -1850,8 +1850,13 @@ fn draw_annotations(
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
         };
-        if let Some(points) = points.filter(|_| orbit_visibility > 0.) {
-            let style = core.trajectory_style(id);
+        let style = core.trajectory_style(id);
+        let distance_visibility = crate::orbit_lines::parent_trail_visibility(
+            orbit_visibility,
+            style,
+            core.focused_object(),
+        );
+        if let Some(points) = points.filter(|_| distance_visibility > 0.) {
             let path_visibility = crate::orbit_lines::path_scale_fade(
                 points,
                 focus_range,
@@ -1880,7 +1885,7 @@ fn draw_annotations(
                     let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
                     if a.is_finite() && b.is_finite() {
                         let selected = core.focused_object() == Some(id);
-                        let opacity = orbit_visibility
+                        let opacity = distance_visibility
                             * path_visibility
                             * color[3]
                             * if selected {

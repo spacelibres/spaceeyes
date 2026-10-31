@@ -1234,7 +1234,46 @@ export class SolarSystemData {
     const period = motion
       ? (2 * Math.PI) / Math.abs(motion)
       : rangeEnd - rangeStart;
-    const durationSeconds = Math.min(30 * 86400, period);
+    // Spend the finite vertex budget on a short resolved arc instead of
+    // connecting many revolutions with long chords.
+    const origin = this.parentAt(id, epoch) || undefined;
+    const failedProbes = new Set<number>();
+    const relativeCache = new Map<number, number[]>();
+    const relative = (t: number) => {
+      const cached = relativeCache.get(t);
+      if (cached) return cached;
+      let world: [number, number, number];
+      let parent: number[];
+      try {
+        world = this.position(id, t);
+        parent = origin ? this.position(origin, t) : [0, 0, 0];
+      } catch (error) {
+        failedProbes.add(t);
+        throw error;
+      }
+      const point = world.map((v, i) => v - parent[i]);
+      relativeCache.set(t, point);
+      return point;
+    };
+    const probe = Math.min(1, (rangeEnd - rangeStart) / 1e6);
+    const lo = Math.max(rangeStart, epoch - probe);
+    const hi = Math.min(rangeEnd, epoch + probe);
+    let rate = Math.abs(motion ?? 0);
+    try {
+      const p = relative(lo),
+        q = relative(hi);
+      const radius = Math.hypot(...relative(epoch));
+      const measured =
+        Math.hypot(...q.map((v, i) => v - p[i])) / (hi - lo) / radius;
+      if (Number.isFinite(measured)) rate = Math.max(rate, measured);
+    } catch {
+      /* Coverage gaps remain explicit breaks below. */
+    }
+    let durationSeconds = Math.min(
+      30 * 86400,
+      period,
+      rate > 0 ? (0.052 * (count - 2)) / (1.25 * rate) : period,
+    );
     let [coveredStart, coveredEnd] = this.#phaseCoverage(
       id,
       epoch,
@@ -1251,11 +1290,68 @@ export class SolarSystemData {
       coveredEnd = Math.min(coveredEnd, coverage[1]);
       ancestor = this.parentAt(ancestor, epoch);
     }
-    const start = Math.max(coveredStart, epoch - durationSeconds);
-    const end = Math.min(coveredEnd, epoch + durationSeconds / 4);
-    const times = [epoch];
-    for (let i = 0; i < count - 1; i++)
-      times.push(start + ((end - start) * i) / (count - 2));
+    let start = 0,
+      end = 0;
+    let times: number[] = [];
+    let unresolved = new Set<number>();
+    for (let attempt = 0; attempt <= 8; attempt++) {
+      relativeCache.clear();
+      start = Math.max(coveredStart, epoch - durationSeconds);
+      end = Math.min(coveredEnd, epoch + durationSeconds / 4);
+      times = [epoch];
+      for (let i = 0; i < count - 1; i++)
+        times.push(start + ((end - start) * i) / (count - 2));
+      times = [...new Set(times)].sort((a, b) => a - b);
+      unresolved = new Set<number>();
+      for (let i = 1; i < times.length; i++) {
+        try {
+          const p = relative(times[i - 1]),
+            q = relative(times[i]);
+          let previous = p;
+          for (let j = 1; j <= 4; j++) {
+            const fraction = j / 4;
+            const sample = relative(
+              times[i - 1] + (times[i] - times[i - 1]) * fraction,
+            );
+            const radius = Math.min(
+              Math.hypot(...p),
+              Math.hypot(...q),
+              Math.hypot(...sample),
+            );
+            const error = Math.hypot(
+              ...sample.map((v, k) => v - (p[k] + (q[k] - p[k]) * fraction)),
+            );
+            const advance = Math.hypot(
+              ...sample.map((v, k) => v - previous[k]),
+            );
+            if (
+              !Number.isFinite(error) ||
+              !Number.isFinite(advance) ||
+              error > radius * 0.001 ||
+              advance > radius * 0.0131
+            )
+              unresolved.add(times[i]);
+            previous = sample;
+          }
+        } catch {
+          // A gap discovered between valid endpoints must also break the line.
+          unresolved.add(times[i]);
+        }
+      }
+      if (!unresolved.size || attempt === 8) break;
+      durationSeconds /= 2;
+    }
+    const failures = [...failedProbes].sort((a, b) => a - b);
+    let failureIndex = 0;
+    for (let i = 1; i < times.length; i++) {
+      while (
+        failureIndex < failures.length &&
+        failures[failureIndex] < times[i - 1]
+      )
+        failureIndex++;
+      if (failureIndex < failures.length && failures[failureIndex] <= times[i])
+        unresolved.add(times[i]);
+    }
     const originId = this.parentAt(id, epoch) || undefined;
     const epochsTdbSeconds: number[] = [];
     const points: [number, number, number][] = [];
@@ -1271,7 +1367,8 @@ export class SolarSystemData {
           number,
         ];
         if (!point.every(Number.isFinite)) throw Error("Invalid trail point");
-        if (gap && points.length) breakIndices.push(points.length);
+        if ((gap || unresolved.has(t)) && points.length)
+          breakIndices.push(points.length);
         points.push(point);
         epochsTdbSeconds.push(t);
         gap = false;
