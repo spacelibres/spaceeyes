@@ -1,0 +1,19 @@
+{
+  "epochTdbSeconds": 846765794.256,
+  "roi": [
+    25,
+    160,
+    925,
+    450
+  ],
+  "exclude_circle": [
+    640,
+    360,
+    80
+  ],
+  "on_brighter_pixels": 8799,
+  "on_darker_pixels": 4350,
+  "unchanged_within_3_rgb_sum": 227782,
+  "worst_rgb_sum_delta": -69,
+  "note": "Unmodified same-epoch screenshots, after raw RGB and hardware MSAA correction. Excludes central animated Sun and interface. This measures final HDR display pixels, not source blend state."
+}

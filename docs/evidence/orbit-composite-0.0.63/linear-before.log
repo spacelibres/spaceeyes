@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.51 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.41s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-efd34a10d7c01486.exe)
+
+running 1 test
+test trajectory_render::tests::nasa_raw_shader_rgb_reaches_vertex_buffer_without_extra_srgb_decoding ... FAILED
+
+failures:
+
+---- trajectory_render::tests::nasa_raw_shader_rgb_reaches_vertex_buffer_without_extra_srgb_decoding stdout ----
+
+thread 'trajectory_render::tests::nasa_raw_shader_rgb_reaches_vertex_buffer_without_extra_srgb_decoding' (40572) panicked at src\trajectory_render.rs:284:9:
+assertion `left == right` failed
+  left: [0.31854683, 0.13286833, 0.033104762, 0.75]
+ right: [0.6, 0.4, 0.2, 0.75]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    trajectory_render::tests::nasa_raw_shader_rgb_reaches_vertex_buffer_without_extra_srgb_decoding
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 117 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

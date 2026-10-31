@@ -1,3 +1,4 @@
+import { eyesLineColor } from "../../platform/eyes-line-style.ts";
 import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
 import {
   entityAlignDependencies,
@@ -710,7 +711,7 @@ export async function createWorkspace(
           }
         : {kind: "orbit" as const, ...(trail.conic ? {conic: trail.conic} : {})}),
       originId: trail.originId,
-      colorRgba: isTrail ? [1, 1, 1, 1] : solarCatalog.find((body) => body.id === id)!.color,
+      colorRgba: eyesLineColor(id),
     });
     trajectoryWindows.set(id, trail.refreshRange);
     pendingTrajectories.delete(id);

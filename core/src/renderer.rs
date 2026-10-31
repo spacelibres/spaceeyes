@@ -6,23 +6,8 @@ use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, sync_scene};
 use crate::{SharedCore, VisualPhase, VisualSpec};
 use bevy::asset::AssetMetaCheck;
 use bevy::camera::primitives::Aabb;
-use bevy::gizmos::config::GizmoConfigGroup;
 use bevy::input::mouse::{AccumulatedMouseMotion, MouseScrollUnit, MouseWheel};
 use bevy::math::DVec3;
-#[derive(Default, Reflect, GizmoConfigGroup)]
-struct OrbitLines;
-#[derive(Default, Reflect, GizmoConfigGroup)]
-struct HoverOrbitLines;
-#[derive(Default, Reflect, GizmoConfigGroup)]
-struct TrailLines;
-#[derive(Default, Reflect, GizmoConfigGroup)]
-struct HoverTrailLines;
-fn configure_orbit_lines(mut configs: ResMut<GizmoConfigStore>) {
-    configs.config_mut::<OrbitLines>().0.line.width = 1.2;
-    configs.config_mut::<HoverOrbitLines>().0.line.width = 2.;
-    configs.config_mut::<TrailLines>().0.line.width = 2.;
-    configs.config_mut::<HoverTrailLines>().0.line.width = 4.;
-}
 use bevy::prelude::*;
 use std::sync::{
     Arc,
@@ -150,11 +135,12 @@ pub(crate) fn create_browser_app(
             .after(sync_scene)
             .after(crate::deep_render::sync_environment),
     )
-    .init_gizmo_group::<OrbitLines>()
-    .init_gizmo_group::<HoverOrbitLines>()
-    .init_gizmo_group::<TrailLines>()
-    .init_gizmo_group::<HoverTrailLines>()
-    .add_systems(Startup, configure_orbit_lines)
+    .add_plugins(MaterialPlugin::<crate::trajectory_render::TrajectoryMaterial>::default())
+    .init_resource::<crate::trajectory_render::TrajectoryBatch>()
+    .add_systems(
+        PostUpdate,
+        crate::trajectory_render::upload.after(draw_annotations),
+    )
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
     .init_resource::<crate::solar_surface::SolarSurfaceLod>()
@@ -1843,12 +1829,7 @@ fn draw_annotations(
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
     picks: Res<RendererPicks>,
-    lines: (
-        Gizmos<OrbitLines>,
-        Gizmos<HoverOrbitLines>,
-        Gizmos<TrailLines>,
-        Gizmos<HoverTrailLines>,
-    ),
+    mut lines: ResMut<crate::trajectory_render::TrajectoryBatch>,
     input: (Query<&Window>, Res<ButtonInput<MouseButton>>),
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
@@ -1863,7 +1844,7 @@ fn draw_annotations(
     >,
     camera: Query<(&Camera, &GlobalTransform, &Projection), With<DisplayCamera>>,
 ) {
-    let (mut gizmos, mut hover_gizmos, mut trails, mut hover_trails) = lines;
+    lines.clear();
     let (windows, buttons) = input;
     let cursor = windows.iter().next().and_then(|window| {
         window
@@ -2189,30 +2170,23 @@ fn draw_annotations(
                     let a = to_display(std::array::from_fn(|i| a[i] + origin[i]));
                     let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
                     if a.is_finite() && b.is_finite() {
-                        let selected = core.focused_object() == Some(id);
                         let opacity = distance_visibility
                             * path_visibility
                             * color[3]
-                            * if hovered.as_deref() == Some(id) {
-                                1.
-                            } else if selected {
-                                0.75
-                            } else if core.focused_object().is_some() {
-                                0.35
-                            } else {
-                                0.75
-                            };
-                        let ca = Color::srgba(color[0], color[1], color[2], opacity * alpha_a);
-                        let cb = Color::srgba(color[0], color[1], color[2], opacity * alpha_b);
-                        match (
-                            style.and_then(|s| s.kind.as_deref()) == Some("trail"),
-                            hovered.as_deref() == Some(id),
-                        ) {
-                            (true, true) => hover_trails.line_gradient(a, b, ca, cb),
-                            (true, false) => trails.line_gradient(a, b, ca, cb),
-                            (false, true) => hover_gizmos.line_gradient(a, b, ca, cb),
-                            (false, false) => gizmos.line_gradient(a, b, ca, cb),
-                        }
+                            * crate::trajectory_render::opacity(id, hovered.as_deref() == Some(id));
+                        let ca = crate::trajectory_render::color(color, opacity * alpha_a);
+                        let cb = crate::trajectory_render::color(color, opacity * alpha_b);
+                        lines.line(
+                            a,
+                            b,
+                            ca,
+                            cb,
+                            crate::trajectory_render::widths(
+                                style.and_then(|s| s.kind.as_deref()) == Some("trail"),
+                                hovered.as_deref() == Some(id),
+                                [alpha_a, alpha_b],
+                            ),
+                        );
                     }
                 },
             );
@@ -3050,27 +3024,6 @@ mod camera_collision_system_tests {
         let result = DVec3::new(local.x, -local.z, local.y);
         assert!(result.z > 0., "camera crossed planet: {result}");
         assert!(result.distance(center) > 1000.);
-    }
-}
-
-#[cfg(test)]
-mod hover_line_tests {
-    use super::*;
-    #[test]
-    fn orbit_and_trail_width_groups_are_independent() {
-        let mut app = App::new();
-        app.init_resource::<GizmoConfigStore>()
-            .init_gizmo_group::<OrbitLines>()
-            .init_gizmo_group::<HoverOrbitLines>()
-            .init_gizmo_group::<TrailLines>()
-            .init_gizmo_group::<HoverTrailLines>()
-            .add_systems(Update, configure_orbit_lines);
-        app.world_mut().run_schedule(Update);
-        let configs = app.world().resource::<GizmoConfigStore>();
-        assert_eq!(configs.config::<OrbitLines>().0.line.width, 1.2);
-        assert_eq!(configs.config::<HoverOrbitLines>().0.line.width, 2.);
-        assert_eq!(configs.config::<TrailLines>().0.line.width, 2.);
-        assert_eq!(configs.config::<HoverTrailLines>().0.line.width, 4.);
     }
 }
 

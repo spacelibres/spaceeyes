@@ -838,3 +838,6 @@ mod fov_tests {
         assert_eq!(c.camera_fov_degrees(), 45.0);
     }
 }
+
+#[cfg(feature = "browser-render")]
+mod trajectory_render;
