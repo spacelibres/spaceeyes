@@ -1,0 +1,89 @@
+- main:
+  - img "spacelibre"
+  - heading "太空之眼 SPACE EYES" [level=1]
+  - button "探索天体"
+  - button "对象与图层" [expanded]
+  - button "太阳系总览"
+  - button "全屏"
+  - button "分享场景"
+  - link "数据诊断":
+    - /url: /diagnostics
+  - status:
+    - generic: 当前场景：10/10 个对象可用 · 目录 633 项
+    - generic: 本次初始化 3.30 秒（不含首帧及贴图就绪）
+    - button "退出工作区"
+  - region "Bevy太阳系三维画布":
+    - generic "三维场景：方向键环绕，加减缩放，Home近景，空格播放"
+    - generic: 太阳
+    - generic: ICRF · km
+    - button "展开观察设置" [active]:
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - complementary "对象与图层面板":
+    - button "关闭对象信息": ×
+    - paragraph: 对象信息
+    - heading "太阳" [level=2]
+    - paragraph: sun
+    - button "聚焦"
+    - button "跟随"
+    - term: 数据状态
+    - definition: ready · 显示资源 ready
+    - term: 姿态来源与状态
+    - definition: NASA Eyes 固定控制器姿态（非实测，精度未验收）
+    - term: 科学来源
+    - definition: 本场景日心坐标原点
+    - term: 太阳风模型
+    - definition: Parker 等温跨声速模型 · 2 MK、1 AU 密度 5 cm⁻³ 为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整 MHD。
+    - term: 有效覆盖 · J2000 TDB 秒
+    - definition: 846721067.1616876 — 846721067.1616876
+    - term: 参考半径
+    - definition: 695,500 km
+    - heading "关联对象" [level=3]
+    - button "水星 →"
+    - button "金星 →"
+    - button "地球 →"
+    - button "火星 →"
+    - button "木星 →"
+    - button "土星 →"
+    - button "天王星 →"
+    - button "海王星 →"
+    - button "Magellan →"
+    - button "NEAR Shoemaker →"
+    - generic "太阳特效调试 33 项参数":
+      - text: 太阳特效调试
+      - generic: 33 项参数
+    - heading "显示图层" [level=3]
+    - checkbox "天然卫星" [checked]
+    - text: 天然卫星
+    - checkbox "人造卫星与飞船" [checked]
+    - text: 人造卫星与飞船
+    - checkbox "银河全景" [checked]
+    - text: 银河全景
+    - status "银河加载状态": NASA 银河全景已就绪
+    - checkbox "背景星空" [checked]
+    - text: 背景星空
+    - status "背景星空状态": 星空数据：7/7 层 · 43,878 点
+    - generic "场景与深空数据诊断"
+    - checkbox "对象标签" [checked]
+    - text: 对象标签
+    - checkbox "轨道线" [checked]
+    - text: 轨道线
+    - checkbox "卫星拖尾" [checked]
+    - text: 卫星拖尾
+    - paragraph: 行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 2026-10-31T12:16:37.979Z
+    - generic: 846721067.162 J2000 TDB s
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放"
+    - button "降低播放倍率": −
+    - text: 播放速率 · real rate
+    - slider "播放速率": "50"
+    - button "提高播放倍率": +
+    - button "1× 速度"
+    - button "日期与跳转"
+    - button "当前时间"
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert

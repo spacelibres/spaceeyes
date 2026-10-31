@@ -1,0 +1,77 @@
+[
+  {
+    "class": "catalog tool-panel",
+    "clientHeight": 0,
+    "rect": {
+      "bottom": 0,
+      "height": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "width": 0,
+      "x": 0,
+      "y": 0
+    },
+    "scrollHeight": 0
+  },
+  {
+    "class": "",
+    "clientHeight": 390,
+    "rect": {
+      "bottom": 390,
+      "height": 390,
+      "left": 0,
+      "right": 844,
+      "top": 0,
+      "width": 844,
+      "x": 0,
+      "y": 0
+    },
+    "scrollHeight": 390
+  },
+  {
+    "class": "view-controls",
+    "clientHeight": 127,
+    "rect": {
+      "bottom": 274.00001525878906,
+      "height": 126.66667175292967,
+      "left": 12,
+      "right": 476.1979370117187,
+      "top": 147.33334350585938,
+      "width": 464.1979370117187,
+      "x": 12,
+      "y": 147.33334350585938
+    },
+    "scrollHeight": 127
+  },
+  {
+    "class": "object-details tool-panel",
+    "clientHeight": 153,
+    "rect": {
+      "bottom": 262,
+      "height": 154,
+      "left": 524,
+      "right": 820,
+      "top": 108,
+      "width": 296,
+      "x": 524,
+      "y": 108
+    },
+    "scrollHeight": 4486
+  },
+  {
+    "class": "time-panel tool-panel",
+    "clientHeight": 0,
+    "rect": {
+      "bottom": 0,
+      "height": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0,
+      "width": 0,
+      "x": 0,
+      "y": 0
+    },
+    "scrollHeight": 0
+  }
+]

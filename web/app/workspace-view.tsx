@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { ZoomButtonGesture, type ZoomDirection } from "../lib/zoom-button";
 import {
   TIME_RATES,
   rateToSliderIndex,
@@ -114,7 +120,87 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   const [timeExpanded, setTimeExpanded] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
+  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const zoomIntent = useRef(p.onZoom);
+  zoomIntent.current = p.onZoom;
+  const zoomButtons = useRef(
+    new ZoomButtonGesture((delta) => zoomIntent.current?.(delta)),
+  );
+  useEffect(() => {
+    setSettingsExpanded(
+      !window.matchMedia("(max-width: 760px), (max-height: 440px)").matches,
+    );
+    const stop = () => zoomButtons.current.cancel();
+    const visibility = () => {
+      if (document.hidden) stop();
+    };
+    window.addEventListener("blur", stop);
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      stop();
+      window.removeEventListener("blur", stop);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, []);
+  useEffect(() => {
+    zoomButtons.current.cancel();
+    return () => zoomButtons.current.cancel();
+  }, [p.active, p.selected, p.observationMode, p.followId, p.view]);
+  const zoomButtonProps = (direction: ZoomDirection) => ({
+    onPointerDown: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (!p.active || event.button !== 0 || !event.isPrimary) return;
+      event.preventDefault();
+      event.currentTarget.focus();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      zoomButtons.current.begin(event.pointerId, direction);
+    },
+    onPointerMove: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+      const rect = event.currentTarget.getBoundingClientRect();
+      if (
+        event.clientX < rect.left ||
+        event.clientX > rect.right ||
+        event.clientY < rect.top ||
+        event.clientY > rect.bottom
+      )
+        zoomButtons.current.cancel();
+    },
+    onPointerUp: (event: ReactPointerEvent<HTMLButtonElement>) => {
+      zoomButtons.current.end(event.pointerId);
+      if (event.currentTarget.hasPointerCapture(event.pointerId))
+        event.currentTarget.releasePointerCapture(event.pointerId);
+    },
+    onPointerLeave: () => zoomButtons.current.cancel(),
+    onPointerCancel: () => zoomButtons.current.cancel(),
+    onLostPointerCapture: () => zoomButtons.current.cancel(),
+    onBlur: () => zoomButtons.current.cancel(),
+    onClick: (event: { detail: number }) =>
+      zoomButtons.current.click(event.detail, direction),
+  });
   const screen = useRef<HTMLElement>(null);
+  const observationTools = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = observationTools.current;
+    const root = screen.current;
+    if (!element || !root) return;
+    const measure = () =>
+      root.style.setProperty(
+        "--observation-tools-height",
+        `${Math.ceil(element.getBoundingClientRect().height)}px`,
+      );
+    measure();
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? undefined
+        : new ResizeObserver(measure);
+    observer?.observe(element);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+      root.style.removeProperty("--observation-tools-height");
+    };
+  }, []);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenSupported, setFullscreenSupported] = useState(false);
   const [fullscreenError, setFullscreenError] = useState("");
@@ -516,97 +602,130 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               </button>
             </div>
           )}
-          <div className="view-controls">
-            <label>
-              光照
-              <select
-                disabled={!p.active || p.busy}
-                value={p.lighting ?? "natural"}
-                onChange={(e) =>
-                  p.onLighting?.(
-                    e.target.value as "natural" | "shadow" | "flood",
-                  )
-                }
-              >
-                <option value="natural">自然光</option>
-                <option value="shadow">暗面补光</option>
-                <option value="flood">强补光</option>
-              </select>
-            </label>
-            <button
-              disabled={!p.active}
-              aria-label="放大"
-              onClick={() => p.onZoom?.(-0.2)}
+          <div className="view-controls" ref={observationTools}>
+            <div
+              id="observation-controls"
+              className="observation-controls"
+              hidden={!settingsExpanded}
             >
-              +
-            </button>
+              <label>
+                光照
+                <select
+                  disabled={!p.active || p.busy}
+                  value={p.lighting ?? "natural"}
+                  onChange={(e) =>
+                    p.onLighting?.(
+                      e.target.value as "natural" | "shadow" | "flood",
+                    )
+                  }
+                >
+                  <option value="natural">自然光</option>
+                  <option value="shadow">暗面补光</option>
+                  <option value="flood">强补光</option>
+                </select>
+              </label>
+              <button
+                className="zoom-button"
+                disabled={!p.active}
+                aria-label="放大"
+                {...zoomButtonProps(-1)}
+              >
+                +
+              </button>
+              <button
+                className="zoom-button"
+                disabled={!p.active}
+                aria-label="缩小"
+                {...zoomButtonProps(1)}
+              >
+                −
+              </button>
+              <label>
+                观察模式
+                <select
+                  disabled={!canObserve || p.busy}
+                  value={p.observationMode ?? "nearby"}
+                  onChange={(e) =>
+                    p.onObservation?.(
+                      e.target.value as "nearby" | "system" | "follow",
+                      p.followId,
+                    )
+                  }
+                >
+                  <option value="nearby">Nearby · 近景</option>
+                  <option value="system">System · 系统</option>
+                  <option value="follow">Follow · 跟随</option>
+                </select>
+              </label>
+              <label>
+                跟随参考
+                <select
+                  disabled={!canObserve || p.busy}
+                  value={p.followId ?? ""}
+                  onChange={(e) => p.onFollow(e.target.value)}
+                >
+                  <option value="">所属父体</option>
+                  {p.catalog
+                    .filter((o) => o.id !== p.selected)
+                    .map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                </select>
+              </label>
+              <label>
+                观测视场 {p.fovDegrees}°
+                <input
+                  aria-label="观测视场（度）"
+                  type="range"
+                  min="10"
+                  max="100"
+                  step="1"
+                  disabled={!p.active || p.busy}
+                  value={p.fovDegrees}
+                  onChange={(e) => p.onFov(Number(e.target.value))}
+                />
+              </label>
+              <label>
+                观察视角
+                <select
+                  disabled={!p.active || p.busy}
+                  value={p.view}
+                  onChange={(e) => p.onView(e.target.value)}
+                >
+                  <option value="orbit">自由环绕</option>
+                  <option value="top">俯视</option>
+                  <option value="front">正视</option>
+                  <option value="side">侧视</option>
+                </select>
+              </label>
+            </div>
             <button
+              className="settings-toggle"
               disabled={!p.active}
-              aria-label="缩小"
-              onClick={() => p.onZoom?.(0.2)}
+              aria-label={settingsExpanded ? "收起观察设置" : "展开观察设置"}
+              title={settingsExpanded ? "收起观察设置" : "展开观察设置"}
+              aria-expanded={settingsExpanded}
+              aria-controls="observation-controls"
+              onClick={() => {
+                zoomButtons.current.cancel();
+                setSettingsExpanded((value) => !value);
+              }}
             >
-              −
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <path d="M5 3v18M12 3v18M19 3v18" />
+                <path d="M2 8h6M9 16h6M16 6h6" strokeWidth="3" />
+              </svg>
             </button>
-            <label>
-              观察模式
-              <select
-                disabled={!canObserve || p.busy}
-                value={p.observationMode ?? "nearby"}
-                onChange={(e) =>
-                  p.onObservation?.(
-                    e.target.value as "nearby" | "system" | "follow",
-                    p.followId,
-                  )
-                }
-              >
-                <option value="nearby">Nearby · 近景</option>
-                <option value="system">System · 系统</option>
-                <option value="follow">Follow · 跟随</option>
-              </select>
-            </label>
-            <label>
-              跟随参考
-              <select
-                disabled={!canObserve || p.busy}
-                value={p.followId ?? ""}
-                onChange={(e) => p.onFollow(e.target.value)}
-              >
-                <option value="">所属父体</option>
-                {p.catalog
-                  .filter((o) => o.id !== p.selected)
-                  .map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.name}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              观测视场 {p.fovDegrees}°
-              <input
-                aria-label="观测视场（度）"
-                type="range"
-                min="10"
-                max="100"
-                step="1"
-                disabled={!p.active || p.busy}
-                value={p.fovDegrees}
-                onChange={(e) => p.onFov(Number(e.target.value))}
-              />
-            </label>
-            <label>
-              观察视角
-              <select
-                disabled={!p.active || p.busy}
-                value={p.view}
-                onChange={(e) => p.onView(e.target.value)}
-              >
-                <option value="orbit">自由环绕</option>
-                <option value="top">俯视</option>
-                <option value="front">正视</option>
-                <option value="side">侧视</option>
-              </select>
-            </label>
           </div>
           <span className="caption">
             点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
@@ -644,7 +763,12 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <dd>{p.dataStatus}</dd>
             <dt>姿态来源与状态</dt>
             <dd>{p.attitude ?? "尚未核验姿态来源"}</dd>
-            {p.articulation && <><dt>骨骼与太阳翼</dt><dd>{p.articulation}</dd></>}
+            {p.articulation && (
+              <>
+                <dt>骨骼与太阳翼</dt>
+                <dd>{p.articulation}</dd>
+              </>
+            )}
             <dt>科学来源</dt>
             <dd>{p.source}</dd>
             {p.selected === "sun" && (
@@ -887,7 +1011,10 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           className="rate-controls"
           hidden={!timeExpanded}
         >
-          <button disabled={!p.active || (p.busy && !p.playing)} onClick={p.onPlay}>
+          <button
+            disabled={!p.active || (p.busy && !p.playing)}
+            onClick={p.onPlay}
+          >
             {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
           </button>
           <button

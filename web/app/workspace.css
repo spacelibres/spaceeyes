@@ -616,3 +616,123 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+/* Settings stay an overlay: folding controls never resizes the Bevy canvas. */
+.immersive .view-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: nowrap;
+  gap: 8px;
+  max-width: calc(100% - 48px);
+}
+.immersive .observation-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.immersive .settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+}
+.immersive .zoom-button,
+.immersive .settings-toggle {
+  touch-action: none;
+}
+@media (max-width: 760px) {
+  .immersive .view-controls {
+    max-width: calc(100% - 24px);
+  }
+}
+@media (max-height: 440px) {
+  .immersive .view-controls {
+    max-width: 55%;
+  }
+  .immersive .observation-controls {
+    gap: 4px;
+  }
+}
+
+/* Panels reserve the measured settings footprint instead of covering controls. */
+.immersive {
+  --observation-tools-bottom: 116px;
+  --workspace-panel-top: 148px;
+  --workspace-panel-inset: 24px;
+}
+.immersive.time-expanded {
+  --observation-tools-bottom: 190px;
+}
+.immersive .view-controls,
+.immersive.time-expanded .view-controls {
+  bottom: var(--observation-tools-bottom);
+}
+.immersive .tool-panel:not(.time-panel) {
+  bottom: max(
+    156px,
+    calc(
+      var(--observation-tools-bottom) + var(--observation-tools-height, 36px) +
+        12px
+    )
+  );
+}
+.immersive .time-panel {
+  position: fixed;
+  left: auto;
+  right: var(--workspace-panel-inset);
+  top: auto;
+  bottom: calc(
+    var(--observation-tools-bottom) + var(--observation-tools-height, 36px) +
+      12px
+  );
+  max-height: calc(
+    100dvh - var(--workspace-panel-top) - var(--observation-tools-bottom) -
+      var(--observation-tools-height, 36px) - 12px
+  );
+}
+@media (max-width: 760px) {
+  .immersive {
+    --observation-tools-bottom: 188px;
+    --workspace-panel-top: 180px;
+    --workspace-panel-inset: 16px;
+  }
+  .immersive.time-expanded {
+    --observation-tools-bottom: 212px;
+  }
+  .immersive .time-panel {
+    width: calc(100% - 32px);
+  }
+}
+@media (max-height: 540px) and (min-width: 761px) {
+  .immersive {
+    --workspace-panel-top: 136px;
+  }
+}
+@media (max-height: 440px) {
+  .immersive,
+  .immersive.time-expanded {
+    --observation-tools-bottom: 116px;
+    --workspace-panel-top: 108px;
+    --workspace-panel-inset: 12px;
+  }
+}
+/* Short landscape keeps the settings and panel in separate columns. */
+@media (max-height: 440px) and (min-width: 761px) {
+  .immersive .view-controls {
+    left: 12px;
+    right: auto;
+  }
+  .immersive .tool-panel:not(.time-panel) {
+    bottom: 128px;
+  }
+  .immersive .time-panel {
+    width: min(296px, calc(45vw - 24px));
+    bottom: 128px;
+    max-height: calc(100dvh - 236px);
+  }
+}

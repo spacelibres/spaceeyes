@@ -1,0 +1,75 @@
+- generic: Sun
+- generic: Observable universe
+- generic: Milky way
+- generic: Mercury
+- generic: Venus
+- generic: Earth
+- generic: Mars
+- generic: Jupiter
+- generic: Saturn
+- generic: Uranus
+- generic: Neptune
+- generic: Europa Clipper
+- generic: Juice
+- generic: Pioneer 11
+- generic: Pioneer 10
+- generic: Voyager 1
+- generic: Voyager 2
+- generic: Lucy
+- generic: New Horizons
+- generic: OSIRIS-APEX
+- generic: Psyche
+- generic: BioSentinel
+- generic: Parker Solar Probe
+- generic: STEREO Ahead
+- generic: Ganymede
+- generic: 3I/ATLAS (C/2025 N1)
+- generic: Moon
+- generic: Triton
+- generic: ▣ Re-framing follow camera
+- banner:
+  - navigation:
+    - button "Share": Share
+    - navigation:
+      - button "Menu": Menu
+  - navigation:
+    - navigation:
+      - heading "Eyes on the Solar System" [level=1]
+- button "show info panel"
+- button "toggle layers"
+- button "zoom in zoom out":
+  - button "zoom in"
+  - button "zoom out"
+- button "toggle light modes"
+- button "toggle fullscreen"
+- button "show or hide settings"
+- article:
+  - generic: Featured Stories and Events
+  - list:
+    - heading "Roman Space Telescope Launch" [level=2]
+    - generic: Mission Launch August 30th, 2026
+    - 'img "Mission Launch August 30th, 2026: Roman Space Telescope Launch"'
+    - heading "Psyche Mars Gravity Assist" [level=2]
+    - generic: Mars Flyby on May 15th, 2026
+    - 'img "Mars Flyby on May 15th, 2026: Psyche Mars Gravity Assist"'
+    - heading "Artemis II Launch" [level=2]
+    - generic: Mission Launch April 1st, 2026
+    - 'img "Mission Launch April 1st, 2026: Artemis II Launch"'
+    - heading "Voyager's Grand Tour" [level=2]
+    - generic: 1977 - Today
+    - 'img "1977 - Today: Voyager''s Grand Tour"'
+- navigation:
+  - button "Expand time controls"
+  - navigation:
+    - time
+    - time
+    - heading "real rate" [level=3]
+    - slider "Drag time slider thumb": "50"
+    - generic: Drag time slider thumb
+  - time:
+    - generic: Oct 31, 2026
+    - generic: 07:55:37
+    - generic: pm
+    - text: Input custom time
+- navigation:
+  - generic: live

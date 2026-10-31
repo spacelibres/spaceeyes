@@ -1,0 +1,72 @@
+- main:
+  - img "spacelibre"
+  - heading "太空之眼 SPACE EYES" [level=1]
+  - button "探索天体"
+  - button "对象与图层" [expanded]
+  - button "太阳系总览" [disabled]
+  - button "全屏" [disabled]
+  - button "分享场景" [disabled]
+  - link "数据诊断":
+    - /url: /diagnostics
+  - status:
+    - generic: 工作区已释放，可重新进入
+    - button "进入工作区" [active]
+  - region "Bevy太阳系三维画布":
+    - generic: 太阳系总览
+    - generic: ICRF · AU
+    - heading "从太阳系出发" [level=2]
+    - paragraph: 进入工作区，选择天体、观察关联对象并探索时间。
+    - button "进入三维工作区 →"
+    - button "展开观察设置" [disabled]:
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - complementary "对象与图层面板":
+    - button "关闭对象信息": ×
+    - paragraph: 对象信息
+    - heading "太阳系" [level=2]
+    - paragraph: SOLAR SYSTEM
+    - button "聚焦" [disabled]
+    - button "跟随" [disabled]
+    - term: 数据状态
+    - definition: 10/667 个对象数据可用 · 10 个显示表示就绪 · 高清表面仅选择时加载
+    - term: 姿态来源与状态
+    - definition: 工作区已释放
+    - term: 科学来源
+    - definition: NASA Eyes 动态数据与固定表面资源 · 近似星历精度未验收
+    - term: 有效覆盖 · J2000 TDB 秒
+    - definition: 选择对象查看其真实有效范围
+    - heading "显示图层" [level=3]
+    - checkbox "天然卫星" [checked] [disabled]
+    - text: 天然卫星
+    - checkbox "人造卫星与飞船" [checked] [disabled]
+    - text: 人造卫星与飞船
+    - checkbox "银河全景" [disabled]
+    - text: 银河全景
+    - status "银河加载状态": 银河已关闭
+    - checkbox "背景星空" [disabled]
+    - text: 背景星空
+    - status "背景星空状态": 星空已关闭
+    - generic "场景与深空数据诊断"
+    - checkbox "对象标签" [checked] [disabled]
+    - text: 对象标签
+    - checkbox "轨道线" [checked] [disabled]
+    - text: 轨道线
+    - checkbox "卫星拖尾" [checked] [disabled]
+    - text: 卫星拖尾
+    - paragraph: 行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 2026-10-31T12:16:37.979Z
+    - generic: 846721067.162 J2000 TDB s
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放" [disabled]
+    - button "降低播放倍率" [disabled]: −
+    - text: 播放速率 · real rate
+    - slider "播放速率" [disabled]: "50"
+    - button "提高播放倍率" [disabled]: +
+    - button "1× 速度" [disabled]
+    - button "日期与跳转"
+    - button "当前时间" [disabled]
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert
