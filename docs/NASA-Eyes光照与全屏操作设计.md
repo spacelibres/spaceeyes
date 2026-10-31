@@ -11,3 +11,12 @@ NASA CameraManager保留太阳灯，natural关闭相机补光、shadow弱补光�
 验收Core/SDK权限、枚举、释放、真实WASM转发；原生App移动相机/原点后辅助灯方向及太阳独立性；实际GPU对照natural/shadow/flood地球暗面与航天器，太阳不受照；全屏进入/ESC/resize和失败路径。版本、CHANGELOG、完整检查、提交推送与gh状态按既定规则。
 
 第八批核对恢复源 Settings.js:203，NASA默认选择shadow。宿主启动显式设置shadow；省略light的场景链接同默认。释放仍恢复核心natural，显式链接light参数保持原值。
+
+
+## 0.0.45 WebGL自然光修复
+
+实际浏览器复现：natural地球整体发黑；Bevy light.rs:1135日志明确2方向光超过上限1。锁定0.19.1的bevy_pbr render/light.rs:215-216在WebGL WASM上MAX_DIRECTIONAL_LIGHTS=1，原生为10；因此原生双灯数值测试未覆盖浏览器截断。太阳与补光不能同时采用DirectionalLight。
+
+保留唯一SolarDirectionalLight；CameraFillLight改PointLight并与碰撞后的最终相机位置同步，natural为零通量。shadow/flood按原1500/10000目标中心照度映射：显示坐标中r为相机距浮动原点的距离，Φ=4πEr²，range=64r，关闭阴影。它是可视化辅助光、存在逆平方近远变化，不冒充天文太阳照度；不改太阳方向、科学位置、曝光或背景亮度。有限显示距离保护1e-8..1e8避免极端溢出。标准PBR接收，环的独立着色仍原方向。
+
+回归必须核对实际setup仅1盏方向光、模式与浮动尺度、相机位置/旋转同步、太阳独立。浏览器核对自然光亮面、真实暗面、补光两档和无directional超限警告，完整检查后版本/CHANGELOG/提交推送/gh。

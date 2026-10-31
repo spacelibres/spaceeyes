@@ -208,8 +208,8 @@ fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     ));
     commands.spawn((
         CameraFillLight,
-        DirectionalLight {
-            illuminance: 0.,
+        PointLight {
+            intensity: 0.,
             shadow_maps_enabled: false,
             ..default()
         },
@@ -224,7 +224,7 @@ struct CameraFillLight;
 type CameraFillLights<'w, 's> = Query<
     'w,
     's,
-    (&'static mut Transform, &'static mut DirectionalLight),
+    (&'static mut Transform, &'static mut PointLight),
     (With<CameraFillLight>, Without<DisplayCamera>),
 >;
 fn update_camera_fill(
@@ -241,9 +241,20 @@ fn update_camera_fill(
         "flood" => 10000.,
         _ => 0.,
     };
+    // WebGL2 Bevy supports one directional light: reserve it for the Sun.
+    // This is a camera-attached display aid, not another astronomical source.
+    // I = E*r², luminous flux = 4*pi*I. Use current display units so floating
+    // origin / planet-radius scaling does not change the requested center lux.
+    let distance = camera.translation.length();
+    let distance = if distance.is_finite() && distance > 0. {
+        distance.clamp(1e-8, 1e8)
+    } else {
+        1.
+    };
     for (mut transform, mut light) in &mut lights {
-        transform.rotation = camera.rotation;
-        light.illuminance = illuminance;
+        *transform = *camera;
+        light.intensity = illuminance * distance * distance * (2. * std::f32::consts::TAU);
+        light.range = distance * 64.;
     }
 }
 
@@ -690,6 +701,29 @@ fn follow_display_direction(relative: DVec3) -> Vec3 {
 mod camera_intent_render_tests {
     use super::*;
     #[test]
+    fn startup_reserves_webgl_directional_budget_for_sun() {
+        let mut app = App::new();
+        app.init_resource::<Assets<Mesh>>()
+            .add_systems(Startup, setup);
+        app.update();
+        let world = app.world_mut();
+        assert_eq!(world.query::<&DirectionalLight>().iter(world).count(), 1);
+        assert_eq!(
+            world
+                .query_filtered::<&DirectionalLight, With<SolarDirectionalLight>>()
+                .iter(world)
+                .count(),
+            1
+        );
+        assert_eq!(
+            world
+                .query_filtered::<&PointLight, With<CameraFillLight>>()
+                .iter(world)
+                .count(),
+            1
+        );
+    }
+    #[test]
     fn camera_fill_tracks_final_camera_without_rotating_solar_light() {
         let mut c = crate::Core::default();
         c.open_session_with_permissions(
@@ -726,11 +760,7 @@ mod camera_intent_render_tests {
             .id();
         let fill = app
             .world_mut()
-            .spawn((
-                CameraFillLight,
-                DirectionalLight::default(),
-                Transform::default(),
-            ))
+            .spawn((CameraFillLight, PointLight::default(), Transform::default()))
             .id();
         for (mode, power) in [("natural", 0.), ("shadow", 1500.), ("flood", 10000.)] {
             shared
@@ -743,13 +773,25 @@ mod camera_intent_render_tests {
                 .get_mut::<Transform>(camera)
                 .unwrap()
                 .rotation = rotation;
+            app.world_mut()
+                .get_mut::<Transform>(camera)
+                .unwrap()
+                .translation = Vec3::Z;
             app.update();
             assert_eq!(
-                app.world()
-                    .get::<DirectionalLight>(fill)
-                    .unwrap()
-                    .illuminance,
-                power
+                app.world_mut()
+                    .query::<&DirectionalLight>()
+                    .iter(app.world())
+                    .count(),
+                1
+            );
+            assert_eq!(
+                app.world().get::<Transform>(fill).unwrap().translation,
+                Vec3::Z
+            );
+            assert_eq!(
+                app.world().get::<PointLight>(fill).unwrap().intensity,
+                power * std::f32::consts::TAU * 2.
             );
             assert_eq!(
                 app.world().get::<Transform>(fill).unwrap().rotation,
@@ -770,6 +812,24 @@ mod camera_intent_render_tests {
                     .dot(Vec3::X)
                     > 0.999
             );
+        }
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_lighting("s", "p", "shadow")
+            .unwrap();
+        for distance in [1e-5_f32, 0.25, 4., 1000.] {
+            app.world_mut()
+                .get_mut::<Transform>(camera)
+                .unwrap()
+                .translation = Vec3::Z * distance;
+            app.update();
+            let fill_light = app.world().get::<PointLight>(fill).unwrap();
+            let center_lux =
+                fill_light.intensity / (2. * std::f32::consts::TAU * distance * distance);
+            assert!((center_lux - 1500.).abs() < 0.001);
+            assert!(fill_light.range >= distance * 32.);
+            assert!(!fill_light.shadow_maps_enabled);
         }
         app.world_mut().resource_mut::<DisplaySettings>().origin_km = DVec3::new(0., 1e12, 0.);
         app.update();
