@@ -1,13 +1,28 @@
 //! Built-in Bevy rendering with resources resolved through the host catalog.
-use crate::picking::{PickFrame, PickShape, PickTarget, SharedPickFrame};
+use crate::picking::{PickFrame, PickRay, PickShape, PickTarget, SharedPickFrame};
 use crate::render_assets::{SharedVisuals, attach_visuals, poll_visuals, world_ready};
 use crate::runtime::SceneObject;
 use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, sync_scene};
 use crate::{SharedCore, VisualPhase, VisualSpec};
 use bevy::asset::AssetMetaCheck;
 use bevy::camera::primitives::Aabb;
+use bevy::gizmos::config::GizmoConfigGroup;
 use bevy::input::mouse::{AccumulatedMouseMotion, MouseScrollUnit, MouseWheel};
 use bevy::math::DVec3;
+#[derive(Default, Reflect, GizmoConfigGroup)]
+struct OrbitLines;
+#[derive(Default, Reflect, GizmoConfigGroup)]
+struct HoverOrbitLines;
+#[derive(Default, Reflect, GizmoConfigGroup)]
+struct TrailLines;
+#[derive(Default, Reflect, GizmoConfigGroup)]
+struct HoverTrailLines;
+fn configure_orbit_lines(mut configs: ResMut<GizmoConfigStore>) {
+    configs.config_mut::<OrbitLines>().0.line.width = 1.2;
+    configs.config_mut::<HoverOrbitLines>().0.line.width = 2.;
+    configs.config_mut::<TrailLines>().0.line.width = 2.;
+    configs.config_mut::<HoverTrailLines>().0.line.width = 4.;
+}
 use bevy::prelude::*;
 use std::sync::{
     Arc,
@@ -43,6 +58,7 @@ struct OrbitView {
     target: Option<String>,
     focus_revision: u64,
     framing_radius_km: f64,
+    system_framing_km: Option<(f64, f32, f32)>,
     yaw: f32,
     pitch: f32,
     distance: f32,
@@ -55,6 +71,7 @@ impl Default for OrbitView {
             target: None,
             focus_revision: 0,
             framing_radius_km: 0.,
+            system_framing_km: None,
             yaw: 0.0,
             pitch: 0.0,
             distance: 4.0,
@@ -125,6 +142,11 @@ pub(crate) fn create_browser_app(
             .after(sync_scene)
             .after(crate::deep_render::sync_environment),
     )
+    .init_gizmo_group::<OrbitLines>()
+    .init_gizmo_group::<HoverOrbitLines>()
+    .init_gizmo_group::<TrailLines>()
+    .init_gizmo_group::<HoverTrailLines>()
+    .add_systems(Startup, configure_orbit_lines)
     .insert_resource(RendererStop(stop))
     .insert_resource(RendererPicks(picks))
     .init_resource::<crate::solar_surface::SolarSurfaceLod>()
@@ -458,7 +480,12 @@ fn update_focus(
     let Ok(state) = core.object_state_at(id, core.clock().epoch()).cloned() else {
         return;
     };
-    let distance_km = orbit.distance as f64 * state.radius_km;
+    let distance_km = orbit.distance as f64
+        * if orbit.target.as_deref() == Some(id) && orbit.framing_radius_km > 0. {
+            orbit.framing_radius_km
+        } else {
+            state.radius_km
+        };
     let extent = core
         .object_ids()
         .filter_map(|id| core.object_state_at(id, core.clock().epoch()).ok())
@@ -554,17 +581,75 @@ fn update_focus(
     if let Some(observation) = core.camera_observation()
         && observation.mode == "system"
     {
-        radius = observation
-            .members
-            .iter()
-            .filter_map(|member| core.object_state_at(member, core.clock().epoch()).ok())
-            .map(|member| {
-                ((DVec3::from_array(member.position_km) - settings.origin_km).length()
-                    + member.radius_km) as f32
-                    / state.radius_km as f32
+        let aspect = camera
+            .iter_mut()
+            .find_map(|(_, p)| match &*p {
+                Projection::Perspective(p) => Some(p.aspect_ratio),
+                _ => None,
             })
-            .fold(radius, f32::max);
+            .unwrap_or(1.);
+        let resized = orbit
+            .system_framing_km
+            .is_some_and(|(_, old, _)| (old - aspect).abs() > 0.001);
+        if view_changed || resized || orbit.system_framing_km.is_none() {
+            use crate::camera_framing::{
+                FramingBody, fit_distance, system_min_distance_km, visual_extent_km,
+            };
+            let mut bodies = vec![FramingBody {
+                offset_km: center.as_dvec3() / settings.units_per_km,
+                radius_km: radius as f64 / settings.units_per_km,
+            }];
+            for member in observation
+                .members
+                .iter()
+                .filter(|member| member.as_str() != id)
+            {
+                if let Ok(state) = core.object_state_at(member, core.clock().epoch()) {
+                    let offset = DVec3::from_array(state.position_km) - settings.origin_km;
+                    bodies.push(FramingBody {
+                        offset_km: DVec3::new(offset.x, offset.z, -offset.y),
+                        radius_km: visual_extent_km(
+                            state.radius_km,
+                            core.visual_assignment(member).map(|v| &v.spec),
+                        ),
+                    });
+                }
+            }
+            let (yaw, pitch) = match core.camera_view() {
+                "top" => (0., -1.5),
+                "front" => (0., 0.),
+                "side" => (std::f64::consts::FRAC_PI_2, 0.),
+                _ => (orbit.yaw as f64, orbit.pitch as f64),
+            };
+            let rotation =
+                bevy::math::DQuat::from_rotation_y(yaw) * bevy::math::DQuat::from_rotation_x(pitch);
+            for (_, projection) in &mut camera {
+                if let Projection::Perspective(p) = &*projection {
+                    let vertical = p.fov as f64 * 0.5;
+                    let horizontal = (vertical.tan() * p.aspect_ratio as f64).atan();
+                    if let Some(fit) = fit_distance(&bodies, rotation, horizontal, vertical) {
+                        let distance = (fit * 1.3).max(system_min_distance_km(id).unwrap_or(0.));
+                        // Freeze the entry fit, as NASA's camera transition does;
+                        // moving satellites must not continuously pump the zoom.
+                        let factor = (1.3 / horizontal.min(vertical).sin()) as f32;
+                        if resized
+                            && !view_changed
+                            && let Some((_, _, previous)) = orbit.system_framing_km
+                        {
+                            orbit.distance *= factor / previous;
+                        }
+                        orbit.system_framing_km =
+                            Some((distance / factor as f64, p.aspect_ratio, factor));
+                    }
+                }
+            }
+        }
+        if let Some((fit, _, _)) = orbit.system_framing_km {
+            radius = (fit * settings.units_per_km) as f32;
+        }
         center = Vec3::ZERO;
+    } else {
+        orbit.system_framing_km = None;
     }
     orbit.framing_radius_km = radius as f64 / settings.units_per_km;
     for (mut transform, mut projection) in &mut camera {
@@ -584,7 +669,14 @@ fn update_focus(
                 .min((p.fov * 0.5).tan() * p.aspect_ratio)
                 .atan();
             if view_changed {
-                distance = distance.max(1.1 / half_fov.sin());
+                distance = if core
+                    .camera_observation()
+                    .is_some_and(|v| v.mode == "follow")
+                {
+                    distance.max(1.1 / half_fov.sin())
+                } else {
+                    1.3 / half_fov.sin()
+                };
             }
             orbit.distance = distance;
         }
@@ -1515,7 +1607,7 @@ mod camera_lifecycle_tests {
         app.update();
         assert_eq!(
             app.world().get::<Transform>(camera).unwrap().translation,
-            Vec3::new(0.0, 0.0, 4.0)
+            Vec3::new(0.0, 0.0, 1.3 / (45.0_f32.to_radians() * 0.5).sin())
         );
         {
             let mut core = shared.lock().unwrap();
@@ -1533,7 +1625,7 @@ mod camera_lifecycle_tests {
         app.update();
         assert_eq!(
             app.world().get::<Transform>(camera).unwrap().translation,
-            Vec3::new(0.0, 0.0, 4.0)
+            Vec3::new(0.0, 0.0, 1.3 / (45.0_f32.to_radians() * 0.5).sin())
         );
         assert_eq!(
             shared
@@ -1648,7 +1740,13 @@ fn draw_annotations(
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
     picks: Res<RendererPicks>,
-    mut gizmos: Gizmos,
+    lines: (
+        Gizmos<OrbitLines>,
+        Gizmos<HoverOrbitLines>,
+        Gizmos<TrailLines>,
+        Gizmos<HoverTrailLines>,
+    ),
+    input: (Query<&Window>, Res<ButtonInput<MouseButton>>),
     mut labels: AnnotationLabels,
     assets: Res<AssetServer>,
     mut label_font: Local<Option<Handle<Font>>>,
@@ -1661,8 +1759,23 @@ fn draw_annotations(
         (Entity, &BodyMarker, &mut Node, &mut BackgroundColor),
         Without<AnnotationLabel>,
     >,
-    camera: Query<(&Camera, &GlobalTransform), With<DisplayCamera>>,
+    camera: Query<(&Camera, &GlobalTransform, &Projection), With<DisplayCamera>>,
 ) {
+    let (mut gizmos, mut hover_gizmos, mut trails, mut hover_trails) = lines;
+    let (windows, buttons) = input;
+    let cursor = windows.iter().next().and_then(|window| {
+        window
+            .cursor_position()
+            .map(|p| [p.x / window.width(), p.y / window.height()])
+    });
+    let dragging = buttons.pressed(MouseButton::Left)
+        || buttons.pressed(MouseButton::Right)
+        || buttons.pressed(MouseButton::Middle);
+    let previous_hover = picks
+        .0
+        .lock()
+        .ok()
+        .and_then(|frame| frame.hover(cursor, dragging).map(str::to_owned));
     if let Ok(mut frame) = picks.0.lock() {
         *frame = PickFrame::default();
     }
@@ -1687,7 +1800,7 @@ fn draw_annotations(
         );
         return;
     };
-    let Ok((camera, camera_transform)) = camera.single() else {
+    let Ok((camera, camera_transform, projection)) = camera.single() else {
         maintain_labels(
             &mut commands,
             &mut labels,
@@ -1703,6 +1816,17 @@ fn draw_annotations(
         Vec3::new(p.x as f32, p.z as f32, -p.y as f32)
     };
     let viewport = camera.logical_viewport_size().unwrap_or(Vec2::ZERO);
+    let pick_ray = match projection {
+        Projection::Perspective(p) => Some(PickRay {
+            origin: camera_transform.translation().as_dvec3().to_array(),
+            forward: (*camera_transform.forward()).as_dvec3().to_array(),
+            right_half: ((*camera_transform.right()).as_dvec3()
+                * ((p.fov as f64 * 0.5).tan() * p.aspect_ratio as f64))
+                .to_array(),
+            up_half: ((*camera_transform.up()).as_dvec3() * (p.fov as f64 * 0.5).tan()).to_array(),
+        }),
+        _ => None,
+    };
     let c = camera_transform.translation().as_dvec3() / settings.units_per_km;
     let scientific_camera = settings.origin_km + DVec3::new(c.x, -c.z, c.y);
     let spheres: Vec<_> = core
@@ -1750,6 +1874,33 @@ fn draw_annotations(
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
         };
+        if core
+            .visual_status(id)
+            .ok()
+            .flatten()
+            .is_some_and(|v| v.phase == VisualPhase::Ready)
+            && let Some(ray) = pick_ray
+            && let Some(assignment) = core.visual_assignment(id)
+            && let VisualSpec::Sphere {
+                ring_inner_radius_ratio: Some(inner),
+                ring_outer_radius_ratio: Some(outer),
+                ..
+            } = assignment.spec
+        {
+            let center = to_display(state.position_km);
+            let rotation = crate::runtime::display_rotation(state.orientation_wxyz);
+            pick_frame.targets.push(PickTarget {
+                id: id.to_owned(),
+                depth: camera_transform.translation().distance(center),
+                shape: PickShape::Ring {
+                    ray,
+                    center: center.as_dvec3().to_array(),
+                    normal: (rotation * Vec3::Y).as_dvec3().to_array(),
+                    inner_radius: state.radius_km * settings.units_per_km * inner,
+                    outer_radius: state.radius_km * settings.units_per_km * outer,
+                },
+            });
+        }
         if crate::label_visibility::occluded(
             scientific_camera,
             DVec3::from_array(state.position_km),
@@ -1889,6 +2040,12 @@ fn draw_annotations(
             BackgroundColor(color),
         ));
     }
+    let hovered = pick_frame
+        .hover(cursor, dragging)
+        .map(str::to_owned)
+        .or_else(|| {
+            previous_hover.filter(|id| pick_frame.targets.iter().any(|target| &target.id == id))
+        });
     let orbit_visibility = if core.focused_object().is_some() {
         crate::orbit_lines::distance_fade(camera_transform.translation().length())
     } else {
@@ -1936,19 +2093,26 @@ fn draw_annotations(
                         let opacity = distance_visibility
                             * path_visibility
                             * color[3]
-                            * if selected {
-                                0.65
+                            * if hovered.as_deref() == Some(id) {
+                                1.
+                            } else if selected {
+                                0.75
                             } else if core.focused_object().is_some() {
-                                0.3
+                                0.35
                             } else {
-                                0.6
+                                0.75
                             };
-                        gizmos.line_gradient(
-                            a,
-                            b,
-                            Color::srgba(color[0], color[1], color[2], opacity * alpha_a),
-                            Color::srgba(color[0], color[1], color[2], opacity * alpha_b),
-                        );
+                        let ca = Color::srgba(color[0], color[1], color[2], opacity * alpha_a);
+                        let cb = Color::srgba(color[0], color[1], color[2], opacity * alpha_b);
+                        match (
+                            style.and_then(|s| s.kind.as_deref()) == Some("trail"),
+                            hovered.as_deref() == Some(id),
+                        ) {
+                            (true, true) => hover_trails.line_gradient(a, b, ca, cb),
+                            (true, false) => trails.line_gradient(a, b, ca, cb),
+                            (false, true) => hover_gizmos.line_gradient(a, b, ca, cb),
+                            (false, false) => gizmos.line_gradient(a, b, ca, cb),
+                        }
                     }
                 },
             );
@@ -2786,5 +2950,148 @@ mod camera_collision_system_tests {
         let result = DVec3::new(local.x, -local.z, local.y);
         assert!(result.z > 0., "camera crossed planet: {result}");
         assert!(result.distance(center) > 1000.);
+    }
+}
+
+#[cfg(test)]
+mod hover_line_tests {
+    use super::*;
+    #[test]
+    fn orbit_and_trail_width_groups_are_independent() {
+        let mut app = App::new();
+        app.init_resource::<GizmoConfigStore>()
+            .init_gizmo_group::<OrbitLines>()
+            .init_gizmo_group::<HoverOrbitLines>()
+            .init_gizmo_group::<TrailLines>()
+            .init_gizmo_group::<HoverTrailLines>()
+            .add_systems(Update, configure_orbit_lines);
+        app.world_mut().run_schedule(Update);
+        let configs = app.world().resource::<GizmoConfigStore>();
+        assert_eq!(configs.config::<OrbitLines>().0.line.width, 1.2);
+        assert_eq!(configs.config::<HoverOrbitLines>().0.line.width, 2.);
+        assert_eq!(configs.config::<TrailLines>().0.line.width, 2.);
+        assert_eq!(configs.config::<HoverTrailLines>().0.line.width, 4.);
+    }
+}
+
+#[cfg(test)]
+mod nasa_framing_system_tests {
+    use super::*;
+    use crate::{Core, ObjectState, SessionPermissions};
+    use std::sync::Mutex;
+    #[test]
+    fn system_fit_is_view_aware_stable_during_motion_and_refits_on_resize() {
+        let shared = Arc::new(Mutex::new(Core::default()));
+        let state = |position_km, radius_km| ObjectState {
+            position_km,
+            radius_km,
+            orientation_wxyz: None,
+            epoch_tdb_seconds: 0.,
+            coverage_tdb_seconds: [0., 100.],
+            frame: "ICRF".into(),
+            source: "framing test".into(),
+        };
+        {
+            let mut c = shared.lock().unwrap();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                SessionPermissions {
+                    camera_control: true,
+                    ..default()
+                },
+            )
+            .unwrap();
+            for (id, p, r) in [("host", [0.; 3], 100.), ("moon", [1000., 0., 0.], 10.)] {
+                c.register_object("s", id).unwrap();
+                c.set_object_state("s", id, state(p, r)).unwrap();
+            }
+            c.set_camera_observation(
+                "s",
+                "p",
+                "host",
+                "system",
+                vec!["host".into(), "moon".into()],
+                None,
+            )
+            .unwrap();
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::default(),
+                Projection::Perspective(PerspectiveProjection {
+                    aspect_ratio: 2.,
+                    ..default()
+                }),
+            ))
+            .id();
+        app.update();
+        let initial = app.world().resource::<OrbitView>().framing_radius_km;
+        let position = app.world().get::<Transform>(camera).unwrap().translation;
+        let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap() else {
+            panic!()
+        };
+        let v = p.fov as f64 * 0.5;
+        let h = (v.tan() * p.aspect_ratio as f64).atan();
+        let fit = crate::camera_framing::fit_distance(
+            &[
+                crate::camera_framing::FramingBody {
+                    offset_km: DVec3::ZERO,
+                    radius_km: 100.,
+                },
+                crate::camera_framing::FramingBody {
+                    offset_km: DVec3::X * 1000.,
+                    radius_km: 10.,
+                },
+            ],
+            bevy::math::DQuat::IDENTITY,
+            h,
+            v,
+        )
+        .unwrap()
+            * 1.3;
+        assert!((position.length() as f64 * 100. - fit).abs() < 0.01);
+        shared
+            .lock()
+            .unwrap()
+            .set_object_state("s", "moon", state([2000., 0., 0.], 10.))
+            .unwrap();
+        app.update();
+        assert_eq!(
+            app.world().resource::<OrbitView>().framing_radius_km,
+            initial,
+            "moving satellites must not pump the camera zoom"
+        );
+        assert_eq!(
+            app.world().get::<Transform>(camera).unwrap().translation,
+            position
+        );
+        if let Some(mut projection) = app.world_mut().get_mut::<Projection>(camera)
+            && let Projection::Perspective(p) = &mut *projection
+        {
+            p.aspect_ratio = 0.5;
+        }
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .length()
+                > position.length()
+        );
+        let c = shared.lock().unwrap();
+        assert_eq!(
+            c.object_state_at("moon", 0.).unwrap().position_km,
+            [2000., 0., 0.]
+        );
+        assert_eq!(c.object_state_at("moon", 0.).unwrap().radius_km, 10.);
     }
 }

@@ -56,6 +56,8 @@ pub use deep_space::EnvironmentSpec;
 mod starfield;
 pub use starfield::StarfieldSpec;
 #[cfg(feature = "browser-render")]
+mod camera_framing;
+#[cfg(feature = "browser-render")]
 mod deep_lod;
 #[cfg(feature = "browser-render")]
 mod deep_render;
