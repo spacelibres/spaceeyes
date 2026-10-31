@@ -1,0 +1,34 @@
+{
+  "before": {
+    "focusedId": "moon",
+    "positionKm": [
+      117217736.53803076,
+      83838580.99602978,
+      36367183.97819227
+    ],
+    "desiredKm": [
+      117217736.53803076,
+      83838580.99602978,
+      36367183.97819227
+    ],
+    "framingRadiusKm": 1737.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "moon",
+    "positionKm": [
+      117217736.53803076,
+      83828085.70166086,
+      36367183.97819227
+    ],
+    "desiredKm": [
+      117217736.53803076,
+      83828085.70166086,
+      36367183.97819227
+    ],
+    "framingRadiusKm": 1737.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}

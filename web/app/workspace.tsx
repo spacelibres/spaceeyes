@@ -10,6 +10,7 @@ import {
   type SceneLinkState,
 } from "../lib/scene-link";
 import WorkspaceView from "./workspace-view";
+import { handleCanvasWheel } from "../lib/canvas-wheel";
 import {
   createWorkspace,
   initialSnapshot,
@@ -58,16 +59,29 @@ export default function Workspace() {
       controller.current?.abort();
       void runtime.current?.dispose();
     };
-    // Scrollable HTML controls overlay the canvas. Keep their wheel events out
-    // of winit's window-level input listeners while preserving native scrolling.
+    // Capture browser wheel input before winit: a panel can own keyboard focus
+    // while the pointer still intentionally zooms the canvas.
     const uiWheel = (event: WheelEvent) => {
+      if (event.target instanceof HTMLCanvasElement &&
+          event.target.id === "spaceeyes-canvas" && runtime.current && latest.current.active &&
+          !controller.current?.signal.aborted) {
+        const current = runtime.current;
+        // Wheel over the canvas is an explicit return to scene interaction.
+        // Restore the renderer's focused cadence without scrolling the page.
+        event.target.focus({ preventScroll: true });
+        handleCanvasWheel(event, event.target.clientHeight, delta => {
+          try { current.zoom(delta); }
+          catch (error) { setActionError(String(error)); }
+        });
+        return;
+      }
       if (
         event.target instanceof Element &&
         event.target.closest("#info-panel,#catalog-panel,#time-panel")
       )
         event.stopImmediatePropagation();
     };
-    window.addEventListener("wheel", uiWheel, { capture: true, passive: true });
+    window.addEventListener("wheel", uiWheel, { capture: true, passive: false });
     window.addEventListener("pagehide", leave);
     return () => {
       mounted.current = false;

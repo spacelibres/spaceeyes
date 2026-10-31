@@ -15,7 +15,7 @@
 | System | Cameras/CameraScripts | 已有父子系统拟合；0.0.60按用户确认让带主要卫星的行星切换默认system，主要卫星首批加载；全目录系统边界未认证 | 地月/木星/土星 |
 | Follow | CameraManager | 已有参考体跟随；极端FOV和动态父体需扩测 | ISS/MRO/飞越任务 |
 | 鼠标拖动/惯性 | input/RotationController | 已有；平移/旋转各手势仍需官方逐项比对 | 按下/拖出/返回/失焦 |
-| 滚轮缩放 | ZoomController | 已有平滑/碰撞；灵敏度和离地高度语义未全认证 | 近表面至总览 |
+| 滚轮缩放 | ZoomController | 已有平滑/碰撞；0.0.61画布wheel宿主单路由，修复选择后的焦点阻断；灵敏度和离地高度语义未全认证 | 近表面至总览 |
 | 短按与长按缩放 | Settings/CameraManager | 本批补200ms/30ms与2^0.3/2^0.1指令；最终手感待GPU对照 | 鼠标、触摸、键盘及取消 |
 | 设置展开/收起 | Settings | 本批补齐叠加层收起和恢复；参数不得丢失 | 桌面/竖屏/短屏 |
 | 三档光照 | Settings/MaterialUtils | 已有Natural/Shadow/Flood；不是所有材质已对齐 | 行星、环、金属航天器 |

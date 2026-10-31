@@ -1,0 +1,50 @@
+{
+  "afterWheel": {
+    "focusedId": "moon",
+    "positionKm": [
+      117217736.53803076,
+      83828085.70166086,
+      36367183.97819227
+    ],
+    "desiredKm": [
+      117217736.53803076,
+      83828085.70166086,
+      36367183.97819227
+    ],
+    "framingRadiusKm": 1737.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "afterButton": {
+    "focusedId": "moon",
+    "positionKm": [
+      117217736.53803076,
+      83823359.07846348,
+      36367183.97819227
+    ],
+    "desiredKm": [
+      117217736.53803076,
+      83823359.07846348,
+      36367183.97819227
+    ],
+    "framingRadiusKm": 1737.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "afterDrag": {
+    "focusedId": "moon",
+    "positionKm": [
+      117205802.33170447,
+      83826689.07414258,
+      36370946.14502977
+    ],
+    "desiredKm": [
+      117205802.33170447,
+      83826689.07414258,
+      36370946.14502977
+    ],
+    "framingRadiusKm": 1737.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}

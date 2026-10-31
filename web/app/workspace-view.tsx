@@ -258,7 +258,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   );
   const [panel, setPanel] = useState<"catalog" | "info" | "time" | null>(null);
   useEffect(() => {
-    if (panel)
+    if (panel && document.activeElement !== document.getElementById("spaceeyes-canvas"))
       document
         .getElementById(`${panel}-panel`)
         ?.querySelector<HTMLButtonElement>(".close-panel")

@@ -1,0 +1,34 @@
+{
+  "before": {
+    "focusedId": "sun",
+    "positionKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "desiredKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "framingRadiusKm": 695500,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "sun",
+    "positionKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "desiredKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "framingRadiusKm": 695500,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}
