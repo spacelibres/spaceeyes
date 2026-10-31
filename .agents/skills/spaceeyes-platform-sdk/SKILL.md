@@ -238,3 +238,5 @@ Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transve
 ## NASA线条显示（0.0.38）
 
 线条colorRgba的RGB按着色器原值传输，不额外做sRGB解码；这与表面贴图的色彩空间路径独立。宿主使用NASA TrailManager原始八大行星RGB，天然卫星及航天器使用默认白色；颜色是显示编码，不代表表面光谱。核心使用加法混合（SrcAlpha/One）且不写透明深度，保留行星遮挡的深度测试；零alpha区间不上传，不得遮掉银河。行星普通1.2px/悬停2px，拖尾按索引由0→2px、悬停2→4px；行星primary=.75，其它secondary=.35，hover=1，另乘已有距离渐隐。外置WGSL通过服务器加载，插件不能传入任意shader/material或访问Bevy内部。
+
+主宿星缩放显示规则（网页0.0.64）：轨迹originId等于当前聚焦对象时，天然卫星轨道与航天器拖尾均不受宿主缩放的两层渐隐影响；主宿星自身上级轨道仍可渐隐。图层、源缺口、视锥和实体遮挡仍生效。必须声明真实参考父体，不得伪造originId来规避显示规则。

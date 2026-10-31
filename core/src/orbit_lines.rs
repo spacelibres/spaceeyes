@@ -1,19 +1,31 @@
 //! Temporal polyline attachment uses core state, never a nearest spatial guess.
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
-pub(crate) fn parent_trail_visibility(
+pub(crate) fn parent_path_visibility(
     near_visibility: f32,
     style: Option<&crate::TrajectoryStyle>,
     focused: Option<&str>,
 ) -> f32 {
-    if focused.is_some_and(|focus| {
-        style.is_some_and(|s| {
-            s.kind.as_deref() == Some("trail") && s.origin_id.as_deref() == Some(focus)
-        })
-    }) {
+    if focused.is_some_and(|focus| style.is_some_and(|s| s.origin_id.as_deref() == Some(focus))) {
         1.
     } else {
         near_visibility
     }
+}
+/// Both fade stages must share the same parent policy. A child orbit is not
+/// the focused host's orbit, regardless of whether it is a natural orbit or history.
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn path_visibility(
+    points: &[[f64; 3]],
+    focus_range: Option<f64>,
+    near_visibility: f32,
+    style: Option<&crate::TrajectoryStyle>,
+    focused: Option<&str>,
+) -> f32 {
+    if focused.is_some_and(|focus| style.is_some_and(|s| s.origin_id.as_deref() == Some(focus))) {
+        return 1.;
+    }
+    parent_path_visibility(near_visibility, style, focused)
+        * path_scale_fade(points, focus_range, style.and_then(|s| s.kind.as_deref()))
 }
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
 pub(crate) fn path_scale_fade(
@@ -252,10 +264,79 @@ mod trail_tests {
             origin_id: Some("earth".into()),
             ..Default::default()
         };
-        assert_eq!(parent_trail_visibility(0., Some(&style), Some("earth")), 1.);
-        assert_eq!(parent_trail_visibility(0., Some(&style), Some("iss")), 0.);
-        assert_eq!(parent_trail_visibility(0., None, Some("earth")), 0.);
-        assert_eq!(parent_trail_visibility(0.6, Some(&style), None), 0.6);
+        assert_eq!(parent_path_visibility(0., Some(&style), Some("earth")), 1.);
+        assert_eq!(parent_path_visibility(0., Some(&style), Some("iss")), 0.);
+        assert_eq!(parent_path_visibility(0., None, Some("earth")), 0.);
+        assert_eq!(parent_path_visibility(0.6, Some(&style), None), 0.6);
+    }
+    #[test]
+    fn parent_inspection_keeps_natural_satellite_orbits_at_every_zoom() {
+        for parent in ["earth", "jupiter", "saturn", "uranus", "neptune"] {
+            let style = crate::TrajectoryStyle {
+                kind: Some("orbit".into()),
+                origin_id: Some(parent.into()),
+                ..Default::default()
+            };
+            for visibility in [0., 0.25, 0.6, 1.] {
+                assert_eq!(
+                    parent_path_visibility(visibility, Some(&style), Some(parent)),
+                    1.
+                );
+            }
+        }
+    }
+    #[test]
+    fn host_fades_but_child_orbits_and_trails_bypass_both_fades_without_stale_parent() {
+        let solar = [[-149_597_870.7, 0., 0.], [149_597_870.7, 0., 0.]];
+        let lunar = [[-384_400., 0., 0.], [384_400., 0., 0.]];
+        let mut host = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            origin_id: Some("sun".into()),
+            ..Default::default()
+        };
+        let mut child = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            origin_id: Some("earth".into()),
+            ..Default::default()
+        };
+        assert_eq!(path_scale_fade(&lunar, Some(1_000.), Some("orbit")), 0.);
+        assert_eq!(
+            path_visibility(&solar, Some(1_000.), 0., Some(&host), Some("earth")),
+            0.
+        );
+        assert_eq!(
+            path_visibility(&solar, Some(3e8), 1., Some(&host), Some("earth")),
+            1.
+        );
+        for range in [1_000., 7_000., 1e6, 3e8] {
+            for near in [0., 0.25, 0.75, 1.] {
+                assert_eq!(
+                    path_visibility(&lunar, Some(range), near, Some(&child), Some("earth")),
+                    1.
+                );
+                child.kind = Some("trail".into());
+                assert_eq!(
+                    path_visibility(&lunar, Some(range), near, Some(&child), Some("earth")),
+                    1.
+                );
+                child.kind = Some("orbit".into());
+            }
+        }
+        assert_eq!(
+            path_visibility(&lunar, Some(1_000.), 0., Some(&child), Some("jupiter")),
+            0.
+        );
+        child.origin_id = Some("jupiter".into());
+        assert_eq!(
+            path_visibility(&lunar, Some(1_000.), 0., Some(&child), Some("jupiter")),
+            1.
+        );
+        host.origin_id = Some("earth".into());
+        assert_eq!(path_visibility(&lunar, None, 1., Some(&host), None), 1.);
+        assert_eq!(
+            path_visibility(&lunar, Some(1_000.), 0., None, Some("earth")),
+            0.
+        );
     }
     #[test]
     fn clips_past_window_and_never_bridges_breaks_or_uncovered_future() {

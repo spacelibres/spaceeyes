@@ -2137,17 +2137,16 @@ fn draw_annotations(
             continue;
         };
         let style = core.trajectory_style(id);
-        let distance_visibility = crate::orbit_lines::parent_trail_visibility(
-            orbit_visibility,
-            style,
-            core.focused_object(),
-        );
-        if let Some(points) = points.filter(|_| distance_visibility > 0.) {
-            let path_visibility = crate::orbit_lines::path_scale_fade(
+        let visibility = points.map_or(0., |points| {
+            crate::orbit_lines::path_visibility(
                 points,
                 focus_range,
-                style.and_then(|s| s.kind.as_deref()),
-            );
+                orbit_visibility,
+                style,
+                core.focused_object(),
+            )
+        });
+        if let Some(points) = points.filter(|_| visibility > 0.) {
             let origin = if let Some(origin) = style.and_then(|s| s.origin_id.as_deref()) {
                 let Ok(parent) = core.object_state_at(origin, core.clock().epoch()) else {
                     continue;
@@ -2170,8 +2169,7 @@ fn draw_annotations(
                     let a = to_display(std::array::from_fn(|i| a[i] + origin[i]));
                     let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
                     if a.is_finite() && b.is_finite() {
-                        let opacity = distance_visibility
-                            * path_visibility
+                        let opacity = visibility
                             * color[3]
                             * crate::trajectory_render::opacity(id, hovered.as_deref() == Some(id));
                         let ca = crate::trajectory_render::color(color, opacity * alpha_a);
