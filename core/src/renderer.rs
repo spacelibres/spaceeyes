@@ -259,10 +259,18 @@ fn update_camera_fill(
 }
 
 #[derive(Default)]
+struct CollisionHistory {
+    safe_km: Option<DVec3>,
+    origin_km: DVec3,
+    focus: Option<String>,
+}
+
+#[derive(Default)]
 struct CameraBlend {
     key: Option<String>,
     start_km: DVec3,
     start_rotation: Quat,
+    anchor_origin_km: DVec3,
     elapsed: f32,
 }
 impl CameraBlend {
@@ -283,11 +291,16 @@ impl CameraBlend {
             let local = previous.translation.as_dvec3() / old.units_per_km;
             self.start_km = old.origin_km + DVec3::new(local.x, -local.z, local.y);
             self.start_rotation = previous.rotation;
+            self.anchor_origin_km = new.origin_km;
             self.elapsed = if was_initialized && delta.is_some() {
                 0.0
             } else {
                 0.35
             };
+        }
+        if !changed {
+            self.start_km += new.origin_km - self.anchor_origin_km;
+            self.anchor_origin_km = new.origin_km;
         }
         if self.elapsed >= 0.35 {
             return desired;
@@ -325,7 +338,15 @@ fn update_focus(
     };
     for (_, mut projection) in camera.iter_mut() {
         if let Projection::Perspective(p) = &mut *projection {
-            p.fov = core.camera_fov_degrees().to_radians();
+            // NASA CameraComponent defines FOV on the longer viewport axis.
+            // Bevy PerspectiveProjection stores vertical FOV.
+            let long_fov = core.camera_fov_degrees().to_radians();
+            let aspect = if p.aspect_ratio.is_finite() {
+                p.aspect_ratio.max(1.)
+            } else {
+                1.
+            };
+            p.fov = 2. * ((long_fov * 0.5).tan() / aspect).atan();
         }
     }
     let old_settings = settings.clone();
@@ -595,7 +616,13 @@ fn update_focus(
                 let fov = core.camera_fov_degrees().to_radians();
                 orbit.yaw = orbit.yaw.clamp(-0.45 * fov, 0.45 * fov);
                 orbit.pitch = orbit.pitch.clamp(-0.4 * fov, 0.4 * fov);
-                let offset = -direction * distance * radius + side * radius * 1.5;
+                let horizontal_half_tan = match &*projection {
+                    Projection::Perspective(p) => (p.fov * 0.5).tan() * p.aspect_ratio,
+                    _ => (fov * 0.5).tan(),
+                };
+                let side_distance =
+                    (distance * radius * horizontal_half_tan * 0.3).min(radius * 1.5);
+                let offset = -direction * distance * radius + side * side_distance;
                 desired = Transform::from_translation(offset).looking_to(
                     Quat::from_axis_angle(Vec3::Y, orbit.yaw)
                         * Quat::from_axis_angle(side, orbit.pitch)
@@ -618,7 +645,7 @@ fn enforce_camera_collision(
     settings: Res<DisplaySettings>,
     orbit: Option<Res<OrbitView>>,
     mut cameras: Query<(&mut Transform, &mut Projection), With<DisplayCamera>>,
-    mut previous: Local<Option<DVec3>>,
+    mut previous: Local<CollisionHistory>,
 ) {
     let Ok(mut core) = store.0.lock() else {
         return;
@@ -647,8 +674,21 @@ fn enforce_camera_collision(
                     * 4.,
         })
         .collect();
-    let safe = crate::camera_collision::constrain(previous.unwrap_or(desired), desired, &solids);
-    *previous = Some(safe);
+    let focus = core.focused_object().map(str::to_owned);
+    // Orbital time propagation is not a user camera segment through the parent.
+    // Sweep local camera motion in the current target frame. A target switch
+    // still sweeps the physical transition from the previous world position.
+    let start = previous.safe_km.map_or(desired, |safe| {
+        if focus.is_some() && focus == previous.focus {
+            safe + settings.origin_km - previous.origin_km
+        } else {
+            safe
+        }
+    });
+    let safe = crate::camera_collision::constrain(start, desired, &solids);
+    previous.safe_km = Some(safe);
+    previous.origin_km = settings.origin_km;
+    previous.focus = focus;
     if safe.distance_squared(desired) > 1e-18 {
         let local = (safe - settings.origin_km) * scale;
         camera.translation = Vec3::new(local.x as f32, local.z as f32, -local.y as f32);
@@ -690,6 +730,16 @@ fn enforce_camera_collision(
         if gap.is_finite() {
             p.near = p.near.min((gap * scale * 0.25).max(1e-12) as f32);
         }
+        // Metre-scale model framing must not cull a kilometre-scale host body.
+        // Bevy uses reverse infinite projection; far also bounds visibility.
+        let extent = solids
+            .iter()
+            .map(|body| safe.distance(body.center) + body.radius)
+            .fold(0., f64::max);
+        let far = (extent * scale * 1.01).min(f32::MAX as f64 / 4.) as f32;
+        if far.is_finite() {
+            p.far = p.far.max(far);
+        }
     }
 }
 
@@ -700,6 +750,131 @@ fn follow_display_direction(relative: DVec3) -> Vec3 {
 #[cfg(test)]
 mod camera_intent_render_tests {
     use super::*;
+    #[test]
+    fn follow_keeps_craft_inside_nasa_field_of_view() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        for (id, position, radius) in [
+            ("mars", [0., 0., 0.], 3390.),
+            ("craft", [4000., 0., 0.], 0.007),
+        ] {
+            core.register_object("s", id).unwrap();
+            core.set_object_state(
+                "s",
+                id,
+                crate::ObjectState {
+                    position_km: position,
+                    radius_km: radius,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 1.],
+                    orientation_wxyz: None,
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                },
+            )
+            .unwrap();
+        }
+        core.set_camera_observation("s", "p", "craft", "follow", vec![], Some("mars".into()))
+            .unwrap();
+        let shared = Arc::new(std::sync::Mutex::new(core));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()))
+            .id();
+        for aspect in [2_f32, 0.5] {
+            for fov in [10_f32, 45., 100.] {
+                shared
+                    .lock()
+                    .unwrap()
+                    .set_camera_fov("s", "p", fov)
+                    .unwrap();
+                let Projection::Perspective(p) =
+                    &mut *app.world_mut().get_mut::<Projection>(camera).unwrap()
+                else {
+                    panic!()
+                };
+                p.aspect_ratio = aspect;
+                app.update();
+                let pose = app.world().get::<Transform>(camera).unwrap();
+                let target = pose.rotation.inverse() * (-pose.translation);
+                let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap()
+                else {
+                    panic!()
+                };
+                let ndc_x = (target.x / -target.z) / ((p.fov / 2.).tan() * aspect);
+                assert!(
+                    ndc_x.abs() < 0.7,
+                    "follow craft must stay safely in frame, fov={fov}, aspect={aspect}, x={ndc_x}"
+                );
+            }
+        }
+    }
+    #[test]
+    fn field_of_view_matches_eyes_long_viewport_axis() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        core.set_camera_fov("s", "p", 100.).unwrap();
+        let mut app = App::new();
+        app.insert_resource(CoreStore(Arc::new(std::sync::Mutex::new(core))))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::default(),
+                Projection::Perspective(PerspectiveProjection::default()),
+            ))
+            .id();
+        for aspect in [2_f32, 0.5, 1., 16. / 9.] {
+            let Projection::Perspective(p) =
+                &mut *app.world_mut().get_mut::<Projection>(camera).unwrap()
+            else {
+                panic!()
+            };
+            p.aspect_ratio = aspect;
+            app.update();
+            let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap() else {
+                panic!()
+            };
+            let horizontal = 2. * ((p.fov / 2.).tan() * aspect).atan();
+            assert!(
+                (p.fov.max(horizontal).to_degrees() - 100.).abs() < 0.001,
+                "same NASA FOV must not turn into a 134-degree wide view"
+            );
+            let half = (100_f32.to_radians() / 2.).tan();
+            let horizontal_scale = 1. / ((p.fov / 2.).tan() * aspect);
+            let expected = if aspect >= 1. {
+                1. / half
+            } else {
+                1. / (half * aspect)
+            };
+            assert!((horizontal_scale - expected).abs() < 1e-5);
+        }
+    }
+
     #[test]
     fn startup_reserves_webgl_directional_budget_for_sun() {
         let mut app = App::new();
@@ -1800,6 +1975,27 @@ fn draw_annotations(
 mod blend_tests {
     use super::*;
     #[test]
+    fn moving_target_transition_stays_in_target_frame() {
+        let old = DisplaySettings::new([1e12, 0., 0.], 1.).unwrap();
+        let target = DisplaySettings::new([1e12 + 1000., 0., 0.], 2.).unwrap();
+        let shifted = DisplaySettings::new([1e12 + 1e6 + 1000., -2e6, 3e6], 2.).unwrap();
+        let previous = Transform::from_xyz(0., 0., 4.);
+        let desired = Transform::from_xyz(0., 0., 4.);
+        let mut a = CameraBlend::default();
+        let mut b = CameraBlend::default();
+        for blend in [&mut a, &mut b] {
+            blend.apply("old", previous, previous, &old, &old, Some(0.));
+            blend.apply("target", previous, desired, &old, &target, Some(0.));
+        }
+        let stationary = a.apply("target", previous, desired, &target, &target, Some(0.1));
+        let moving = b.apply("target", previous, desired, &target, &shifted, Some(0.1));
+        assert!(
+            stationary.translation.distance(moving.translation) < 1e-4,
+            "transition start must travel with the target, not lag millions of kilometres behind"
+        );
+    }
+
+    #[test]
     fn switching_origin_reprojects_previous_camera_then_locks_without_follow_lag() {
         let old = DisplaySettings::new([1e12, 0., 0.], 0.5).unwrap();
         let new = DisplaySettings::new([1e12 + 1000., 0., 0.], 0.25).unwrap();
@@ -2119,6 +2315,89 @@ mod camera_collision_system_tests {
     use super::*;
     use crate::Core;
     use std::sync::Mutex;
+    #[test]
+    fn fast_orbit_rebases_sweep_and_keeps_parent_in_clip_range() {
+        let shared = Arc::new(Mutex::new(Core::default()));
+        {
+            let mut c = shared.lock().unwrap();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                crate::SessionPermissions {
+                    camera_control: true,
+                    ..default()
+                },
+            )
+            .unwrap();
+            for (id, position, radius) in [
+                ("mars", [0., 0., 0.], 3390.),
+                ("craft", [4000., 0., 0.], 0.007),
+            ] {
+                c.register_object("s", id).unwrap();
+                c.set_object_state(
+                    "s",
+                    id,
+                    crate::ObjectState {
+                        position_km: position,
+                        radius_km: radius,
+                        epoch_tdb_seconds: 0.,
+                        coverage_tdb_seconds: [0., 1.],
+                        orientation_wxyz: None,
+                        frame: "ICRF".into(),
+                        source: "test".into(),
+                    },
+                )
+                .unwrap();
+            }
+            c.focus("s", "p", "craft").unwrap();
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .insert_resource(DisplaySettings::new([4000., 0., 0.], 1. / 0.007).unwrap())
+            .add_systems(Update, enforce_camera_collision);
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::from_xyz(0., 0., 4.),
+                Projection::default(),
+            ))
+            .id();
+        for n in 0..12 {
+            let angle = n as f64 * std::f64::consts::PI * 0.83;
+            let origin = DVec3::new(4000. * angle.cos(), 4000. * angle.sin(), 0.);
+            {
+                let mut c = shared.lock().unwrap();
+                let mut state = c.object_state_at("craft", 0.).unwrap().clone();
+                state.position_km = origin.to_array();
+                c.set_object_state("s", "craft", state).unwrap();
+            }
+            app.world_mut().resource_mut::<DisplaySettings>().origin_km = origin;
+            *app.world_mut().get_mut::<Transform>(camera).unwrap() =
+                Transform::from_xyz(0., 0., 4.);
+            app.update();
+            assert!(
+                app.world()
+                    .get::<Transform>(camera)
+                    .unwrap()
+                    .translation
+                    .distance(Vec3::new(0., 0., 4.))
+                    < 0.001,
+                "time propagation must not become a camera chord through Mars at step {n}"
+            );
+            let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap() else {
+                panic!()
+            };
+            assert!(
+                p.far as f64 * 0.007 >= 7390.,
+                "parent sphere must fit far culling range when focused on a metre-scale craft"
+            );
+        }
+        // A real user camera move through the craft still needs a sweep.
+        *app.world_mut().get_mut::<Transform>(camera).unwrap() = Transform::from_xyz(0., 0., -4.);
+        app.update();
+        assert!(app.world().get::<Transform>(camera).unwrap().translation.z > 0.);
+    }
     #[test]
     fn rumba_seek_then_focus_converges_with_solar_and_earth_collision() {
         use crate::{AssetDescriptor, AssetKind, ObjectState, SessionPermissions};

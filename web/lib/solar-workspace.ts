@@ -430,8 +430,8 @@ export async function createWorkspace(
     }
     if (data) state.dataCache = data.cacheStats();
     state.epoch = core.epoch();
-    state.playing = core.playing();
-    state.live = isLive(
+    state.playing = state.busy ? desiredPlaying : core.playing();
+    state.live = !state.busy && isLive(
       core.tdb_to_utc(state.epoch),
       Date.now(),
       state.playing,
@@ -808,7 +808,6 @@ export async function createWorkspace(
       .catch(() => {})
       .then(async () => {
         if (closed || current !== revision) return;
-        const resume = desiredPlaying;
         const restore = data.checkpoint();
         sdk.time.setPlayback(false, state.rate);
         try {
@@ -874,7 +873,7 @@ export async function createWorkspace(
             desiredPlaying = false;
           }
           sdk.time.setPlayback(
-            selectedUnavailable ? false : resume,
+            selectedUnavailable ? false : desiredPlaying,
             state.rate,
           );
           const available = data
@@ -1275,7 +1274,7 @@ export async function createWorkspace(
     },
     play(playing, rate) {
       assertLive();
-      if (state.busy) throw new Error("数据加载中，请稍后调整播放");
+      if (state.busy && playing) throw new Error("数据加载中，请稍后调整播放");
       sdk.time.setPlayback(playing, rate);
       desiredPlaying = playing;
       state.rate = rate;

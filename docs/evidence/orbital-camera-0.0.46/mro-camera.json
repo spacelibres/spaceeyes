@@ -1,0 +1,10 @@
+[
+  {
+    "time": "统一仿真时间\n\n2026-11-14T01:10:34.561Z\n847890703.744 J2000 TDB s\n16 hr/s\n历史 / 仿真\n收起时间栏 ▾\nⅡ 暂停\n−\n播放速率 · 16 hr/s\n+\n1× 速度\n日期与跳转\n当前时间",
+    "camera": "{\n  \"focusedId\": \"sc_mars_reconnaissance_orbiter\",\n  \"positionKm\": [\n    -68639753.46393412,\n    208822576.17144212,\n    97637150.6551539\n  ],\n  \"desiredKm\": [\n    -68639753.46393412,\n    208822576.17144212,\n    97637150.6551539\n  ],\n  \"framingRadiusKm\": 0.0077856942653656,\n  \"collisionAdjusted\": false,\n  \"desiredInside\": []\n}"
+  },
+  {
+    "time": "统一仿真时间\n\n2026-11-19T14:48:29.761Z\n848371778.944 J2000 TDB s\n16 hr/s\n历史 / 仿真\n收起时间栏 ▾\nⅡ 暂停\n−\n播放速率 · 16 hr/s\n+\n1× 速度\n日期与跳转\n当前时间",
+    "camera": "{\n  \"focusedId\": \"sc_mars_reconnaissance_orbiter\",\n  \"positionKm\": [\n    -79286584.08167717,\n    206370116.8517409,\n    96794261.14109121\n  ],\n  \"desiredKm\": [\n    -79286584.08167717,\n    206370116.8517409,\n    96794261.14109121\n  ],\n  \"framingRadiusKm\": 0.0077856942653656,\n  \"collisionAdjusted\": false,\n  \"desiredInside\": []\n}"
+  }
+]

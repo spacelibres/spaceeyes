@@ -1534,3 +1534,21 @@ test("InSight landing clears a previously dynamic trajectory without a static-or
     await app.dispose();
   }
 });
+
+
+test("pause during high-rate coverage reload is honored when loading finishes", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures, fetch: async (input) => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    app.play(true, 57600);
+    const paused = fixtures.waitForPause();
+    const reload = app.seek(200);
+    await paused;
+    app.play(false, 57600);
+    await reload;
+    assert.equal(fixtures.core().playing(), false);
+    assert.equal(fixtures.core().epoch(), 200);
+  } finally { await app.dispose(); }
+});

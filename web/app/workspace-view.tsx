@@ -885,7 +885,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           className="rate-controls"
           hidden={!timeExpanded}
         >
-          <button disabled={!p.active || p.busy} onClick={p.onPlay}>
+          <button disabled={!p.active || (p.busy && !p.playing)} onClick={p.onPlay}>
             {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
           </button>
           <button
