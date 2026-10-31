@@ -5,12 +5,39 @@ pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TrajectoryStyle {
+    pub conic: Option<ConicOrbit>,
     pub kind: Option<String>,
     pub trail_duration_seconds: Option<f64>,
     #[serde(default)]
     pub break_indices: Vec<usize>,
     pub origin_id: Option<String>,
     pub color_rgba: Option<[f32; 4]>,
+}
+#[derive(Clone, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConicOrbit {
+    pub semi_latus_rectum_km: f64,
+    pub radial_unit: [f64; 3],
+    pub transverse_unit: [f64; 3],
+    pub eccentricity_radial: f64,
+    pub eccentricity_transverse: f64,
+}
+impl ConicOrbit {
+    pub fn is_valid(&self) -> bool {
+        let dot = |a: [f64; 3], b: [f64; 3]| a.into_iter().zip(b).map(|(x, y)| x * y).sum::<f64>();
+        self.semi_latus_rectum_km.is_finite()
+            && (0.0..=1e15).contains(&self.semi_latus_rectum_km)
+            && self.semi_latus_rectum_km > 0.
+            && self
+                .radial_unit
+                .iter()
+                .chain(&self.transverse_unit)
+                .all(|x| x.is_finite())
+            && (dot(self.radial_unit, self.radial_unit).sqrt() - 1.).abs() <= 1e-6
+            && (dot(self.transverse_unit, self.transverse_unit).sqrt() - 1.).abs() <= 1e-6
+            && dot(self.radial_unit, self.transverse_unit).abs() <= 1e-6
+            && self.eccentricity_radial.hypot(self.eccentricity_transverse) < 1.
+    }
 }
 #[cfg(feature = "bevy-runtime")]
 mod runtime;
@@ -488,8 +515,24 @@ impl Core {
         epochs: Vec<f64>,
         style: TrajectoryStyle,
     ) -> Result<(), CoreError> {
+        // Bound analytic expansion independently of the scientific point budget.
+        if style.conic.is_some()
+            && self
+                .trajectory_styles
+                .iter()
+                .filter(|(key, value)| key.as_str() != id && value.conic.is_some())
+                .count()
+                >= 256
+        {
+            return Err(CoreError::InvalidVisual);
+        }
         let trail = style.kind.as_deref() == Some("trail");
-        if style
+        if style.conic.as_ref().is_some_and(|c| {
+            points.len() < 2
+                || !c.is_valid()
+                || style.kind.as_deref() != Some("orbit")
+                || !style.break_indices.is_empty()
+        }) || style
             .kind
             .as_deref()
             .is_some_and(|k| k != "orbit" && k != "trail")

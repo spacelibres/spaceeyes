@@ -82,6 +82,7 @@ test("moon displayed orbit remains parent-relative while world state includes Ea
   await source.load(["moon"], 5, []);
   const trail = source.trajectorySamples("moon", 5, 256);
   assert.equal(trail.originId, "earth");
+  assert.equal('conic' in trail, false);
   assert.ok(trail.points.every((p) => Math.abs(Math.hypot(...p) - 2) < 1e-8));
   const p = source.position("moon", 5),
     earth = source.position("earth", 5),
@@ -98,6 +99,8 @@ test("moon displayed orbit remains parent-relative while world state includes Ea
     "instantaneous",
   );
   assert.equal(ellipse.originId, "earth");
+  assert.ok('conic' in ellipse && ellipse.conic);
+  assert.ok(ellipse.conic.semiLatusRectumKm > 0);
   assert.deepEqual(ellipse.points[0], ellipse.points.at(-1));
   assert.deepEqual(
     ellipse.points[ellipse.epochsTdbSeconds.indexOf(5)].map(
@@ -441,6 +444,7 @@ test("declared orbital elements expose finite covered trajectory history", async
   });
   await source.load(["dactyl"], 5, []);
   const path = source.trajectorySamples("dactyl", 5, 8, false, "instantaneous");
+  assert.ok(path.conic, 'Declared bound orbital elements need the same analytic display');
   assert.ok(path.points.length <= 8);
   assert.ok(path.points.every((p) => p.every(Number.isFinite)));
 });
@@ -459,6 +463,7 @@ test("trail samples include the current epoch and covered future cache", async (
   await source.load(["moon"], 5, []);
   const trail = source.trailSamples("moon", 5, 32);
   assert.equal(trail.originId, "earth");
+  assert.equal('conic' in trail, false);
   assert.ok(trail.epochsTdbSeconds.includes(5));
   assert.ok(trail.epochsTdbSeconds.at(-1)! > 5);
   assert.ok(trail.epochsTdbSeconds[0] >= 0);

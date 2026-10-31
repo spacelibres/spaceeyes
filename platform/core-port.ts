@@ -1,4 +1,9 @@
-import { snapshotJoints, type JointAim, type JointStatus } from "./joint-contract.ts";
+import type { TrajectoryConic } from "./trajectory-contract.ts";
+import {
+  snapshotJoints,
+  type JointAim,
+  type JointStatus,
+} from "./joint-contract.ts";
 import type { CameraObservation } from "./camera-contract.ts";
 import type { StellarTuning } from "./stellar-tuning.ts";
 import type { StarfieldSpec } from "./starfield-contract.ts";
@@ -59,6 +64,7 @@ export interface CorePort {
       kind?: "orbit" | "trail";
       trailDurationSeconds?: number;
       breakIndices?: readonly number[];
+      conic?: Readonly<TrajectoryConic>;
     },
   ): void;
   label?(request: FocusRequest & { text: string }): void;

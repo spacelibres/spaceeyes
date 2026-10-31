@@ -178,6 +178,7 @@ impl WasmCore {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase", deny_unknown_fields)]
         struct Timed {
+            conic: Option<crate::ConicOrbit>,
             points: Vec<[f64; 3]>,
             epochs: Vec<f64>,
             origin_id: Option<String>,
@@ -191,7 +192,7 @@ impl WasmCore {
         #[serde(untagged)]
         enum Payload {
             Static(Vec<[f64; 3]>),
-            Timed(Timed),
+            Timed(Box<Timed>),
         }
         if points_json.len() > 1024 * 1024 {
             return Err("InvalidVisual".into());
@@ -202,28 +203,33 @@ impl WasmCore {
             Payload::Static(points) => {
                 core.set_annotation(session, plugin, target, Some(points), None)
             }
-            Payload::Timed(Timed {
-                points,
-                epochs,
-                origin_id,
-                color_rgba,
-                kind,
-                trail_duration_seconds,
-                break_indices,
-            }) => core.set_trajectory_with_style(
-                session,
-                plugin,
-                target,
-                points,
-                epochs,
-                crate::TrajectoryStyle {
+            Payload::Timed(timed) => {
+                let Timed {
+                    conic,
+                    points,
+                    epochs,
                     origin_id,
                     color_rgba,
                     kind,
                     trail_duration_seconds,
                     break_indices,
-                },
-            ),
+                } = *timed;
+                core.set_trajectory_with_style(
+                    session,
+                    plugin,
+                    target,
+                    points,
+                    epochs,
+                    crate::TrajectoryStyle {
+                        conic,
+                        origin_id,
+                        color_rgba,
+                        kind,
+                        trail_duration_seconds,
+                        break_indices,
+                    },
+                )
+            }
         }
         .map_err(|e| format!("{e:?}"))
     }

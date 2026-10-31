@@ -231,6 +231,7 @@ export class WasmCorePort implements CorePort {
               kind: request.kind,
               trailDurationSeconds: request.trailDurationSeconds,
               breakIndices: request.breakIndices,
+              conic: request.conic,
             }
           : request.points,
       ),

@@ -1,0 +1,22 @@
+{
+  "epoch": 846690000,
+  "originId": "earth",
+  "sourcePoints": 23,
+  "analyticSegments": 360,
+  "maxRelativeConicResidual": 4.587438132592599e-16,
+  "conic": {
+    "semiLatusRectumKm": 380654.6871983944,
+    "radialUnit": [
+      -0.259337780943141,
+      0.8611871651865416,
+      0.4371505254411295
+    ],
+    "transverseUnit": [
+      -0.9645731833324285,
+      -0.20827628172401763,
+      -0.1619245641252829
+    ],
+    "eccentricityRadial": 0.03540019171661248,
+    "eccentricityTransverse": -0.027674089401403746
+  }
+}

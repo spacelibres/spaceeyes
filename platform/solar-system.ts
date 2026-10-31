@@ -1,3 +1,4 @@
+import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
 import {
   normalizeOrientation,
@@ -1145,13 +1146,21 @@ export class SolarSystemData {
     count = 256,
     detailed = false,
     mode: "history" | "instantaneous" = "history",
-  ) {
+  ): {
+    points: [number, number, number][];
+    epochsTdbSeconds: number[];
+    originId?: string;
+    refreshRange: [number, number];
+    conic?: TrajectoryConic;
+    period?: number;
+  } {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
     if (mode === "instantaneous") {
       const d = this.#data.get(id);
+      let orbit: ReturnType<typeof osculatingOrbit>;
       if (d?.kind === "inline" && d.type === "orb") {
-        const orbit = osculatingOrbit(
+        orbit = osculatingOrbit(
           evaluateOrb(d, epoch),
           evaluateOrbVelocity(d, epoch),
           (d.gravitationalParameter1 ?? 0) + (d.gravitationalParameter2 ?? 0),
@@ -1159,18 +1168,46 @@ export class SolarSystemData {
           count,
           detailed,
         );
-        if (orbit) {
-          const parentId = this.parentAt(id, epoch);
-          const interval = orbit.period / (detailed ? 4096 : 1024);
-          return {
-            ...orbit,
-            originId: parentId && parentId !== "sun" ? parentId : undefined,
-            refreshRange: [
-              Math.max(d.coverage.start, epoch - interval),
-              Math.min(d.coverage.end, epoch + interval),
-            ] as [number, number],
-          };
+      } else {
+        const declared = activeController(id, epoch, "orbitalElements").at(-1);
+        if (
+          declared &&
+          declared.semiMajorAxis > 0 &&
+          declared.eccentricity < 1
+        ) {
+          try {
+            const parentId = this.parentAt(id, epoch);
+            const parent = parentId
+              ? this.position(parentId, epoch)
+              : [0, 0, 0];
+            const relative = this.position(id, epoch).map(
+              (v, i) => v - parent[i],
+            ) as [number, number, number];
+            orbit = osculatingOrbit(
+              relative,
+              [...this.sourceVelocity(id, epoch)],
+              declared.meanAngularMotion ** 2 * declared.semiMajorAxis ** 3,
+              epoch,
+              count,
+              detailed,
+            );
+          } catch {
+            // Unsupported rotating references retain their covered source path.
+          }
         }
+      }
+      if (orbit) {
+        const parentId = this.parentAt(id, epoch);
+        const coverage = this.trajectoryRange(id, epoch);
+        const interval = orbit.period / (detailed ? 4096 : 1024);
+        return {
+          ...orbit,
+          originId: parentId && parentId !== "sun" ? parentId : undefined,
+          refreshRange: [
+            Math.max(coverage[0], epoch - interval),
+            Math.min(coverage[1], epoch + interval),
+          ] as [number, number],
+        };
       }
       // Unbound or degenerate states remain open covered paths; never fabricate a closed orbit.
     }

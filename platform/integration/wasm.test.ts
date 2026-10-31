@@ -11,6 +11,41 @@ const { WasmCore } = createRequire(import.meta.url)(
   "../../core/pkg/spaceeyes_core.js",
 );
 
+test("analytic orbit SDK reaches real WASM and Rust rejects malformed geometry", async () => {
+  const core = new WasmCore();
+  let captured: any[] = [];
+  const binding = new Proxy(core, {
+    get(target, property) {
+      const value = Reflect.get(target, property);
+      if (property === "trajectory") return (...args: any[]) => {
+        captured = args;
+        return Reflect.apply(value, target, args);
+      };
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  const host = new PluginHost(new WasmCorePort(binding));
+  let sdk!: PluginContext;
+  host.register({id:"integration.conic",apiVersion:1,capabilities:["data.publish","scene.visual"]},ctx=>{sdk=ctx;});
+  try {
+    await host.enable("integration.conic",["data.publish","scene.visual"]);
+    for(const id of ["earth","moon"]) sdk.data.publish(id,{positionKm:[10,0,0],radiusKm:1,epochTdbSeconds:0,coverageTdbSeconds:[0,10],frame:"ICRF",source:"conic integration fixture"});
+    const conic = {semiLatusRectumKm:10,radialUnit:[1,0,0] as [number,number,number],transverseUnit:[0,1,0] as [number,number,number],eccentricityRadial:0.2,eccentricityTransverse:0.1};
+    sdk.visual.trajectory("moon",[[10,0,0],[0,10,0]],[0,1],{kind:"orbit",originId:"earth",conic});
+    const payload=JSON.parse(captured[3]);
+    assert.deepEqual(payload.conic,conic,"adapter must preserve analytic geometry");
+    const session=captured[0], plugin=captured[1];
+    for(const patch of [{semiLatusRectumKm:0},{radialUnit:[2,0,0]},{transverseUnit:[1,0,0]},{eccentricityRadial:1},{extra:1}]) {
+      assert.throws(()=>core.trajectory(session,plugin,"moon",JSON.stringify({...payload,conic:{...conic,...patch}})),/InvalidVisual/);
+    }
+    assert.throws(()=>core.trajectory(session,plugin,"moon",JSON.stringify({...payload,kind:"trail",trailDurationSeconds:60})),/InvalidVisual/);
+    sdk.visual.trajectory("moon",[],[]);
+  } finally {
+    await host.shutdown();
+    core.free();
+  }
+});
+
 test("real WASM validates environment ownership and clears it with the session", async () => {
   const core = new WasmCore();
   const host = new PluginHost(new WasmCorePort(core));

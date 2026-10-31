@@ -63,3 +63,6 @@ SDK trajectory style新增kind:'orbit'|'trail'（默认orbit）、trailDurationS
 
 
 0.0.49修复航天器稀疏历史采样造成的长弦折线：保持会话4096点预算，以源状态曲率检查缩短可显示历史，缺口/突变保留断点；父体近景不再把其航天器拖尾一并隐藏。真实DYN与GPU证据见evidence/trail-sampling-0.0.49。尚未声称实现NASA可变线宽或全目录全时刻数学误差认证。
+
+
+0.0.50按本地NASA OrbitLineComponent拆开完整解析轨道的显示细分与科学点预算：完整有界椭圆固定360个一度区段，月球不再因同屏航天器多而只有二十多段；轨道参数仍由TS数据插件计算，受控SDK和Rust各自校验。解析展开有独立256条硬上限；证据见evidence/conic-orbits-0.0.50。尚未移植NASA全部LineMesh线宽/抗锯齿，历史拖尾继续走独立路径。

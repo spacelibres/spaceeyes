@@ -220,3 +220,9 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 `visual.jointStatus(id)` 区分pending/ready/partial/failed，applied/missing/ambiguous报告实际模型节点，不以模型加载ready代替关节ready。禁止插件直接访问Bevy实体；缺姿态/关节名不得假称已对日。受机械轴约束时只在可转平面求最优朝向，不新增不存在的自由度。天然卫星使用父体相对瞬时轨道，人造卫星/航天器使用过去轨迹；它们分别遵循轨道与拖尾开关。
 
 源spin可有绝对relativeToTime；没有绝对相位的可视化自旋以本次首次有效加载时刻为零点并明确标注，不能称实测绝对姿态。
+
+### Analytic orbit descriptor
+
+Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 4096 input sample budget. This display model does not extend scientific coverage or certify predictions.
+
+核心实例最多同时保留256条解析轨道，替换不增加计数；清除或释放所属对象归还预算。每条最多360段，总计不超过92160段。

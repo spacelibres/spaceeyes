@@ -297,6 +297,7 @@ export class PluginHost {
           )
             throw new Error("invalid trajectory epochs");
           core.trajectory({
+            ...(style?.conic ? {conic: style.conic} : {}),
             pluginId: id,
             sessionId,
             targetId,

@@ -1,5 +1,13 @@
+export type TrajectoryConic = {
+  semiLatusRectumKm: number;
+  radialUnit: readonly [number, number, number];
+  transverseUnit: readonly [number, number, number];
+  eccentricityRadial: number;
+  eccentricityTransverse: number;
+};
 /** Display intent only. Coordinates/epochs remain authored by the data plugin. */
 export type TrajectoryStyle = {
+  conic?: Readonly<TrajectoryConic>;
   originId?: string;
   colorRgba?: [number, number, number, number];
   kind?: "orbit" | "trail";
@@ -17,6 +25,7 @@ export function snapshotTrajectoryStyle(
       (k) =>
         typeof k !== "string" ||
         ![
+          "conic",
           "originId",
           "colorRgba",
           "kind",
@@ -49,8 +58,61 @@ export function snapshotTrajectoryStyle(
       ))
   )
     throw Error("invalid trajectory breaks");
+  let conic: Readonly<TrajectoryConic> | undefined;
+  if (style.conic !== undefined) {
+    const c = style.conic;
+    const unit = (v: readonly number[]) =>
+      Array.isArray(v) &&
+      v.length === 3 &&
+      v.every(Number.isFinite) &&
+      Math.abs(Math.hypot(...v) - 1) <= 1e-6;
+    if (
+      !c ||
+      typeof c !== "object" ||
+      Reflect.ownKeys(c).some(
+        (k) =>
+          typeof k !== "string" ||
+          ![
+            "semiLatusRectumKm",
+            "radialUnit",
+            "transverseUnit",
+            "eccentricityRadial",
+            "eccentricityTransverse",
+          ].includes(k),
+      ) ||
+      count < 2 ||
+      style.kind !== "orbit" ||
+      (style.breakIndices?.length ?? 0) > 0 ||
+      !Number.isFinite(c.semiLatusRectumKm) ||
+      c.semiLatusRectumKm <= 0 ||
+      c.semiLatusRectumKm > 1e15 ||
+      !unit(c.radialUnit) ||
+      !unit(c.transverseUnit) ||
+      Math.abs(
+        c.radialUnit.reduce((sum, v, i) => sum + v * c.transverseUnit[i], 0),
+      ) > 1e-6 ||
+      !Number.isFinite(c.eccentricityRadial) ||
+      !Number.isFinite(c.eccentricityTransverse) ||
+      Math.hypot(c.eccentricityRadial, c.eccentricityTransverse) >= 1
+    )
+      throw Error("invalid trajectory conic");
+    conic = Object.freeze({
+      ...c,
+      radialUnit: Object.freeze([...c.radialUnit]) as readonly [
+        number,
+        number,
+        number,
+      ],
+      transverseUnit: Object.freeze([...c.transverseUnit]) as readonly [
+        number,
+        number,
+        number,
+      ],
+    });
+  }
   return Object.freeze({
     ...style,
+    ...(conic ? { conic } : {}),
     ...(style.breakIndices
       ? { breakIndices: Object.freeze([...style.breakIndices]) }
       : {}),

@@ -1,5 +1,78 @@
 use spaceeyes_core::{Core, CoreError, SessionPermissions, TrajectoryStyle};
 #[test]
+fn analytic_expansion_has_a_global_replaceable_budget() {
+    let mut core = Core::default();
+    core.open_session_with_permissions(
+        "s",
+        "p",
+        SessionPermissions {
+            visual_control: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let style = || TrajectoryStyle {
+        kind: Some("orbit".into()),
+        conic: Some(spaceeyes_core::ConicOrbit {
+            semi_latus_rectum_km: 10.,
+            radial_unit: [1., 0., 0.],
+            transverse_unit: [0., 1., 0.],
+            eccentricity_radial: 0.,
+            eccentricity_transverse: 0.,
+        }),
+        ..Default::default()
+    };
+    for i in 0..257 {
+        core.register_object("s", &format!("o{i}")).unwrap();
+    }
+    for i in 0..256 {
+        core.set_trajectory_with_style(
+            "s",
+            "p",
+            &format!("o{i}"),
+            vec![[10., 0., 0.], [0., 10., 0.]],
+            vec![0., 1.],
+            style(),
+        )
+        .unwrap();
+    }
+    assert_eq!(
+        core.set_trajectory_with_style(
+            "s",
+            "p",
+            "o256",
+            vec![[10., 0., 0.], [0., 10., 0.]],
+            vec![0., 1.],
+            style()
+        ),
+        Err(CoreError::InvalidVisual)
+    );
+    core.set_trajectory_with_style(
+        "s",
+        "p",
+        "o0",
+        vec![[10., 0., 0.], [0., 10., 0.]],
+        vec![0., 1.],
+        style(),
+    )
+    .unwrap();
+    assert_eq!(
+        core.set_trajectory_with_style("s", "p", "o0", vec![], vec![], style()),
+        Err(CoreError::InvalidVisual)
+    );
+    core.set_timed_trajectory("s", "p", "o0", vec![], vec![])
+        .unwrap();
+    core.set_trajectory_with_style(
+        "s",
+        "p",
+        "o256",
+        vec![[10., 0., 0.], [0., 10., 0.]],
+        vec![0., 1.],
+        style(),
+    )
+    .unwrap();
+}
+#[test]
 fn timed_annotations_validate_atomically_and_follow_object_lifecycle() {
     let mut core = Core::default();
     core.open_session_with_permissions(
@@ -20,6 +93,7 @@ fn timed_annotations_validate_atomically_and_follow_object_lifecycle() {
         vec![[0.; 3], [1.; 3]],
         vec![0., 10.],
         TrajectoryStyle {
+            conic: None,
             kind: None,
             trail_duration_seconds: None,
             break_indices: vec![],

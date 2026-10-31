@@ -54,6 +54,7 @@ function harness(initialNullEnvironmentStatus = false) {
     closed: boolean;
     kind?: string;
     duration?: number;
+    conic?: Record<string, unknown>;
   }[] = [];
   let core: HostCore;
   let freed = 0;
@@ -97,6 +98,7 @@ function harness(initialNullEnvironmentStatus = false) {
                 id: args[2],
                 kind: payload.kind,
                 duration: payload.trailDurationSeconds,
+                conic: payload.conic,
                 epochs: payload.epochs,
                 count: points.length,
                 closed:
@@ -868,6 +870,7 @@ test("natural satellites use orbits and artificial satellites use timed trails",
       .at(-1)!;
     assert.equal(moon.kind, "orbit");
     assert.equal(moon.duration, undefined);
+    assert.ok(moon.conic, 'Moon must forward analytic orbit independent of point count');
     assert.ok(moon.epochs.length > 2);
     await app.select("sc_juno");
     const craft = fixtures
@@ -875,6 +878,7 @@ test("natural satellites use orbits and artificial satellites use timed trails",
       .filter((t) => t.id === "sc_juno" && t.count > 0)
       .at(-1)!;
     assert.equal(craft.kind, "trail");
+    assert.equal(craft.conic, undefined);
     assert.ok(craft.duration! > 0);
   } finally {
     await app.dispose();

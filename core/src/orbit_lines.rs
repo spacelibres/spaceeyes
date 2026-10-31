@@ -141,6 +141,49 @@ pub(crate) fn visit_styled_segments(
     style: Option<&crate::TrajectoryStyle>,
     mut draw: impl FnMut([f64; 3], [f64; 3], f32, f32),
 ) {
+    if let Some(conic) = style
+        .filter(|s| s.kind.as_deref() == Some("orbit"))
+        .and_then(|s| s.conic.as_ref())
+    {
+        static CIRCLE: std::sync::LazyLock<[(f64, f64); 360]> = std::sync::LazyLock::new(|| {
+            std::array::from_fn(|i| (i as f64 * std::f64::consts::PI / 180.).sin_cos())
+        });
+        let dot = |v: [f64; 3]| current.into_iter().zip(v).map(|(a, b)| a * b).sum::<f64>();
+        let angle = dot(conic.transverse_unit)
+            .atan2(dot(conic.radial_unit))
+            .rem_euclid(std::f64::consts::TAU);
+        let sample = |(sin, cos): (f64, f64)| {
+            let r = conic.semi_latus_rectum_km
+                / (1. + conic.eccentricity_radial * cos + conic.eccentricity_transverse * sin);
+            std::array::from_fn(|i| {
+                r * (conic.radial_unit[i] * cos + conic.transverse_unit[i] * sin)
+            })
+        };
+        let expected = sample(angle.sin_cos());
+        let error = (0..3)
+            .map(|i| (current[i] - expected[i]).powi(2))
+            .sum::<f64>()
+            .sqrt();
+        let radius = expected.into_iter().map(|x| x * x).sum::<f64>().sqrt();
+        let replace = error.is_finite() && error <= radius * 1e-5;
+        let slot = (angle.to_degrees().round() as usize) % 360;
+        let vertex = |i: usize| {
+            if replace && i % 360 == slot {
+                current
+            } else {
+                sample(CIRCLE[i % 360])
+            }
+        };
+        let first = vertex(0);
+        let mut previous = first;
+        for i in 1..360 {
+            let next = vertex(i);
+            draw(previous, next, 1., 1.);
+            previous = next;
+        }
+        draw(previous, first, 1., 1.);
+        return;
+    }
     let breaks = style.map(|s| s.break_indices.as_slice()).unwrap_or(&[]);
     if let Some(duration) = style
         .filter(|s| s.kind.as_deref() == Some("trail"))
@@ -243,5 +286,88 @@ mod trail_tests {
             |a, b, x, y| lines.push((a, b, x, y)),
         );
         assert!(lines.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod conic_tests {
+    use super::*;
+    #[test]
+    fn closed_degree_ring_attaches_exact_current_without_epoch_dependence() {
+        let c = crate::ConicOrbit {
+            semi_latus_rectum_km: 100.,
+            radial_unit: [1., 0., 0.],
+            transverse_unit: [0., 1., 0.],
+            eccentricity_radial: 0.2,
+            eccentricity_transverse: 0.1,
+        };
+        let theta = 0.123_f64;
+        let r = 100. / (1. + 0.2 * theta.cos() + 0.1 * theta.sin());
+        let current = [r * theta.cos(), r * theta.sin(), 0.];
+        let style = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            conic: Some(c),
+            ..Default::default()
+        };
+        for epoch in [0., 1e15, -1e15] {
+            let mut lines = vec![];
+            visit_styled_segments(&[], None, epoch, current, Some(&style), |a, b, _, _| {
+                lines.push((a, b))
+            });
+            assert_eq!(lines.len(), 360);
+            assert_eq!(lines[359].1, lines[0].0);
+            assert!(lines.iter().any(|(a, _)| *a == current));
+            for (a, b) in lines {
+                for p in [a, b] {
+                    let radius = p[0].hypot(p[1]);
+                    assert!((radius + 0.2 * p[0] + 0.1 * p[1] - 100.).abs() < 1e-10);
+                }
+                let angle = (a[0] * b[1] - a[1] * b[0]).atan2(a[0] * b[0] + a[1] * b[1]);
+                assert!(angle > 0. && angle < 2_f64.to_radians());
+            }
+        }
+    }
+    #[test]
+    fn off_plane_current_does_not_deform_ring() {
+        let style = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            conic: Some(crate::ConicOrbit {
+                semi_latus_rectum_km: 100.,
+                radial_unit: [1., 0., 0.],
+                transverse_unit: [0., 1., 0.],
+                eccentricity_radial: 0.,
+                eccentricity_transverse: 0.,
+            }),
+            ..Default::default()
+        };
+        let mut count = 0;
+        visit_styled_segments(
+            &[],
+            None,
+            0.,
+            [100., 0., 0.002],
+            Some(&style),
+            |a, b, _, _| {
+                count += 1;
+                assert_eq!(a[2], 0.);
+                assert_eq!(b[2], 0.);
+                assert!((a[0].hypot(a[1]) - 100.).abs() < 1e-10);
+            },
+        );
+        assert_eq!(count, 360);
+    }
+    #[test]
+    fn rejects_invalid_basis_and_wire_fields() {
+        let wire = r#"{"semiLatusRectumKm":100,"radialUnit":[1,0,0],"transverseUnit":[0,1,0],"eccentricityRadial":0,"eccentricityTransverse":0}"#;
+        let mut c: crate::ConicOrbit = serde_json::from_str(wire).unwrap();
+        assert!(c.is_valid());
+        c.transverse_unit = [1., 0., 0.];
+        assert!(!c.is_valid());
+        c.transverse_unit = [0., 2., 0.];
+        assert!(!c.is_valid());
+        assert!(
+            serde_json::from_str::<crate::ConicOrbit>(&wire.replace("100,", "100,\"extra\":0,"))
+                .is_err()
+        );
     }
 }

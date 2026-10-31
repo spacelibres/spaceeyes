@@ -647,7 +647,7 @@ export async function createWorkspace(
           state.selected === id,
         )
       : undefined;
-    const trail =
+    const trail: ReturnType<SolarSystemData["trajectorySamples"]> =
       history ??
       data.trajectorySamples(
         id,
@@ -663,7 +663,7 @@ export async function createWorkspace(
             trailDurationSeconds: history.durationSeconds,
             breakIndices: history.breakIndices,
           }
-        : {kind: "orbit" as const}),
+        : {kind: "orbit" as const, ...(trail.conic ? {conic: trail.conic} : {})}),
       originId: trail.originId,
       colorRgba: solarCatalog.find((body) => body.id === id)!.color,
     });
