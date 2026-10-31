@@ -1,0 +1,116 @@
+{
+  "epoch": 846686627.4034829,
+  "ids": [
+    "sc_iss",
+    "sc_hubble_space_telescope",
+    "sc_tdrs_10",
+    "sc_landsat_9",
+    "sc_themis_a",
+    "earth",
+    "moon",
+    "sun"
+  ],
+  "requests": 7,
+  "statuses": [
+    {
+      "id": "sc_iss",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        846645705.8661791,
+        846701435.627555
+      ]
+    },
+    {
+      "id": "earth",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ]
+    },
+    {
+      "id": "sc_hubble_space_telescope",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        846483672.7760361,
+        848489884.984478
+      ]
+    },
+    {
+      "id": "sc_tdrs_10",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        844593672.0373079,
+        872497334.0293989
+      ]
+    },
+    {
+      "id": "sc_landsat_9",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        846549572.941363,
+        846804696.5597432
+      ]
+    },
+    {
+      "id": "sc_themis_a",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        841242479.6988273,
+        846822476.9275008
+      ]
+    },
+    {
+      "id": "moon",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        836169537.7186799,
+        852615807.5075626
+      ]
+    },
+    {
+      "id": "sun",
+      "status": "ready",
+      "coverage": [
+        846686627.4034829,
+        846686627.4034829
+      ]
+    }
+  ],
+  "frames": 100,
+  "secondsPerFrame": 8,
+  "runs": {
+    "baseline": [
+      24.918600000000197,
+      15.565000000000055,
+      14.94970000000012,
+      13.262099999999919,
+      13.931400000000167,
+      17.883100000000013,
+      20.020099999999957
+    ],
+    "cached": [
+      17.2971,
+      15.648500000000013,
+      11.283599999999979,
+      10.685900000000174,
+      14.163600000000088,
+      13.642100000000028,
+      10.967200000000048
+    ]
+  }
+}

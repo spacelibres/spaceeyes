@@ -1,0 +1,41 @@
+{
+  "a": {
+    "wallMs": 1793423927349,
+    "ui": [
+      "  - status:",
+      "    - generic: International Space Station",
+      "    - status: 2026-10-31T09:12:19.021Z",
+      "    - generic: 846710008.204 J2000 TDB s",
+      "    - generic: 8 min/s",
+      "    - button \"Ⅱ 暂停\"",
+      "    - text: 播放速率 · 8 min/s"
+    ]
+  },
+  "b": {
+    "wallMs": 1793424003902,
+    "ui": [
+      "  - status:",
+      "    - generic: International Space Station",
+      "    - heading \"International Space Station\" [level=2]",
+      "    - definition: ready · 显示资源 ready",
+      "    - definition: NASA Eyes 实体控制器推导姿态（非实测，精度未验收）",
+      "    - definition: 已启用 10 个对日关节，遵循各自转轴约束",
+      "    - definition: NASA Eyes DYN · 近似星历（精度未验收） · SHA256 a2a5a38691da · 获取 2026-10-31T05:18:29.436Z",
+      "    - term: 有效覆盖 · J2000 TDB 秒",
+      "    - definition: 846701435.627555 — 846757171.9420085",
+      "    - definition: 0.072 km",
+      "    - status: 2026-10-31T19:24:53.101Z",
+      "    - generic: 846746762.284 J2000 TDB s",
+      "    - generic: 8 min/s",
+      "    - button \"Ⅱ 暂停\"",
+      "    - text: 播放速率 · 8 min/s"
+    ]
+  },
+  "measurement": {
+    "wallSeconds": 76.553,
+    "simulationSeconds": 36754.080000042915,
+    "observedMeanRate": 480.11286298437574,
+    "targetRate": 480,
+    "note": "UI observations in background browser; not a frame-time or FPS measurement."
+  }
+}

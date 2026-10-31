@@ -1259,3 +1259,45 @@ for (const mode of [
     source.dispose();
   });
 }
+
+test("publication reuses parent evaluation only within its exact invocation", async () => {
+  const { ctx } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async (input) => String(input).includes("type=ori")
+      ? new Response("", { status: 404 })
+      : new Response(orb(String(input).includes("/moon?") ? 2 : 10)),
+  });
+  await source.load(["earth", "moon"], 5, []);
+  let earthEvaluations = 0;
+  const parentAt = source.parentAt.bind(source);
+  source.parentAt = (id, epoch) => {
+    if (id === "earth") earthEvaluations++;
+    return parentAt(id, epoch);
+  };
+  source.position("earth", 5);
+  const oneEvaluation = earthEvaluations;
+  assert.ok(oneEvaluation > 0);
+  earthEvaluations = 0;
+  source.publishAt(5);
+  assert.equal(earthEvaluations, oneEvaluation, "Earth and its child share one evaluation");
+  earthEvaluations = 0;
+  source.publishAt(5);
+  assert.equal(earthEvaluations, oneEvaluation, "same epoch in a new invocation recomputes");
+  earthEvaluations = 0;
+  source.publishAt(6);
+  assert.equal(earthEvaluations, oneEvaluation, "new exact epoch recomputes");
+  earthEvaluations = 0;
+  source.position("earth", 6);
+  source.position("earth", 6);
+  assert.equal(earthEvaluations, 2 * oneEvaluation, "public evaluations retain no cache");
+  const restore = source.checkpoint();
+  source.retain([]);
+  assert.throws(() => source.position("earth", 6), /unavailable/);
+  restore();
+  earthEvaluations = 0;
+  source.publishAt(6);
+  assert.equal(earthEvaluations, oneEvaluation, "restored state recomputes");
+  source.dispose();
+  restore();
+  assert.throws(() => source.position("earth", 6), /unavailable/);
+});

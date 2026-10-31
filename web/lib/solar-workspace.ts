@@ -379,7 +379,12 @@ export async function createWorkspace(
   let stellarSettings = solarWorkspaceSettings(options.stellarSettings);
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
-  let lastTrajectoryRefresh = 0;
+  const secondaryRestores = new Set<string>();
+  const secondaryLoads = new Set<string>();
+  const secondaryRetryAt = new Map<string, number>();
+  let lastTrajectoryId: string | undefined;
+  let lastTrajectoryRefresh = -Infinity;
+  let lastSelectedTrajectoryRefresh = -Infinity;
   const state: SolarSnapshot = {
     ...initialSnapshot,
     busy: true,
@@ -525,6 +530,9 @@ export async function createWorkspace(
     (disposal ??= (async () => {
       observationToken++;
       closed = true;
+      secondaryRestores.clear();
+      secondaryRetryAt.clear();
+      secondaryLoads.clear();
       revision++;
       cancelFrame(frame);
       signal.removeEventListener("abort", abort);
@@ -643,7 +651,7 @@ export async function createWorkspace(
       ? data.trailSamples(
           id,
           core.epoch(),
-          state.selected === id ? 2048 : ordinary,
+          state.selected === id ? 256 : ordinary,
           state.selected === id,
         )
       : undefined;
@@ -652,7 +660,7 @@ export async function createWorkspace(
       data.trajectorySamples(
         id,
         core.epoch(),
-        state.selected === id ? 2048 : ordinary,
+        state.selected === id ? 256 : ordinary,
         state.selected === id,
         "instantaneous",
       );
@@ -685,22 +693,8 @@ export async function createWorkspace(
       }
     }
   };
-  const configure = () => {
-    for (const id of trajectoryWindows.keys())
-      if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
-    for (const id of trajectoryWindows.keys()) {
-      const kind = solarCatalog.find((body) => body.id === id)?.kind;
-      if (kind === "spacecraft" ? !state.trails : !state.trajectories) {
-        sdk.visual.trajectory(id, []);
-        trajectoryWindows.delete(id);
-      }
-    }
-    // Shrink the previous target's trail before growing the new one; retain the session budget.
-    for (const body of [...solarCatalog].sort(
-      (a, b) =>
-        Number(a.id === state.selected) - Number(b.id === state.selected),
-    )) {
-      if (data.status(body.id)?.status !== "ready") continue;
+  const configureBody = (body: (typeof solarCatalog)[number], restore = false) => {
+      if (data.status(body.id)?.status !== "ready") return;
       try {
         const upgrade =
           (state.selected === body.id ||
@@ -708,7 +702,7 @@ export async function createWorkspace(
               parentAt(state.selected, core.epoch()) === body.id)) &&
           !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
-        if (!sdk.visual.status(body.id) || upgrade) {
+        if (restore || !sdk.visual.status(body.id) || upgrade) {
           const model = getEyesDefinition(body.id)?.model;
           const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius;
           if (detailed && model) {
@@ -782,6 +776,23 @@ export async function createWorkspace(
       } catch (error) {
         state.error = `${body.name}：${String(error)}`;
       }
+  };
+  const configure = () => {
+    for (const id of trajectoryWindows.keys())
+      if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
+    for (const id of trajectoryWindows.keys()) {
+      const kind = solarCatalog.find((body) => body.id === id)?.kind;
+      if (kind === "spacecraft" ? !state.trails : !state.trajectories) {
+        sdk.visual.trajectory(id, []);
+        trajectoryWindows.delete(id);
+      }
+    }
+    // Shrink the previous target's trail before growing the new one; retain the session budget.
+    for (const body of [...solarCatalog].sort(
+      (a, b) =>
+        Number(a.id === state.selected) - Number(b.id === state.selected),
+    )) {
+      configureBody(body);
     }
     publishJoints();
     sdk.visual.layers({
@@ -823,6 +834,19 @@ export async function createWorkspace(
       state.error = "跟随参考对象在当前时刻无有效数据，已恢复近景观察";
     }
   };
+  const criticalDependencies = (epoch: number) => {
+    const required = new Set<string>(state.selected ? [state.selected] : ["sun"]);
+    if (state.followId) required.add(state.followId);
+    for (const id of required) {
+      const parent = parentAt(id, epoch);
+      if (parent && !required.has(parent)) required.add(parent);
+      for (const controller of getEyesDefinition(id)?.controllers ?? [])
+        if (isEntityAlign(controller))
+          for (const reference of entityAlignDependencies(controller))
+            if (hasDisplayCatalog(reference.id)) required.add(reference.id);
+    }
+    return required;
+  };
   const reload = (epoch: number, prioritizeSelection = false) => {
     if (closed || signal.aborted)
       return Promise.reject(new Error("工作区已关闭"));
@@ -852,8 +876,9 @@ export async function createWorkspace(
             if (parent === "sun") break;
             parent = parentAt(parent, epoch);
           }
+          const critical = criticalDependencies(epoch);
           const primaryIds = prioritizeSelection && state.selected
-            ? ids.filter((id) => id === state.selected || parentSeen.has(id))
+            ? ids.filter((id) => critical.has(id))
             : ids;
           await data.load(primaryIds, epoch, [...orientationIds]);
           assertLive();
@@ -1493,34 +1518,72 @@ export async function createWorkspace(
             emit();
           }
           const epoch = core.epoch();
-          const missing = data
-            .status()
-            .some(
-              (item) =>
-                item.id !== "sun" &&
-                item.coverage &&
-                item.status !== "failed" &&
-                (epoch < item.coverage[0] || epoch > item.coverage[1]),
-            );
+          const required = criticalDependencies(epoch);
+          const expired = data.status().filter((item) => item.id !== "sun" &&
+            item.coverage && item.status !== "failed" && item.status !== "loading" &&
+            (epoch < item.coverage[0] || epoch > item.coverage[1]));
+          const missing = expired.some((item) => required.has(item.id));
           if (missing) {
             sdk.time.seek(lastPublishedEpoch);
-            void reload(epoch).catch((error) => {
+            void reload(epoch, Boolean(state.selected)).catch((error) => {
               state.error = String(error);
               emit();
             });
           } else {
             data.publishAt(epoch);
+            // Publish first so expired secondary objects disappear before loading.
+            // Secondary cache work never seeks time or changes playback/selection.
+            const retained = new Set(data.status().map((item) => item.id));
+            for (const id of secondaryRetryAt.keys())
+              if (!retained.has(id)) secondaryRetryAt.delete(id);
+            for (const item of expired) {
+              if (required.has(item.id) || secondaryLoads.has(item.id) ||
+                  now < (secondaryRetryAt.get(item.id) ?? -Infinity)) continue;
+              secondaryRetryAt.set(item.id, now + 1000);
+              secondaryLoads.add(item.id);
+              const requestedRevision = revision;
+              void data.load([item.id], epoch, []).then(() => {
+                if (!closed && requestedRevision === revision && data.status(item.id)?.status === "ready")
+                  secondaryRestores.add(item.id);
+              }).catch(() => {}).finally(() => {
+                secondaryLoads.delete(item.id);
+              });
+            }
+            let restored = false;
+            for (const id of secondaryRestores) {
+              secondaryRestores.delete(id);
+              const body = solarCatalog.find((item) => item.id === id);
+              if (!body || data.status(id)?.status !== "ready") continue;
+              configureBody(body, true);
+              restored = true;
+              break;
+            }
             publishJoints();
             validateFollow();
-            if (
-              (state.trajectories || state.trails) &&
-              now - lastTrajectoryRefresh > 100
-            ) {
-              for (const [id, window] of trajectoryWindows) {
-                if (epoch < window[0] || epoch > window[1])
+            if (!restored && (state.trajectories || state.trails) && now - lastTrajectoryRefresh >= 50) {
+              // Cosmetic maintenance must not rebuild the whole scene in one RAF.
+              // Rotate over current windows; no deferred work can publish a stale selection.
+              const selectedWindow = trajectoryWindows.get(state.selected);
+              const selectedDue = selectedWindow && now - lastSelectedTrajectoryRefresh >= 100 &&
+                (epoch < selectedWindow[0] || epoch > selectedWindow[1]);
+              const ids = [...trajectoryWindows.keys()];
+              const start = selectedDue ? ids.indexOf(state.selected) :
+                (ids.indexOf(lastTrajectoryId ?? "") + 1) % Math.max(1, ids.length);
+              for (let offset = 0; offset < ids.length; offset++) {
+                const id = ids[(start + offset) % ids.length]!;
+                if (data.status(id)?.status !== "ready") {
+                  trajectoryWindows.delete(id);
+                  continue;
+                }
+                const window = trajectoryWindows.get(id)!;
+                if (epoch < window[0] || epoch > window[1]) {
                   refreshTrajectory(id);
+                  lastTrajectoryId = id;
+                  lastTrajectoryRefresh = now;
+                  if (id === state.selected) lastSelectedTrajectoryRefresh = now;
+                  break;
+                }
               }
-              lastTrajectoryRefresh = now;
             }
             lastPublishedEpoch = core.epoch();
           }

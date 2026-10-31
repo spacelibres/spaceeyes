@@ -765,6 +765,11 @@ export class SolarSystemData {
       return "orbital-elements";
     return "dyn";
   }
+  // Scoped to one synchronous publication: no values survive a load or epoch.
+  #publicationCache: {
+    epoch: number;
+    positions: Map<string, [number, number, number]>;
+  } | undefined;
   #positionStack: string[] = [];
   position(id: string, t: number): [number, number, number] {
     if (this.#positionStack.includes(id))
@@ -772,9 +777,16 @@ export class SolarSystemData {
         "Position dependency cycle: " +
           [...this.#positionStack, id].join(" -> "),
       );
+    const cache = this.#publicationCache?.epoch === t
+      ? this.#publicationCache.positions
+      : undefined;
+    const cached = cache?.get(id);
+    if (cached) return [...cached];
     this.#positionStack.push(id);
     try {
-      return this.#positionAt(id, t);
+      const value = this.#positionAt(id, t);
+      cache?.set(id, [...value]);
+      return value;
     } finally {
       this.#positionStack.pop();
     }
@@ -1000,6 +1012,15 @@ export class SolarSystemData {
     return v;
   }
   publishAt(epoch: number) {
+    const previous = this.#publicationCache;
+    this.#publicationCache = { epoch, positions: new Map() };
+    try {
+      this.#publishAt(epoch);
+    } finally {
+      this.#publicationCache = previous;
+    }
+  }
+  #publishAt(epoch: number) {
     for (const item of solarCatalog) {
       const s = this.#states.get(item.id);
       if (

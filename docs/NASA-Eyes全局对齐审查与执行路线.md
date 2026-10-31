@@ -66,3 +66,6 @@ SDK trajectory style新增kind:'orbit'|'trail'（默认orbit）、trailDurationS
 
 
 0.0.50按本地NASA OrbitLineComponent拆开完整解析轨道的显示细分与科学点预算：完整有界椭圆固定360个一度区段，月球不再因同屏航天器多而只有二十多段；轨道参数仍由TS数据插件计算，受控SDK和Rust各自校验。解析展开有独立256条硬上限；证据见evidence/conic-orbits-0.0.50。尚未移植NASA全部LineMesh线宽/抗锯齿，历史拖尾继续走独立路径。
+
+
+0.0.51集中修复ISS480倍时间、覆盖加载与外观维护耦合；关键参考/跟随跨段、后台对象恢复与重试均有回归。标签按用户最新要求取消位移避让，采用NASA式固定锚点优先级遮挡，并与实际可见对象/点击一致。完整检查与真实跨段观察见evidence/iss-playback-labels-0.0.51。此处最新规则覆盖历史文档中要求标签移位的设计，旧迭代记录不作为当前行为。

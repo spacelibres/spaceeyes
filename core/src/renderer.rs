@@ -1656,6 +1656,7 @@ fn draw_annotations(
     mut fades: Local<std::collections::HashMap<String, crate::label_visibility::Fade>>,
     time: Res<Time>,
     mut near_focus: Local<bool>,
+    mut raster_visibility: Local<std::collections::HashMap<String, bool>>,
     mut markers: Query<
         (Entity, &BodyMarker, &mut Node, &mut BackgroundColor),
         Without<AnnotationLabel>,
@@ -1742,6 +1743,9 @@ fn draw_annotations(
         crate::label_visibility::solar_overview(core.focused_object(), *near_focus);
     let mut depths = std::collections::HashMap::new();
     let mut marker_nodes = std::collections::HashMap::new();
+    label_layout.priorities.clear();
+    raster_visibility.retain(|id, _| core.object_ids().any(|alive| alive == id));
+    let mut visible_objects = std::collections::HashSet::new();
     for id in core.object_ids() {
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
@@ -1754,18 +1758,62 @@ fn draw_annotations(
         ) {
             continue;
         }
+        let distance = scientific_camera.distance(DVec3::from_array(state.position_km));
+        let weight = if id == "sun" {
+            100
+        } else if matches!(
+            id,
+            "mercury" | "venus" | "earth" | "mars" | "jupiter" | "saturn" | "uranus" | "neptune"
+        ) {
+            50
+        } else if id.starts_with("sc_") {
+            30
+        } else {
+            25
+        };
+        label_layout
+            .priorities
+            .insert(id.to_owned(), (weight, distance));
+        if !core
+            .visual_status(id)
+            .ok()
+            .flatten()
+            .is_some_and(|status| status.phase == VisualPhase::Ready)
+        {
+            continue;
+        }
         let position = to_display(state.position_km);
         let Ok(pixel) = camera.world_to_viewport(camera_transform, position) else {
             continue;
         };
+        let visual_radius = core
+            .visual_assignment(id)
+            .and_then(|v| match v.spec {
+                VisualSpec::Model {
+                    framing_radius_km, ..
+                } => framing_radius_km,
+                _ => None,
+            })
+            .unwrap_or(state.radius_km)
+            .max(state.radius_km);
         let offset =
-            position + camera_transform.right() * (state.radius_km * settings.units_per_km) as f32;
+            position + camera_transform.right() * (visual_radius * settings.units_per_km) as f32;
         let projected_radius = camera
             .world_to_viewport(camera_transform, offset)
             .map_or(0., |p| p.distance(pixel));
-        if !core.visual_status(id).ok().flatten().is_some_and(|status| {
-            matches!(status.phase, VisualPhase::Failed | VisualPhase::Suspended)
-        }) {
+        if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
+            continue;
+        }
+        if id.starts_with("sc_") {
+            let previous = raster_visibility.get(id).copied().unwrap_or(false);
+            let visible = crate::label_visibility::raster_visible(previous, projected_radius);
+            raster_visibility.insert(id.to_owned(), visible);
+            if !visible {
+                continue;
+            }
+        }
+        visible_objects.insert(id.to_owned());
+        {
             let depth = camera_transform.translation().distance(position);
             depths.insert(id.to_owned(), depth);
             pick_frame.targets.push(PickTarget {
@@ -1926,7 +1974,13 @@ fn draw_annotations(
                     &spheres,
                     id,
                 );
-                let allowed = local_system && !blocked;
+                let visual_ready = core
+                    .visual_status(id)
+                    .ok()
+                    .flatten()
+                    .is_some_and(|status| status.phase == VisualPhase::Ready);
+                let object_visible = visible_objects.contains(id);
+                let allowed = local_system && !blocked && visual_ready && object_visible;
                 let coverage = (state.radius_km
                     / scientific_camera
                         .distance(DVec3::from_array(state.position_km))
@@ -1937,7 +1991,7 @@ fn draw_annotations(
                     core.focused_object() == Some(id) && !solar_overview,
                     time.delta_secs(),
                 );
-                if !blocked && alpha > 0.02 {
+                if allowed && alpha > 0.02 {
                     opacity.insert(id.to_owned(), alpha);
                     desired_labels.push((id.to_owned(), text.to_owned(), pixel));
                 }

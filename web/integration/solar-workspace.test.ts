@@ -57,6 +57,7 @@ function harness(initialNullEnvironmentStatus = false) {
     conic?: Record<string, unknown>;
   }[] = [];
   let core: HostCore;
+  let timeSession: [string, string];
   let freed = 0;
   let picked: string | undefined;
   let desiredLod = 0;
@@ -83,6 +84,10 @@ function harness(initialNullEnvironmentStatus = false) {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if (property === "seek") return (...args: [string, string, number]) => {
+            timeSession = [args[0], args[1]];
+            return Reflect.apply(value, target, args);
+          };
           if (property === "focus")
             return (...args: any[]) => {
               const result = Reflect.apply(value, target, args);
@@ -160,6 +165,7 @@ function harness(initialNullEnvironmentStatus = false) {
     },
     freed: () => freed,
     core: () => core!,
+    seekEpoch: (epoch: number) => core.seek(...timeSession, epoch),
     focused: () =>
       (
         core as HostCore & { focused_object(): string | undefined }
@@ -240,7 +246,7 @@ test("timed trajectory detail switches from a late catalog object without exceed
       .trails()
       .filter((t) => t.id === "mercury")
       .at(-1)!;
-    assert.ok(trail.count > 1024 && trail.count <= 2048);
+    assert.ok(trail.count > 128 && trail.count <= 256);
     assert.ok(trail.epochs.includes(fixtures.core().epoch()));
     assert.equal(trail.closed, true);
     assert.equal(fixtures.focused(), "mercury");
@@ -956,7 +962,7 @@ test("unavailable follow reference restores nearby without changing selection or
     {
       ...fixtures,
       fetch: async (input) =>
-        String(input).includes("iss")
+        String(input).includes("sc_iss")
           ? new Response("unavailable", { status: 503 })
           : new Response(sample(String(input).includes("type=ori"))),
     },
@@ -1655,4 +1661,228 @@ test("superseded supplementary load cannot restore the previous selection", asyn
     release();
     await app.dispose();
   }
+});
+test("expired orbit maintenance publishes at most one path per animation frame", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    const before = fixtures.trails().length;
+    // Advance authoritative time independently of cosmetic trajectory cache windows.
+    fixtures.seekEpoch(2e9);
+    fixtures.step(200);
+    assert.ok(fixtures.trails().length - before <= 1,
+      `one frame rebuilt ${fixtures.trails().length - before} paths`);
+    assert.equal(fixtures.core().epoch(), 2e9);
+    for (let frame = 1; frame < 12; frame++) {
+      const count = fixtures.trails().length;
+      fixtures.step(200 + frame * 16);
+      assert.ok(fixtures.trails().length - count <= 1);
+    }
+    const refreshed = fixtures.trails().slice(before).map((trail) => trail.id);
+    assert.ok(new Set(refreshed).size > 1, "maintenance must progress through background objects");
+    assert.ok(Math.abs(fixtures.core().epoch() - (2e9 + 0.176)) < 0.00001, "cosmetic maintenance preserves elapsed simulation time");
+  } finally {
+    await app.dispose();
+  }
+});
+
+ test("selected ISS uses bounded trail geometry while covered 480x time keeps advancing", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    await app.select("sc_iss");
+    const selected = fixtures.trails().filter((trail) => trail.id === "sc_iss");
+    assert.ok(selected.some((trail) => trail.count > 0));
+    assert.ok(selected.every((trail) => trail.count <= 256));
+    app.play(true, 480);
+    fixtures.step(0);
+    const start = fixtures.core().epoch();
+    for (let index = 1; index <= 60; index++) {
+      fixtures.step(index * 16);
+      assert.equal(fixtures.core().playing(), true);
+    }
+    assert.ok(Math.abs(fixtures.core().epoch() - start - 460.8) < 0.001);
+    assert.ok(fixtures.trails().filter((trail) => trail.id === "sc_iss").every((trail) => trail.count <= 256));
+  } finally { await app.dispose(); }
+});
+test("unrelated expired Moon coverage loads in background without pausing covered ISS", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let armed = false;
+  let release: (() => void) | undefined;
+  const app = await createWorkspace("#test", (state) => states.push(state), new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => {
+      const url = new URL(String(input), "http://localhost");
+      const moon = url.pathname.endsWith("/moon");
+      if (armed && moon && Number(url.searchParams.get("epoch")) > 846686628)
+        await new Promise<void>((resolve) => { release = resolve; });
+      return new Response(sample(url.searchParams.get("type") === "ori", moon ? 846686628 : 4e9));
+    },
+  });
+  try {
+    await app.seek(846686628 - 1);
+    await app.select("sc_iss");
+    armed = true;
+    app.play(true, 480);
+    fixtures.step(0);
+    fixtures.step(16);
+    fixtures.step(32);
+    assert.equal(fixtures.core().playing(), true, JSON.stringify(states.at(-1)));
+    assert.ok(Math.abs(fixtures.core().epoch() - (846686628 - 1 + 15.36)) < 0.001);
+    assert.equal(states.at(-1)!.busy, false);
+    release?.();
+    await Promise.resolve();
+    await Promise.resolve();
+    fixtures.step(48);
+    assert.equal(fixtures.core().playing(), true, JSON.stringify(states.at(-1)));
+    assert.ok(fixtures.core().epoch() > 846686628 + 20);
+  } finally {
+    release?.();
+    await app.dispose();
+  }
+});
+for (const failed of [false, true]) {
+  test(`overview expired secondary retry is bounded without stopping time: failed=${failed}`, async () => {
+    const fixtures = harness();
+    let armed = false;
+    let retries = 0;
+    const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+      ...fixtures,
+      fetch: async (input) => {
+        const url = new URL(String(input), "http://localhost");
+        const moon = url.pathname.endsWith("/moon");
+        if (armed && moon) {
+          retries++;
+          if (failed) return new Response("unavailable", {status: 503});
+        }
+        return new Response(sample(url.searchParams.get("type") === "ori", moon ? 846686628 : 4e9));
+      },
+    });
+    try {
+      await app.seek(846686627);
+      armed = true;
+      app.play(true, 480);
+      fixtures.step(0);
+      for (let index = 1; index <= 60; index++) {
+        fixtures.step(index * 16);
+        await new Promise<void>((resolve) => setImmediate(resolve));
+        assert.equal(fixtures.core().playing(), true);
+      }
+      assert.ok(retries > 0 && retries <= 1, `secondary fetches within 960ms: ${retries}`);
+      assert.ok(Math.abs(fixtures.core().epoch() - (846686627 + 460.8)) < 0.001);
+    } finally { await app.dispose(); }
+  });
+}
+test("selected ISS coverage reload resumes before supplementary objects finish", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let armed = false;
+  let blocked = false;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const app = await createWorkspace("#test", (state) => states.push(state), new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => {
+      const url = new URL(String(input), "http://localhost");
+      const epoch = Number(url.searchParams.get("epoch"));
+      const iss = url.pathname.endsWith("/sc_iss");
+      const secondary = !iss && !url.pathname.endsWith("/earth") && !url.pathname.endsWith("/sun");
+      if (armed && secondary) { blocked = true; await gate; }
+      return new Response(sample(url.searchParams.get("type") === "ori", !armed && iss ? 846686628 : 4e9));
+    },
+  });
+  try {
+    await app.seek(846686627);
+    await app.select("sc_iss");
+    armed = true;
+    app.play(true, 480);
+    fixtures.step(0);
+    fixtures.step(16);
+    for (let attempt = 0; attempt < 100 && (states.at(-1)!.busy || !blocked); attempt++)
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(blocked, true, "supplementary source is still pending");
+    assert.equal(states.at(-1)!.busy, false);
+    assert.equal(fixtures.core().playing(), true);
+    assert.equal(fixtures.focused(), "sc_iss");
+    const epoch = fixtures.core().epoch();
+    fixtures.step(32);
+    fixtures.step(48);
+    assert.ok(fixtures.core().epoch() > epoch);
+  } finally { release(); await app.dispose(); }
+});
+
+test("follow Moon coverage reload preserves reference before supplementary objects finish", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  let armed = false;
+  let blocked = false;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const app = await createWorkspace("#test", (state) => states.push(state), new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => {
+      const url = new URL(String(input), "http://localhost");
+      const epoch = Number(url.searchParams.get("epoch"));
+      const iss = url.pathname.endsWith("/sc_iss");
+      const moon = url.pathname.endsWith("/moon");
+      const secondary = !moon && !iss && !url.pathname.endsWith("/earth") && !url.pathname.endsWith("/sun");
+      if (armed && secondary) { blocked = true; await gate; }
+      return new Response(sample(url.searchParams.get("type") === "ori", !armed && (moon || secondary) ? 846686628 : 4e9));
+    },
+  });
+  try {
+    await app.seek(846686627);
+    await app.select("sc_iss");
+    await app.follow("moon");
+    armed = true;
+    app.play(true, 480);
+    fixtures.step(0);
+    fixtures.step(16);
+    for (let attempt = 0; attempt < 100 && (states.at(-1)!.busy || !blocked); attempt++)
+      await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.equal(blocked, true, JSON.stringify(states.at(-1)));
+    assert.equal(states.at(-1)!.busy, false);
+    assert.equal(fixtures.core().playing(), true);
+    assert.equal(fixtures.focused(), "sc_iss");
+    assert.equal(states.at(-1)!.observationMode, "follow");
+    assert.equal(states.at(-1)!.followId, "moon");
+    const epoch = fixtures.core().epoch();
+    fixtures.step(32);
+    fixtures.step(48);
+    assert.ok(fixtures.core().epoch() > epoch);
+  } finally { release(); await app.dispose(); }
+});
+test("background coverage recovery restores only the removed object's visual", async () => {
+  const fixtures = harness();
+  let armed = false;
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures,
+    fetch: async (input) => {
+      const url = new URL(String(input), "http://localhost");
+      const moon = url.pathname.endsWith("/moon");
+      return new Response(sample(url.searchParams.get("type") === "ori", moon && !armed ? 846686628 : 4e9));
+    },
+  });
+  try {
+    await app.seek(846686627);
+    const before = fixtures.visuals().length;
+    armed = true;
+    app.play(true, 480);
+    fixtures.step(0);
+    fixtures.step(16);
+    for (let frame = 2; frame < 20 && fixtures.visuals().length === before; frame++) {
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      fixtures.step(frame * 16);
+    }
+    const restored = fixtures.visuals().slice(before);
+    assert.deepEqual(restored.map((entry) => entry.id), ["moon"]);
+    assert.equal(fixtures.core().playing(), true);
+  } finally { await app.dispose(); }
 });
