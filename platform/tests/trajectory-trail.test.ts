@@ -40,6 +40,8 @@ test("trail style validates finite windows and discontinuities before forwarding
   assert.equal(received.trailDurationSeconds, 60);
   assert.deepEqual(received.breakIndices, [2]);
   assert.equal(received.points[0][0], 0);
+  sdk.visual.trajectory("moon", points, [0,1,2], {kind:"trail",trailDurationSeconds:946080000});
+  assert.equal(received.trailDurationSeconds,946080000);
   const before = calls;
   for (const style of [
     { kind: "bad" },
@@ -47,7 +49,7 @@ test("trail style validates finite windows and discontinuities before forwarding
     { kind: "orbit", trailDurationSeconds: 60 },
     { kind: "trail", trailDurationSeconds: NaN },
     { kind: "trail", trailDurationSeconds: 0 },
-    { kind: "trail", trailDurationSeconds: 315576001 },
+    { kind: "trail", trailDurationSeconds: 946080001 },
     { kind: "trail", trailDurationSeconds: 60, breakIndices: [0] },
     { kind: "trail", trailDurationSeconds: 60, breakIndices: [3] },
     { kind: "trail", trailDurationSeconds: 60, breakIndices: [2, 1] },

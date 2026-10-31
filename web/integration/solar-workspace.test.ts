@@ -1914,7 +1914,7 @@ test("dense Earth scene keeps resolved long spacecraft histories without starvin
     }
     const trails = fixtures.trails().filter(t => t.id.startsWith("sc_") && t.kind === "trail");
     assert.ok(trails.length > 40, `exercise a dense real catalog system: ${trails.length} trails ${JSON.stringify(trails.slice(0,3))}`);
-    assert.ok(trails.every(t => t.count >= 128 && t.count <= 160));
+    assert.ok(trails.every(t => t.count >= 2 && t.count <= 256));
     const latest = new Map(fixtures.trails().map(t => [t.id, t]));
     assert.ok([...latest.values()].reduce((sum,t) => sum + t.count, 0) <= 16384);
     await app.select("sc_iss");

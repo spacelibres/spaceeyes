@@ -216,3 +216,38 @@ fn dense_trails_keep_a_bounded_replaceable_session_budget() {
         Err(CoreError::InvalidVisual)
     );
 }
+
+#[test]
+fn accepts_captured_nasa_long_window_and_rejects_beyond_it() {
+    let mut core = Core::default();
+    core.open_session_with_permissions(
+        "s",
+        "p",
+        SessionPermissions {
+            visual_control: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    core.register_object("s", "voyager").unwrap();
+    for (duration, expected) in [
+        (946080000., Ok(())),
+        (946080001., Err(CoreError::InvalidVisual)),
+    ] {
+        assert_eq!(
+            core.set_trajectory_with_style(
+                "s",
+                "p",
+                "voyager",
+                vec![[1., 0., 0.], [2., 0., 0.]],
+                vec![0., 1.],
+                TrajectoryStyle {
+                    kind: Some("trail".into()),
+                    trail_duration_seconds: Some(duration),
+                    ..Default::default()
+                }
+            ),
+            expected
+        );
+    }
+}

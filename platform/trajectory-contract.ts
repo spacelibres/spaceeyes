@@ -1,3 +1,4 @@
+export const MAX_TRAIL_DURATION_SECONDS = 946080000;
 export type TrajectoryConic = {
   semiLatusRectumKm: number;
   radialUnit: readonly [number, number, number];
@@ -41,7 +42,7 @@ export function snapshotTrajectoryStyle(
     style.kind === "trail"
       ? !Number.isFinite(style.trailDurationSeconds) ||
         style.trailDurationSeconds! < 1 ||
-        style.trailDurationSeconds! > 315576000
+        style.trailDurationSeconds! > MAX_TRAIL_DURATION_SECONDS
       : style.trailDurationSeconds !== undefined
   )
     throw Error("invalid trajectory window");

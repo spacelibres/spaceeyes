@@ -192,6 +192,21 @@ pub(crate) fn visit_styled_segments(
         let Some(times) = epochs.filter(|t| t.len() == points.len()) else {
             return;
         };
+        if times.len() < 2 {
+            return;
+        }
+        let index_at = |t: f64| {
+            let right = times.partition_point(|value| *value < t);
+            if right == 0 {
+                0.
+            } else if right >= times.len() {
+                (times.len() - 1) as f64
+            } else {
+                (right - 1) as f64 + (t - times[right - 1]) / (times[right] - times[right - 1])
+            }
+        };
+        let first = index_at(epoch - duration);
+        let span = (index_at(epoch) - first).max(f64::EPSILON);
         for (i, pair) in points.windows(2).enumerate() {
             if breaks.binary_search(&(i + 1)).is_ok() {
                 continue;
@@ -212,8 +227,8 @@ pub(crate) fn visit_styled_segments(
             draw(
                 sample(lo),
                 sample(hi),
-                ((lo - epoch + duration) / duration) as f32,
-                ((hi - epoch + duration) / duration) as f32,
+                ((index_at(lo) - first) / span).clamp(0., 1.) as f32,
+                ((index_at(hi) - first) / span).clamp(0., 1.) as f32,
             );
         }
     } else {
@@ -369,5 +384,30 @@ mod conic_tests {
             serde_json::from_str::<crate::ConicOrbit>(&wire.replace("100,", "100,\"extra\":0,"))
                 .is_err()
         );
+    }
+}
+
+#[cfg(test)]
+mod nasa_index_fade_tests {
+    use super::*;
+    #[test]
+    fn adaptive_times_fade_by_visible_sample_index_like_nasa() {
+        let style = crate::TrajectoryStyle {
+            kind: Some("trail".into()),
+            trail_duration_seconds: Some(10.),
+            ..Default::default()
+        };
+        let mut alpha = vec![];
+        visit_styled_segments(
+            &[[0., 0., 0.], [1., 0., 0.], [9., 0., 0.], [10., 0., 0.]],
+            Some(&[0., 1., 9., 10.]),
+            10.,
+            [10., 0., 0.],
+            Some(&style),
+            |_, _, a, b| alpha.push((a, b)),
+        );
+        assert!((alpha[0].1 - 1. / 3.).abs() < 1e-6);
+        assert!((alpha[1].1 - 2. / 3.).abs() < 1e-6);
+        assert_eq!(alpha[2].1, 1.);
     }
 }

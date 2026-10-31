@@ -603,6 +603,7 @@ export async function createWorkspace(
   const trajectoryWindows = new Map<string, [number, number]>();
   const pendingTrajectories = new Set<string>();
   const trajectoryCounts = new Map<string, number>();
+  const trajectoryDetails = new Map<string, boolean>();
   const sceneIds = (epoch: number) => {
     const ids = new Set(baseSolarIds);
     if (state.selected) {
@@ -667,7 +668,9 @@ export async function createWorkspace(
   };
   const trajectoryBudget = (id: string) => {
     const count = data.status().filter((s) => s.status === "ready").length;
-    return state.selected === id ? 256 : Math.min(160, Math.floor((16384 - 512) / Math.max(1, count)));
+    return state.selected === id
+      ? (solarCatalog.find((body) => body.id === id)?.kind === "spacecraft" ? 512 : 256)
+      : Math.min(256, Math.floor((16384 - 1024) / Math.max(1, count)));
   };
   const refreshTrajectory = (id: string) => {
     if (!data.hasTrajectory(id, core.epoch())) {
@@ -707,11 +710,12 @@ export async function createWorkspace(
           }
         : {kind: "orbit" as const, ...(trail.conic ? {conic: trail.conic} : {})}),
       originId: trail.originId,
-      colorRgba: solarCatalog.find((body) => body.id === id)!.color,
+      colorRgba: isTrail ? [1, 1, 1, 1] : solarCatalog.find((body) => body.id === id)!.color,
     });
     trajectoryWindows.set(id, trail.refreshRange);
     pendingTrajectories.delete(id);
     trajectoryCounts.set(id, budget);
+    trajectoryDetails.set(id, state.selected === id);
   };
   const publishJoints = () => {
     for (const body of solarCatalog) {
@@ -816,6 +820,7 @@ export async function createWorkspace(
             if (restore || !window || trajectoryCounts.get(body.id) !== budget)
               pendingTrajectories.add(body.id);
           } else if (restore || !window || trajectoryCounts.get(body.id) !== budget ||
+                     trajectoryDetails.get(body.id) !== (state.selected === body.id) ||
                      core.epoch() < window[0] || core.epoch() > window[1]) {
             refreshTrajectory(body.id);
           }

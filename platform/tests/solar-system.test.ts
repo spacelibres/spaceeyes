@@ -1310,7 +1310,10 @@ test("non-orbital circular source uses local dynamics rather than its coverage l
   view.setInt32(8, 2, true);
   view.setFloat64(44, 1000, true);
   view.setFloat64(52, 10, true);
+  const originalTrail = eyesDefinitions.sc_voyager_1.trail;
+  eyesDefinitions.sc_voyager_1.trail = undefined; // This fixture explicitly exercises the no-policy fallback.
   const source = new SolarSystemData(ctx, {fetch: async () => new Response(bytes)});
+  try {
   await source.load(["sc_voyager_1"], 500, []);
   const original = source.position.bind(source);
   source.position = (id,t) => id === "sc_voyager_1"
@@ -1320,5 +1323,8 @@ test("non-orbital circular source uses local dynamics rather than its coverage l
   assert.ok(Math.abs(trail.durationSeconds - 100) < 0.001);
   assert.ok(trail.points.length <= 160);
   assert.deepEqual(trail.breakIndices, []);
-  source.dispose();
+  } finally {
+    source.dispose();
+    eyesDefinitions.sc_voyager_1.trail = originalTrail;
+  }
 });

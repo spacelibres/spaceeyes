@@ -544,7 +544,7 @@ impl Core {
             || (trail
                 && !style
                     .trail_duration_seconds
-                    .is_some_and(|d| d.is_finite() && (1.0..=315576000.0).contains(&d)))
+                    .is_some_and(|d| d.is_finite() && (1.0..=946080000.0).contains(&d)))
             || (!trail && style.trail_duration_seconds.is_some())
             || style
                 .break_indices

@@ -1,0 +1,137 @@
+[
+  {
+    "id": "sc_iss",
+    "samples": [
+      {
+        "count": 184,
+        "points": 129,
+        "durationSeconds": 5573,
+        "firstEpoch": 846718427,
+        "lastEpoch": 846724348.3125,
+        "historySeconds": 5573,
+        "breaks": 0,
+        "minMs": 8.105699999999956,
+        "maxMs": 24.28239999999994
+      },
+      {
+        "count": 512,
+        "points": 129,
+        "durationSeconds": 5573,
+        "firstEpoch": 846718427,
+        "lastEpoch": 846724348.3125,
+        "historySeconds": 5573,
+        "breaks": 0,
+        "minMs": 4.720600000000104,
+        "maxMs": 10.490500000000111
+      }
+    ]
+  },
+  {
+    "id": "sc_chandra",
+    "samples": [
+      {
+        "count": 184,
+        "points": 163,
+        "durationSeconds": 228505.5,
+        "firstEpoch": 846495494.5,
+        "lastEpoch": 846738281.59375,
+        "historySeconds": 228505.5,
+        "breaks": 0,
+        "minMs": 8.369300000000067,
+        "maxMs": 11.374099999999999
+      },
+      {
+        "count": 512,
+        "points": 163,
+        "durationSeconds": 228505.5,
+        "firstEpoch": 846495494.5,
+        "lastEpoch": 846738281.59375,
+        "historySeconds": 228505.5,
+        "breaks": 0,
+        "minMs": 5.891300000000001,
+        "maxMs": 7.313300000000027
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_reconnaissance_orbiter",
+    "samples": [
+      {
+        "count": 184,
+        "points": 66,
+        "durationSeconds": 6720,
+        "firstEpoch": 846721538.7612158,
+        "lastEpoch": 846724420,
+        "historySeconds": 2461.2387841939926,
+        "breaks": 0,
+        "minMs": 4.5697999999999865,
+        "maxMs": 6.472900000000209
+      },
+      {
+        "count": 512,
+        "points": 66,
+        "durationSeconds": 6720,
+        "firstEpoch": 846721538.7612158,
+        "lastEpoch": 846724420,
+        "historySeconds": 2461.2387841939926,
+        "breaks": 0,
+        "minMs": 3.463899999999967,
+        "maxMs": 5.098899999999958
+      }
+    ]
+  },
+  {
+    "id": "sc_juno",
+    "samples": [
+      {
+        "count": 184,
+        "points": 184,
+        "durationSeconds": 5184000,
+        "firstEpoch": 842208306.7263083,
+        "lastEpoch": 847048000,
+        "historySeconds": 4515693.273691654,
+        "breaks": 0,
+        "minMs": 9.063900000000103,
+        "maxMs": 17.039099999999962
+      },
+      {
+        "count": 512,
+        "points": 340,
+        "durationSeconds": 5184000,
+        "firstEpoch": 842208306.7263083,
+        "lastEpoch": 847048000,
+        "historySeconds": 4515693.273691654,
+        "breaks": 0,
+        "minMs": 15.876199999999699,
+        "maxMs": 21.491199999999935
+      }
+    ]
+  },
+  {
+    "id": "sc_voyager_1",
+    "samples": [
+      {
+        "count": 184,
+        "points": 10,
+        "durationSeconds": 946080000,
+        "firstEpoch": -99356000,
+        "lastEpoch": 905854000,
+        "historySeconds": 946080000,
+        "breaks": 0,
+        "minMs": 0.21279999999978827,
+        "maxMs": 0.4931000000001404
+      },
+      {
+        "count": 512,
+        "points": 10,
+        "durationSeconds": 946080000,
+        "firstEpoch": -99356000,
+        "lastEpoch": 905854000,
+        "historySeconds": 946080000,
+        "breaks": 0,
+        "minMs": 0.21270000000004075,
+        "maxMs": 0.23250000000007276
+      }
+    ]
+  }
+]

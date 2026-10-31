@@ -1,3 +1,5 @@
+import {eyesTrailDuration, eyesTrailNextBoundary} from "./eyes-trail-policy.ts";
+import {adaptiveTrailTimes} from "./adaptive-trail.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
 import {
@@ -1098,7 +1100,7 @@ export class SolarSystemData {
   }
   /** Only active position dynamics define a path; landed/static phases have none. */
   hasTrajectory(id: string, epoch: number): boolean {
-    if (!Number.isFinite(epoch)) return false;
+    if (!Number.isFinite(epoch) || eyesTrailDuration(id, epoch) === 0) return false;
     if (
       activeController(id, epoch, "fixed").some(
         (c) => c.position || c.llaOnSpheroid,
@@ -1338,7 +1340,9 @@ export class SolarSystemData {
     } catch {
       /* Coverage gaps remain explicit breaks below. */
     }
-    let durationSeconds = Math.min(
+    const authoredDuration = eyesTrailDuration(id, epoch);
+    if (authoredDuration === 0) throw Error("Trail disabled by source policy");
+    let durationSeconds = authoredDuration ?? Math.min(
       30 * 86400,
       inferredPeriod,
       rate > 0 ? (0.052 * (count - 2)) / (1.0625 * rate) : inferredPeriod,
@@ -1363,7 +1367,11 @@ export class SolarSystemData {
       end = 0;
     let times: number[] = [];
     let unresolved = new Set<number>();
-    for (let attempt = 0; attempt <= 8; attempt++) {
+    if (authoredDuration !== undefined) {
+      start = Math.max(coveredStart, epoch - durationSeconds);
+      end = Math.min(coveredEnd, epoch + durationSeconds / 16);
+      ({times, unresolved} = adaptiveTrailTimes(start, epoch, end, count, relative, period));
+    } else for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);
       end = Math.min(coveredEnd, epoch + durationSeconds / 16);
@@ -1428,13 +1436,7 @@ export class SolarSystemData {
     let gap = false;
     for (const t of [...new Set(times)].sort((a, b) => a - b)) {
       try {
-        const world = this.position(id, t);
-        const parent = originId ? this.position(originId, t) : [0, 0, 0];
-        const point = world.map((v, i) => v - parent[i]) as [
-          number,
-          number,
-          number,
-        ];
+        const point = relative(t) as [number, number, number];
         if (!point.every(Number.isFinite)) throw Error("Invalid trail point");
         if ((gap || unresolved.has(t)) && points.length)
           breakIndices.push(points.length);
@@ -1455,7 +1457,7 @@ export class SolarSystemData {
       durationSeconds,
       refreshRange: [
         epoch,
-        Math.min(end, epoch + durationSeconds / (detailed ? 1024 : 16)),
+        Math.min(end, eyesTrailNextBoundary(id, epoch), epoch + durationSeconds / (detailed ? 1024 : 16)),
       ] as [number, number],
     };
   }
