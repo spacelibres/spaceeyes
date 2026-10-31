@@ -28,6 +28,37 @@ impl Drop for WasmCore {
 
 #[wasm_bindgen]
 impl WasmCore {
+    pub fn set_model_joints(
+        &self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        json: &str,
+    ) -> Result<(), String> {
+        let aims = serde_json::from_str(json).map_err(|_| "InvalidVisual".to_owned())?;
+        self.lock()?
+            .set_model_joints(session, plugin, id, aims)
+            .map_err(|e| format!("{e:?}"))
+    }
+    pub fn model_joint_status(
+        &self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+    ) -> Result<String, String> {
+        let core = self.lock()?;
+        if !core
+            .authorize(session, plugin)
+            .map_err(|e| format!("{e:?}"))?
+            .visual_control
+        {
+            return Err("PermissionDenied".into());
+        }
+        if core.objects.get(id).ok_or("UnknownObject")? != session {
+            return Err("WrongOwner".into());
+        }
+        Ok(core.model_joint_status(id).to_string())
+    }
     #[wasm_bindgen(constructor)]
     pub fn new() -> Self {
         Self::default()

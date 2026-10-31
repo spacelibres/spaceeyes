@@ -4952,6 +4952,38 @@
     "https://eyes.nasa.gov/assets/static/models/sc_wind/wind.gltf": {
       "sha256": "686ff3490ad7effadd784d720bc124ba73584e53f46ab7c0500419fa8098888d",
       "bytes": 11721
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_20/tile_normal.webp": {
+      "sha256": "dcf9c1f0bcb6c586c3b2efdc1bfa10d8ffb1f1a0a970dd87421461829dc077f4",
+      "bytes": 20888
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_20/foil_normal.webp": {
+      "sha256": "53aabefb9333ac33548f43f95e10a38997e3683f2ca95e5f7465ce018c79fad7",
+      "bytes": 27032
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_20/noaa20.bin": {
+      "sha256": "6a1b0ef0b021ee24fc50aef9412ec6f53f097c3d5231bade4e6cffe94f3e8aad",
+      "bytes": 6228540
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/noaa21.bin": {
+      "sha256": "0b9d16711e666f99417f96571e1c4946292b4157ca12812211bedaa84b4a3130",
+      "bytes": 7730780
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/solar_panels_bake_6.webp": {
+      "sha256": "b895160fef9d22ff6c783d74a4d04612c5c2cd7b0dd1aeaef58840b83d9a1c7d",
+      "bytes": 544090
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/jpss_full_body.webp": {
+      "sha256": "0e0b11a8d6f0210f996be02a78cc39e8648f6fd6e7a5ea97c6b502f9e1627aff",
+      "bytes": 289806
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/tile_normal.webp": {
+      "sha256": "dcf9c1f0bcb6c586c3b2efdc1bfa10d8ffb1f1a0a970dd87421461829dc077f4",
+      "bytes": 20888
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/foil_normal.webp": {
+      "sha256": "53aabefb9333ac33548f43f95e10a38997e3683f2ca95e5f7465ce018c79fad7",
+      "bytes": 27032
     }
   }
 }

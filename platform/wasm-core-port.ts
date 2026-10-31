@@ -1,9 +1,12 @@
+import { snapshotJoints, type JointAim, type JointStatus } from "./joint-contract.ts";
 import type { CorePort, FocusRequest } from "./core-port.ts";
 import type { ObjectState } from "./state-contract.ts";
 import type { VisualSpec, VisualStatus } from "./visual-contract.ts";
 
 /** Structural surface of wasm-bindgen's generated WasmCore; owned by the host. */
 export interface WasmCoreBinding {
+  set_model_joints?(session:string, plugin:string, target:string, json:string):void;
+  model_joint_status?(session:string, plugin:string, target:string):string;
   camera_lighting?(session: string, plugin: string, mode: string): void;
   camera_lighting_mode?(): string;
   camera_observe?(session: string, plugin: string, json: string): void;
@@ -182,6 +185,14 @@ export class WasmCorePort implements CorePort {
       request.targetId,
       JSON.stringify(request.tuning),
     );
+  }
+  modelJoints(request: FocusRequest & { aims: readonly JointAim[] }): void {
+    if (!this.#binding.set_model_joints) throw Error("model joints unavailable");
+    this.#binding.set_model_joints(request.sessionId,request.pluginId,request.targetId,JSON.stringify(request.aims));
+  }
+  jointStatus(request: FocusRequest): JointStatus | null {
+    if (!this.#binding.model_joint_status) throw Error("model joints unavailable");
+    return JSON.parse(this.#binding.model_joint_status(request.sessionId,request.pluginId,request.targetId));
   }
   setVisual(
     request: FocusRequest & { readonly spec: Readonly<VisualSpec> | null },

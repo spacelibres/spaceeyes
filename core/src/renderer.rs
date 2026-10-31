@@ -139,6 +139,13 @@ pub(crate) fn create_browser_app(
         PostUpdate,
         crate::stellar_render::sync_stellar_lod.after(bevy::transform::TransformSystems::Propagate),
     )
+    .init_resource::<crate::joint_render::JointRenderState>()
+    .add_systems(
+        PostUpdate,
+        crate::joint_render::apply_model_joints
+            .after(bevy::app::AnimationSystems)
+            .before(bevy::transform::TransformSystems::Propagate),
+    )
     .init_resource::<OrbitView>()
     .init_resource::<crate::face_texture::FaceCache>()
     .add_systems(Startup, setup)

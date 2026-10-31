@@ -1,3 +1,4 @@
+import { snapshotJoints, type JointAim, type JointStatus } from "./joint-contract.ts";
 import {
   snapshotObservation,
   cameraInput,
@@ -56,6 +57,8 @@ export interface PluginContext {
     focus(targetId: string): void;
   };
   readonly visual: {
+    joints(targetId: string, aims: readonly JointAim[]): void;
+    jointStatus(targetId: string): JointStatus | null;
     environment(spec: EnvironmentSpec | null): void;
     starfield(layerId: string, spec: StarfieldSpec | null): void;
     trajectory(
@@ -205,6 +208,18 @@ export class PluginHost {
       pluginId: id,
       signal: session.controller.signal,
       visual: Object.freeze({
+        joints(targetId: string, aims: readonly JointAim[]) {
+          requireCapability("scene.visual"); validateTargetId(targetId);
+          const snapshot = snapshotJoints(aims);
+          if (!core?.modelJoints) throw Error("model joints unavailable");
+          core.modelJoints(Object.freeze({pluginId:id,sessionId,targetId,aims:snapshot}));
+        },
+        jointStatus(targetId: string) {
+          requireCapability("scene.visual"); validateTargetId(targetId);
+          if (!core?.jointStatus) throw Error("model joints unavailable");
+          const status = core.jointStatus({pluginId:id,sessionId,targetId});
+          return status ? Object.freeze({...status,applied:Object.freeze([...status.applied]),missing:Object.freeze([...status.missing]),ambiguous:Object.freeze([...status.ambiguous])}) : null;
+        },
         environment(spec: EnvironmentSpec | null) {
           requireCapability("scene.visual");
           const snapshot = spec === null ? null : snapshotEnvironment(spec);

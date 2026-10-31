@@ -13,7 +13,7 @@ export type EyesDefinition = {
 export const eyesDefinitions: Record<string, EyesDefinition> =
   catalog.definitions as unknown as Record<string, EyesDefinition>;
 export const getEyesDefinition = (id: string): EyesDefinition | undefined =>
-  Object.hasOwn(eyesDefinitions,id)?eyesDefinitions[id]:undefined;
+  Object.hasOwn(eyesDefinitions, id) ? eyesDefinitions[id] : undefined;
 export function parentAt(id: string, epoch: number): string | null {
   let parent: null | string = null;
   for (const [start, p] of eyesDefinitions[id]?.parents ?? [])
@@ -35,7 +35,20 @@ export function declaredTracks(
     )
     .map((c) => c.url);
 }
-export const eyesCatalog = catalog.targets.map((t) => {
+/** Source-defined missions omitted by the captured discovery target list.
+ * Keep the raw NASA catalog capture unchanged and expand only reviewed definitions. */
+export const additionalEyesTargets = ["sc_noaa_20", "sc_noaa_21"].map((id) => ({
+  id,
+  category: "Spacecraft",
+  displayName: getEyesDefinition(id)?.label ?? id,
+}));
+const expandedDiscovery = new Set(additionalEyesTargets.map((t) => t.id));
+export const eyesCatalog = [
+  ...catalog.targets,
+  ...additionalEyesTargets.filter(
+    (t) => !catalog.targets.some((original) => original.id === t.id),
+  ),
+].map((t) => {
   const d = getEyesDefinition(t.id);
   const physical =
     typeof d?.radius === "number"
@@ -45,7 +58,11 @@ export const eyesCatalog = catalog.targets.map((t) => {
         : undefined;
   return {
     id: t.id,
-    name: t.displayName ?? t.iauName ?? d?.label ?? t.id,
+    name:
+      t.displayName ??
+      ("iauName" in t ? t.iauName : undefined) ??
+      d?.label ??
+      t.id,
     parentId: d?.parents?.[0]?.[1] ?? null,
     radiusKm: physical ?? d?.extentsRadius ?? 0,
     kind: t.category === "Moon" ? ("moon" as const) : ("spacecraft" as const),
@@ -60,9 +77,12 @@ export const eyesCatalog = catalog.targets.map((t) => {
           : "unavailable",
     model: d?.model,
     surface: d?.spheroidLOD,
-    subcategory: t.subcategory,
-    keywords: t.keywords ?? [],
-    altName: t.altName,
+    discoverySource: expandedDiscovery.has(t.id)
+      ? "App-expanded discovery from reviewed Eyes entity definitions"
+      : "Captured Eyes target list",
+    subcategory: "subcategory" in t ? t.subcategory : undefined,
+    keywords: "keywords" in t ? (t.keywords ?? []) : [],
+    altName: "altName" in t ? t.altName : undefined,
     unsupported: !d,
   };
 });

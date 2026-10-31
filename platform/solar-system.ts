@@ -1,5 +1,7 @@
+import { compileJointAims } from "./eyes-joints.ts";
 import {
   normalizeOrientation,
+  applySourceSpin,
   applyEntityAlign,
   entityAlignDependencies,
   isEntityAlign,
@@ -84,6 +86,7 @@ export type SolarStatus = {
   error?: string;
   orientationStatus?: "ready" | "unavailable" | "not-requested";
   orientationError?: string;
+  orientationNote?: string;
   orientationSource?: "dyn" | "fixed" | "derived";
   positionSource?: "dyn" | "fixed" | "orbital-elements";
   coverage?: [number, number];
@@ -112,6 +115,7 @@ export class SolarSystemData {
   // Scene requests can be cancelled without invalidating a transaction rollback.
   #loadGeneration = 0;
   #retained: Set<string> | undefined;
+  #spinAnchors = new Map<string, Map<number, number>>();
   #published = new Set<string>();
   #pending = new Map<string, Promise<void>>();
   #provenance = new Map<
@@ -253,6 +257,9 @@ export class SolarSystemData {
     const dataParents = new Map(this.#dataParents);
     const retained = this.#retained ? new Set(this.#retained) : undefined;
     const ori = new Map(this.#ori);
+    const spinAnchors = new Map(
+      [...this.#spinAnchors].map(([id, values]) => [id, new Map(values)]),
+    );
     const cloneStates = (states: Map<string, SolarStatus>) =>
       new Map(
         [...states].map(([id, state]) => [
@@ -274,6 +281,7 @@ export class SolarSystemData {
       data.clear();
       dataParents.clear();
       ori.clear();
+      spinAnchors.clear();
       states.clear();
       provenance.clear();
       published.clear();
@@ -294,6 +302,9 @@ export class SolarSystemData {
       this.#dataParents = new Map(dataParents);
       this.#retained = retained;
       this.#ori = new Map(ori);
+      this.#spinAnchors = new Map(
+        [...spinAnchors].map(([id, values]) => [id, new Map(values)]),
+      );
       this.#states = cloneStates(states);
       this.#provenance = new Map(
         [...provenance].map(([url, value]) => [url, { ...value }]),
@@ -338,6 +349,8 @@ export class SolarSystemData {
     for (const key of this.#provenance.keys())
       if (!keep.has(key.slice(0, key.lastIndexOf(":"))))
         this.#provenance.delete(key);
+    for (const id of this.#spinAnchors.keys())
+      if (!keep.has(id)) this.#spinAnchors.delete(id);
     this.#retained = keep;
     for (const id of this.#states.keys())
       if (!keep.has(id)) {
@@ -819,6 +832,14 @@ export class SolarSystemData {
     }
     return p;
   }
+  jointAims(id: string, epoch: number) {
+    return compileJointAims(
+      eyesDefinitions[id]?.controllers ?? [],
+      epoch,
+      this.position(id, epoch),
+      (ref) => this.position(ref, epoch),
+    );
+  }
   #orientationStack: string[] = [];
 
   #orientationAt(id: string, t: number): Quat {
@@ -831,7 +852,10 @@ export class SolarSystemData {
     try {
       let q: Quat = [1, 0, 0, 0];
       let found = false;
+      const pendingAnchors = new Map<number, number>();
+      let controllerIndex = -1;
       for (const c of eyesDefinitions[id]?.controllers ?? []) {
+        controllerIndex++;
         if (
           c.coverage &&
           (t < Number(c.coverage[0]) || t > Number(c.coverage[1]))
@@ -848,6 +872,13 @@ export class SolarSystemData {
           q = normalizeOrientation(evaluateOri(d, t));
           found = true;
         }
+        if (c.type === "spin") {
+          const anchor = this.#spinAnchors.get(id)?.get(controllerIndex) ?? t;
+          q = applySourceSpin(q, c, t, anchor);
+          if (c.relativeToTime === undefined)
+            pendingAnchors.set(controllerIndex, anchor);
+          found = true;
+        }
         if (isEntityAlign(c)) {
           q = applyEntityAlign(q, c, this.position(id, t), {
             position: (ref) => this.position(ref, t),
@@ -858,6 +889,14 @@ export class SolarSystemData {
         }
       }
       if (!found) throw Error("Source orientation unavailable");
+      if (pendingAnchors.size) {
+        if (!this.#spinAnchors.has(id) && this.#spinAnchors.size >= 256)
+          throw Error("Spin anchor budget");
+        this.#spinAnchors.set(
+          id,
+          new Map([...(this.#spinAnchors.get(id) ?? []), ...pendingAnchors]),
+        );
+      }
       return q;
     } finally {
       this.#orientationStack.pop();
@@ -873,7 +912,7 @@ export class SolarSystemData {
         continue;
       if (isOrientationDynamo(c)) source = "dyn";
       if (c.type === "fixed" && c.orientation) source = "fixed";
-      if (isEntityAlign(c)) source = "derived";
+      if (isEntityAlign(c) || c.type === "spin") source = "derived";
     }
     return source;
   }
@@ -983,9 +1022,18 @@ export class SolarSystemData {
           };
           s.orientationStatus = "ready";
           s.orientationSource = this.#orientationSource(item.id, epoch);
+          delete s.orientationNote;
+          if (
+            activeController(item.id, epoch, "spin").some(
+              (c) => c.relativeToTime === undefined,
+            )
+          )
+            s.orientationNote =
+              "Derived visual spin: source has no absolute phase; anchored at first successful load epoch";
           delete s.orientationError;
         } catch (error) {
           delete s.orientationSource;
+          delete s.orientationNote;
           if (orientationRequested) {
             s.orientationStatus = "unavailable";
             s.orientationError = String(error);
@@ -1257,6 +1305,7 @@ export class SolarSystemData {
     this.#states.clear();
     this.#data.clear();
     this.#ori.clear();
+    this.#spinAnchors.clear();
     this.#dataParents.clear();
     this.#provenance.clear();
     this.#pending.clear();

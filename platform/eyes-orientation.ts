@@ -63,7 +63,7 @@ function rotate(q: Quat, v: Vec3): Vec3 {
     b = cross(u, a);
   return v.map((x, i) => x + 2 * (q[0] * a[i] + b[i])) as unknown as Vec3;
 }
-function axis(value: unknown, fallback: Vec3): Vec3 {
+export function axis(value: unknown, fallback: Vec3): Vec3 {
   if (value === undefined) return fallback;
   if (!value || typeof value !== "object") fail("unknown axis");
   const a = value as {
@@ -207,4 +207,38 @@ export function applyEntityAlign(
     );
   }
   return q;
+}
+
+/** Deterministic visual spin; anchor is required when the source has no absolute phase. */
+export function applySourceSpin(
+  q: Quat,
+  controller: {
+    axis?: unknown;
+    periodInHours?: unknown;
+    axisInFrameSpace?: unknown;
+    relativeToTime?: unknown;
+  },
+  epoch: number,
+  anchor: number,
+): Quat {
+  const period = controller.periodInHours;
+  const reference =
+    controller.relativeToTime === undefined
+      ? anchor
+      : Number(controller.relativeToTime);
+  if (
+    typeof period !== "number" ||
+    !Number.isFinite(period) ||
+    period === 0 ||
+    !Number.isFinite(epoch) ||
+    !Number.isFinite(reference)
+  )
+    throw Error("Invalid source spin");
+  const v = axis(controller.axis, [0, 0, 1]);
+  const half = (((epoch - reference) / (3600 * period)) % 1) * Math.PI;
+  const spin: Quat = [
+    Math.cos(half),
+    ...v.map((x) => x * Math.sin(half)),
+  ] as unknown as Quat;
+  return controller.axisInFrameSpace === false ? mult(spin, q) : mult(q, spin);
 }

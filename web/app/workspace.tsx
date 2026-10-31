@@ -274,6 +274,7 @@ export default function Workspace() {
       source={state.source}
       coverage={state.coverage}
       attitude={state.attitude}
+      articulation={state.articulation}
       dataStatus={state.dataStatus}
       view={state.view}
       labels={state.labels}

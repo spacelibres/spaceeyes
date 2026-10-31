@@ -53,6 +53,10 @@ pub use clock::SimulationClock;
 pub use state::ObjectState;
 mod stellar_tuning;
 pub use stellar_tuning::{StellarProfile, StellarTuning};
+mod model_joints;
+pub use model_joints::JointAim;
+#[cfg(feature = "browser-render")]
+mod joint_render;
 mod visuals;
 pub use visuals::{
     AssetDescriptor, AssetKind, VisualAssignment, VisualPhase, VisualSpec, VisualStatus,
@@ -113,6 +117,8 @@ impl Default for CoreLimits {
 
 #[derive(Default)]
 pub struct Core {
+    model_joint_aims: HashMap<String, Vec<JointAim>>,
+    model_joint_statuses: HashMap<String, serde_json::Value>,
     stellar_tuning: HashMap<String, StellarTuning>,
     starfields: HashMap<(String, String), starfield::StarfieldLayer>,
     starfield_revision: u64,
@@ -233,6 +239,8 @@ impl Core {
         self.trajectory_styles.remove(object_id);
         self.labels.remove(object_id);
         self.states.remove(object_id);
+        self.model_joint_aims.remove(object_id);
+        self.model_joint_statuses.remove(object_id);
         self.visuals.remove(object_id);
         self.stellar_tuning.remove(object_id);
         self.visual_statuses.remove(object_id);
@@ -668,6 +676,10 @@ impl Core {
         }
         self.sessions.remove(id);
         self.objects.retain(|_, owner| owner != id);
+        self.model_joint_aims
+            .retain(|key, _| self.objects.contains_key(key));
+        self.model_joint_statuses
+            .retain(|key, _| self.objects.contains_key(key));
         self.trajectory_epochs
             .retain(|object, _| self.objects.contains_key(object));
         self.trajectory_styles

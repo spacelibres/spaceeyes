@@ -1,3 +1,4 @@
+import { snapshotJoints, type JointAim, type JointStatus } from "./joint-contract.ts";
 import type { CameraObservation } from "./camera-contract.ts";
 import type { StellarTuning } from "./stellar-tuning.ts";
 import type { StarfieldSpec } from "./starfield-contract.ts";
@@ -12,6 +13,8 @@ export interface FocusRequest {
   readonly targetId: string;
 }
 export interface CorePort {
+  modelJoints?(request: FocusRequest & { aims: readonly JointAim[] }): void;
+  jointStatus?(request: FocusRequest): JointStatus | null;
   cameraLighting?(request: {
     readonly sessionId: string;
     readonly pluginId: string;

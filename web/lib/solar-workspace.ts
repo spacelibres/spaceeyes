@@ -98,6 +98,7 @@ export type SolarSnapshot = {
   source: string;
   coverage: string;
   attitude: string;
+  articulation?: string;
   dataStatus: string;
   utc: string;
 };
@@ -431,13 +432,16 @@ export async function createWorkspace(
     if (data) state.dataCache = data.cacheStats();
     state.epoch = core.epoch();
     state.playing = state.busy ? desiredPlaying : core.playing();
-    state.live = !state.busy && isLive(
-      core.tdb_to_utc(state.epoch),
-      Date.now(),
-      state.playing,
-      state.rate,
-    );
+    state.live =
+      !state.busy &&
+      isLive(
+        core.tdb_to_utc(state.epoch),
+        Date.now(),
+        state.playing,
+        state.rate,
+      );
     state.utc = new Date(core.tdb_to_utc(state.epoch) * 1000).toISOString();
+    state.articulation = undefined;
     if (state.selected && data) {
       state.parentId = data.parentAt(state.selected, state.epoch) ?? undefined;
       const status = data.status(state.selected);
@@ -464,7 +468,20 @@ export async function createWorkspace(
         const provenance = data
           .provenance(state.selected)
           .findLast((entry) => !entry.url.includes("&type=ori"));
-        state.source =
+        if (status?.orientationNote) state.attitude += "；自旋可视化相位以首次有效加载时刻为零点，源未给绝对相位";
+      const jointCount = (getEyesDefinition(state.selected)?.controllers ?? []).filter((c) => c.type === "align" && c.joint && (!c.coverage || (state.epoch >= Number(c.coverage[0]) && state.epoch <= Number(c.coverage[1])))).length;
+      state.articulation = undefined;
+      if (jointCount) {
+        const joints = sdk?.visual.jointStatus(state.selected);
+        state.articulation = status?.orientationStatus !== "ready"
+          ? "等待有效机身姿态，未应用太阳翼关节控制"
+          : joints?.phase === "ready"
+            ? `已启用 ${joints.applied.length} 个对日关节，遵循各自转轴约束`
+            : joints?.phase === "partial" || joints?.phase === "failed"
+              ? `已应用 ${joints.applied.length}/${jointCount} 个关节；未匹配或重名节点：${[...joints.missing, ...joints.ambiguous].join("、") || "层级不可用"}`
+              : `等待模型节点就绪（${jointCount} 个关节）`;
+      }
+      state.source =
           state.selected === "sun"
             ? "本场景日心坐标原点"
             : status?.positionSource === "fixed"
@@ -619,7 +636,7 @@ export async function createWorkspace(
     const ordinary = state.selected
       ? Math.min(128, Math.max(0, Math.floor(2048 / Math.max(1, count - 1))))
       : Math.min(256, Math.max(0, Math.floor(4096 / Math.max(1, count))));
-    const isTrail = ["moon", "spacecraft"].includes(
+    const isTrail = ["spacecraft"].includes(
       solarCatalog.find((body) => body.id === id)!.kind,
     );
     const history = isTrail
@@ -646,22 +663,34 @@ export async function createWorkspace(
             trailDurationSeconds: history.durationSeconds,
             breakIndices: history.breakIndices,
           }
-        : {}),
+        : {kind: "orbit" as const}),
       originId: trail.originId,
       colorRgba: solarCatalog.find((body) => body.id === id)!.color,
     });
     trajectoryWindows.set(id, trail.refreshRange);
+  };
+  const publishJoints = () => {
+    for (const body of solarCatalog) {
+      if (!detailedBodies.has(body.id) || !getEyesDefinition(body.id)?.model || data.status(body.id)?.status !== "ready")
+        continue;
+      try {
+        sdk.visual.joints(
+          body.id,
+          data.status(body.id)?.orientationStatus === "ready"
+            ? data.jointAims(body.id, core.epoch())
+            : [],
+        );
+      } catch {
+        sdk.visual.joints(body.id, []);
+      }
+    }
   };
   const configure = () => {
     for (const id of trajectoryWindows.keys())
       if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
     for (const id of trajectoryWindows.keys()) {
       const kind = solarCatalog.find((body) => body.id === id)?.kind;
-      if (
-        kind === "moon" || kind === "spacecraft"
-          ? !state.trails
-          : !state.trajectories
-      ) {
+      if (kind === "spacecraft" ? !state.trails : !state.trajectories) {
         sdk.visual.trajectory(id, []);
         trajectoryWindows.delete(id);
       }
@@ -740,9 +769,7 @@ export async function createWorkspace(
           );
         }
         if (
-          (body.kind === "moon" || body.kind === "spacecraft"
-            ? state.trails
-            : state.trajectories) &&
+          (body.kind === "spacecraft" ? state.trails : state.trajectories) &&
           body.id !== "sun" &&
           data.parentAt(body.id, core.epoch()) &&
           (baseSolarIds.includes(body.id) ||
@@ -756,6 +783,7 @@ export async function createWorkspace(
         state.error = `${body.name}：${String(error)}`;
       }
     }
+    publishJoints();
     sdk.visual.layers({
       labels: state.labels,
       trajectories: state.trajectories || state.trails,
@@ -1465,6 +1493,7 @@ export async function createWorkspace(
             });
           } else {
             data.publishAt(epoch);
+            publishJoints();
             validateFollow();
             if (
               (state.trajectories || state.trails) &&

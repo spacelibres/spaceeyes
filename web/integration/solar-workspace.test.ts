@@ -848,7 +848,7 @@ test("overview preserves playback and trail visibility is independent", async ()
   }
 });
 
-test("natural and artificial satellite trajectories are real timed trail intents", async () => {
+test("natural satellites use orbits and artificial satellites use timed trails", async () => {
   const fixtures = harness();
   const app = await createWorkspace(
     "#test",
@@ -866,8 +866,8 @@ test("natural and artificial satellite trajectories are real timed trail intents
       .trails()
       .filter((t) => t.id === "moon" && t.count > 0)
       .at(-1)!;
-    assert.equal(moon.kind, "trail");
-    assert.ok(moon.duration! > 0);
+    assert.equal(moon.kind, "orbit");
+    assert.equal(moon.duration, undefined);
     assert.ok(moon.epochs.length > 2);
     await app.select("sc_juno");
     const craft = fixtures
@@ -1535,12 +1535,18 @@ test("InSight landing clears a previously dynamic trajectory without a static-or
   }
 });
 
-
 test("pause during high-rate coverage reload is honored when loading finishes", async () => {
   const fixtures = harness();
-  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
-    ...fixtures, fetch: async (input) => new Response(sample(String(input).includes("type=ori"))),
-  });
+  const app = await createWorkspace(
+    "#test",
+    () => {},
+    new AbortController().signal,
+    {
+      ...fixtures,
+      fetch: async (input) =>
+        new Response(sample(String(input).includes("type=ori"))),
+    },
+  );
   try {
     app.play(true, 57600);
     const paused = fixtures.waitForPause();
@@ -1550,5 +1556,7 @@ test("pause during high-rate coverage reload is honored when loading finishes", 
     await reload;
     assert.equal(fixtures.core().playing(), false);
     assert.equal(fixtures.core().epoch(), 200);
-  } finally { await app.dispose(); }
+  } finally {
+    await app.dispose();
+  }
 });

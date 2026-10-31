@@ -1,6 +1,6 @@
 {
   "source": "NASA Eyes Solar System original model manifests; fetched 2026-10-30",
-  "total": 131,
+  "total": 133,
   "rows": [
     {
       "url": "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf",
@@ -6107,6 +6107,79 @@
         {
           "uri": "solar_pbr.jpg",
           "mimeType": "image/jpeg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_noaa_20/noaa20.gltf",
+      "ok": true,
+      "bytes": 42983,
+      "sha256": "836c4ebed22b59163230b8106b5114e1ed57632db8f22230f61496335758e7b2",
+      "required": [
+        "EXT_texture_webp"
+      ],
+      "used": [
+        "KHR_materials_specular",
+        "EXT_texture_webp"
+      ],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "noaa20.bin",
+          "bytes": 6228540
+        }
+      ],
+      "images": [
+        {
+          "uri": "tile_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "foil_normal.webp",
+          "mimeType": "image/webp"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_noaa_21/noaa21.gltf",
+      "ok": true,
+      "bytes": 10856,
+      "sha256": "7a67558a6b67e7be3195ef67d54967662cbc271b0afcc0cf85a2a50322462d3d",
+      "required": [
+        "EXT_texture_webp"
+      ],
+      "used": [
+        "KHR_materials_clearcoat",
+        "KHR_materials_specular",
+        "EXT_texture_webp"
+      ],
+      "scenes": 1,
+      "nodes": 2,
+      "buffers": [
+        {
+          "uri": "noaa21.bin",
+          "bytes": 7730780
+        }
+      ],
+      "images": [
+        {
+          "uri": "solar_panels_bake_6.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "tile_normal.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "jpss_full_body.webp",
+          "mimeType": "image/webp"
+        },
+        {
+          "uri": "foil_normal.webp",
+          "mimeType": "image/webp"
         }
       ],
       "animations": 0

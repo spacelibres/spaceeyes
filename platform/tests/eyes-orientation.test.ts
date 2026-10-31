@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   applyEntityAlign,
+  applySourceSpin,
   normalizeOrientation,
   isEntityAlign,
   entityAlignDependencies,
@@ -288,4 +289,40 @@ test("real catalog entity align schema and axis compatibility (not attitude accu
   t.diagnostic(
     `source shape coverage: ${count} entity controllers; synthetic degeneracies: ${degenerate.join(", ") || "none"}`,
   );
+});
+
+test("source spin absolute phase, signed rate and local versus world composition", () => {
+  const c = {
+    axis: { expression: "Pioneer.Vector3.ZAxis" },
+    periodInHours: 1,
+    relativeToTime: 100,
+  };
+  const expected = Math.SQRT1_2;
+  const q = applySourceSpin(identity, c, 100 + 900, 0);
+  q.forEach((v, i) =>
+    assert.ok(Math.abs(v - [expected, 0, 0, expected][i]) < 1e-12),
+  );
+  const base = [expected, expected, 0, 0] as const;
+  const local = applySourceSpin(base, c, 100 + 900, 0);
+  const world = applySourceSpin(
+    base,
+    { ...c, axisInFrameSpace: false },
+    100 + 900,
+    0,
+  );
+  assert.ok(local[2] < 0 && world[2] > 0);
+  assert.ok(
+    applySourceSpin(identity, { ...c, periodInHours: -1 }, 100 + 900, 0)[3] < 0,
+  );
+  assert.throws(() =>
+    applySourceSpin(identity, { ...c, periodInHours: 0 }, 100, 0),
+  );
+});
+test("source spin without phase uses retained anchor and reproduces seek and pause", () => {
+  const c = { axis: { expression: "Pioneer.Vector3.ZAxis" }, periodInHours: 1 };
+  assert.deepEqual(applySourceSpin(identity, c, 500, 500), identity);
+  const q = applySourceSpin(identity, c, 1400, 500);
+  assert.deepEqual(applySourceSpin(identity, c, 1400, 500), q);
+  applySourceSpin(identity, c, -500, 500);
+  assert.deepEqual(applySourceSpin(identity, c, 1400, 500), q);
 });

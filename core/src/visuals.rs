@@ -165,6 +165,8 @@ impl Core {
             return Err(CoreError::WrongOwner);
         }
         let Some(spec) = spec else {
+            self.model_joint_aims.remove(id);
+            self.model_joint_statuses.remove(id);
             self.visuals.remove(id);
             self.stellar_tuning.remove(id);
             self.visual_statuses.remove(id);
@@ -264,6 +266,8 @@ impl Core {
             .next_visual_revision
             .checked_add(1)
             .ok_or(CoreError::CapacityExceeded)?;
+        self.model_joint_aims.remove(id);
+        self.model_joint_statuses.remove(id);
         self.next_visual_revision = revision;
         self.stellar_tuning.remove(id);
         let mut parts = std::collections::HashSet::from(["surface".to_owned()]);

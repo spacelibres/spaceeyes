@@ -28,10 +28,21 @@ impl PendingAsset {
 }
 #[derive(Component)]
 pub(crate) struct VisualRoot {
-    object: String,
-    revision: u64,
+    pub(crate) object: String,
+    pub(crate) revision: u64,
     asset: PendingAsset,
-    instance_ready: bool,
+    pub(crate) instance_ready: bool,
+}
+#[cfg(test)]
+impl VisualRoot {
+    pub(crate) fn joint_fixture(object: &str, revision: u64) -> Self {
+        Self {
+            object: object.into(),
+            revision,
+            asset: PendingAsset::Model(Handle::default()),
+            instance_ready: true,
+        }
+    }
 }
 
 #[allow(clippy::too_many_arguments)]

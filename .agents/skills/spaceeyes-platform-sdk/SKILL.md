@@ -211,3 +211,12 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 - 数据插件发布`orientationWxyz`必须为归一化wxyz四元数，注明DYN、固定源或控制器推导；推导不是实测。引用系仅用于求值，不能为了姿态把内部辅助frame伪造成可见天体。退化/循环/缺覆盖保持位置与姿态可用性分别报告，禁止默认朝向冒充结果。
 - 平台科学时钟保持TDB；NASA恢复UI的TT型ET近似与DYN文件时标认证是不同证据。静态无限适用范围截到平台有限求值域不代表观测截止。普通Unix逆投影使用平台修正入口，真实闰秒的Unix fold不能当作时间双射。
+
+
+## 模型关节与源姿态
+
+`visual.joints(id, aims)` 需scene.visual权限及对象所有权，仅模型可接收非空约束；最多32个唯一节点名（128 UTF-8字节），hingeAxis/normalAxis为模型本地单位正交轴，targetDirectionIcrf为当前源时刻单位方向。SDK快照及Rust均独立验证，未知字段拒绝。空数组清理并恢复绑定旋转，平移/缩放保持。
+
+`visual.jointStatus(id)` 区分pending/ready/partial/failed，applied/missing/ambiguous报告实际模型节点，不以模型加载ready代替关节ready。禁止插件直接访问Bevy实体；缺姿态/关节名不得假称已对日。受机械轴约束时只在可转平面求最优朝向，不新增不存在的自由度。天然卫星使用父体相对瞬时轨道，人造卫星/航天器使用过去轨迹；它们分别遵循轨道与拖尾开关。
+
+源spin可有绝对relativeToTime；没有绝对相位的可视化自旋以本次首次有效加载时刻为零点并明确标注，不能称实测绝对姿态。

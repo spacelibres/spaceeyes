@@ -1105,3 +1105,48 @@ test("trajectory eligibility follows current position phase, not historical ORI 
     source.dispose();
   }
 });
+
+test("spin source anchor survives checkpoint and clears with retained scene", async () => {
+  const original = eyesDefinitions.moon.controllers;
+  const { ctx, states } = context();
+  const source = new SolarSystemData(ctx, {
+    fetch: async () => new Response(orb(10)),
+  });
+  try {
+    eyesDefinitions.moon.controllers = [
+      {
+        type: "fixed",
+        position: { constructor: "Vector3", values: [1, 0, 0] },
+      },
+      {
+        type: "spin",
+        axis: { expression: "Pioneer.Vector3.ZAxis" },
+        periodInHours: 1,
+      },
+    ];
+    await source.load(["moon", "sun"], 5);
+    source.publishAt(5);
+    const initial = (states.get("moon") as any).orientationWxyz;
+    assert.deepEqual(initial, [1, 0, 0, 0]);
+    const restore = source.checkpoint();
+    source.retain(["sun"]);
+    restore();
+    source.publishAt(6);
+    const shifted = (states.get("moon") as any).orientationWxyz;
+    assert.ok(shifted[3] > 0);
+    source.publishAt(5);
+    assert.deepEqual((states.get("moon") as any).orientationWxyz, initial);
+    assert.match(
+      source.status("moon")?.orientationNote ?? "",
+      /no absolute phase/,
+    );
+    source.retain(["sun"]);
+    source.retain(["moon", "earth", "sun"]);
+    await source.load(["moon"], 6);
+    source.publishAt(6);
+    assert.deepEqual((states.get("moon") as any)?.orientationWxyz, initial);
+  } finally {
+    source.dispose();
+    eyesDefinitions.moon.controllers = original;
+  }
+});

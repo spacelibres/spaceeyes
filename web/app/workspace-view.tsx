@@ -70,6 +70,7 @@ export type WorkspaceViewProps = {
   source: string;
   coverage: string;
   attitude?: string;
+  articulation?: string;
   dataStatus: string;
   view: string;
   labels: boolean;
@@ -643,6 +644,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             <dd>{p.dataStatus}</dd>
             <dt>姿态来源与状态</dt>
             <dd>{p.attitude ?? "尚未核验姿态来源"}</dd>
+            {p.articulation && <><dt>骨骼与太阳翼</dt><dd>{p.articulation}</dd></>}
             <dt>科学来源</dt>
             <dd>{p.source}</dd>
             {p.selected === "sun" && (
@@ -854,7 +856,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             卫星拖尾
           </label>
           <p className="muted">
-            行星椭圆是当前状态推导的瞬时轨道；卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+            行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
           </p>
         </aside>
       </div>

@@ -822,3 +822,20 @@ test("real WASM ordinary Unix UTC roundtrips across pre-leap-second fractions", 
     core.free();
   }
 });
+
+test("real WASM model joint ownership and strict wire validation", () => {
+ const core = new WasmCore();
+ core.open_session("joint-session", "joint.plugin", false, true, false, true);
+ core.publish_object("joint-session", "joint.plugin", "object:joint", JSON.stringify({positionKm:[1,0,0],radiusKm:1,epochTdbSeconds:0,coverageTdbSeconds:[-1,1],frame:"ICRF",source:"test"}));
+ core.register_asset("model:joint", "models/joint.gltf", "model");
+ core.set_visual("joint-session","joint.plugin","object:joint",JSON.stringify({kind:"model",assetId:"model:joint",scene:0,scaleKmPerUnit:1}));
+ const aim={joint:"panel",hingeAxis:[0,0,1],normalAxis:[1,0,0],targetDirectionIcrf:[0,1,0]};
+ core.set_model_joints("joint-session","joint.plugin","object:joint",JSON.stringify([aim]));
+ assert.equal(JSON.parse(core.model_joint_status("joint-session","joint.plugin","object:joint")).phase,"pending");
+ assert.throws(()=>core.set_model_joints("joint-session","joint.plugin","object:joint",JSON.stringify([{...aim,extra:true}])));
+ assert.equal(JSON.parse(core.model_joint_status("joint-session","joint.plugin","object:joint")).phase,"pending");
+ core.set_model_joints("joint-session","joint.plugin","object:joint","[]");
+ assert.equal(core.model_joint_status("joint-session","joint.plugin","object:joint"),"null");
+ core.release_session("joint-session");
+ assert.throws(()=>core.model_joint_status("joint-session","joint.plugin","object:joint"));
+});

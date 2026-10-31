@@ -1,0 +1,1659 @@
+{
+  "checkedAt": "2026-10-31T01:31:31.937Z",
+  "targets": [
+    {
+      "id": "sc_noaa_20",
+      "source": "$STATIC_ASSETS_URL/models/sc_noaa_20/noaa20.gltf",
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 2,
+        "animationCount": 0,
+        "skinCount": 0,
+        "joints": [
+          {
+            "joint": "Part__Panel_011001",
+            "matches": []
+          }
+        ]
+      },
+      "initialEndpointError": "Error: GLB HTTP 502 {\"error\":\"Error: Model entry is not in the audited resource manifest\"}",
+      "postManifestValidation": {
+        "method": "Fresh EyesAssetService.get(id, model.glb), node --experimental-strip-types; existing server not restarted",
+        "expectedEndpoint": "/assets/eyes/sc_noaa_20/model.glb",
+        "success": true
+      },
+      "bytes": 6303632,
+      "nodeCount": 3,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "Part__Panel_011001",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 0,
+              "rawName": "Part__Panel_011.001",
+              "parents": [
+                {
+                  "index": 1,
+                  "name": "Part__1_Body_016"
+                },
+                {
+                  "index": 2,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sc_noaa_21",
+      "source": "$STATIC_ASSETS_URL/models/sc_noaa_21/noaa21.gltf",
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 2,
+        "animationCount": 0,
+        "skinCount": 0,
+        "joints": [
+          {
+            "joint": "Panels_Lo_Res002_Cylinder001",
+            "matches": []
+          }
+        ]
+      },
+      "initialEndpointError": "Error: GLB HTTP 502 {\"error\":\"Error: Model entry is not in the audited resource manifest\"}",
+      "postManifestValidation": {
+        "method": "Fresh EyesAssetService.get(id, model.glb), node --experimental-strip-types; existing server not restarted",
+        "expectedEndpoint": "/assets/eyes/sc_noaa_21/model.glb",
+        "success": true
+      },
+      "bytes": 8620008,
+      "nodeCount": 3,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "Panels_Lo_Res002_Cylinder001",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 0,
+              "rawName": "Panels_Lo_Res.002_Cylinder.001",
+              "parents": [
+                {
+                  "index": 1,
+                  "name": "Main_Body.001_Cylinder.004"
+                },
+                {
+                  "index": 2,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sc_tropics_01",
+      "source": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "bytes": 7852412,
+      "nodeCount": 11,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "solar_rotate",
+          "matches": [
+            {
+              "index": 8,
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.029307177290320396,
+                0.03359688073396683,
+                -0.11065210402011871
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 8,
+              "rawName": "solar_rotate",
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 10,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_tropics_03",
+      "source": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "bytes": 7852412,
+      "nodeCount": 11,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "solar_rotate",
+          "matches": [
+            {
+              "index": 8,
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.029307177290320396,
+                0.03359688073396683,
+                -0.11065210402011871
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 8,
+              "rawName": "solar_rotate",
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 10,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_iss",
+      "source": "$STATIC_ASSETS_URL/models/sc_iss/ISS_stationary.gltf",
+      "bytes": 26496996,
+      "nodeCount": 151,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "20_P4_Truss",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 75,
+              "rawName": "20 P4 Truss",
+              "parents": [
+                {
+                  "index": 79,
+                  "name": "19 P3 Truss"
+                },
+                {
+                  "index": 80,
+                  "name": "17 P1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "23_S4_Truss",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 60,
+              "rawName": "23 S4 Truss",
+              "parents": [
+                {
+                  "index": 65,
+                  "name": "22 S3 Truss"
+                },
+                {
+                  "index": 67,
+                  "name": "16 S1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "20_P4_Truss_01",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 72,
+              "rawName": "20 P4 Truss_01",
+              "parents": [
+                {
+                  "index": 74,
+                  "name": "21 P5 Truss"
+                },
+                {
+                  "index": 75,
+                  "name": "20 P4 Truss"
+                },
+                {
+                  "index": 79,
+                  "name": "19 P3 Truss"
+                },
+                {
+                  "index": 80,
+                  "name": "17 P1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "20_P4_Truss_02",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 73,
+              "rawName": "20 P4 Truss_02",
+              "parents": [
+                {
+                  "index": 74,
+                  "name": "21 P5 Truss"
+                },
+                {
+                  "index": 75,
+                  "name": "20 P4 Truss"
+                },
+                {
+                  "index": 79,
+                  "name": "19 P3 Truss"
+                },
+                {
+                  "index": 80,
+                  "name": "17 P1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "32_S6_Truss_01",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 56,
+              "rawName": "32 S6 Truss_01",
+              "parents": [
+                {
+                  "index": 58,
+                  "name": "32 S6 Truss"
+                },
+                {
+                  "index": 59,
+                  "name": "24 S5 Truss"
+                },
+                {
+                  "index": 60,
+                  "name": "23 S4 Truss"
+                },
+                {
+                  "index": 65,
+                  "name": "22 S3 Truss"
+                },
+                {
+                  "index": 67,
+                  "name": "16 S1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "32_S6_Truss_02",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 57,
+              "rawName": "32 S6 Truss_02",
+              "parents": [
+                {
+                  "index": 58,
+                  "name": "32 S6 Truss"
+                },
+                {
+                  "index": 59,
+                  "name": "24 S5 Truss"
+                },
+                {
+                  "index": 60,
+                  "name": "23 S4 Truss"
+                },
+                {
+                  "index": 65,
+                  "name": "22 S3 Truss"
+                },
+                {
+                  "index": 67,
+                  "name": "16 S1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "23_S4_Truss_01",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 54,
+              "rawName": "23 S4 Truss_01",
+              "parents": [
+                {
+                  "index": 59,
+                  "name": "24 S5 Truss"
+                },
+                {
+                  "index": 60,
+                  "name": "23 S4 Truss"
+                },
+                {
+                  "index": 65,
+                  "name": "22 S3 Truss"
+                },
+                {
+                  "index": 67,
+                  "name": "16 S1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "23_S4_Truss_02",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 55,
+              "rawName": "23 S4 Truss_02",
+              "parents": [
+                {
+                  "index": 59,
+                  "name": "24 S5 Truss"
+                },
+                {
+                  "index": 60,
+                  "name": "23 S4 Truss"
+                },
+                {
+                  "index": 65,
+                  "name": "22 S3 Truss"
+                },
+                {
+                  "index": 67,
+                  "name": "16 S1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "08_P6_Truss_01",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 69,
+              "rawName": "08 P6 Truss_01",
+              "parents": [
+                {
+                  "index": 71,
+                  "name": "08 P6 Truss"
+                },
+                {
+                  "index": 74,
+                  "name": "21 P5 Truss"
+                },
+                {
+                  "index": 75,
+                  "name": "20 P4 Truss"
+                },
+                {
+                  "index": 79,
+                  "name": "19 P3 Truss"
+                },
+                {
+                  "index": 80,
+                  "name": "17 P1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "08_P6_Truss_02",
+          "matches": [],
+          "canonicalMatches": [
+            {
+              "index": 70,
+              "rawName": "08 P6 Truss_02",
+              "parents": [
+                {
+                  "index": 71,
+                  "name": "08 P6 Truss"
+                },
+                {
+                  "index": 74,
+                  "name": "21 P5 Truss"
+                },
+                {
+                  "index": 75,
+                  "name": "20 P4 Truss"
+                },
+                {
+                  "index": 79,
+                  "name": "19 P3 Truss"
+                },
+                {
+                  "index": 80,
+                  "name": "17 P1 Truss"
+                },
+                {
+                  "index": 81,
+                  "name": "14 S0 Truss"
+                },
+                {
+                  "index": 109,
+                  "name": "09 Destiny Space Laboratory"
+                },
+                {
+                  "index": 125,
+                  "name": "02 Unity Node 1"
+                },
+                {
+                  "index": 126,
+                  "name": "_root"
+                },
+                {
+                  "index": 150,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 150,
+        "animationCount": 0,
+        "skinCount": 0,
+        "joints": [
+          {
+            "joint": "20_P4_Truss",
+            "matches": []
+          },
+          {
+            "joint": "23_S4_Truss",
+            "matches": []
+          },
+          {
+            "joint": "20_P4_Truss_01",
+            "matches": []
+          },
+          {
+            "joint": "20_P4_Truss_02",
+            "matches": []
+          },
+          {
+            "joint": "32_S6_Truss_01",
+            "matches": []
+          },
+          {
+            "joint": "32_S6_Truss_02",
+            "matches": []
+          },
+          {
+            "joint": "23_S4_Truss_01",
+            "matches": []
+          },
+          {
+            "joint": "23_S4_Truss_02",
+            "matches": []
+          },
+          {
+            "joint": "08_P6_Truss_01",
+            "matches": []
+          },
+          {
+            "joint": "08_P6_Truss_02",
+            "matches": []
+          }
+        ]
+      },
+      "convertedNodeNames": [
+        "13 Pirs Docking Compartment (DC) and Airlock",
+        "34 Poisk (MRM-2) Mini Research Module",
+        "panel_01_p.001",
+        "panel_01_s.001",
+        "panel_02_p.001",
+        "panel_02_s.001",
+        "panel_03_p.001",
+        "panel_03_s.001",
+        "panel_04_p.001",
+        "panel_04_s.001",
+        "panel_05_p",
+        "panel_05_s",
+        "panel_06_p",
+        "panel_06_s",
+        "panel_07_p",
+        "panel_07_s",
+        "panel_08_p",
+        "panel_08_s",
+        "panel_09_p",
+        "panel_09_s",
+        "panel_bracket_p",
+        "panel_bracket_s",
+        "05 Zvezda (SM) Service Module",
+        "39 Rassvet (MRM-1) Mini Research Module",
+        "01 Zarya - (FGB) Funtional Cargo Block",
+        "03 (PMA) Pressurized Mating Adapter 1",
+        "06 Z1 Truss",
+        "10 (ESP) External Stowage Platform 1",
+        "29 DEXTRE.003",
+        "29 DEXTRE.002",
+        "29 DEXTRE.009",
+        "29 DEXTRE.008",
+        "29 DEXTRE.007",
+        "29 DEXTRE.006",
+        "29 DEXTRE.005",
+        "29 DEXTRE.004",
+        "29 DEXTRE.015",
+        "29 DEXTRE.014",
+        "29 DEXTRE.013",
+        "29 DEXTRE.012",
+        "29 DEXTRE.011",
+        "29 DEXTRE.010",
+        "29 DEXTRE.001",
+        "29 DEXTRE",
+        "11 Canadarm2_08",
+        "11 Canadarm2_07",
+        "11 Canadarm2_06",
+        "11 Canadarm2_05",
+        "11 Canadarm2_04",
+        "11 Canadarm2_03",
+        "11 Canadarm2_02",
+        "11 Canadarm2",
+        "15 (MBS) Mobile Base System",
+        "16 S1 Truss_02",
+        "23 S4 Truss_01",
+        "23 S4 Truss_02",
+        "32 S6 Truss_01",
+        "32 S6 Truss_02",
+        "32 S6 Truss",
+        "24 S5 Truss",
+        "23 S4 Truss",
+        "25 (ESP) External Stowage Platform 3",
+        "36 Express Logistics Carrier (ELC) 2",
+        "41 Express Logistics Carrier (ELC) 4",
+        "42 Alpha Magnetic Spectrometer (AMS 2)",
+        "22 S3 Truss",
+        "44 Enhanced ISS Boom Assembly (EIBA)",
+        "16 S1 Truss",
+        "17 P1 Truss_02",
+        "08 P6 Truss_01",
+        "08 P6 Truss_02",
+        "08 P6 Truss",
+        "20 P4 Truss_01",
+        "20 P4 Truss_02",
+        "21 P5 Truss",
+        "20 P4 Truss",
+        "EMIT",
+        "35 Express Logistics Carrier (ELC) 1",
+        "43 Express Logistics Carrier (ELC) 3",
+        "19 P3 Truss",
+        "17 P1 Truss",
+        "14 S0 Truss",
+        "04 (PMA) Pressurized Mating Adapter 2",
+        "RapidScat_dish",
+        "45 RapidScat",
+        "27 Columbus Space Laboratory",
+        "28 Kibo Space Laboratory (PSM) Pressurized Stowage Module",
+        "31 Robotic Arm.005",
+        "31 Robotic Arm.004",
+        "31 Robotic Arm.003",
+        "31 Robotic Arm.002",
+        "31 Robotic Arm.001",
+        "31 Robotic Arm",
+        "Cylinder.018",
+        "COWVR_bottom",
+        "Cylinder.001",
+        "Cylinder.006",
+        "Cylinder.019",
+        "Cylinder.011",
+        "COWVR_top_spin",
+        "COWVR_brace",
+        "TEMPEST",
+        "COWVR_TEMPEST",
+        "33 Kibo Space Laboratory Exposed Platform",
+        "Ecostress",
+        "OCO3",
+        "30 Kibo Space Laboratory (PSM) Pressurized Module",
+        "26 Harmony Node 2",
+        "Destiny_Window_Cover",
+        "09 Destiny Space Laboratory",
+        "18 ESP External Stowage Platform 2",
+        "12 Quest Airlock",
+        "04 (PMA) Pressurized Mating Adapter 2.001",
+        "07 (PMA) Pressurized Mating Adapter 3",
+        "38 Cupola.001",
+        "38 Cupola.002",
+        "38 Cupola.003",
+        "38 Cupola.004",
+        "38 Cupola.005",
+        "38 Cupola.006",
+        "38 Cupola.007",
+        "ISS",
+        "38 Cupola",
+        "40 Leonardo_Raffaello Perm Multi-Purpose Logistics Module (PMM)",
+        "37 Tranquility Node 3",
+        "02 Unity Node 1",
+        "_root",
+        "panel_01_p",
+        "hinge_02_p",
+        "panel_03_p",
+        "hinge_04_p",
+        "hinge_01_p",
+        "panel_02_p",
+        "hinge_03_p",
+        "panel_04_p",
+        "panel_01_s",
+        "hinge_02_s",
+        "panel_03_s",
+        "hinge_04_s",
+        "hinge_03_s",
+        "panel_04_s",
+        "panel_02_s",
+        "hinge_01_s",
+        "BeamGrapples",
+        "BeamHandles",
+        "BeamLogo",
+        "BeamStraps",
+        "Beam",
+        "BeamLock",
+        "Cube",
+        "SpaceEyes source model frame"
+      ],
+      "originalNodeNames": [
+        "13 Pirs Docking Compartment (DC) and Airlock",
+        "34 Poisk (MRM-2) Mini Research Module",
+        "panel_01_p.001",
+        "panel_01_s.001",
+        "panel_02_p.001",
+        "panel_02_s.001",
+        "panel_03_p.001",
+        "panel_03_s.001",
+        "panel_04_p.001",
+        "panel_04_s.001",
+        "panel_05_p",
+        "panel_05_s",
+        "panel_06_p",
+        "panel_06_s",
+        "panel_07_p",
+        "panel_07_s",
+        "panel_08_p",
+        "panel_08_s",
+        "panel_09_p",
+        "panel_09_s",
+        "panel_bracket_p",
+        "panel_bracket_s",
+        "05 Zvezda (SM) Service Module",
+        "39 Rassvet (MRM-1) Mini Research Module",
+        "01 Zarya - (FGB) Funtional Cargo Block",
+        "03 (PMA) Pressurized Mating Adapter 1",
+        "06 Z1 Truss",
+        "10 (ESP) External Stowage Platform 1",
+        "29 DEXTRE.003",
+        "29 DEXTRE.002",
+        "29 DEXTRE.009",
+        "29 DEXTRE.008",
+        "29 DEXTRE.007",
+        "29 DEXTRE.006",
+        "29 DEXTRE.005",
+        "29 DEXTRE.004",
+        "29 DEXTRE.015",
+        "29 DEXTRE.014",
+        "29 DEXTRE.013",
+        "29 DEXTRE.012",
+        "29 DEXTRE.011",
+        "29 DEXTRE.010",
+        "29 DEXTRE.001",
+        "29 DEXTRE",
+        "11 Canadarm2_08",
+        "11 Canadarm2_07",
+        "11 Canadarm2_06",
+        "11 Canadarm2_05",
+        "11 Canadarm2_04",
+        "11 Canadarm2_03",
+        "11 Canadarm2_02",
+        "11 Canadarm2",
+        "15 (MBS) Mobile Base System",
+        "16 S1 Truss_02",
+        "23 S4 Truss_01",
+        "23 S4 Truss_02",
+        "32 S6 Truss_01",
+        "32 S6 Truss_02",
+        "32 S6 Truss",
+        "24 S5 Truss",
+        "23 S4 Truss",
+        "25 (ESP) External Stowage Platform 3",
+        "36 Express Logistics Carrier (ELC) 2",
+        "41 Express Logistics Carrier (ELC) 4",
+        "42 Alpha Magnetic Spectrometer (AMS 2)",
+        "22 S3 Truss",
+        "44 Enhanced ISS Boom Assembly (EIBA)",
+        "16 S1 Truss",
+        "17 P1 Truss_02",
+        "08 P6 Truss_01",
+        "08 P6 Truss_02",
+        "08 P6 Truss",
+        "20 P4 Truss_01",
+        "20 P4 Truss_02",
+        "21 P5 Truss",
+        "20 P4 Truss",
+        "EMIT",
+        "35 Express Logistics Carrier (ELC) 1",
+        "43 Express Logistics Carrier (ELC) 3",
+        "19 P3 Truss",
+        "17 P1 Truss",
+        "14 S0 Truss",
+        "04 (PMA) Pressurized Mating Adapter 2",
+        "RapidScat_dish",
+        "45 RapidScat",
+        "27 Columbus Space Laboratory",
+        "28 Kibo Space Laboratory (PSM) Pressurized Stowage Module",
+        "31 Robotic Arm.005",
+        "31 Robotic Arm.004",
+        "31 Robotic Arm.003",
+        "31 Robotic Arm.002",
+        "31 Robotic Arm.001",
+        "31 Robotic Arm",
+        "Cylinder.018",
+        "COWVR_bottom",
+        "Cylinder.001",
+        "Cylinder.006",
+        "Cylinder.019",
+        "Cylinder.011",
+        "COWVR_top_spin",
+        "COWVR_brace",
+        "TEMPEST",
+        "COWVR_TEMPEST",
+        "33 Kibo Space Laboratory Exposed Platform",
+        "Ecostress",
+        "OCO3",
+        "30 Kibo Space Laboratory (PSM) Pressurized Module",
+        "26 Harmony Node 2",
+        "Destiny_Window_Cover",
+        "09 Destiny Space Laboratory",
+        "18 ESP External Stowage Platform 2",
+        "12 Quest Airlock",
+        "04 (PMA) Pressurized Mating Adapter 2.001",
+        "07 (PMA) Pressurized Mating Adapter 3",
+        "38 Cupola.001",
+        "38 Cupola.002",
+        "38 Cupola.003",
+        "38 Cupola.004",
+        "38 Cupola.005",
+        "38 Cupola.006",
+        "38 Cupola.007",
+        "ISS",
+        "38 Cupola",
+        "40 Leonardo_Raffaello Perm Multi-Purpose Logistics Module (PMM)",
+        "37 Tranquility Node 3",
+        "02 Unity Node 1",
+        "_root",
+        "panel_01_p",
+        "hinge_02_p",
+        "panel_03_p",
+        "hinge_04_p",
+        "hinge_01_p",
+        "panel_02_p",
+        "hinge_03_p",
+        "panel_04_p",
+        "panel_01_s",
+        "hinge_02_s",
+        "panel_03_s",
+        "hinge_04_s",
+        "hinge_03_s",
+        "panel_04_s",
+        "panel_02_s",
+        "hinge_01_s",
+        "BeamGrapples",
+        "BeamHandles",
+        "BeamLogo",
+        "BeamStraps",
+        "Beam",
+        "BeamLock",
+        "Cube"
+      ]
+    },
+    {
+      "id": "sc_tropics_05",
+      "source": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "bytes": 7852412,
+      "nodeCount": 11,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "solar_rotate",
+          "matches": [
+            {
+              "index": 8,
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.029307177290320396,
+                0.03359688073396683,
+                -0.11065210402011871
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 8,
+              "rawName": "solar_rotate",
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 10,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_tropics_06",
+      "source": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "bytes": 7852412,
+      "nodeCount": 11,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "solar_rotate",
+          "matches": [
+            {
+              "index": 8,
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.029307177290320396,
+                0.03359688073396683,
+                -0.11065210402011871
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 8,
+              "rawName": "solar_rotate",
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 10,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_tropics_07",
+      "source": "$STATIC_ASSETS_URL/models/sc_tropics/tropics.gltf",
+      "bytes": 7852412,
+      "nodeCount": 11,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "solar_rotate",
+          "matches": [
+            {
+              "index": 8,
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.029307177290320396,
+                0.03359688073396683,
+                -0.11065210402011871
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 8,
+              "rawName": "solar_rotate",
+              "parents": [
+                {
+                  "index": 9,
+                  "name": "BUS"
+                },
+                {
+                  "index": 10,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 10,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_danuri",
+      "source": "$STATIC_ASSETS_URL/models/sc_danuri/danuri.gltf",
+      "bytes": 10123816,
+      "nodeCount": 6,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "array_01",
+          "matches": [
+            {
+              "index": 0,
+              "parents": [
+                {
+                  "index": 4,
+                  "name": "bus"
+                },
+                {
+                  "index": 5,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                -0.7263440489768982,
+                -0.013842782936990261,
+                0.158681258559227
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 0,
+              "rawName": "array_01",
+              "parents": [
+                {
+                  "index": 4,
+                  "name": "bus"
+                },
+                {
+                  "index": 5,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "array_02",
+          "matches": [
+            {
+              "index": 1,
+              "parents": [
+                {
+                  "index": 4,
+                  "name": "bus"
+                },
+                {
+                  "index": 5,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                0.7254447340965271,
+                -0.013842782936990261,
+                0.158681258559227
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 1,
+              "rawName": "array_02",
+              "parents": [
+                {
+                  "index": 4,
+                  "name": "bus"
+                },
+                {
+                  "index": 5,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 5,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_trace_gas_orbiter",
+      "source": "$STATIC_ASSETS_URL/models/sc_trace_gas_orbiter/TGO.gltf",
+      "bytes": 2340048,
+      "nodeCount": 17,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "right_array_1",
+          "matches": [
+            {
+              "index": 7,
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "array_gimbals"
+                },
+                {
+                  "index": 15,
+                  "name": "TGO_BUS"
+                },
+                {
+                  "index": 16,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                -1.1333342790603638,
+                0,
+                0
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 7,
+              "rawName": "right_array_1",
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "array_gimbals"
+                },
+                {
+                  "index": 15,
+                  "name": "TGO_BUS"
+                },
+                {
+                  "index": 16,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "left_array_1",
+          "matches": [
+            {
+              "index": 3,
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "array_gimbals"
+                },
+                {
+                  "index": 15,
+                  "name": "TGO_BUS"
+                },
+                {
+                  "index": 16,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                1.1333343982696533,
+                0,
+                0
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 3,
+              "rawName": "left_array_1",
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "array_gimbals"
+                },
+                {
+                  "index": 15,
+                  "name": "TGO_BUS"
+                },
+                {
+                  "index": 16,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 16,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_rosetta",
+      "source": "$STATIC_ASSETS_URL/models/sc_rosetta/rosettaPhilae.gltf",
+      "bytes": 3137016,
+      "nodeCount": 15,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "panels_01",
+          "matches": [
+            {
+              "index": 5,
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "Rosetta"
+                },
+                {
+                  "index": 14,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                7.185756206512451,
+                -0.1047268807888031,
+                0.1984325647354126
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 5,
+              "rawName": "panels_01",
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "Rosetta"
+                },
+                {
+                  "index": 14,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "panels_02",
+          "matches": [
+            {
+              "index": 6,
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "Rosetta"
+                },
+                {
+                  "index": 14,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                -8.456426620483398,
+                -0.11488080024719238,
+                0.1950819492340088
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 6,
+              "rawName": "panels_02",
+              "parents": [
+                {
+                  "index": 8,
+                  "name": "Rosetta"
+                },
+                {
+                  "index": 14,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 14,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    },
+    {
+      "id": "sc_psyche",
+      "source": "$STATIC_ASSETS_URL/models/sc_psyche/psyche.gltf",
+      "bytes": 3390988,
+      "nodeCount": 28,
+      "animationCount": 0,
+      "skinCount": 0,
+      "skinNodes": [],
+      "joints": [
+        {
+          "joint": "ArrayGimbleLeft",
+          "matches": [
+            {
+              "index": 3,
+              "parents": [
+                {
+                  "index": 26,
+                  "name": "Bus"
+                },
+                {
+                  "index": 27,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                -1.0863897800445557,
+                1.2893966436386108,
+                0.007671475410461426
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 3,
+              "rawName": "ArrayGimbleLeft",
+              "parents": [
+                {
+                  "index": 26,
+                  "name": "Bus"
+                },
+                {
+                  "index": 27,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "ArrayGimbleRight",
+          "matches": [
+            {
+              "index": 7,
+              "parents": [
+                {
+                  "index": 26,
+                  "name": "Bus"
+                },
+                {
+                  "index": 27,
+                  "name": "SpaceEyes source model frame"
+                }
+              ],
+              "rotation": null,
+              "translation": [
+                1.119328260421753,
+                1.2893966436386108,
+                0.013324402272701263
+              ],
+              "scale": null
+            }
+          ],
+          "canonicalMatches": [
+            {
+              "index": 7,
+              "rawName": "ArrayGimbleRight",
+              "parents": [
+                {
+                  "index": 26,
+                  "name": "Bus"
+                },
+                {
+                  "index": 27,
+                  "name": "SpaceEyes source model frame"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "originalHttpStatus": 200,
+      "original": {
+        "nodeCount": 27,
+        "animationCount": 0,
+        "skinCount": 0
+      }
+    }
+  ],
+  "canonicalNameRule": {
+    "source": "web/node_modules/three/src/animation/PropertyBinding.js:185",
+    "rule": "name.replace(/\\s/g, \"_\").replace(/[\\[\\]\\.:\\/]/g, \"\")",
+    "note": "Raw model node names preserved; renderer canonical aliases pending integration."
+  },
+  "summary": {
+    "declaredJoints": 25,
+    "uniqueCanonicalMatches": 25,
+    "interpretation": "Rigid node hinges; original and converted glTF have no animation clips or skins."
+  }
+}
