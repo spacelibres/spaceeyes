@@ -190,7 +190,7 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 ## 有时间语义的卫星拖尾
 
-`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～315576000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，整会话4096点预算不变；空点数组清除轨迹及样式。
+`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～315576000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，单路径4096点、整会话16384点预算；空点数组清除轨迹及样式。
 
 无originId的点是ICRF绝对位置；有originId表示数据插件在每个采样时刻扣除父体位置的相对轨迹，显示时平移到父体当前位置，不可称为惯性历史。数据插件负责真实覆盖、阶段和采样；Rust按统一TDB时刻绘制过去窗口并沿时间渐隐，不画未来、不制造闭环，暂停/倒放/跳时可复现。不能传任意mesh/material/shader。
 
@@ -223,10 +223,14 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 ### Analytic orbit descriptor
 
-Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 4096 input sample budget. This display model does not extend scientific coverage or certify predictions.
+Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 16384 input sample budget (4096 per path). This display model does not extend scientific coverage or certify predictions.
 
 核心实例最多同时保留256条解析轨道，替换不增加计数；清除或释放所属对象归还预算。每条最多360段，总计不超过92160段。
 
 ## 宿主行星预载策略（2026-10-31用户确认）
 
 宿主初始化通过既有受控接口发布八大行星的轨道、姿态、高清表面及土星环，保持资源驻留以避免选择时重复绑定；界面用visual.status展示准备进度。资源仍在服务器，禁止嵌入WASM。太阳为程序化表面，月球和航天器模型按需。此策略不扩展插件权限，也不允许插件绕过宿主登记或直接操作Bevy。未解析为可见模型像素的卫星仍可用点标记表示，名称按有效性、视野、遮挡和碰撞显示，不代表所有名字必须同时可见。
+
+## 拖尾预算与初始化调度（0.0.36）
+
+每条轨迹最多4096输入点，每会话合计16384输入点；替换扣除本轨迹旧占用，超额原子拒绝。NASA解析天然轨道的独立展开预算不变。宿主普通轨迹最多160点、选中256点并预留512点余量；未选中航天器初次生成和过期维护分帧，不改科学时间或伪造源覆盖。尾长由源周期或相对位置/速度估算限制，不能将估算时间称为科学轨道周期；保留覆盖、断点和精度约束。

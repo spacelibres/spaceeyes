@@ -1894,3 +1894,30 @@ test("background coverage recovery restores only the removed object's visual", a
     assert.equal(fixtures.core().playing(), true);
   } finally { await app.dispose(); }
 });
+
+test("dense Earth scene keeps resolved long spacecraft histories without starving the point pool", {timeout: 5000}, async () => {
+  const fixtures = harness();
+  let completed!: () => void;
+  const ready = new Promise<void>(resolve => { completed = resolve; });
+  const app = await createWorkspace("#test", (value) => {
+    if (value.selected === "earth" && value.dataCache.positionEntries > 40) completed();
+  }, new AbortController().signal, {
+    ...fixtures, fetch: async input => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    await app.select("earth");
+    await ready;
+    for (let frame = 0; frame < 150; frame++) {
+      const before = fixtures.trails().length;
+      fixtures.step(frame * 16);
+      assert.ok(fixtures.trails().length - before <= 1, "initial trails also share the per-frame limit");
+    }
+    const trails = fixtures.trails().filter(t => t.id.startsWith("sc_") && t.kind === "trail");
+    assert.ok(trails.length > 40, `exercise a dense real catalog system: ${trails.length} trails ${JSON.stringify(trails.slice(0,3))}`);
+    assert.ok(trails.every(t => t.count >= 128 && t.count <= 160));
+    const latest = new Map(fixtures.trails().map(t => [t.id, t]));
+    assert.ok([...latest.values()].reduce((sum,t) => sum + t.count, 0) <= 16384);
+    await app.select("sc_iss");
+    assert.equal(fixtures.focused(), "sc_iss");
+  } finally { await app.dispose(); }
+});

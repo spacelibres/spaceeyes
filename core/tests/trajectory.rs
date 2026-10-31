@@ -179,3 +179,40 @@ fn legacy_style_json_keeps_default_orbit_and_no_breaks() {
     assert!(style.kind.is_none());
     assert!(style.break_indices.is_empty());
 }
+
+#[test]
+fn dense_trails_keep_a_bounded_replaceable_session_budget() {
+    let mut core = Core::default();
+    core.open_session_with_permissions(
+        "s",
+        "p",
+        SessionPermissions {
+            visual_control: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    for id in ["a", "b", "c", "d", "e"] {
+        core.register_object("s", id).unwrap();
+    }
+    for id in ["a", "b", "c", "d"] {
+        core.set_annotation("s", "p", id, Some(vec![[1., 0., 0.]; 4096]), None)
+            .unwrap();
+    }
+    assert_eq!(
+        core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]]), None),
+        Err(CoreError::InvalidVisual)
+    );
+    core.set_annotation("s", "p", "a", Some(vec![[1., 0., 0.]; 160]), None)
+        .unwrap();
+    core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]; 3936]), None)
+        .unwrap();
+    assert_eq!(
+        core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]; 3937]), None),
+        Err(CoreError::InvalidVisual)
+    );
+    assert_eq!(
+        core.set_annotation("s", "p", "a", Some(vec![[1., 0., 0.]; 4097]), None),
+        Err(CoreError::InvalidVisual)
+    );
+}

@@ -1292,8 +1292,8 @@ export class SolarSystemData {
     const period = motion
       ? (2 * Math.PI) / Math.abs(motion)
       : rangeEnd - rangeStart;
-    // Spend the finite vertex budget on a short resolved arc instead of
-    // connecting many revolutions with long chords.
+    // Preserve a resolved history within the finite sample budget. Never join
+    // revolutions with unresolved chords or cross a source coverage gap.
     const origin = this.parentAt(id, epoch) || undefined;
     const failedProbes = new Set<number>();
     const relativeCache = new Map<number, number[]>();
@@ -1317,20 +1317,31 @@ export class SolarSystemData {
     const lo = Math.max(rangeStart, epoch - probe);
     const hi = Math.min(rangeEnd, epoch + probe);
     let rate = Math.abs(motion ?? 0);
+    let inferredPeriod = period;
     try {
       const p = relative(lo),
         q = relative(hi);
       const radius = Math.hypot(...relative(epoch));
-      const measured =
-        Math.hypot(...q.map((v, i) => v - p[i])) / (hi - lo) / radius;
+      const velocity = q.map((v, i) => (v - p[i]) / (hi - lo));
+      const speedSquared = velocity.reduce((sum, v) => sum + v * v, 0);
+      const at = relative(epoch);
+      const angularMomentum = Math.hypot(
+        at[1] * velocity[2] - at[2] * velocity[1],
+        at[2] * velocity[0] - at[0] * velocity[2],
+        at[0] * velocity[1] - at[1] * velocity[0],
+      );
+      const autoLength = 2 * Math.PI * angularMomentum / speedSquared;
+      if (!motion && Number.isFinite(autoLength) && autoLength > 0)
+        inferredPeriod = Math.min(period, autoLength);
+      const measured = Math.sqrt(speedSquared) / radius;
       if (Number.isFinite(measured)) rate = Math.max(rate, measured);
     } catch {
       /* Coverage gaps remain explicit breaks below. */
     }
     let durationSeconds = Math.min(
       30 * 86400,
-      period,
-      rate > 0 ? (0.052 * (count - 2)) / (1.25 * rate) : period,
+      inferredPeriod,
+      rate > 0 ? (0.052 * (count - 2)) / (1.0625 * rate) : inferredPeriod,
     );
     let [coveredStart, coveredEnd] = this.#phaseCoverage(
       id,
@@ -1355,7 +1366,7 @@ export class SolarSystemData {
     for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);
-      end = Math.min(coveredEnd, epoch + durationSeconds / 4);
+      end = Math.min(coveredEnd, epoch + durationSeconds / 16);
       times = [epoch];
       for (let i = 0; i < count - 1; i++)
         times.push(start + ((end - start) * i) / (count - 2));
@@ -1366,8 +1377,8 @@ export class SolarSystemData {
           const p = relative(times[i - 1]),
             q = relative(times[i]);
           let previous = p;
-          for (let j = 1; j <= 4; j++) {
-            const fraction = j / 4;
+          for (let j = 1; j <= 8; j++) {
+            const fraction = j / 8;
             const sample = relative(
               times[i - 1] + (times[i] - times[i - 1]) * fraction,
             );
@@ -1386,7 +1397,7 @@ export class SolarSystemData {
               !Number.isFinite(error) ||
               !Number.isFinite(advance) ||
               error > radius * 0.001 ||
-              advance > radius * 0.0131
+              advance > radius * 0.00655
             )
               unresolved.add(times[i]);
             previous = sample;

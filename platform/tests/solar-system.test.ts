@@ -490,10 +490,10 @@ test("trail uses a full past period against a moving parent and caches future", 
     },
   });
   await source.load(["moon"], 500, []);
-  const trail = source.trailSamples("moon", 500, 256);
+  const trail = source.trailSamples("moon", 500, 160);
   assert.ok(Math.abs(trail.durationSeconds - 100) < 1e-8);
   assert.ok(Math.abs(trail.epochsTdbSeconds[0] - 400) < 1e-8);
-  assert.ok(Math.abs(trail.epochsTdbSeconds.at(-1)! - 525) < 1e-8);
+  assert.ok(Math.abs(trail.epochsTdbSeconds.at(-1)! - 506.25) < 1e-8);
   for (let i = 0; i < trail.points.length; i++) {
     const t = trail.epochsTdbSeconds[i];
     assert.deepEqual(
@@ -1300,4 +1300,25 @@ test("publication reuses parent evaluation only within its exact invocation", as
   source.dispose();
   restore();
   assert.throws(() => source.position("earth", 6), /unavailable/);
+});
+
+test("non-orbital circular source uses local dynamics rather than its coverage length", async () => {
+  const {ctx} = context();
+  const bytes = new Uint8Array(76), view = new DataView(bytes.buffer);
+  view.setInt16(0, 2, true);
+  bytes.set([108,105,110,0,3,1], 2);
+  view.setInt32(8, 2, true);
+  view.setFloat64(44, 1000, true);
+  view.setFloat64(52, 10, true);
+  const source = new SolarSystemData(ctx, {fetch: async () => new Response(bytes)});
+  await source.load(["sc_voyager_1"], 500, []);
+  const original = source.position.bind(source);
+  source.position = (id,t) => id === "sc_voyager_1"
+    ? [100 * Math.cos(t * 2 * Math.PI / 100),100 * Math.sin(t * 2 * Math.PI / 100),0]
+    : original(id,t);
+  const trail = source.trailSamples("sc_voyager_1", 500, 160);
+  assert.ok(Math.abs(trail.durationSeconds - 100) < 0.001);
+  assert.ok(trail.points.length <= 160);
+  assert.deepEqual(trail.breakIndices, []);
+  source.dispose();
 });

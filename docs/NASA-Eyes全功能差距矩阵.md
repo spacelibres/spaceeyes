@@ -26,7 +26,7 @@
 | 标签与对象可见性 | VisibleInterval | 已有遮挡、近景隐藏及渐隐；修复sc_亚像素门槛误删标记与名称；全类别阈值未认证 | 近/远/主星遮挡 |
 | 悬停轨道高亮 | TrailManager/selection | 已有实体/标记/标签/环；竖屏及子视口证据不足 | 窗口与DPI变化 |
 | 行星/天然卫星轨道 | OrbitLineComponent | 已有360段解析闭合；全线宽/抗锯齿未移植 | 首尾闭合、当前点、父体 |
-| 人造卫星拖尾 | TrailComponent/TrailShader | 已有过去轨迹、断点/渐隐；逐顶点收尖线宽未实现 | ISS及高偏心任务 |
+| 人造卫星拖尾 | TrailComponent/TrailShader | 已有过去轨迹、断点/渐隐；密集场景预算增至16384点且普通轨迹最多160点，初次生成分帧；逐顶点收尖线宽未实现 | ISS及高偏心任务 |
 | 相机碰撞 | camera controllers | 已有球面碰撞与扫掠；LOD表面继续深入尚缺 | 拖动/高速缩放/切换 |
 | 科学坐标/投影 | Entity/CameraComponent | 已有f64局部原点；完整共享观察帧和子视口尚缺 | 逻辑像素/物理像素一致 |
 

@@ -476,7 +476,8 @@ impl Core {
                 })
                 .map(|(_, points)| points.len())
                 .sum();
-            if used.saturating_add(points.len()) > 4096
+            if points.len() > 4096
+                || used.saturating_add(points.len()) > 16384
                 || points.iter().flatten().any(|n| !n.is_finite())
             {
                 return Err(CoreError::InvalidVisual);

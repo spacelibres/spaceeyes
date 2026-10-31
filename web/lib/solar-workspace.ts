@@ -1,3 +1,4 @@
+import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
 import {
   entityAlignDependencies,
   isEntityAlign,
@@ -600,6 +601,8 @@ export async function createWorkspace(
       .map((body) => body.id),
   );
   const trajectoryWindows = new Map<string, [number, number]>();
+  const pendingTrajectories = new Set<string>();
+  const trajectoryCounts = new Map<string, number>();
   const sceneIds = (epoch: number) => {
     const ids = new Set(baseSolarIds);
     if (state.selected) {
@@ -662,16 +665,19 @@ export async function createWorkspace(
     if (ids.size > 256) throw Error("当前场景超出对象预算（256）");
     return [...ids];
   };
+  const trajectoryBudget = (id: string) => {
+    const count = data.status().filter((s) => s.status === "ready").length;
+    return state.selected === id ? 256 : Math.min(160, Math.floor((16384 - 512) / Math.max(1, count)));
+  };
   const refreshTrajectory = (id: string) => {
     if (!data.hasTrajectory(id, core.epoch())) {
       sdk.visual.trajectory(id, []);
       trajectoryWindows.delete(id);
+      pendingTrajectories.delete(id);
+      trajectoryCounts.delete(id);
       return;
     }
-    const count = data.status().filter((s) => s.status === "ready").length;
-    const ordinary = state.selected
-      ? Math.min(128, Math.max(0, Math.floor(2048 / Math.max(1, count - 1))))
-      : Math.min(256, Math.max(0, Math.floor(4096 / Math.max(1, count))));
+    const budget = trajectoryBudget(id);
     const isTrail = ["spacecraft"].includes(
       solarCatalog.find((body) => body.id === id)!.kind,
     );
@@ -679,7 +685,7 @@ export async function createWorkspace(
       ? data.trailSamples(
           id,
           core.epoch(),
-          state.selected === id ? 256 : ordinary,
+          budget,
           state.selected === id,
         )
       : undefined;
@@ -688,7 +694,7 @@ export async function createWorkspace(
       data.trajectorySamples(
         id,
         core.epoch(),
-        state.selected === id ? 256 : ordinary,
+        budget,
         state.selected === id,
         "instantaneous",
       );
@@ -704,6 +710,8 @@ export async function createWorkspace(
       colorRgba: solarCatalog.find((body) => body.id === id)!.color,
     });
     trajectoryWindows.set(id, trail.refreshRange);
+    pendingTrajectories.delete(id);
+    trajectoryCounts.set(id, budget);
   };
   const publishJoints = () => {
     for (const body of solarCatalog) {
@@ -799,15 +807,33 @@ export async function createWorkspace(
               (c) => c.type === "dynamo" || c.type === "orbitalElements",
             ))
         ) {
-          refreshTrajectory(body.id);
+          const window = trajectoryWindows.get(body.id);
+          const budget = trajectoryBudget(body.id);
+          if (!data.hasTrajectory(body.id, core.epoch())) {
+            refreshTrajectory(body.id);
+          } else if (body.kind === "spacecraft" && body.id !== state.selected &&
+              (trajectoryCounts.get(body.id) ?? 0) <= budget) {
+            if (restore || !window || trajectoryCounts.get(body.id) !== budget)
+              pendingTrajectories.add(body.id);
+          } else if (restore || !window || trajectoryCounts.get(body.id) !== budget ||
+                     core.epoch() < window[0] || core.epoch() > window[1]) {
+            refreshTrajectory(body.id);
+          }
         }
       } catch (error) {
         state.error = `${body.name}：${String(error)}`;
       }
   };
   const configure = () => {
-    for (const id of trajectoryWindows.keys())
-      if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
+    for (const id of new Set([...trajectoryWindows.keys(), ...pendingTrajectories])) {
+      const kind = solarCatalog.find((body) => body.id === id)?.kind;
+      if (data.status(id)?.status !== "ready" ||
+          (kind === "spacecraft" ? !state.trails : !state.trajectories)) {
+        pendingTrajectories.delete(id);
+        trajectoryCounts.delete(id);
+        if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
+      }
+    }
     for (const id of trajectoryWindows.keys()) {
       const kind = solarCatalog.find((body) => body.id === id)?.kind;
       if (kind === "spacecraft" ? !state.trails : !state.trajectories) {
@@ -1588,24 +1614,41 @@ export async function createWorkspace(
             }
             publishJoints();
             validateFollow();
-            if (!restored && (state.trajectories || state.trails) && now - lastTrajectoryRefresh >= 50) {
+            if (!restored && (state.trajectories || state.trails) && (pendingTrajectories.size > 0 || now - lastTrajectoryRefresh >= 50)) {
               // Cosmetic maintenance must not rebuild the whole scene in one RAF.
               // Rotate over current windows; no deferred work can publish a stale selection.
               const selectedWindow = trajectoryWindows.get(state.selected);
               const selectedDue = selectedWindow && now - lastSelectedTrajectoryRefresh >= 100 &&
                 (epoch < selectedWindow[0] || epoch > selectedWindow[1]);
-              const ids = [...trajectoryWindows.keys()];
+              const ids = [...new Set([...pendingTrajectories, ...trajectoryWindows.keys()])];
               const start = selectedDue ? ids.indexOf(state.selected) :
                 (ids.indexOf(lastTrajectoryId ?? "") + 1) % Math.max(1, ids.length);
               for (let offset = 0; offset < ids.length; offset++) {
                 const id = ids[(start + offset) % ids.length]!;
                 if (data.status(id)?.status !== "ready") {
                   trajectoryWindows.delete(id);
+                  pendingTrajectories.delete(id);
+                  trajectoryCounts.delete(id);
                   continue;
                 }
-                const window = trajectoryWindows.get(id)!;
-                if (epoch < window[0] || epoch > window[1]) {
-                  refreshTrajectory(id);
+                const window = trajectoryWindows.get(id);
+                if (shouldRefreshTrajectory(
+                    pendingTrajectories.has(id),
+                    !window || epoch < window[0] || epoch > window[1],
+                    id === state.selected,
+                    now - lastTrajectoryRefresh,
+                    now - lastSelectedTrajectoryRefresh,
+                  )) {
+                  try {
+                    refreshTrajectory(id);
+                  } catch (error) {
+                    if (id === state.selected) throw error;
+                    pendingTrajectories.delete(id);
+                    trajectoryWindows.delete(id);
+                    trajectoryCounts.delete(id);
+                    sdk.visual.trajectory(id, []);
+                    state.error = `${id}：${String(error)}`;
+                  }
                   lastTrajectoryId = id;
                   lastTrajectoryRefresh = now;
                   if (id === state.selected) lastSelectedTrajectoryRefresh = now;
