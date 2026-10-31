@@ -92,7 +92,7 @@ export class EyesAssetService {
   #activeFiles = new Set<string>();
   #maintenance = Promise.resolve();
   #running = 0;
-  #waiters: (() => void)[] = [];
+  #waiters: { grant: () => void }[] = [];
   constructor(options: { fetch?: typeof fetch; cacheDirectory?: string } = {}) {
     this.#fetch = options.fetch ?? fetch;
     this.#directory = resolve(
@@ -100,17 +100,38 @@ export class EyesAssetService {
     );
   }
   async #slot<T>(signal: AbortSignal, work: () => Promise<T>): Promise<T> {
+    signal.throwIfAborted();
     if (this.#running >= 2) {
       if (this.#waiters.length >= 64) throw Error("Asset request queue budget");
-      await new Promise<void>((done) => this.#waiters.push(done));
+      await new Promise<void>((done, reject) => {
+        const waiter = {
+          grant: () => {
+            signal.removeEventListener("abort", abort);
+            done();
+          },
+        };
+        const abort = () => {
+          const index = this.#waiters.indexOf(waiter);
+          if (index < 0) return;
+          this.#waiters.splice(index, 1);
+          signal.removeEventListener("abort", abort);
+          reject(signal.reason);
+        };
+        this.#waiters.push(waiter);
+        signal.addEventListener("abort", abort, { once: true });
+        if (signal.aborted) abort();
+      });
+      // The releasing owner transfers its slot before waking this waiter.
+    } else {
+      this.#running++;
     }
-    this.#running++;
     try {
       signal.throwIfAborted();
       return await work();
     } finally {
-      this.#running--;
-      this.#waiters.shift()?.();
+      const next = this.#waiters.shift();
+      if (next) next.grant();
+      else this.#running--;
     }
   }
   async #cache(

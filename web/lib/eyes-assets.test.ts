@@ -105,3 +105,138 @@ test("shared model fetch stays alive for another subscriber and cancels when the
     await rm(cache, { recursive: true, force: true });
   }
 });
+
+test("cancelled scene requests free queue capacity before slow active downloads finish", async () => {
+  const { eyesDefinitions } = await import("../../platform/eyes-catalog.ts");
+  const cache = await mkdtemp(join(tmpdir(), "eyes-assets-"));
+  const controllers: AbortController[] = [];
+  const requests: Promise<unknown>[] = [];
+  let running = 0;
+  let started!: () => void;
+  const ready = new Promise<void>((done) => {
+    started = done;
+  });
+  const service = new EyesAssetService({
+    cacheDirectory: cache,
+    fetch: async (_input, init) => {
+      if (++running === 2) started();
+      return new Promise<Response>((_resolve, reject) => {
+        const signal = init!.signal!;
+        if (signal.aborted) reject(signal.reason);
+        else
+          signal.addEventListener("abort", () => reject(signal.reason), {
+            once: true,
+          });
+      });
+    },
+  });
+  const request = (id: string, file = "face-0.png") => {
+    const controller = new AbortController();
+    controllers.push(controller);
+    const result = service
+      .get(id, file, controller.signal)
+      .catch((error) => error);
+    requests.push(result);
+    return { controller, result };
+  };
+  try {
+    request("io");
+    request("moon");
+    await ready;
+    const queued = Object.keys(eyesDefinitions)
+      .filter((id) => id !== "io" && id !== "moon")
+      .slice(0, 64)
+      .map((id) => request(id));
+    await new Promise<void>((done) => setImmediate(done));
+    for (const item of queued) item.controller.abort();
+    await Promise.all(queued.map((item) => item.result));
+    await new Promise<void>((done) => setImmediate(done));
+    let outcome: unknown;
+    const current = request("io", "face-1.png");
+    void current.result.then((value) => {
+      outcome = value;
+    });
+    await new Promise<void>((done) => setImmediate(done));
+    assert.equal(
+      outcome,
+      undefined,
+      "new scene must queue instead of failing against cancelled backlog",
+    );
+    assert.equal(
+      running,
+      2,
+      "cancelled queued requests must never start a source download",
+    );
+    current.controller.abort();
+    assert.equal((await current.result).name, "AbortError");
+  } finally {
+    for (const controller of controllers) controller.abort();
+    await Promise.all(requests);
+    await new Promise<void>((done) => setImmediate(done));
+    assert.equal(dirname(resolve(cache)), resolve(tmpdir()));
+    assert.ok(basename(cache).startsWith("eyes-assets-"));
+    await rm(cache, { recursive: true, force: true });
+  }
+});
+
+test(
+  "scene queue keeps FIFO delivery and transfers only one slot after cancellation",
+  { timeout: 5000 },
+  async () => {
+    const cache = await mkdtemp(join(tmpdir(), "eyes-assets-"));
+    const calls: string[] = [];
+    const releases: (() => void)[] = [];
+    let twoStarted!: () => void, thirdStarted!: () => void;
+    const two = new Promise<void>((done) => {
+      twoStarted = done;
+    });
+    const third = new Promise<void>((done) => {
+      thirdStarted = done;
+    });
+    const service = new EyesAssetService({
+      cacheDirectory: cache,
+      fetch: async (input) => {
+        calls.push(String(input));
+        if (calls.length === 2) twoStarted();
+        if (calls.length === 3) thirdStarted();
+        await new Promise<void>((done) => releases.push(done));
+        return new Response("missing", { status: 404 });
+      },
+    });
+    const requests: Promise<unknown>[] = [];
+    const get = (id: string, signal?: AbortSignal) => {
+      const p = service.get(id, "face-0.png", signal).catch((error) => error);
+      requests.push(p);
+      return p;
+    };
+    try {
+      const first = get("io"),
+        second = get("moon");
+      await two;
+      const cancelled = new AbortController();
+      const stale = get("callisto", cancelled.signal);
+      const current = get("ganymede");
+      await new Promise<void>((done) => setImmediate(done));
+      cancelled.abort();
+      assert.equal((await stale).name, "AbortError");
+      releases[0]();
+      // Cache I/O may deliver Moon before Io; release whichever download started first.
+      await Promise.race([first, second]);
+      await third;
+      assert.equal(calls.length, 3);
+      assert.ok(calls[2].includes("/ganymede/"));
+      assert.ok(calls.every((url) => !url.includes("/callisto/")));
+      releases[1]();
+      releases[2]();
+      assert.match(String(await first), /HTTP 404/);
+      assert.match(String(await second), /HTTP 404/);
+      assert.match(String(await current), /HTTP 404/);
+    } finally {
+      for (const release of releases) release();
+      await Promise.all(requests);
+      assert.equal(dirname(resolve(cache)), resolve(tmpdir()));
+      assert.ok(basename(cache).startsWith("eyes-assets-"));
+      await rm(cache, { recursive: true, force: true });
+    }
+  },
+);
