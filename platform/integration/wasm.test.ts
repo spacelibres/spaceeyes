@@ -657,6 +657,10 @@ test("camera observation intents reach real WASM and restore nearby on focus", a
         frame: "ICRF",
         source: "synthetic camera integration",
       });
+    sdk.camera.observe("moon", "nearby", { systemId: "earth" });
+    assert.equal(JSON.parse(core.camera_observation()).systemId, "earth");
+    assert.throws(() => sdk.camera.observe("moon", "nearby", { systemId: "unknown" }));
+    assert.equal(JSON.parse(core.camera_observation()).systemId, "earth");
     sdk.camera.observe("earth", "system", { members: ["earth", "moon"] });
     assert.equal(JSON.parse(core.camera_observation()).mode, "system");
     sdk.camera.observe("earth", "follow", { followId: "moon" });

@@ -275,14 +275,7 @@ impl WasmCore {
         let v: crate::CameraObservation =
             serde_json::from_str(json).map_err(|_| "InvalidState".to_string())?;
         self.lock()?
-            .set_camera_observation(
-                session,
-                plugin,
-                &v.target_id,
-                &v.mode,
-                v.members,
-                v.follow_id,
-            )
+            .set_camera_observation_with_context(session, plugin, v)
             .map_err(|e| format!("{e:?}"))
     }
     pub fn camera_observation(&self) -> Result<String, String> {

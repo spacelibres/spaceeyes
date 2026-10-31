@@ -2132,18 +2132,32 @@ fn draw_annotations(
     } else {
         1.
     };
+    let trajectory_focus = crate::orbit_lines::TrajectoryFocus {
+        focused: core.focused_object(),
+        parent: core
+            .camera_observation()
+            .filter(|observation| Some(observation.target_id.as_str()) == core.focused_object())
+            .and_then(|observation| observation.system_id.as_deref())
+            .or_else(|| {
+                core.focused_object()
+                    .and_then(|id| core.trajectory_style(id))
+                    .and_then(|style| style.origin_id.as_deref())
+            })
+            .filter(|id| core.object_state_at(id, core.clock().epoch()).is_ok()),
+    };
     for (id, label, points) in core.annotations() {
         let Ok(state) = core.object_state_at(id, core.clock().epoch()) else {
             continue;
         };
         let style = core.trajectory_style(id);
         let visibility = points.map_or(0., |points| {
-            crate::orbit_lines::path_visibility(
+            crate::orbit_lines::system_path_visibility(
+                id,
                 points,
                 focus_range,
                 orbit_visibility,
                 style,
-                core.focused_object(),
+                &trajectory_focus,
             )
         });
         if let Some(points) = points.filter(|_| visibility > 0.) {

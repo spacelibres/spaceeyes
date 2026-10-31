@@ -369,6 +369,13 @@ export async function createWorkspace(
     );
   }
   let sdk!: PluginContext, data!: SolarSystemData;
+  let observationContext: { target: string; mode: Parameters<PluginContext["camera"]["observe"]>[1]; options: Parameters<PluginContext["camera"]["observe"]>[2]; systemId: string | undefined } | undefined;
+  const observe: PluginContext["camera"]["observe"] = (target, mode, options) => {
+    const parent = data.parentAt(target, core.epoch());
+    const systemId = parent && parent !== "sun" && data.status(parent)?.status === "ready" ? parent : undefined;
+    sdk.camera.observe(target, mode, { ...options, ...(systemId ? { systemId } : {}) });
+    observationContext = { target, mode, options, systemId };
+  };
   let galaxySdk!: PluginContext;
   let stars!: StarfieldSource;
   let frame = 0,
@@ -830,7 +837,15 @@ export async function createWorkspace(
         state.error = `${body.name}：${String(error)}`;
       }
   };
+  const refreshObservationContext = () => {
+    if (observationContext && core.focused_object() === observationContext.target && data.status(observationContext.target)?.status === "ready") {
+      const parent = data.parentAt(observationContext.target, core.epoch());
+      const systemId = parent && parent !== "sun" && data.status(parent)?.status === "ready" ? parent : undefined;
+      if (systemId !== observationContext.systemId) observe(observationContext.target, observationContext.mode, observationContext.options);
+    }
+  };
   const configure = () => {
+    refreshObservationContext();
     for (const id of new Set([...trajectoryWindows.keys(), ...pendingTrajectories])) {
       const kind = solarCatalog.find((body) => body.id === id)?.kind;
       if (data.status(id)?.status !== "ready" ||
@@ -888,7 +903,7 @@ export async function createWorkspace(
       core.state_at(state.followId, core.epoch());
     } catch {
       if (state.selected && data.status(state.selected)?.status === "ready")
-        sdk.camera.observe(state.selected, "nearby");
+        observe(state.selected, "nearby");
       state.observationMode = "nearby";
       state.followId = undefined;
       state.error = "跟随参考对象在当前时刻无有效数据，已恢复近景观察";
@@ -1040,7 +1055,7 @@ export async function createWorkspace(
                   solarCatalog.find((body) => body.id === id)?.kind ===
                     (target === "sun" ? "planet" : "moon")),
             );
-            sdk.camera.observe(
+            observe(
               target,
               state.observationMode,
               state.observationMode === "system"
@@ -1127,7 +1142,7 @@ export async function createWorkspace(
                 solarCatalog.find((body) => body.id === id)?.kind ===
                   (next.targetId === "sun" ? "planet" : "moon")),
           );
-          sdk.camera.observe(
+          observe(
             next.targetId,
             next.mode,
             next.mode === "system"
@@ -1164,7 +1179,7 @@ export async function createWorkspace(
               state.selected &&
               data.status(state.selected)?.status === "ready"
             )
-              sdk.camera.observe(state.selected, "nearby");
+              observe(state.selected, "nearby");
           } catch {}
           state.error = `场景恢复失败：${String(error)}`;
           emit();
@@ -1273,9 +1288,9 @@ export async function createWorkspace(
         emit();
         throw new Error(state.error);
       }
-      sdk.camera.focus(id);
       if (state.observationMode === "system")
-        sdk.camera.observe(id, "system", {members: systemMembers(id, core.epoch())});
+        observe(id, "system", {members: systemMembers(id, core.epoch())});
+      else observe(id, "nearby");
       sdk.camera.view("orbit");
       state.view = "orbit";
       emit();
@@ -1284,7 +1299,7 @@ export async function createWorkspace(
       assertLive();
       observationToken++;
       if (!state.selected) throw new Error("请先选择对象");
-      sdk.camera.observe(state.selected, "nearby");
+      observe(state.selected, "nearby");
       state.observationMode = "nearby";
       state.followId = undefined;
       emit();
@@ -1331,7 +1346,7 @@ export async function createWorkspace(
               solarCatalog.find((body) => body.id === id)?.kind ===
                 (target === "sun" ? "planet" : "moon")),
         );
-        sdk.camera.observe(
+        observe(
           target,
           mode,
           mode === "system"
@@ -1356,7 +1371,7 @@ export async function createWorkspace(
           state.followId = undefined;
           try {
             if (data.status(target)?.status === "ready")
-              sdk.camera.observe(target, "nearby");
+              observe(target, "nearby");
           } catch {
             /* Preserve the original observation error. */
           }
@@ -1476,7 +1491,7 @@ export async function createWorkspace(
       await pending;
       if (closed || revision !== ownedRevision || state.selected !== target) return;
       if (state.observationMode === "system" && target)
-        sdk.camera.observe(target, "system", {members: systemMembers(target, core.epoch())});
+        observe(target, "system", {members: systemMembers(target, core.epoch())});
       emit();
     },
     trails(enabled) {
@@ -1612,6 +1627,7 @@ export async function createWorkspace(
             });
           } else {
             data.publishAt(epoch);
+            refreshObservationContext();
             // Publish first so expired secondary objects disappear before loading.
             // Secondary cache work never seeks time or changes playback/selection.
             const retained = new Set(data.status().map((item) => item.id));

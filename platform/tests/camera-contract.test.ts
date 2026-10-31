@@ -79,3 +79,15 @@ test("camera intents enforce permission and disposal, preserve actual WASM wire 
   await host.enable("test.denied", []);
   assert.throws(() => sdk.camera.orbit(0, 0), /permission/);
 });
+
+test("observation system context is independent of displayed geometry and strictly bounded", () => {
+  const snapshot = snapshotObservation("moon", "nearby", {systemId: "earth"} as never);
+  assert.equal((snapshot as {systemId?: string}).systemId, "earth");
+  assert.ok(Object.isFrozen(snapshot));
+});
+
+test("invalid observation system identifiers are rejected", () => {
+  for (const systemId of [undefined, null, "", "bad id", "x".repeat(257), 1]) {
+    assert.throws(() => snapshotObservation("moon", "nearby", { systemId } as never));
+  }
+});

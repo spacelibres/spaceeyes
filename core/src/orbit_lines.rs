@@ -11,6 +11,32 @@ pub(crate) fn parent_path_visibility(
         near_visibility
     }
 }
+/// Camera target and its explicit trajectory reference parent are different roles.
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) struct TrajectoryFocus<'a> {
+    pub focused: Option<&'a str>,
+    pub parent: Option<&'a str>,
+}
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn system_path_visibility(
+    id: &str,
+    points: &[[f64; 3]],
+    focus_range: Option<f64>,
+    near_visibility: f32,
+    style: Option<&crate::TrajectoryStyle>,
+    view: &TrajectoryFocus<'_>,
+) -> f32 {
+    // Protect the focused satellite's host and its peers, not its own close-up path.
+    if view.focused.is_some_and(|focused| id != focused)
+        // The NASA scene root is not a local planetary satellite system.
+        && view.parent.filter(|parent| *parent != "sun").is_some_and(|parent| {
+            id == parent || style.is_some_and(|s| s.origin_id.as_deref() == Some(parent))
+        })
+    {
+        return 1.;
+    }
+    path_visibility(points, focus_range, near_visibility, style, view.focused)
+}
 /// Both fade stages must share the same parent policy. A child orbit is not
 /// the focused host's orbit, regardless of whether it is a natural orbit or history.
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
@@ -258,7 +284,7 @@ pub(crate) fn visit_styled_segments(
 mod trail_tests {
     use super::*;
     #[test]
-    fn parent_inspection_keeps_child_trails_but_craft_inspection_hides_them() {
+    fn base_policy_only_protects_direct_children() {
         let style = crate::TrajectoryStyle {
             kind: Some("trail".into()),
             origin_id: Some("earth".into()),
@@ -268,6 +294,153 @@ mod trail_tests {
         assert_eq!(parent_path_visibility(0., Some(&style), Some("iss")), 0.);
         assert_eq!(parent_path_visibility(0., None, Some("earth")), 0.);
         assert_eq!(parent_path_visibility(0.6, Some(&style), None), 0.6);
+    }
+    #[test]
+    fn selected_satellite_does_not_hide_other_satellites_of_its_host() {
+        let lunar = [[-384_400., 0., 0.], [384_400., 0., 0.]];
+        let sibling = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            origin_id: Some("earth".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            system_path_visibility(
+                "moon",
+                &lunar,
+                Some(0.01),
+                0.,
+                Some(&sibling),
+                &TrajectoryFocus {
+                    focused: Some("sc_iss"),
+                    parent: Some("earth")
+                }
+            ),
+            1.
+        );
+    }
+    #[test]
+    fn satellite_family_keeps_host_peers_and_children_but_fades_own_and_foreign_paths() {
+        let points = [[-1e6, 0., 0.], [1e6, 0., 0.]];
+        for (selected, parent) in [
+            ("sc_iss", "earth"),
+            ("moon", "earth"),
+            ("io", "jupiter"),
+            ("titan", "saturn"),
+        ] {
+            let view = TrajectoryFocus {
+                focused: Some(selected),
+                parent: Some(parent),
+            };
+            let own = crate::TrajectoryStyle {
+                kind: Some("orbit".into()),
+                origin_id: Some(parent.into()),
+                ..Default::default()
+            };
+            let host = crate::TrajectoryStyle {
+                kind: Some("orbit".into()),
+                origin_id: Some("sun".into()),
+                ..Default::default()
+            };
+            assert_eq!(
+                system_path_visibility(parent, &points, Some(0.001), 0., Some(&host), &view),
+                1.
+            );
+            assert_eq!(
+                system_path_visibility(selected, &points, Some(0.001), 0., Some(&own), &view),
+                0.
+            );
+            for kind in ["orbit", "trail"] {
+                let peer = crate::TrajectoryStyle {
+                    kind: Some(kind.into()),
+                    origin_id: Some(parent.into()),
+                    ..Default::default()
+                };
+                let child = crate::TrajectoryStyle {
+                    kind: Some(kind.into()),
+                    origin_id: Some(selected.into()),
+                    ..Default::default()
+                };
+                assert_eq!(
+                    system_path_visibility("peer", &points, Some(0.001), 0., Some(&peer), &view),
+                    1.
+                );
+                assert_eq!(
+                    system_path_visibility("child", &points, Some(0.001), 0., Some(&child), &view),
+                    1.
+                );
+                assert_eq!(
+                    system_path_visibility(selected, &points, Some(0.001), 0., Some(&peer), &view),
+                    0.
+                );
+            }
+            let unrelated = crate::TrajectoryStyle {
+                kind: Some("orbit".into()),
+                origin_id: Some("other-system".into()),
+                ..Default::default()
+            };
+            assert_eq!(
+                system_path_visibility("other", &points, Some(0.001), 0., Some(&unrelated), &view),
+                0.
+            );
+            let no_parent = TrajectoryFocus {
+                focused: Some(selected),
+                parent: None,
+            };
+            assert_eq!(
+                system_path_visibility("peer", &points, Some(0.001), 0., Some(&own), &no_parent),
+                0.
+            );
+        }
+        let earth_peer = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            origin_id: Some("earth".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            system_path_visibility(
+                "moon",
+                &points,
+                Some(0.001),
+                0.,
+                Some(&earth_peer),
+                &TrajectoryFocus {
+                    focused: Some("io"),
+                    parent: Some("jupiter")
+                }
+            ),
+            0.
+        );
+        assert_eq!(
+            system_path_visibility(
+                "moon",
+                &points,
+                None,
+                1.,
+                Some(&earth_peer),
+                &TrajectoryFocus {
+                    focused: None,
+                    parent: None
+                }
+            ),
+            1.
+        );
+    }
+    #[test]
+    fn solar_root_reference_does_not_turn_planet_focus_into_a_local_satellite_family() {
+        let points = [[-1e8, 0., 0.], [1e8, 0., 0.]];
+        let peer = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            origin_id: Some("sun".into()),
+            ..Default::default()
+        };
+        let view = TrajectoryFocus {
+            focused: Some("earth"),
+            parent: Some("sun"),
+        };
+        assert_eq!(
+            system_path_visibility("jupiter", &points, Some(0.01), 0., Some(&peer), &view),
+            0.
+        );
     }
     #[test]
     fn parent_inspection_keeps_natural_satellite_orbits_at_every_zoom() {

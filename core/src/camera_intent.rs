@@ -17,6 +17,8 @@ pub struct CameraObservation {
     #[serde(default)]
     pub members: Vec<String>,
     pub follow_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub system_id: Option<String>,
 }
 impl Core {
     pub fn camera_render_status(&self) -> Option<CameraRenderStatus> {
@@ -55,6 +57,29 @@ impl Core {
 
     pub fn camera_observation(&self) -> Option<&CameraObservation> {
         self.observation.as_ref().map(|(_, v)| v)
+    }
+    pub fn set_camera_observation_with_context(
+        &mut self,
+        s: &str,
+        p: &str,
+        observation: CameraObservation,
+    ) -> Result<(), CoreError> {
+        self.input_authorize(s, p)?;
+        if let Some(id) = observation.system_id.as_deref() {
+            self.object_state_at(id, self.clock().epoch())?;
+        }
+        self.set_camera_observation(
+            s,
+            p,
+            &observation.target_id,
+            &observation.mode,
+            observation.members,
+            observation.follow_id,
+        )?;
+        if let Some((_, current)) = self.observation.as_mut() {
+            current.system_id = observation.system_id;
+        }
+        Ok(())
     }
     pub fn set_camera_observation(
         &mut self,
@@ -109,6 +134,7 @@ impl Core {
                 mode: mode.into(),
                 members,
                 follow_id: follow,
+                system_id: None,
             },
         ));
         Ok(())
@@ -178,6 +204,38 @@ mod tests {
             .unwrap();
         }
         c
+    }
+    #[test]
+    fn observation_system_is_validated_atomically_and_survives_missing_geometry() {
+        let mut c = core();
+        let request = |system: &str| CameraObservation {
+            target_id: "a".into(),
+            mode: "nearby".into(),
+            members: vec![],
+            follow_id: None,
+            system_id: Some(system.into()),
+        };
+        c.set_camera_observation_with_context("s", "p", request("b"))
+            .unwrap();
+        assert_eq!(
+            c.camera_observation().unwrap().system_id.as_deref(),
+            Some("b")
+        );
+        assert!(c.trajectory_style("a").is_none());
+        assert!(
+            c.set_camera_observation_with_context("s", "p", request("missing"))
+                .is_err()
+        );
+        assert_eq!(
+            c.camera_observation().unwrap().system_id.as_deref(),
+            Some("b")
+        );
+        assert!(
+            c.set_camera_observation_with_context("s", "wrong", request("b"))
+                .is_err()
+        );
+        c.focus("s", "p", "a").unwrap();
+        assert!(c.camera_observation().is_none());
     }
     #[test]
     fn render_status_is_finite_read_only_and_clearable() {

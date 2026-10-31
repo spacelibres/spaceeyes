@@ -264,6 +264,11 @@ impl Core {
         if owner != session_id {
             return Err(CoreError::WrongOwner);
         }
+        if let Some((_, observation)) = self.observation.as_mut()
+            && observation.system_id.as_deref() == Some(object_id)
+        {
+            observation.system_id = None;
+        }
         self.objects.remove(object_id);
         self.trajectories.remove(object_id);
         self.trajectory_epochs.remove(object_id);

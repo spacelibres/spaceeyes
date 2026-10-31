@@ -1,0 +1,21 @@
+✖ observation system context is independent of displayed geometry and strictly bounded (0.982ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140.4121
+
+✖ failing tests:
+
+test at platform\tests\camera-contract.test.ts:83:1
+✖ observation system context is independent of displayed geometry and strictly bounded (0.982ms)
+  Error: invalid camera observation options
+      at snapshotObservation (file:///C:/Users/stone/Documents/SPACEEYES/platform/camera-contract.ts:37:11)
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/camera-contract.test.ts:84:20)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.start (node:internal/test_runner/test:1096:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)

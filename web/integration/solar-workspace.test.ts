@@ -88,6 +88,12 @@ function harness(initialNullEnvironmentStatus = false) {
             timeSession = [args[0], args[1]];
             return Reflect.apply(value, target, args);
           };
+          if (property === "camera_observe")
+            return (...args: any[]) => {
+              const result = Reflect.apply(value, target, args);
+              focusCalls.push(JSON.parse(args[2]).targetId);
+              return result;
+            };
           if (property === "focus")
             return (...args: any[]) => {
               const result = Reflect.apply(value, target, args);
@@ -1943,5 +1949,44 @@ test("selecting a moon-bearing planet frames its ready primary satellite family"
     await app.groups(false, false);
     await app.select("jupiter");
     assert.equal(states.at(-1)!.observationMode, "nearby");
+  } finally { await app.dispose(); }
+});
+
+test("satellite system context survives independent orbit and trail switches", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures, fetch: async input => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    await app.select("sc_iss");
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "earth");
+    app.trails(false);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "earth");
+    await app.select("moon");
+    app.layers(true, false);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "earth");
+    app.trails(true);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "earth");
+    app.layers(true, true);
+    await app.select("io");
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "jupiter");
+  } finally { await app.dispose(); }
+});
+
+test("focused mission refreshes its system across parent stages with its trail disabled", async () => {
+  const fixtures = harness();
+  const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
+    ...fixtures, fetch: async input => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    await app.seek(-11800000);
+    await app.select("sc_cassini");
+    app.trails(false);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "earth");
+    await app.seek(-11500000);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, undefined);
+    await app.seek(139220000);
+    assert.equal(JSON.parse(fixtures.core().camera_observation!()).systemId, "saturn");
+    assert.equal(fixtures.focused(), "sc_cassini");
   } finally { await app.dispose(); }
 });
