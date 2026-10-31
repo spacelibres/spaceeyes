@@ -9,6 +9,35 @@ use bevy::world_serialization::WorldInstanceReady;
 pub(crate) struct SharedVisuals {
     pub mesh: Handle<Mesh>,
 }
+
+// Resource representation must not select a different optical policy. This is
+// the existing single-image fallback, not a substitute for source surface maps.
+fn sphere_material(
+    color: Option<[f32; 4]>,
+    emissive: Option<[f32; 4]>,
+    stellar: bool,
+    stellar_gain: f32,
+) -> StandardMaterial {
+    StandardMaterial {
+        unlit: stellar,
+        base_color: color
+            .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
+            .unwrap_or(Color::WHITE),
+        emissive: emissive
+            .map(|c| {
+                LinearRgba::new(
+                    c[0] * stellar_gain,
+                    c[1] * stellar_gain,
+                    c[2] * stellar_gain,
+                    c[3],
+                )
+            })
+            .unwrap_or(LinearRgba::BLACK),
+        metallic: 0.,
+        perceptual_roughness: 0.9,
+        ..default()
+    }
+}
 #[derive(Component)]
 pub(crate) struct AppliedVisual {
     revision: u64,
@@ -114,23 +143,12 @@ pub(crate) fn attach_visuals(
                     continue;
                 };
                 let handles = std::array::from_fn(|i| assets.load::<Image>(paths[i].clone()));
-                let material = materials.add(StandardMaterial {
-                    unlit: stellar.is_some(),
-                    base_color: color_rgba
-                        .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
-                        .unwrap_or(Color::WHITE),
-                    emissive: emissive_rgba
-                        .map(|c| {
-                            LinearRgba::new(
-                                c[0] * stellar_gain,
-                                c[1] * stellar_gain,
-                                c[2] * stellar_gain,
-                                c[3],
-                            )
-                        })
-                        .unwrap_or(LinearRgba::BLACK),
-                    ..default()
-                });
+                let material = materials.add(sphere_material(
+                    color_rgba,
+                    emissive_rgba,
+                    stellar.is_some(),
+                    stellar_gain,
+                ));
                 commands
                     .spawn((
                         Mesh3d(shared.mesh.clone()),
@@ -195,24 +213,9 @@ pub(crate) fn attach_visuals(
                 };
                 let image: Handle<Image> = assets.load(descriptor.path.clone());
                 let material = materials.add(StandardMaterial {
-                    unlit: stellar.is_some(),
                     base_color_texture: Some(image.clone()),
                     emissive_texture: Some(image.clone()),
-                    base_color: color_rgba
-                        .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
-                        .unwrap_or(Color::WHITE),
-                    emissive: emissive_rgba
-                        .map(|c| {
-                            LinearRgba::new(
-                                c[0] * stellar_gain,
-                                c[1] * stellar_gain,
-                                c[2] * stellar_gain,
-                                c[3],
-                            )
-                        })
-                        .unwrap_or(LinearRgba::BLACK),
-                    perceptual_roughness: 0.9,
-                    ..default()
+                    ..sphere_material(color_rgba, emissive_rgba, stellar.is_some(), stellar_gain)
                 });
                 commands
                     .spawn((
@@ -244,25 +247,12 @@ pub(crate) fn attach_visuals(
                 commands
                     .spawn((
                         Mesh3d(shared.mesh.clone()),
-                        MeshMaterial3d(
-                            materials.add(StandardMaterial {
-                                unlit: stellar.is_some(),
-                                base_color: color_rgba
-                                    .map(|c| Color::srgba(c[0], c[1], c[2], c[3]))
-                                    .unwrap_or(Color::WHITE),
-                                emissive: emissive_rgba
-                                    .map(|c| {
-                                        LinearRgba::new(
-                                            c[0] * stellar_gain,
-                                            c[1] * stellar_gain,
-                                            c[2] * stellar_gain,
-                                            c[3],
-                                        )
-                                    })
-                                    .unwrap_or(LinearRgba::BLACK),
-                                ..default()
-                            }),
-                        ),
+                        MeshMaterial3d(materials.add(sphere_material(
+                            color_rgba,
+                            emissive_rgba,
+                            stellar.is_some(),
+                            stellar_gain,
+                        ))),
                         Transform::default(),
                         ChildOf(parent),
                     ))
@@ -365,6 +355,131 @@ pub(crate) fn poll_visuals(
         } else if root.instance_ready && assets.is_loaded_with_dependencies(id) {
             *visibility = Visibility::Inherited;
             core.record_visual_status(&root.object, root.revision, VisualPhase::Ready, None);
+        }
+    }
+}
+
+#[cfg(test)]
+mod material_policy_tests {
+    use super::*;
+    use bevy::asset::AssetApp;
+    use std::sync::{Arc, Mutex};
+
+    #[test]
+    fn sphere_asset_paths_keep_one_lit_material_policy() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                visual_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        core.register_asset(
+            "color",
+            crate::AssetDescriptor {
+                kind: crate::AssetKind::Texture,
+                path: "test/color.png".into(),
+            },
+        )
+        .unwrap();
+        for (id, payload) in [
+            ("plain", serde_json::json!({"kind":"sphere"})),
+            (
+                "image",
+                serde_json::json!({"kind":"sphere","textureAsset":"color"}),
+            ),
+            (
+                "faces",
+                serde_json::json!({"kind":"sphere","faceAssets":["color","color","color","color","color","color"]}),
+            ),
+        ] {
+            core.register_object("s", id).unwrap();
+            core.set_visual(
+                "s",
+                "p",
+                id,
+                Some(serde_json::from_value(payload.clone()).unwrap()),
+            )
+            .unwrap();
+            for stellar in [false, true] {
+                let id = format!("{id}-{}", if stellar { "star" } else { "lit" });
+                let mut payload = payload.clone();
+                payload["colorRgba"] = serde_json::json!([0.2, 0.3, 0.4, 0.7]);
+                payload["emissiveRgba"] = serde_json::json!([0.1, 0.2, 0.3, 0.4]);
+                if stellar {
+                    payload["stellar"] = serde_json::json!({"coronaIntensity":2.,"flowSpeed":0.5});
+                }
+                core.register_object("s", &id).unwrap();
+                core.set_visual(
+                    "s",
+                    "p",
+                    &id,
+                    Some(serde_json::from_value(payload).unwrap()),
+                )
+                .unwrap();
+            }
+        }
+        let ids: Vec<_> = core.object_ids().map(str::to_owned).collect();
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, AssetPlugin::default()))
+            .init_asset::<Image>()
+            .init_resource::<Assets<StandardMaterial>>()
+            .insert_resource(CoreStore(Arc::new(Mutex::new(core))))
+            .insert_resource(SharedVisuals {
+                mesh: Handle::default(),
+            })
+            .add_systems(Update, attach_visuals);
+        for id in ids {
+            app.world_mut().spawn(SceneObject { id });
+        }
+        app.update();
+        let mut query = app.world_mut().query::<(&SceneObject, &AppliedVisual)>();
+        let world = app.world();
+        let materials = world.resource::<Assets<StandardMaterial>>();
+        assert_eq!(materials.len(), 9);
+        for (object, applied) in query.iter(world) {
+            let handle = world
+                .get::<MeshMaterial3d<StandardMaterial>>(applied.root)
+                .unwrap();
+            let material = materials.get(&handle.0).unwrap();
+            let stellar = object.id.ends_with("-star");
+            let explicit = stellar || object.id.ends_with("-lit");
+            assert_eq!(material.unlit, stellar);
+            assert_eq!(
+                world
+                    .get::<crate::stellar_render::StellarEmitter>(applied.root)
+                    .is_some(),
+                stellar
+            );
+            assert_eq!(
+                material.base_color,
+                if explicit {
+                    Color::srgba(0.2, 0.3, 0.4, 0.7)
+                } else {
+                    Color::WHITE
+                }
+            );
+            let gain = if stellar { 2.2 } else { 1. };
+            assert_eq!(
+                material.emissive,
+                if explicit {
+                    LinearRgba::new(0.1 * gain, 0.2 * gain, 0.3 * gain, 0.4)
+                } else {
+                    LinearRgba::BLACK
+                }
+            );
+            if object.id.starts_with("image") {
+                assert!(material.base_color_texture.is_some());
+                assert_eq!(material.base_color_texture, material.emissive_texture);
+            }
+            assert_eq!(material.metallic, 0.);
+            assert_eq!(
+                material.perceptual_roughness, 0.9,
+                "LOD/resource representation must not change surface roughness"
+            );
         }
     }
 }

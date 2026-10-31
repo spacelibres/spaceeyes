@@ -192,20 +192,35 @@ pub(crate) fn resolve_faces(
             .flatten()
             .is_some_and(|status| status.phase == VisualPhase::Failed)
         {
+            *visibility = Visibility::Hidden;
             commands.entity(entity).remove::<PendingFaces>();
             continue;
         }
-        if pending.handles.iter().any(|h| {
-            matches!(
-                server.get_load_state(h.id()),
-                Some(bevy::asset::LoadState::Failed(_))
-            )
-        }) {
+        let failure = pending
+            .handles
+            .iter()
+            .enumerate()
+            .find_map(|(face, handle)| {
+                let Some(bevy::asset::LoadState::Failed(error)) =
+                    server.get_load_state(handle.id())
+                else {
+                    return None;
+                };
+                let path = server
+                    .get_path(handle.id())
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|| "<unregistered>".into());
+                Some(format!(
+                    "six-face texture load failed: face {face} (zero-based), path {path}: {error}"
+                ))
+            });
+        if let Some(detail) = failure {
+            *visibility = Visibility::Hidden;
             core.record_visual_status(
                 &pending.object,
                 pending.revision,
                 VisualPhase::Failed,
-                Some("six-face texture load failed".into()),
+                Some(detail),
             );
             commands.entity(entity).remove::<PendingFaces>();
             continue;
@@ -396,5 +411,179 @@ mod cache_tests {
                 .get(material.base_color_texture.as_ref().unwrap())
                 .is_some()
         );
+    }
+}
+
+#[cfg(test)]
+mod failure_diagnostic_tests {
+    use super::*;
+    use bevy::asset::AssetApp;
+    use std::sync::{Arc, Mutex};
+
+    #[test]
+    fn failed_face_identifies_zero_based_index_path_and_preserves_failed_state() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                visual_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        core.register_object("s", "earth").unwrap();
+        core.register_asset(
+            "face",
+            crate::AssetDescriptor {
+                kind: crate::AssetKind::Texture,
+                path: "test/missing-face-3.png".into(),
+            },
+        )
+        .unwrap();
+        let spec = serde_json::json!({"kind":"sphere", "faceAssets":["face","face","face","face","face","face"]});
+        core.set_visual(
+            "s",
+            "p",
+            "earth",
+            Some(serde_json::from_value(spec.clone()).unwrap()),
+        )
+        .unwrap();
+        let revision = core.visual_assignment("earth").unwrap().revision;
+        let shared = Arc::new(Mutex::new(core));
+        let mut app = App::new();
+        app.add_plugins((MinimalPlugins, AssetPlugin::default()))
+            .init_asset::<Image>()
+            .init_resource::<Assets<StandardMaterial>>()
+            .init_resource::<FaceCache>()
+            .insert_resource(CoreStore(shared.clone()))
+            .add_systems(Update, resolve_faces);
+        let loaded = app
+            .world_mut()
+            .resource_mut::<Assets<Image>>()
+            .add(Image::default());
+        let missing: Handle<Image> = app
+            .world()
+            .resource::<AssetServer>()
+            .load("test/missing-face-3.png");
+        let mut handles = std::array::from_fn(|_| loaded.clone());
+        handles[3] = missing;
+        let entity = app
+            .world_mut()
+            .spawn((
+                Visibility::Hidden,
+                PendingFaces {
+                    pixels: Vec::new(),
+                    next_row: 0,
+                    object: "earth".into(),
+                    revision,
+                    handles,
+                    material: Handle::default(),
+                },
+            ))
+            .id();
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        loop {
+            app.update();
+            if shared
+                .lock()
+                .unwrap()
+                .visual_status("earth")
+                .unwrap()
+                .is_some_and(|s| s.phase == VisualPhase::Failed)
+            {
+                break;
+            }
+            assert!(
+                std::time::Instant::now() < deadline,
+                "asset failure never settled"
+            );
+            std::thread::yield_now();
+        }
+        let core = shared.lock().unwrap();
+        let detail = core
+            .visual_status("earth")
+            .unwrap()
+            .unwrap()
+            .detail
+            .as_ref()
+            .unwrap();
+        assert!(detail.contains("face 3"), "{detail}");
+        assert!(detail.contains("test/missing-face-3.png"), "{detail}");
+        assert!(
+            detail.contains("loader") || detail.contains("not found"),
+            "original error lost: {detail}"
+        );
+        assert!(app.world().get::<PendingFaces>(entity).is_none());
+        assert_eq!(
+            *app.world().get::<Visibility>(entity).unwrap(),
+            Visibility::Hidden
+        );
+        drop(core);
+        let next_revision = {
+            let mut core = shared.lock().unwrap();
+            assert!(!core.record_visual_status("earth", revision, VisualPhase::Ready, None));
+            core.set_visual(
+                "s",
+                "p",
+                "earth",
+                Some(serde_json::from_value(spec).unwrap()),
+            )
+            .unwrap();
+            let next = core.visual_assignment("earth").unwrap().revision;
+            assert_ne!(next, revision);
+            assert!(!core.record_visual_status(
+                "earth",
+                revision,
+                VisualPhase::Failed,
+                Some("late old failure".into())
+            ));
+            next
+        };
+        let key = vec![loaded.id(); 6];
+        app.world_mut()
+            .resource_mut::<FaceCache>()
+            .insert(key, loaded.clone());
+        let material = app
+            .world_mut()
+            .resource_mut::<Assets<StandardMaterial>>()
+            .add(StandardMaterial::default());
+        let recovered = app
+            .world_mut()
+            .spawn((
+                Visibility::Hidden,
+                PendingFaces {
+                    pixels: Vec::new(),
+                    next_row: 0,
+                    object: "earth".into(),
+                    revision: next_revision,
+                    handles: std::array::from_fn(|_| loaded.clone()),
+                    material: material.clone(),
+                },
+            ))
+            .id();
+        app.update();
+        assert_eq!(
+            shared
+                .lock()
+                .unwrap()
+                .visual_status("earth")
+                .unwrap()
+                .unwrap()
+                .phase,
+            VisualPhase::Ready
+        );
+        assert!(app.world().get::<PendingFaces>(recovered).is_none());
+        assert_eq!(
+            *app.world().get::<Visibility>(recovered).unwrap(),
+            Visibility::Inherited
+        );
+        let material = app
+            .world()
+            .resource::<Assets<StandardMaterial>>()
+            .get(&material)
+            .unwrap();
+        assert_eq!(material.base_color_texture.as_ref(), Some(&loaded));
+        assert_eq!(material.emissive_texture.as_ref(), Some(&loaded));
     }
 }
