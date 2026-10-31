@@ -65,6 +65,8 @@ mod deep_render;
 mod face_texture;
 #[cfg(feature = "browser-render")]
 mod hdr_assets;
+#[cfg(feature = "browser-render")]
+mod observation;
 mod orbit_lines;
 mod picking;
 #[cfg(feature = "browser-render")]

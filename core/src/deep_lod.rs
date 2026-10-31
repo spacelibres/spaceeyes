@@ -12,23 +12,24 @@ pub(crate) struct DeepSpaceLod {
 }
 impl DeepSpaceLod {
     pub fn desired(fov: f32, height: f32) -> u32 {
-        ((height * 360.0 / fov.max(10.0) / 128.0).log2().ceil() as u32).min(6)
+        (crate::observation::ObservationProjection::density(fov, height)
+            .log2()
+            .ceil() as u32)
+            .min(6)
     }
 }
 pub(crate) fn update_lod(
     mut lod: ResMut<DeepSpaceLod>,
     cameras: Query<(&Projection, &Camera), With<crate::renderer::DisplayCamera>>,
 ) {
-    let Ok((Projection::Perspective(p), c)) = cameras.single() else {
+    let Ok((p, c)) = cameras.single() else {
         return;
     };
-    let wanted = DeepSpaceLod::desired(
-        p.fov.to_degrees(),
-        c.physical_viewport_size().map_or(720.0, |v| v.y as f32),
-    );
-    let density = c.physical_viewport_size().map_or(720.0, |v| v.y as f32) * 360.0
-        / p.fov.to_degrees().max(10.0)
-        / 128.0;
+    let Some(projection) = crate::observation::ObservationProjection::from_camera(c, p) else {
+        return;
+    };
+    let density = projection.sky_density();
+    let wanted = DeepSpaceLod::desired(projection.vertical_degrees(), projection.physical_size.y);
     let keep = lod.initialized && keep_level(lod.wanted, wanted, density);
     lod.initialized = true;
     if wanted != lod.wanted && !keep {
@@ -50,6 +51,13 @@ fn keep_level(current: u32, wanted: u32, density: f32) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn actual_vertical_fov_is_not_clamped_to_host_long_axis_limit() {
+        // A short, wide viewport may have a valid vertical FOV below 10 degrees.
+        assert_eq!(DeepSpaceLod::desired(5., 100.), 6);
+        assert_eq!(DeepSpaceLod::desired(f32::NAN, 720.), 0);
+        assert_eq!(DeepSpaceLod::desired(45., 0.), 0);
+    }
     #[test]
     fn density_hysteresis_prevents_boundary_chatter() {
         assert!(keep_level(3, 4, 8.05));

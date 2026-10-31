@@ -1,5 +1,5 @@
 //! Built-in Bevy rendering with resources resolved through the host catalog.
-use crate::picking::{PickFrame, PickRay, PickShape, PickTarget, SharedPickFrame};
+use crate::picking::{PickFrame, PickShape, PickTarget, SharedPickFrame};
 use crate::render_assets::{SharedVisuals, attach_visuals, poll_visuals, world_ready};
 use crate::runtime::SceneObject;
 use crate::runtime::{CoreScenePlugin, CoreStore, DisplaySettings, sync_scene};
@@ -134,10 +134,15 @@ pub(crate) fn create_browser_app(
     ))
     .register_asset_loader(crate::hdr_assets::SeHdrLoader)
     .init_resource::<crate::deep_lod::DeepSpaceLod>()
-    .add_systems(Update, crate::deep_lod::update_lod.after(update_focus))
+    .add_systems(
+        PostUpdate,
+        crate::deep_lod::update_lod
+            .after(bevy::transform::TransformSystems::Propagate)
+            .after(bevy::camera::CameraUpdateSystems),
+    )
     .add_systems(
         Update,
-        crate::deep_render::sync_environment.after(crate::deep_lod::update_lod),
+        crate::deep_render::sync_environment.after(update_focus),
     )
     .add_systems(
         Update,
@@ -1913,18 +1918,21 @@ fn draw_annotations(
         let p = (DVec3::from_array(p) - settings.origin_km) * settings.units_per_km;
         Vec3::new(p.x as f32, p.z as f32, -p.y as f32)
     };
-    let viewport = camera.logical_viewport_size().unwrap_or(Vec2::ZERO);
-    let pick_ray = match projection {
-        Projection::Perspective(p) => Some(PickRay {
-            origin: camera_transform.translation().as_dvec3().to_array(),
-            forward: (*camera_transform.forward()).as_dvec3().to_array(),
-            right_half: ((*camera_transform.right()).as_dvec3()
-                * ((p.fov as f64 * 0.5).tan() * p.aspect_ratio as f64))
-                .to_array(),
-            up_half: ((*camera_transform.up()).as_dvec3() * (p.fov as f64 * 0.5).tan()).to_array(),
-        }),
-        _ => None,
+    let Some(observation) =
+        crate::observation::ObservationProjection::from_camera(camera, projection)
+    else {
+        maintain_labels(
+            &mut commands,
+            &mut labels,
+            Vec::new(),
+            Handle::default(),
+            &opacity,
+            None,
+        );
+        return;
     };
+    let viewport = observation.logical_size;
+    let pick_ray = observation.pick_ray(camera_transform);
     let c = camera_transform.translation().as_dvec3() / settings.units_per_km;
     let scientific_camera = settings.origin_km + DVec3::new(c.x, -c.z, c.y);
     let spheres: Vec<_> = core
@@ -2045,11 +2053,12 @@ fn draw_annotations(
             })
             .unwrap_or(state.radius_km)
             .max(state.radius_km);
-        let offset =
-            position + camera_transform.right() * (visual_radius * settings.units_per_km) as f32;
-        let projected_radius = camera
-            .world_to_viewport(camera_transform, offset)
-            .map_or(0., |p| p.distance(pixel));
+        let projected_radius = observation.radius_pixels(
+            camera,
+            camera_transform,
+            position,
+            (visual_radius * settings.units_per_km) as f32,
+        );
         if pixel.x < 0. || pixel.y < 0. || pixel.x > viewport.x || pixel.y > viewport.y {
             continue;
         }
