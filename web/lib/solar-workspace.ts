@@ -628,6 +628,7 @@ export async function createWorkspace(
         "planet"
           ? state.selected
           : parentAt(state.selected, epoch);
+      const systems = new Set([state.selected, system].filter(Boolean));
       for (const body of eyesCatalog
         .filter(
           (body) =>
@@ -635,8 +636,9 @@ export async function createWorkspace(
               (state.moons &&
                 body.kind === "moon" &&
                 body.subcategory === "Major Moon")) &&
-            parentAt(body.id, epoch) === system,
+            systems.has(parentAt(body.id, epoch) ?? ""),
         )
+        .sort((a,b) => Number(parentAt(b.id, epoch) === state.selected) - Number(parentAt(a.id, epoch) === state.selected))
         .slice(0, 128))
         ids.add(body.id);
     }

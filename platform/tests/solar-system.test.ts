@@ -1328,3 +1328,46 @@ test("non-orbital circular source uses local dynamics rather than its coverage l
     eyesDefinitions.sc_voyager_1.trail = originalTrail;
   }
 });
+
+test("automatic deep-space spacecraft history is not truncated to 30 days or by point count", async () => {
+  const {ctx} = context();
+  const period = 300 * 86400;
+  const epoch = 880000000;
+  const source = new SolarSystemData(ctx, {fetch: async () => {
+    const bytes = orb(1e8), view = new DataView(bytes.buffer);
+    for (let i=0; i<2; i++) {
+      view.setFloat64(28+i*72, epoch - period*2 + i*period*4, true);
+      view.setFloat64(28+i*72+24, 2*Math.PI/period, true);
+      view.setFloat64(28+i*72+32, i*8*Math.PI, true);
+    }
+    return new Response(bytes);
+  }});
+  try {
+    await source.load(["sc_psyche"], epoch, []);
+    for (const count of [32, 128]) {
+      const trail = source.trailSamples("sc_psyche", epoch, count);
+      assert.ok(Math.abs(trail.durationSeconds-period) < 1, "NASA auto orbital period must survive budget");
+      assert.equal(trail.epochsTdbSeconds[0], epoch-period);
+      assert.ok(trail.points.length <= count);
+    }
+  } finally { source.dispose(); }
+});
+
+test("automatic spacecraft histories remain publishable for radial and stationary limits", async () => {
+  const {ctx} = context();
+  const epoch = 880000000;
+  const bytes = new Uint8Array(76), view = new DataView(bytes.buffer);
+  view.setInt16(0,2,true); bytes.set([108,105,110,0,3,1],2); view.setInt32(8,2,true);
+  view.setFloat64(12,epoch-1e7,true); view.setFloat64(44,epoch+1e7,true);
+  const source = new SolarSystemData(ctx,{fetch:async()=>new Response(bytes)});
+  try {
+    await source.load(["sc_psyche"],epoch,[]);
+    for(const velocity of [[1,1e-12,0],[0,0,0],[1e-20,0,0]]) {
+      source.position = (id,t) => id === "sc_psyche"
+        ? [100+(t-epoch)*velocity[0],(t-epoch)*velocity[1],0] : [0,0,0];
+      const trail=source.trailSamples("sc_psyche",epoch,32);
+      assert.ok(Number.isFinite(trail.durationSeconds) && trail.durationSeconds >= 1 && trail.durationSeconds <= 946080000);
+      assert.ok(trail.points.length <= 32);
+    }
+  } finally {source.dispose();}
+});

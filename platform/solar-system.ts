@@ -1,5 +1,6 @@
 import {eyesTrailDuration, eyesTrailNextBoundary} from "./eyes-trail-policy.ts";
 import {adaptiveTrailTimes} from "./adaptive-trail.ts";
+import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
 import {
@@ -1342,11 +1343,14 @@ export class SolarSystemData {
     }
     const authoredDuration = eyesTrailDuration(id, epoch);
     if (authoredDuration === 0) throw Error("Trail disabled by source policy");
-    let durationSeconds = authoredDuration ?? Math.min(
+    const isSpacecraft = solarCatalog.find(body => body.id === id)?.kind === "spacecraft";
+    let durationSeconds = authoredDuration ?? (isSpacecraft
+      ? Math.max(1, Math.min(MAX_TRAIL_DURATION_SECONDS, inferredPeriod))
+      : Math.min(
       30 * 86400,
       inferredPeriod,
       rate > 0 ? (0.052 * (count - 2)) / (1.0625 * rate) : inferredPeriod,
-    );
+    ));
     let [coveredStart, coveredEnd] = this.#phaseCoverage(
       id,
       epoch,
@@ -1367,7 +1371,7 @@ export class SolarSystemData {
       end = 0;
     let times: number[] = [];
     let unresolved = new Set<number>();
-    if (authoredDuration !== undefined) {
+    if (authoredDuration !== undefined || isSpacecraft) {
       start = Math.max(coveredStart, epoch - durationSeconds);
       end = Math.min(coveredEnd, epoch + durationSeconds / 16);
       ({times, unresolved} = adaptiveTrailTimes(start, epoch, end, count, relative, period));

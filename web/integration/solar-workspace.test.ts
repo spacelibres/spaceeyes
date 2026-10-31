@@ -1990,3 +1990,29 @@ test("focused mission refreshes its system across parent stages with its trail d
     assert.equal(fixtures.focused(), "sc_cassini");
   } finally { await app.dispose(); }
 });
+
+test("Moon selection includes its own orbiters as well as Earth-system siblings", { timeout: 5000 }, async () => {
+  const fixtures = harness();
+  let loaded!: () => void;
+  const complete = new Promise<void>(resolve => { loaded = resolve; });
+  const app = await createWorkspace("#test", state => {
+    if (state.selected === "moon" && !state.busy) try {
+      fixtures.core().state_at("sc_lunar_reconnaissance_orbiter", fixtures.core().epoch());
+      fixtures.core().state_at("sc_themis_b", fixtures.core().epoch());
+      fixtures.core().state_at("sc_iss", fixtures.core().epoch());
+      loaded();
+    } catch {}
+  }, new AbortController().signal, {
+    ...fixtures, fetch: async input => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    await app.seek(846724000);
+    await app.select("moon");
+    await complete;
+    assert.doesNotThrow(() => fixtures.core().state_at("sc_lunar_reconnaissance_orbiter", fixtures.core().epoch()));
+    assert.doesNotThrow(() => fixtures.core().state_at("sc_themis_b", fixtures.core().epoch()));
+    assert.doesNotThrow(() => fixtures.core().state_at("sc_iss", fixtures.core().epoch()));
+    await app.groups(true, false);
+    assert.throws(() => fixtures.core().state_at("sc_lunar_reconnaissance_orbiter", fixtures.core().epoch()));
+  } finally { await app.dispose(); }
+});
