@@ -12,7 +12,7 @@
 | 搜索/分类 | Search/ContentManager | 已有633项分类搜索；未核验官方实时新增目录覆盖 | 逐目录和别名对照 |
 | 选择/信息/关联对象 | SelectionManager/InfoPanel/RelatedBlock | 已有；未完成所有上下文入口与布局对照 | 点击天体/标记/标签后信息一致 |
 | Nearby | CameraScripts | 已有半径/模型取景；同条件镜头尚未全部认证 | 行星与小航天器 |
-| System | Cameras/CameraScripts | 已有父子系统拟合；全目录系统边界未认证 | 地月/木星/土星 |
+| System | Cameras/CameraScripts | 已有父子系统拟合；0.0.60按用户确认让带主要卫星的行星切换默认system，主要卫星首批加载；全目录系统边界未认证 | 地月/木星/土星 |
 | Follow | CameraManager | 已有参考体跟随；极端FOV和动态父体需扩测 | ISS/MRO/飞越任务 |
 | 鼠标拖动/惯性 | input/RotationController | 已有；平移/旋转各手势仍需官方逐项比对 | 按下/拖出/返回/失焦 |
 | 滚轮缩放 | ZoomController | 已有平滑/碰撞；灵敏度和离地高度语义未全认证 | 近表面至总览 |

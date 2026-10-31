@@ -1921,3 +1921,27 @@ test("dense Earth scene keeps resolved long spacecraft histories without starvin
     assert.equal(fixtures.focused(), "sc_iss");
   } finally { await app.dispose(); }
 });
+
+test("selecting a moon-bearing planet frames its ready primary satellite family", async () => {
+  const fixtures = harness();
+  const states: SolarSnapshot[] = [];
+  const app = await createWorkspace("#test", value => states.push(value), new AbortController().signal, {
+    ...fixtures, fetch: async input => new Response(sample(String(input).includes("type=ori"))),
+  });
+  try {
+    for (const [planet, moons] of [["mars",["phobos","deimos"]],["jupiter",["io","europa","ganymede","callisto"]],["saturn",["titan","mimas"]],["uranus",["ariel","titania"]],["neptune",["triton"]]] as const) {
+      await app.select(planet);
+      assert.equal(states.at(-1)!.observationMode, "system");
+      const view = JSON.parse(fixtures.core().camera_observation!());
+      assert.equal(view.mode, "system");
+      for (const id of [planet,...moons]) assert.ok(view.members.includes(id), `${planet} family contains ${id}`);
+      app.focus();
+      assert.equal(states.at(-1)!.observationMode, "nearby");
+    }
+    await app.select("mercury");
+    assert.equal(states.at(-1)!.observationMode, "nearby");
+    await app.groups(false, false);
+    await app.select("jupiter");
+    assert.equal(states.at(-1)!.observationMode, "nearby");
+  } finally { await app.dispose(); }
+});

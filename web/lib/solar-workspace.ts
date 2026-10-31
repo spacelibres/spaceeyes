@@ -888,6 +888,13 @@ export async function createWorkspace(
       state.error = "跟随参考对象在当前时刻无有效数据，已恢复近景观察";
     }
   };
+  const primaryMoons = (target: string, epoch: number) => state.moons &&
+    solarCatalog.find(body => body.id === target)?.kind === "planet"
+    ? eyesCatalog.filter(body => body.kind === "moon" && body.subcategory === "Major Moon" && parentAt(body.id, epoch) === target).map(body => body.id)
+    : [];
+  const systemMembers = (target: string, epoch: number) => sceneIds(epoch).filter(id =>
+    id === target || (parentAt(id, epoch) === target && data.status(id)?.status === "ready" &&
+      solarCatalog.find(body => body.id === id)?.kind === (target === "sun" ? "planet" : "moon")));
   const criticalDependencies = (epoch: number) => {
     const required = new Set<string>(state.selected ? [state.selected] : ["sun"]);
     if (state.followId) required.add(state.followId);
@@ -931,8 +938,9 @@ export async function createWorkspace(
             parent = parentAt(parent, epoch);
           }
           const critical = criticalDependencies(epoch);
+          const family = state.observationMode === "system" ? primaryMoons(state.selected, epoch) : [];
           const primaryIds = prioritizeSelection && state.selected
-            ? ids.filter((id) => critical.has(id))
+            ? ids.filter((id) => critical.has(id) || family.includes(id))
             : ids;
           await data.load(primaryIds, epoch, [...orientationIds]);
           assertLive();
@@ -1000,6 +1008,10 @@ export async function createWorkspace(
               if (closed || signal.aborted || current !== revision) return;
               data.publishAt(core.epoch());
               configure();
+              if (state.phase.startsWith("当前场景：")) {
+                const ready = data.status().filter(item => item.status === "ready").length;
+                state.phase = `当前场景：${ready}/${data.status().length} 个对象可用 · 目录 ${workspaceCatalog.length} 项`;
+              }
               refreshDataWarning();
               emit();
             }).catch((error) => {
@@ -1239,7 +1251,7 @@ export async function createWorkspace(
       observationToken++;
       if (!solarCatalog.some((body) => body.id === id))
         throw new Error("未知对象");
-      state.observationMode = "nearby";
+      state.observationMode = primaryMoons(id, core.epoch()).length ? "system" : "nearby";
       state.followId = undefined;
       state.selected = id;
       const pending = reload(core.epoch(), true),
@@ -1256,6 +1268,8 @@ export async function createWorkspace(
         throw new Error(state.error);
       }
       sdk.camera.focus(id);
+      if (state.observationMode === "system")
+        sdk.camera.observe(id, "system", {members: systemMembers(id, core.epoch())});
       sdk.camera.view("orbit");
       state.view = "orbit";
       emit();
@@ -1450,7 +1464,14 @@ export async function createWorkspace(
       assertLive();
       state.moons = moons;
       state.spacecraft = spacecraft;
-      await reload(core.epoch());
+      const target = state.selected;
+      const pending = reload(core.epoch());
+      const ownedRevision = revision;
+      await pending;
+      if (closed || revision !== ownedRevision || state.selected !== target) return;
+      if (state.observationMode === "system" && target)
+        sdk.camera.observe(target, "system", {members: systemMembers(target, core.epoch())});
+      emit();
     },
     trails(enabled) {
       assertLive();
