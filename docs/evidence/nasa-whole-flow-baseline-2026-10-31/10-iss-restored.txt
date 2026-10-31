@@ -1,0 +1,89 @@
+- main:
+  - img "spacelibre"
+  - heading "太空之眼 SPACE EYES" [level=1]
+  - button "探索天体"
+  - button "对象与图层" [expanded]
+  - button "太阳系总览"
+  - button "全屏"
+  - button "分享场景"
+  - link "数据诊断":
+    - /url: /diagnostics
+  - status:
+    - generic: 当前场景：11/11 个对象可用 · 目录 633 项 · 4项当前时间无覆盖
+    - generic: 本次初始化 1.35 秒（不含首帧及贴图就绪）
+    - button "退出工作区"
+  - region "Bevy太阳系三维画布":
+    - generic "三维场景：方向键环绕，加减缩放，Home近景，空格播放"
+    - generic: International Space Station
+    - generic: ICRF · km
+    - text: 光照
+    - combobox "光照":
+    - button "放大": +
+    - button "缩小": −
+    - text: 观察模式
+    - combobox "观察模式":
+    - text: 跟随参考
+    - combobox "跟随参考":
+    - text: 观测视场 45°
+    - slider "观测视场（度）": "45"
+    - text: 观察视角
+    - combobox "观察视角":
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - complementary "对象与图层面板":
+    - button "关闭对象信息" [active]: ×
+    - paragraph: 对象信息
+    - heading "International Space Station" [level=2]
+    - paragraph: sc_iss
+    - button "聚焦"
+    - button "跟随"
+    - term: 数据状态
+    - definition: ready · 显示资源 ready
+    - term: 姿态来源与状态
+    - definition: NASA Eyes 实体控制器推导姿态（非实测，精度未验收）
+    - term: 骨骼与太阳翼
+    - definition: 已启用 10 个对日关节，遵循各自转轴约束
+    - term: 科学来源
+    - definition: NASA Eyes DYN · 近似星历（精度未验收） · SHA256 a2a5a38691da · 获取 2026-10-31T08:23:37.827Z
+    - term: 有效覆盖 · J2000 TDB 秒
+    - definition: 846701435.627555 — 846757171.9420085
+    - term: 模型取景范围（非物理半径）
+    - definition: 0.072 km
+    - button "前往有效观测时间"
+    - heading "关联对象" [level=3]
+    - button "地球 →"
+    - heading "显示图层" [level=3]
+    - checkbox "天然卫星" [checked]
+    - text: 天然卫星
+    - checkbox "人造卫星与飞船" [checked]
+    - text: 人造卫星与飞船
+    - checkbox "银河全景" [checked]
+    - text: 银河全景
+    - status "银河加载状态": NASA 银河全景已就绪
+    - checkbox "背景星空" [checked]
+    - text: 背景星空
+    - status "背景星空状态": 星空数据：7/7 层 · 43,878 点
+    - generic "场景与深空数据诊断"
+    - checkbox "对象标签" [checked]
+    - text: 对象标签
+    - checkbox "轨道线" [checked]
+    - text: 轨道线
+    - checkbox "卫星拖尾" [checked]
+    - text: 卫星拖尾
+    - paragraph: 行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 2026-10-31T08:18:13.576Z
+    - generic: 846706762.759 J2000 TDB s
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放"
+    - button "降低播放倍率": −
+    - text: 播放速率 · 3 sec/s
+    - slider "播放速率": "51"
+    - button "提高播放倍率": +
+    - button "1× 速度"
+    - button "日期与跳转"
+    - button "当前时间"
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert

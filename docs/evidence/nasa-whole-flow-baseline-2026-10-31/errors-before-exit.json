@@ -1,0 +1,221 @@
+{
+  "browser": [],
+  "rust": [
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.309Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.330Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.331Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.346Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    },
+    {
+      "level": "log",
+      "message": "%cERROR%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_asset-0.19.1\\src\\server\\mod.rs:593%c Encountered an I/O error while loading asset: Failed to fetch path: {} color: red; background: #444 color: gray; font-style: italic color: inherit",
+      "timestamp": "2026-10-31T08:21:42.347Z",
+      "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+    }
+  ]
+}

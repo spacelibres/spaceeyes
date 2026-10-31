@@ -1,0 +1,48 @@
+- main:
+  - img "spacelibre"
+  - heading "太空之眼 SPACE EYES" [level=1]
+  - button "探索天体"
+  - button "对象与图层" [active]
+  - button "太阳系总览"
+  - button "全屏"
+  - button "分享场景"
+  - link "数据诊断":
+    - /url: /diagnostics
+  - status:
+    - generic: 当前场景：82/86 个对象可用 · 目录 633 项 · 4项当前时间无覆盖
+    - generic: 本次初始化 1.35 秒（不含首帧及贴图就绪）
+    - button "退出工作区"
+  - region "Bevy太阳系三维画布":
+    - generic "三维场景：方向键环绕，加减缩放，Home近景，空格播放"
+    - generic: International Space Station
+    - generic: ICRF · km
+    - text: 光照
+    - combobox "光照":
+    - button "放大": +
+    - button "缩小": −
+    - text: 观察模式
+    - combobox "观察模式":
+    - text: 跟随参考
+    - combobox "跟随参考":
+    - text: 观测视场 45°
+    - slider "观测视场（度）": "45"
+    - text: 观察视角
+    - combobox "观察视角":
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 2026-10-31T08:14:49.649Z
+    - generic: 846706558.832 J2000 TDB s
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放"
+    - button "降低播放倍率": −
+    - text: 播放速率 · real rate
+    - slider "播放速率": "50"
+    - button "提高播放倍率": +
+    - button "1× 速度"
+    - button "日期与跳转"
+    - button "当前时间"
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert
