@@ -54,6 +54,8 @@ type FramingNodes<'w, 's> = Query<
 #[derive(Resource)]
 struct OrbitView {
     motion: crate::camera_motion::Motion,
+    // SDK/UI intentions remain valid when focus moves from the canvas to controls.
+    host_zoom: crate::camera_motion::Motion,
     input_active: bool,
     target: Option<String>,
     focus_revision: u64,
@@ -67,6 +69,7 @@ impl Default for OrbitView {
     fn default() -> Self {
         Self {
             motion: crate::camera_motion::Motion::default(),
+            host_zoom: crate::camera_motion::Motion::default(),
             input_active: false,
             target: None,
             focus_revision: 0,
@@ -388,6 +391,7 @@ fn update_focus(
     let view_changed = blend.key.as_deref() != Some(key.as_str());
     if view_changed {
         orbit.motion.clear();
+        orbit.host_zoom.clear();
     }
     if !view_changed && orbit.input_active {
         blend.elapsed = 0.35;
@@ -1248,7 +1252,97 @@ mod camera_intent_render_tests {
         assert_eq!(follow_display_direction(DVec3::ZERO), Vec3::ZERO);
     }
     #[test]
-    fn controlled_zoom_is_queued_once_independent_of_frame_duration() {
+    fn host_zoom_survives_canvas_blur_without_replaying_native_motion() {
+        for focused in [false, true] {
+            for hz in [30, 60, 120] {
+                let mut core = crate::Core::default();
+                core.open_session_with_permissions(
+                    "s",
+                    "p",
+                    crate::SessionPermissions {
+                        camera_control: true,
+                        ..default()
+                    },
+                )
+                .unwrap();
+                core.register_object("s", "earth").unwrap();
+                core.set_object_state(
+                    "s",
+                    "earth",
+                    crate::ObjectState {
+                        position_km: [0.; 3],
+                        radius_km: 6378.1,
+                        epoch_tdb_seconds: 0.,
+                        coverage_tdb_seconds: [0., 10.],
+                        frame: "ICRF".into(),
+                        source: "test".into(),
+                        orientation_wxyz: None,
+                    },
+                )
+                .unwrap();
+                core.focus("s", "p", "earth").unwrap();
+                let shared = Arc::new(std::sync::Mutex::new(core));
+                let mut app = App::new();
+                app.insert_resource(CoreStore(shared.clone()))
+                    .init_resource::<OrbitView>()
+                    .init_resource::<DisplaySettings>()
+                    .init_resource::<crate::face_texture::FaceCache>()
+                    .init_resource::<ButtonInput<MouseButton>>()
+                    .init_resource::<AccumulatedMouseMotion>()
+                    .insert_resource(Time::<()>::default())
+                    .add_message::<MouseWheel>()
+                    .add_systems(Update, (orbit_input, update_focus).chain());
+                let window = app
+                    .world_mut()
+                    .spawn(Window {
+                        focused,
+                        ..default()
+                    })
+                    .id();
+                app.world_mut()
+                    .spawn((DisplayCamera, Transform::default(), Projection::default()));
+                let dt = std::time::Duration::from_secs_f64(1. / hz as f64);
+                app.world_mut().resource_mut::<Time>().advance_by(dt);
+                app.update();
+                let before = app.world().resource::<OrbitView>().distance;
+                if !focused {
+                    let mut orbit = app.world_mut().resource_mut::<OrbitView>();
+                    orbit.motion.drag([0.08, 0.04], dt.as_secs_f32());
+                    orbit.motion.zoom(0.8);
+                }
+                shared.lock().unwrap().camera_zoom("s", "p", 0.3).unwrap();
+                for _ in 0..hz {
+                    app.world_mut().resource_mut::<Time>().advance_by(dt);
+                    app.update();
+                }
+                let orbit = app.world().resource::<OrbitView>();
+                assert!(
+                    (orbit.distance / before - 0.3_f32.exp()).abs() < 0.0001,
+                    "host intent must survive blur and apply once: focused={focused}, hz={hz}"
+                );
+                assert_eq!(orbit.yaw, 0.);
+                assert_eq!(orbit.pitch, 0.);
+                if !focused {
+                    app.world_mut().get_mut::<Window>(window).unwrap().focused = true;
+                    for _ in 0..3 {
+                        app.world_mut().resource_mut::<Time>().advance_by(dt);
+                        app.update();
+                    }
+                    let orbit = app.world().resource::<OrbitView>();
+                    assert_eq!(orbit.yaw, 0.);
+                    assert_eq!(orbit.pitch, 0.);
+                    assert!((orbit.distance / before - 0.3_f32.exp()).abs() < 0.0001);
+                }
+                let mut core = shared.lock().unwrap();
+                assert_eq!(core.take_camera_input(), [0.; 3]);
+                assert_eq!(core.focused_object(), Some("earth"));
+                assert_eq!(core.clock().epoch(), 0.);
+                assert_eq!(core.object_state_at("earth", 0.).unwrap().radius_km, 6378.1);
+            }
+        }
+    }
+    #[test]
+    fn controlled_zoom_is_consumed_once_independent_of_frame_duration() {
         for dt in [1. / 30., 1. / 60., 1. / 120.] {
             let mut c = crate::Core::default();
             c.open_session_with_permissions(
@@ -1264,26 +1358,29 @@ mod camera_intent_render_tests {
             let mut orbit = OrbitView::default();
             let before = orbit.distance;
             apply_controlled_input(&mut c, &mut orbit, dt);
-            assert_eq!(orbit.distance, before);
-            apply_controlled_input(&mut c, &mut orbit, dt);
+            assert!(orbit.distance > before);
+            for _ in 1..(1. / dt).round() as u32 {
+                apply_controlled_input(&mut c, &mut orbit, dt);
+            }
             assert_eq!(c.take_camera_input(), [0.; 3]);
-            assert!(orbit.motion.zoom_step(dt) > 0.);
+            assert!((orbit.distance / before - 0.3_f32.exp()).abs() < 0.0001);
+            assert_eq!(orbit.motion.zoom_step(dt), 0.);
         }
     }
 }
 
 fn apply_controlled_input(core: &mut crate::Core, orbit: &mut OrbitView, dt: f32) {
     let input = core.take_camera_input();
-    if input == [0.; 3] {
-        return;
-    }
-    orbit.input_active = true;
+    orbit.input_active |= input != [0.; 3];
     orbit.yaw += input[0];
     orbit.pitch = (orbit.pitch + input[1]).clamp(-1.5, 1.5);
     if input[0] != 0. || input[1] != 0. {
         orbit.motion.drag([input[0], input[1]], dt);
     }
-    orbit.motion.zoom(input[2]);
+    orbit.host_zoom.zoom(input[2]);
+    let zoom = orbit.host_zoom.zoom_step(dt);
+    orbit.input_active |= zoom.abs() > f32::EPSILON;
+    orbit.distance = (orbit.distance * zoom.exp()).clamp(1e-8, 1e12);
 }
 
 fn orbit_input(
@@ -1313,6 +1410,7 @@ fn orbit_input(
     }
     if available && buttons.just_pressed(MouseButton::Left) {
         orbit.motion.clear();
+        orbit.host_zoom.clear();
     }
     let delta = if dragging {
         let delta = [-motion.delta.x * 0.005, -motion.delta.y * 0.005];
