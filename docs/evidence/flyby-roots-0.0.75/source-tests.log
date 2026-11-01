@@ -1,0 +1,32 @@
+✔ last declared covered position track wins overlaps and excluded phases are never fetched (17.1613ms)
+✔ reviewed Venus and Mars source windows load modern states without weakening the decoder (7.3302ms)
+✔ reviewed windows preserve source records and expose their exact selection (4.3045ms)
+✔ Venus duplicate boundary is covered on both sides; ambiguous Mars history remains rejected (2.5145ms)
+✔ Moon index resolves a headerless child and preserves the definition metadata (0.37ms)
+✔ coverage rejection stops before requesting a child (0.2095ms)
+✔ request cancellation is passed to the upstream fetch (0.282ms)
+✔ unknown objects, origin-only Sun and nonfinite epochs never fetch (0.2162ms)
+✔ reviewed Voyager positions preserve raw source and exclude exact duplicate terminator (2.5556ms)
+✔ Juno flyby chooses the last data-covered track instead of inferring coverage from URL parent (0.6433ms)
+✔ a later position track failure is not silently replaced with an earlier orbit (0.2709ms)
+✔ resolved root coverage exposes cache expiry when a later track overlaps an earlier broad payload (0.7323ms)
+✔ an internal index-gap start remains inclusive for the fallback cache domain (0.3808ms)
+✔ real hash-pinned Juno flyby resolves after later duplicate-terminator sources prove outside coverage (8.9043ms)
+✔ known reviewed mission coverage outside is distinct from malformed or ambiguous payload failure (2.5948ms)
+✔ all hash-pinned mission windows preserve contiguous original records and strict decoding (48.9033ms)
+✔ single orientation root exposes precise coverage rather than treating network errors as absence (0.7485ms)
+✔ hash-pinned NASA LRO and Psyche quat index/children decode offline with actual wire headers (10.1567ms)
+✔ reviewed Psyche quat windows retain both sides but reject conflicting duplicate epoch (3.2428ms)
+✔ Mars2020 duplicate landing records retain exact contiguous pre/post windows (1.7818ms)
+✔ InSight EDL identical final terminator selects original ordered records only (1.3628ms)
+✔ reviewed future flyby roots retain only ordered source records and expose proven coverage (3.7122ms)
+✔ all reviewed flyby roots prove terminal ambiguity and exclude it from controller cache (17.9759ms)
+✔ three complete mission controller chains resolve current cruise after future roots are proven outside (21.5153ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 327.4019

@@ -447,3 +447,72 @@ test('InSight EDL identical final terminator selects original ordered records on
  const changed=raw.slice();changed[changed.length-1]^=1;
  assert.equal(reviewedMissionWindow('sc_insight_edl/mars/pos',changed,596533601).selection,undefined);
 });
+
+test('reviewed future flyby roots retain only ordered source records and expose proven coverage',async()=>{
+ const cases=[
+ ['sc_europa_clipper/earth/flyby','sc_europa_clipper__earth__flyby__def-source.dyn',28,72,3,849407067,849810294,true],
+ ['sc_juice/earth/flyby3','sc_juice__earth__flyby3__def-source.dyn',28,72,3,916393497,916903199,true],
+ ['sc_lucy/617_patroclus/pos','sc_lucy__617_patroclus__pos__def-source.dyn',12,56,5,1046169596,1047892376,false],
+ ] as const;
+ for(const [track,file,base,stride,count,start,end,ambiguous] of cases){
+  const raw=new Uint8Array(await readFile(new URL('./fixtures/'+file,import.meta.url)));
+  assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+  const epoch=(start+end)/2;
+  const selected=reviewedMissionWindow(track,raw,epoch);
+  assert.deepEqual(selected.selection?.records,[0,count]);
+  assert.deepEqual(selected.bytes.subarray(base),raw.subarray(base,base+count*stride));
+  const decoded=decodeDyn(selected.bytes);
+  assert.deepEqual([decoded.coverage.start,decoded.coverage.end],[start,end]);
+  assert.throws(()=>reviewedMissionWindow(track,raw,start-1),/Outside source coverage/);
+  assert.throws(()=>reviewedMissionWindow(track,raw,end+1),/Outside source coverage/);
+  if(ambiguous){
+   assert.deepEqual(selected.domain,{upperExclusive:end});
+   assert.throws(()=>reviewedMissionWindow(track,raw,end),/Ambiguous reviewed mission epoch/);
+  }
+  else assert.ok(reviewedMissionWindow(track,raw,end).selection);
+  const changed=raw.slice();changed[changed.length-1]^=1;
+  assert.equal(reviewedMissionWindow(track,changed,epoch).selection,undefined);
+  assert.throws(()=>decodeDyn(changed),/sample times must increase/);
+ }
+});
+
+test('all reviewed flyby roots prove terminal ambiguity and exclude it from controller cache',async()=>{
+ const review=JSON.parse(await readFile(new URL('../../docs/evidence/flyby-roots-0.0.75/source-review.json',import.meta.url),'utf8')).sources;
+ const {acceptsPositionEpoch}=await import('../../platform/position-selection.ts');
+ const old=eyesDefinitions.moon.controllers;
+ try{for(const source of review){
+  const raw=new Uint8Array(await readFile(new URL('./fixtures/'+source.fixture,import.meta.url)));
+  const v=new DataView(raw.buffer,raw.byteOffset,raw.byteLength);
+  assert.equal(v.getInt32(source.base-4,true),source.count);
+  const terminal=raw.subarray(source.base+(source.prefixEnd-1)*source.stride,source.base+source.prefixEnd*source.stride);
+  let identical=true;
+  for(let i=source.prefixEnd;i<source.count;i++){
+   assert.equal(v.getFloat64(source.base+i*source.stride,true),source.end);
+   identical &&= terminal.every((value,j)=>value===raw[source.base+i*source.stride+j]);
+  }
+  assert.equal(identical,source.duplicatePayloadsIdentical);
+  const epoch=(source.start+source.end)/2;
+  eyesDefinitions.moon.controllers=[{type:'dynamo',url:source.track}];
+  let controller:any;
+  const bytes=await fetchSolarDyn('moon',epoch,signal(),async()=>new Response(raw),'orb',undefined,value=>{controller=value;});
+  assert.equal(controller.track,source.track);
+  assert.equal(acceptsPositionEpoch(controller,epoch),true);
+  assert.equal(acceptsPositionEpoch(controller,source.end),identical);
+  assert.equal(decodeDyn(bytes).coverage.end,source.end);
+  if(!identical)await assert.rejects(()=>fetchSolarDyn('moon',source.end,signal(),async()=>new Response(raw)),/Ambiguous reviewed mission epoch/);
+ }}finally{eyesDefinitions.moon.controllers=old;}
+});
+
+test('three complete mission controller chains resolve current cruise after future roots are proven outside',async()=>{
+ for(const id of ['sc_europa_clipper','sc_juice','sc_lucy']){
+  const requests:string[]=[];let controller:any;
+  const bytes=await fetchSolarDyn(id,846686627,signal(),async input=>{
+   const url=String(input),track=url.split('/dynamo/')[1].replace('/def.dyn','');
+   assert.ok(url.endsWith('/def.dyn'),'current cruise should resolve from reviewed root');requests.push(track);
+   return new Response(new Uint8Array(await readFile(new URL('./fixtures/'+track.replaceAll('/','__')+'__def-source.dyn',import.meta.url))));
+  },'orb',undefined,value=>{controller=value;});
+  assert.equal(controller.track,id+(id==='sc_lucy'?'/sun/orb':'/sun'));
+  assert.ok(requests.length>=4);assert.ok(controller.upperExclusive>846686627);
+  const d=decodeDyn(bytes);assert.ok(d.coverage.start<=846686627&&d.coverage.end>=846686627);
+ }
+});

@@ -547,5 +547,332 @@
     "fixture": "sc_insight_edl__mars__pos__def-source.dyn",
     "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_insight_edl/mars/pos/def.dyn",
     "layout": "Exact source payload. Record183 byte-identical duplicate of182, excluded from contiguous strictly ordered run."
+  },
+  "sc_europa_clipper/earth/flyby/def": {
+    "hash": "90845dad212f9526308a8adc0ed03afcdd404f0d2fc74fffcddd836843249dcc",
+    "sourceSha256": "90845dad212f9526308a8adc0ed03afcdd404f0d2fc74fffcddd836843249dcc",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_europa_clipper__earth__flyby__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_europa_clipper/earth/flyby/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      849810294.0
+    ]
+  },
+  "sc_juice/earth/flyby3/def": {
+    "hash": "8de3a54fc5150f1cc4ed317a7561702f65f99a1a6232f280ef59588b973c1470",
+    "sourceSha256": "8de3a54fc5150f1cc4ed317a7561702f65f99a1a6232f280ef59588b973c1470",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_juice__earth__flyby3__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/earth/flyby3/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      916903199.0
+    ]
+  },
+  "sc_lucy/617_patroclus/pos/def": {
+    "hash": "e04e7d0260cda2d6d113a29b2b812045428cca38befeb65aeafe44cc1fda4e7c",
+    "sourceSha256": "e04e7d0260cda2d6d113a29b2b812045428cca38befeb65aeafe44cc1fda4e7c",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        5
+      ]
+    ],
+    "fixture": "sc_lucy__617_patroclus__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/617_patroclus/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting."
+  },
+  "sc_europa_clipper/earth/launch/def": {
+    "hash": "061536faa8e13d45486d30fff81bbe3983fcca0f36dcc9fe0c3aa87bdc8a347d",
+    "sourceSha256": "061536faa8e13d45486d30fff81bbe3983fcca0f36dcc9fe0c3aa87bdc8a347d",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        11
+      ]
+    ],
+    "fixture": "sc_europa_clipper__earth__launch__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_europa_clipper/earth/launch/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      782641310.0
+    ]
+  },
+  "sc_europa_clipper/mars/flyby/def": {
+    "hash": "0ba453a6211ce1059c573a5d1f9ac16a50a8bba6df075d105f828257ce9ae880",
+    "sourceSha256": "0ba453a6211ce1059c573a5d1f9ac16a50a8bba6df075d105f828257ce9ae880",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_europa_clipper__mars__flyby__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_europa_clipper/mars/flyby/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      794230007.0
+    ]
+  },
+  "sc_juice/earth/launch/def": {
+    "hash": "baef214a80835b65402680182f8c85138ca9b74506825b286a04ac5259988967",
+    "sourceSha256": "baef214a80835b65402680182f8c85138ca9b74506825b286a04ac5259988967",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        5
+      ]
+    ],
+    "fixture": "sc_juice__earth__launch__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/earth/launch/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      735606318.0
+    ]
+  },
+  "sc_juice/earth/flyby1/def": {
+    "hash": "d51ec5e56a0daf1e1c4958cbfa621aeab13241a89e2d7888dfefcbe0bd002e16",
+    "sourceSha256": "d51ec5e56a0daf1e1c4958cbfa621aeab13241a89e2d7888dfefcbe0bd002e16",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        9
+      ]
+    ],
+    "fixture": "sc_juice__earth__flyby1__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/earth/flyby1/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      778061110.0
+    ]
+  },
+  "sc_juice/venus/flyby/def": {
+    "hash": "107fdf28551223eb445af82d3510c18290afc9a74c086ce76fe723bc781144ff",
+    "sourceSha256": "107fdf28551223eb445af82d3510c18290afc9a74c086ce76fe723bc781144ff",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        5
+      ]
+    ],
+    "fixture": "sc_juice__venus__flyby__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/venus/flyby/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      810162491.0
+    ]
+  },
+  "sc_juice/earth/flyby2/def": {
+    "hash": "c23677987c0c2fdca20fd44c7da3bda2ab018264743355fc268d821dd2deac8d",
+    "sourceSha256": "c23677987c0c2fdca20fd44c7da3bda2ab018264743355fc268d821dd2deac8d",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_juice__earth__flyby2__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juice/earth/flyby2/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      844049179.0
+    ]
+  },
+  "sc_lucy/earth/launch/orb/def": {
+    "hash": "188f6d6318678663ec7c66a1d7b41f0b65d44a5a74061336a7a6a8f47467526e",
+    "sourceSha256": "188f6d6318678663ec7c66a1d7b41f0b65d44a5a74061336a7a6a8f47467526e",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        2
+      ]
+    ],
+    "fixture": "sc_lucy__earth__launch__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/earth/launch/orb/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting."
+  },
+  "sc_lucy/earth/flyby1/orb/def": {
+    "hash": "73f030feacf27f8a91219e3480ab097002d454a916f1edd7dfa5df2423299b6f",
+    "sourceSha256": "73f030feacf27f8a91219e3480ab097002d454a916f1edd7dfa5df2423299b6f",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        5
+      ]
+    ],
+    "fixture": "sc_lucy__earth__flyby1__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/earth/flyby1/orb/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting."
+  },
+  "sc_lucy/earth/flyby2/orb/def": {
+    "hash": "7b9065fbde89788ee9368effa33f0bb3ffafa33c2b4ff01c69e29578740e8397",
+    "sourceSha256": "7b9065fbde89788ee9368effa33f0bb3ffafa33c2b4ff01c69e29578740e8397",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_lucy__earth__flyby2__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/earth/flyby2/orb/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting."
+  },
+  "sc_lucy/52246_donaldjohanson/pos/def": {
+    "hash": "42fe9f7db445314a74b8bd33bc7929bb9682037daaf8512adc79e7ef1c10142c",
+    "sourceSha256": "42fe9f7db445314a74b8bd33bc7929bb9682037daaf8512adc79e7ef1c10142c",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        2
+      ]
+    ],
+    "fixture": "sc_lucy__52246_donaldjohanson__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/52246_donaldjohanson/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting."
+  },
+  "sc_lucy/3548_eurybates/pos/def": {
+    "hash": "4df4b674e4ccb7bad354efaf53a6808710cd3cfe8f8370f03c061a3a2b7c50d3",
+    "sourceSha256": "4df4b674e4ccb7bad354efaf53a6808710cd3cfe8f8370f03c061a3a2b7c50d3",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        2
+      ]
+    ],
+    "fixture": "sc_lucy__3548_eurybates__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/3548_eurybates/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      872642047.0
+    ]
+  },
+  "sc_lucy/15094_polymele/pos/def": {
+    "hash": "40b7015837c28e17f458d7cd883dcd6f91b6d11375e836fae79674363368b54f",
+    "sourceSha256": "40b7015837c28e17f458d7cd883dcd6f91b6d11375e836fae79674363368b54f",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        2
+      ]
+    ],
+    "fixture": "sc_lucy__15094_polymele__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/15094_polymele/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      875308504.0
+    ]
+  },
+  "sc_lucy/11351_leucus/pos/def": {
+    "hash": "88432e73102a4d9b8c94a7c17f7403ee9dba3820549f39768b9208dc479fa99a",
+    "sourceSha256": "88432e73102a4d9b8c94a7c17f7403ee9dba3820549f39768b9208dc479fa99a",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        2
+      ]
+    ],
+    "fixture": "sc_lucy__11351_leucus__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/11351_leucus/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      894761809.0
+    ]
+  },
+  "sc_lucy/21900_orus/pos/def": {
+    "hash": "92b76ae52eebe4a8e4bb80dedd2f98f12834e9a88b753f625b68bb12abcf4eac",
+    "sourceSha256": "92b76ae52eebe4a8e4bb80dedd2f98f12834e9a88b753f625b68bb12abcf4eac",
+    "base": 12,
+    "stride": 56,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        3
+      ]
+    ],
+    "fixture": "sc_lucy__21900_orus__pos__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/21900_orus/pos/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      912190135.0
+    ]
+  },
+  "sc_lucy/earth/flyby3/orb/def": {
+    "hash": "20c9a1906adaff5f3f4a7b68523021f73b2c6eb641009bc888e184c7a17f38ce",
+    "sourceSha256": "20c9a1906adaff5f3f4a7b68523021f73b2c6eb641009bc888e184c7a17f38ce",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        4
+      ]
+    ],
+    "fixture": "sc_lucy__earth__flyby3__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lucy/earth/flyby3/orb/def.dyn",
+    "review": "Original ordered prefix; only repeated terminal timestamps outside this prefix. No reordering or sample rewriting. Conflicting terminal epoch rejected and excluded from cache domain.",
+    "ambiguousEpochs": [
+      978108682.0
+    ]
   }
 }

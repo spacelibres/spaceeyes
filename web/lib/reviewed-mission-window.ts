@@ -9,6 +9,7 @@ type Policy = {
   stride: number;
   flag: number;
   windows: number[][];
+  ambiguousEpochs?: readonly number[];
 };
 const policies: Record<string, Policy> = {
   ...registry,
@@ -44,11 +45,13 @@ export function reviewedMissionWindow(
   raw: Uint8Array,
   epoch = 0,
   name = "def",
-): { bytes: Uint8Array; selection?: DynSelection } {
+): { bytes: Uint8Array; selection?: DynSelection; domain?: {lowerExclusive?:number;upperExclusive?:number} } {
   const p = policies[`${track}/${name}`];
   if (!p) return { bytes: raw };
   const hash = createHash("sha256").update(raw).digest("hex");
   if (hash !== p.hash) return { bytes: raw };
+  // Conflicting duplicates are not evidence of absence: never fall back here.
+  if (p.ambiguousEpochs?.includes(epoch)) throw Error("Ambiguous reviewed mission epoch");
   const view = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
   const candidates = p.windows.filter(
     ([start, end]) =>
@@ -79,7 +82,14 @@ export function reviewedMissionWindow(
     p.base,
   );
   const d = decodeDyn(bytes);
+  const lower = Math.max(...(p.ambiguousEpochs ?? []).filter(t => t < epoch));
+  const upper = Math.min(...(p.ambiguousEpochs ?? []).filter(t => t > epoch));
+  const domain = {
+    ...(Number.isFinite(lower) ? {lowerExclusive:lower} : {}),
+    ...(Number.isFinite(upper) ? {upperExclusive:upper} : {}),
+  };
   return {
+    ...(Object.keys(domain).length ? {domain} : {}),
     bytes,
     selection: {
       sourceSha256: p.sourceSha256 ?? hash,

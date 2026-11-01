@@ -1,0 +1,32 @@
+✖ reviewed future flyby roots retain only ordered source records and expose proven coverage (6.3905ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 176.3497
+
+✖ failing tests:
+
+test at web\lib\solar-dyn-server.test.ts:451:1
+✖ reviewed future flyby roots retain only ordered source records and expose proven coverage (6.3905ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+  + undefined
+  - {
+  -   upperExclusive: 849810294
+  - }
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:469:11)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { upperExclusive: 849810294 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

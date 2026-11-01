@@ -50,6 +50,7 @@ async function fetchTrack(
   type: "orb" | "ori" = "orb",
   onSelection?: (selection: DynSelection) => void,
   track?: string,
+  onDomain?: (value: Omit<PositionSelection,"track">) => void,
 ): Promise<Uint8Array> {
   const item = solarCatalog.find((x) => x.id === id);
   if (!item?.orbPath || !Number.isFinite(epoch))
@@ -127,6 +128,7 @@ async function fetchTrack(
       try {
         const selected = reviewedMissionWindow(track, bytes, epoch, name);
         bytes = selected.bytes;
+        if (selected.domain) onDomain?.(selected.domain);
         if (selected.selection) onSelection?.(selected.selection);
       }catch(error){
         if(type==="orb"&&error instanceof ReviewedMissionOutsideCoverage)
@@ -188,6 +190,7 @@ export async function fetchSolarDyn(
   for (const track of tracks) {
     try {
       let selection: DynSelection | undefined;
+      let domain: Omit<PositionSelection,"track"> | undefined;
       const result = await fetchTrack(
         id,
         epoch,
@@ -196,12 +199,17 @@ export async function fetchSolarDyn(
         type,
         value => { selection=value; },
         track,
+        value => { domain=value; },
       );
       if (selection) onSelection?.(selection);
-      if(type==="orb")onController?.({track,
-        ...(Number.isFinite(lowerExclusive)?{lowerExclusive}:{}),
-        ...(Number.isFinite(lowerInclusive)?{lowerInclusive}:{}),
-        ...(Number.isFinite(upperExclusive)?{upperExclusive}:{})});
+      if(type==="orb") {
+        const lower=Math.max(lowerExclusive,domain?.lowerExclusive??-Infinity);
+        const upper=Math.min(upperExclusive,domain?.upperExclusive??Infinity);
+        onController?.({track,
+          ...(Number.isFinite(lower)?{lowerExclusive:lower}:{}),
+          ...(Number.isFinite(lowerInclusive)?{lowerInclusive}:{}),
+          ...(Number.isFinite(upper)?{upperExclusive:upper}:{})});
+      }
       return result;
     } catch (e) {
       signal.throwIfAborted();
