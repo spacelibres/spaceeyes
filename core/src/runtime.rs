@@ -71,12 +71,17 @@ pub fn create_headless_app(core: SharedCore) -> App {
 }
 
 pub(crate) fn sync_scene(
+    #[cfg(feature = "browser-render")] telemetry: Option<Res<crate::render_timings::RenderTimings>>,
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
     mut commands: Commands,
     mut query: Query<(Entity, &SceneObject, &mut Transform)>,
     mut report: ResMut<SyncReport>,
 ) {
+    #[cfg(feature = "browser-render")]
+    let _stage = telemetry
+        .as_ref()
+        .map(|t| t.scope(crate::render_timings::Stage::SyncScene));
     report.visible = 0;
     report.unavailable.clear();
     report.core_unavailable = false;

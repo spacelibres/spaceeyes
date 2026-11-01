@@ -99,6 +99,7 @@ fn timed_annotations_validate_atomically_and_follow_object_lifecycle() {
             break_indices: vec![],
             origin_id: Some("earth".into()),
             color_rgba: Some([0.2, 0.5, 1., 1.]),
+            ..Default::default()
         },
     )
     .unwrap();
@@ -250,4 +251,64 @@ fn accepts_captured_nasa_long_window_and_rejects_beyond_it() {
             expected
         );
     }
+}
+#[test]
+fn relative_draw_edges_require_range_and_finite_build_epoch() {
+    let mut core = Core::default();
+    core.open_session_with_permissions(
+        "s",
+        "p",
+        SessionPermissions {
+            visual_control: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    core.register_object("s", "o").unwrap();
+    for (range, epoch) in [
+        (None, None),
+        (Some([0., 5.]), None),
+        (None, Some(5.)),
+        (Some([0., 5.]), Some(f64::INFINITY)),
+    ] {
+        let style = TrajectoryStyle {
+            kind: Some("trail".into()),
+            trail_duration_seconds: Some(5.),
+            draw_relative_start: true,
+            draw_range_tdb_seconds: range,
+            draw_epoch_tdb_seconds: epoch,
+            ..Default::default()
+        };
+        assert_eq!(
+            core.set_trajectory_with_style(
+                "s",
+                "p",
+                "o",
+                vec![[1., 0., 0.], [2., 0., 0.]],
+                vec![0., 5.],
+                style
+            ),
+            Err(CoreError::InvalidVisual)
+        );
+    }
+    let style = TrajectoryStyle {
+        kind: Some("trail".into()),
+        trail_duration_seconds: Some(5.),
+        draw_relative_start: true,
+        draw_relative_end: false,
+        draw_range_tdb_seconds: Some([0., 5.]),
+        draw_epoch_tdb_seconds: Some(5.),
+        ..Default::default()
+    };
+    assert!(
+        core.set_trajectory_with_style(
+            "s",
+            "p",
+            "o",
+            vec![[1., 0., 0.], [2., 0., 0.]],
+            vec![0., 5.],
+            style
+        )
+        .is_ok()
+    );
 }

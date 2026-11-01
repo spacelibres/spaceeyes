@@ -1,7 +1,8 @@
 "use client";
-import {eyesCoverageLabel} from "../../platform/eyes-coverage";
+import { CatalogProjection } from "../lib/catalog-projection";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -30,6 +31,7 @@ export type CatalogEntry = {
 export type WorkspaceViewProps = {
   planetPreparation?: { ready: number; total: number; failed: number };
   cameraDebug?: Readonly<Record<string, unknown>>;
+  performance?: Readonly<Record<string, unknown>>;
   shareUrl?: string;
   onShare?: () => void;
   stellarSettings?: Record<string, number>;
@@ -282,20 +284,19 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     setPanel(panel === next ? null : next);
   };
   const object = p.catalog.find((o) => o.id === p.selected);
-  const displayName=(entry:CatalogEntry)=>eyesCoverageLabel(entry.id,p.epoch,entry.name);
+
   const [category, setCategory] = useState("all");
   const canObserve =
     p.active && Boolean(object) && p.dataStatus.startsWith("ready");
-  const matches = p.catalog.filter(
-    (o) =>
-      (category === "all" ||
-        (category === "major"
-          ? o.kind === "star" || o.kind === "planet"
-          : o.kind === category)) &&
-      `${o.name} ${displayName(o)} ${o.id} ${o.keywords?.join(" ") ?? ""}`
-        .toLowerCase()
-        .includes(p.search.toLowerCase()),
-  );
+  const performanceText=useMemo(()=>JSON.stringify(p.performance??{},null,2),[p.performance]);
+  const projector=useRef(new CatalogProjection<CatalogEntry>());
+  const projection=projector.current.project(p.catalog,p.epoch,p.search,category,p.selected);
+  const matches=projection.matches;
+  const displayName=(entry:CatalogEntry)=>projection.labels.get(entry.id)??entry.name;
+  const selectIntent=useRef(select);
+  selectIntent.current=select;
+  const followOptions=useMemo(()=>projection.follow.map(o=><option key={o.id} value={o.id}>{projection.labels.get(o.id)??o.name}</option>),[projection.follow,projection.labels]);
+  const catalogRows=useMemo(()=>panel==='catalog'?matches.map(o=><button key={o.id} aria-pressed={p.selected===o.id} disabled={!p.active} className={o.parentId?'catalog-object child':'catalog-object'} onClick={()=>selectIntent.current(o.id)}><span>{projection.labels.get(o.id)??o.name}</span><small>{o.id}</small></button>):null,[panel,matches,p.selected,p.active,projection.labels]);
   return (
     <main
       ref={screen}
@@ -470,20 +471,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             ↗ 返回太阳系总览
           </button>
           <nav aria-label="太阳系对象">
-            {matches.map((o) => (
-              <button
-                key={o.id}
-                aria-pressed={p.selected === o.id}
-                disabled={!p.active}
-                className={
-                  o.parentId ? "catalog-object child" : "catalog-object"
-                }
-                onClick={() => select(o.id)}
-              >
-                <span>{displayName(o)}</span>
-                <small>{o.id}</small>
-              </button>
-            ))}
+            {catalogRows}
           </nav>
           {!matches.length && <p>没有匹配对象。尝试太阳、地球或月球。</p>}
         </aside>
@@ -678,13 +666,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                   onChange={(e) => p.onFollow(e.target.value)}
                 >
                   <option value="">所属父体</option>
-                  {p.catalog
-                    .filter((o) => o.id !== p.selected)
-                    .map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {displayName(o)}
-                      </option>
-                    ))}
+                  {followOptions}
                 </select>
               </label>
               <label>
@@ -915,6 +897,10 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           )}
           <details className="muted">
             <summary>场景与深空数据诊断</summary>
+            <details>
+              <summary>帧预算与轨迹性能</summary>
+              <pre aria-label="帧预算诊断">{performanceText}</pre>
+            </details>
             <details>
               <summary>相机只读诊断</summary>
               <pre>

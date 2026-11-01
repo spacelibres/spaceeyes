@@ -1,3 +1,4 @@
+import { rotateVector } from "./eyes-controllers.ts";
 /** Private bounded historical evaluators. Never publishes platform state. */
 export interface HistorySource {
   load(
@@ -6,6 +7,7 @@ export interface HistorySource {
     orientationIds: readonly string[],
   ): Promise<void>;
   position(id: string, epoch: number): readonly number[];
+  orientation?(id:string,epoch:number):readonly [number,number,number,number];
   coverage(id: string): readonly number[] | undefined;
   dispose(): void;
   cacheStats?(): { records: number };
@@ -56,6 +58,7 @@ export class TrailHistory {
     end: number,
     currentOrigin?: string,
     signal?: AbortSignal,
+    policy?: {referenceOrientation?:boolean},
   ): Promise<PreparedHistory> {
     if (
       ![epoch, start, end].every(Number.isFinite) ||
@@ -127,7 +130,7 @@ export class TrailHistory {
               ]),
             ],
             t,
-            [],
+            policy?.referenceOrientation && currentOrigin ? [currentOrigin] : [],
           );
         } catch (error) {
           abort.throwIfAborted();
@@ -211,7 +214,12 @@ export class TrailHistory {
               currentOrigin && currentOrigin !== "sun"
                 ? segment.source.position(currentOrigin, t)
                 : [0, 0, 0];
-          const result = p.map((v, i) => v - origin[i]);
+          let result = p.map((v, i) => v - origin[i]);
+          if(policy?.referenceOrientation && currentOrigin) {
+            const q=segment.source.orientation?.(currentOrigin,t);
+            if(!q)throw Error('History reference orientation unavailable');
+            result=rotateVector(result as [number,number,number],[q[0],-q[1],-q[2],-q[3]]);
+          }
           if (result.length !== 3 || !result.every(Number.isFinite))
             throw Error("Invalid history position");
           return result as [number, number, number];

@@ -5,12 +5,21 @@ pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
 #[derive(Default, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct TrajectoryStyle {
+    pub draw_range_tdb_seconds: Option<[f64; 2]>,
+    pub draw_epoch_tdb_seconds: Option<f64>,
+    #[serde(default)]
+    pub draw_relative_start: bool,
+    #[serde(default)]
+    pub draw_relative_end: bool,
     pub conic: Option<ConicOrbit>,
     pub kind: Option<String>,
     pub trail_duration_seconds: Option<f64>,
     #[serde(default)]
     pub break_indices: Vec<usize>,
     pub origin_id: Option<String>,
+    #[serde(default)]
+    pub reference_orientation: bool,
+    pub visible_interval: Option<String>,
     pub color_rgba: Option<[f32; 4]>,
 }
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -544,7 +553,29 @@ impl Core {
         {
             return Err(CoreError::InvalidVisual);
         }
+        if (style.reference_orientation && style.origin_id.is_none())
+            || style
+                .visible_interval
+                .as_deref()
+                .is_some_and(|v| v != "AlwaysVisible" && v != "DefaultVisibleFar")
+        {
+            return Err(CoreError::InvalidVisual);
+        }
         let trail = style.kind.as_deref() == Some("trail");
+        if style.draw_epoch_tdb_seconds.is_some_and(|v| !v.is_finite())
+            || ((style.draw_relative_start || style.draw_relative_end)
+                && (style.draw_range_tdb_seconds.is_none()
+                    || style.draw_epoch_tdb_seconds.is_none()))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if style
+            .draw_range_tdb_seconds
+            .is_some_and(|r| !trail || !r.iter().all(|x| x.is_finite()) || r[0] >= r[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+
         if style.conic.as_ref().is_some_and(|c| {
             points.len() < 2
                 || !c.is_valid()
@@ -854,3 +885,40 @@ mod fov_tests {
 
 #[cfg(feature = "browser-render")]
 mod trajectory_render;
+
+#[cfg(feature = "browser-render")]
+pub mod frame_budget;
+#[cfg(test)]
+mod trajectory_reference_tests {
+    use super::*;
+    #[test]
+    fn trajectory_reference_types_and_missing_origin_rejected() {
+        assert!(serde_json::from_str::<TrajectoryStyle>(r#"{"referenceOrientation":1}"#).is_err());
+        assert!(
+            !serde_json::from_str::<TrajectoryStyle>("{}")
+                .unwrap()
+                .reference_orientation
+        );
+        let mut core = Core::default();
+        for json in [
+            r#"{"referenceOrientation":true}"#,
+            r#"{"visibleInterval":"Never"}"#,
+        ] {
+            let style = serde_json::from_str::<TrajectoryStyle>(json).unwrap();
+            assert_eq!(
+                core.set_trajectory_with_style(
+                    "s",
+                    "p",
+                    "object",
+                    vec![[0.; 3], [1.; 3]],
+                    vec![0., 1.],
+                    style
+                ),
+                Err(CoreError::InvalidVisual)
+            );
+        }
+    }
+}
+
+#[cfg(feature = "browser-render")]
+mod render_timings;

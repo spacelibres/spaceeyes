@@ -60,6 +60,12 @@ export interface CorePort {
       points: readonly (readonly number[])[];
       epochsTdbSeconds?: readonly number[];
       originId?: string;
+      drawRangeTdbSeconds?: readonly [number,number];
+  drawEpochTdbSeconds?: number;
+  drawRelativeStart?: boolean;
+  drawRelativeEnd?: boolean;
+      referenceOrientation?: boolean;
+      visibleInterval?: "AlwaysVisible" | "DefaultVisibleFar";
       colorRgba?: readonly number[];
       kind?: "orbit" | "trail";
       trailDurationSeconds?: number;

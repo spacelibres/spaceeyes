@@ -1,0 +1,9 @@
+{
+  "path": "web\\public\\wasm\\spaceeyes_core_bg.wasm",
+  "bytes": 30088932,
+  "sha256": "d4104ea63ef731c28b53c012156f7dcb1d978a24405dea532203deb2d20ae1f6",
+  "core": "0.0.55",
+  "sdk": "0.0.47",
+  "web": "0.0.73",
+  "sourceBase": "2294609d1"
+}

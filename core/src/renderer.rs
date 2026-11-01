@@ -67,9 +67,17 @@ impl Default for OrbitView {
     }
 }
 
+fn workspace_winit_update_mode(browser: bool) -> bevy::winit::UpdateMode {
+    if browser {
+        // Winit Continuous uses ControlFlow::Wait and requests browser redraws.
+        // The shared main/extract/render admission gate owns the only frame cap.
+        bevy::winit::UpdateMode::Continuous
+    } else {
+        bevy::winit::UpdateMode::reactive_low_power(std::time::Duration::from_secs_f64(1. / 60.))
+    }
+}
 fn visible_workspace_winit_settings() -> bevy::winit::WinitSettings {
-    let mode =
-        bevy::winit::UpdateMode::reactive_low_power(std::time::Duration::from_secs_f64(1. / 30.));
+    let mode = workspace_winit_update_mode(cfg!(target_arch = "wasm32"));
     bevy::winit::WinitSettings {
         focused_mode: mode,
         unfocused_mode: mode,
@@ -81,6 +89,8 @@ pub(crate) fn create_browser_app(
     stop: Arc<AtomicBool>,
     canvas: &str,
     picks: SharedPickFrame,
+    frame_budget: crate::frame_budget::SharedFrameBudget,
+    render_timings: crate::render_timings::RenderTimings,
 ) -> App {
     if let Ok(mut state) = core.lock() {
         state.record_camera_render_status(None);
@@ -198,6 +208,10 @@ pub(crate) fn create_browser_app(
             .after(bevy::transform::TransformSystems::Propagate)
             .after(bevy::camera::CameraUpdateSystems),
     );
+    app.insert_resource(render_timings.clone());
+    app.sub_app_mut(bevy::render::RenderApp)
+        .insert_resource(render_timings);
+    crate::frame_budget::install(&mut app, frame_budget);
     app
 }
 
@@ -1840,6 +1854,7 @@ fn maintain_labels(
 }
 #[allow(clippy::too_many_arguments)]
 fn draw_annotations(
+    telemetry: Option<Res<crate::render_timings::RenderTimings>>,
     mut commands: Commands,
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
@@ -1859,6 +1874,9 @@ fn draw_annotations(
     >,
     camera: Query<(&Camera, &GlobalTransform, &Projection), With<DisplayCamera>>,
 ) {
+    let _stage = telemetry
+        .as_ref()
+        .map(|t| t.scope(crate::render_timings::Stage::Annotations));
     lines.clear();
     let (windows, buttons) = input;
     let cursor = windows.iter().next().and_then(|window| {
@@ -2176,15 +2194,27 @@ fn draw_annotations(
             )
         });
         if let Some(points) = points.filter(|_| visibility > 0.) {
+            let mut orientation = [1., 0., 0., 0.];
             let origin = if let Some(origin) = style.and_then(|s| s.origin_id.as_deref()) {
                 let Ok(parent) = core.object_state_at(origin, core.clock().epoch()) else {
                     continue;
                 };
+                if style.is_some_and(|s| s.reference_orientation) {
+                    let Some(attitude) = parent.orientation_wxyz else {
+                        continue;
+                    };
+                    orientation = attitude;
+                }
                 parent.position_km
             } else {
                 [0.; 3]
             };
-            let current = std::array::from_fn(|i| state.position_km[i] - origin[i]);
+            let current = crate::orbit_lines::reference_point(
+                std::array::from_fn(|i| state.position_km[i] - origin[i]),
+                [0.; 3],
+                orientation,
+                true,
+            );
             let color = style
                 .and_then(|s| s.color_rgba)
                 .unwrap_or([0.35, 0.55, 0.7, 1.]);
@@ -2195,8 +2225,18 @@ fn draw_annotations(
                 current,
                 style,
                 |a, b, alpha_a, alpha_b| {
-                    let a = to_display(std::array::from_fn(|i| a[i] + origin[i]));
-                    let b = to_display(std::array::from_fn(|i| b[i] + origin[i]));
+                    let a = to_display(crate::orbit_lines::reference_point(
+                        a,
+                        origin,
+                        orientation,
+                        false,
+                    ));
+                    let b = to_display(crate::orbit_lines::reference_point(
+                        b,
+                        origin,
+                        orientation,
+                        false,
+                    ));
                     if a.is_finite() && b.is_finite() {
                         let opacity = visibility
                             * color[3]
@@ -3180,14 +3220,17 @@ mod nasa_framing_system_tests {
 mod task_composition_tests {
     use super::*;
     #[test]
-    fn ui_focus_keeps_bounded_visible_animation_cadence() {
+    fn ui_focus_uses_browser_redraw_without_a_second_timer() {
+        assert_eq!(
+            workspace_winit_update_mode(true),
+            bevy::winit::UpdateMode::Continuous
+        );
         let settings = visible_workspace_winit_settings();
         assert_eq!(settings.focused_mode, settings.unfocused_mode);
-        let expected = bevy::winit::UpdateMode::reactive_low_power(
-            std::time::Duration::from_secs_f64(1. / 30.),
+        assert_eq!(
+            settings.focused_mode,
+            workspace_winit_update_mode(cfg!(target_arch = "wasm32"))
         );
-        assert_eq!(settings.unfocused_mode, expected);
-        assert_ne!(settings.unfocused_mode, bevy::winit::UpdateMode::Continuous);
     }
     #[test]
     fn initial_task_view_is_applied_once_and_never_overwrites_manual_or_preset_views() {

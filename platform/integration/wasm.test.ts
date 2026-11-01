@@ -878,3 +878,17 @@ test("real WASM model joint ownership and strict wire validation", () => {
  core.release_session("joint-session");
  assert.throws(()=>core.model_joint_status("joint-session","joint.plugin","object:joint"));
 });
+
+test("authored relative trail policy survives SDK and real WASM adapters", async () => {
+ const core=new WasmCore();let captured:any[]=[];
+ const binding=new Proxy(core,{get(target,property){const value=Reflect.get(target,property);if(property==='trajectory')return(...args:any[])=>{captured=args;return Reflect.apply(value,target,args);};return typeof value==='function'?value.bind(target):value;}});
+ const host=new PluginHost(new WasmCorePort(binding));let sdk!:PluginContext;
+ host.register({id:'integration.trail-policy',apiVersion:1,capabilities:['data.publish','scene.visual']},context=>{sdk=context;});
+ try{await host.enable('integration.trail-policy',['data.publish','scene.visual']);
+ for(const id of ['earth','moon'])sdk.data.publish(id,{positionKm:[10,0,0],radiusKm:1,epochTdbSeconds:5,coverageTdbSeconds:[0,20],frame:'ICRF',source:'trail policy fixture'});
+ const style={kind:'trail' as const,trailDurationSeconds:5,originId:'earth',referenceOrientation:true,visibleInterval:'AlwaysVisible' as const,drawRangeTdbSeconds:[0,5] as [number,number],drawEpochTdbSeconds:5,drawRelativeStart:true,drawRelativeEnd:false};
+ sdk.visual.trajectory('moon',[[1,0,0],[2,0,0]],[0,5],style);
+ const payload=JSON.parse(captured[3]);for(const [key,value]of Object.entries(style))assert.deepEqual(payload[key],value,`preserve ${key}`);
+ for(const patch of [{drawEpochTdbSeconds:null},{drawRangeTdbSeconds:null},{drawRelativeEnd:1},{drawRelativeStart:'true'}])assert.throws(()=>core.trajectory(captured[0],captured[1],'moon',JSON.stringify({...payload,...patch})),/InvalidVisual/);
+ }finally{await host.shutdown();core.free();}
+});

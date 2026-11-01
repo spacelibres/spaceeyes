@@ -298,6 +298,12 @@ export class PluginHost {
             throw new Error("invalid trajectory epochs");
           core.trajectory({
             ...(style?.conic ? {conic: style.conic} : {}),
+            ...(style?.drawRangeTdbSeconds ? {drawRangeTdbSeconds:[...style.drawRangeTdbSeconds] as [number,number]} : {}),
+            ...(style?.drawEpochTdbSeconds !== undefined ? {drawEpochTdbSeconds:style.drawEpochTdbSeconds} : {}),
+            ...(style?.drawRelativeStart !== undefined ? {drawRelativeStart:style.drawRelativeStart} : {}),
+            ...(style?.drawRelativeEnd !== undefined ? {drawRelativeEnd:style.drawRelativeEnd} : {}),
+            ...(style?.referenceOrientation !== undefined ? {referenceOrientation:style.referenceOrientation} : {}),
+            ...(style?.visibleInterval !== undefined ? {visibleInterval:style.visibleInterval} : {}),
             pluginId: id,
             sessionId,
             targetId,

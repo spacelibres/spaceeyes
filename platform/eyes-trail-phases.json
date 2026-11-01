@@ -1,0 +1,378 @@
+{
+  "method": "Reviewed literal setters only; no callbacks evaluated",
+  "slots": [
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "coverage": [
+        666953098.003,
+        676629898.003
+      ],
+      "phase": "enter",
+      "sourceSha256": "be798f0c829d5ffa7a32d92f0b402458f49b9398fde6dfc88d3f6dc10b30b150",
+      "patch": {
+        "startTime": 666953098.003,
+        "relativeStartTime": false
+      }
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "coverage": [
+        666953098.003,
+        676629898.003
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "patch": {
+        "relativeStartTime": true
+      }
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "coverage": [
+        666932224,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "patch": {
+        "relativeToEntityOrientation": true
+      }
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "coverage": [
+        666932224,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "patch": {
+        "relativeToEntityOrientation": false
+      }
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "coverage": [
+        666953098.003,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "patch": {
+        "visibleInterval": "AlwaysVisible"
+      }
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "coverage": [
+        666953098.003,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "patch": {
+        "visibleInterval": "DefaultVisibleFar"
+      }
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "coverage": [
+        397501373,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "patch": {
+        "relativeToEntityOrientation": true
+      }
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "coverage": [
+        397501373,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "patch": {
+        "relativeToEntityOrientation": false
+      }
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "patch": {
+        "visibleInterval": "AlwaysVisible"
+      }
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "patch": {
+        "visibleInterval": "DefaultVisibleFar"
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "coverage": [
+        128278419,
+        581920316.856
+      ],
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "patch": {
+        "relativeToEntityOrientation": true,
+        "visibleInterval": "AlwaysVisible"
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "coverage": [
+        128278419,
+        581920316.856
+      ],
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "patch": {
+        "relativeToEntityOrientation": false,
+        "visibleInterval": "DefaultVisibleFar"
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "coverage": [
+        128278523,
+        137955323
+      ],
+      "phase": "enter",
+      "sourceSha256": "d0a54186200a8b7bf2bb61f37461c744668e75cfe1ba004d142a22723164242c",
+      "patch": {
+        "startTime": 128278523,
+        "relativeStartTime": false
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "coverage": [
+        128278523,
+        137955323
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "patch": {
+        "relativeStartTime": true
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "coverage": [
+        126462105,
+        322567479.38962
+      ],
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "patch": {
+        "relativeToEntityOrientation": true,
+        "visibleInterval": "AlwaysVisible"
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "coverage": [
+        126462105,
+        322567479.38962
+      ],
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "patch": {
+        "relativeToEntityOrientation": false,
+        "visibleInterval": "DefaultVisibleFar"
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "coverage": [
+        126462396,
+        136139196
+      ],
+      "phase": "enter",
+      "sourceSha256": "ed50119548cfb4b3ff192203b7efd7766fafc1aa6fb183c16d288d51c76f29e9",
+      "patch": {
+        "startTime": 126462396,
+        "relativeStartTime": false
+      }
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "coverage": [
+        126462396,
+        136139196
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "patch": {
+        "relativeStartTime": true
+      }
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "coverage": [
+        596529871.284,
+        596533602
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "patch": {
+        "relativeToEntityOrientation": true
+      }
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "coverage": [
+        596529871.284,
+        596533602
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "patch": {
+        "relativeToEntityOrientation": false
+      }
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "coverage": [
+        519652868.184,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d62e60a55597728f999ce8469b030c53d10f551f11565610cefee409bd06621",
+      "patch": {
+        "relativeToEntity": "jupiter"
+      }
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "coverage": [
+        519652868.184,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "1ad1684454bd041c0865e3ac6c7fdadcc54ca7b34925dee98277a048b91fb422",
+      "patch": {
+        "relativeToEntity": ""
+      }
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "coverage": [
+        158965616.707,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "patch": {
+        "relativeToEntityOrientation": true
+      }
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "coverage": [
+        158965616.707,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "patch": {
+        "relativeToEntityOrientation": false
+      }
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "coverage": [
+        748838642,
+        748839373
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "patch": {
+        "relativeToEntityOrientation": true
+      }
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "coverage": [
+        748838642,
+        748839373
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "patch": {
+        "relativeToEntityOrientation": false
+      }
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "coverage": [
+        190591100,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "4485dc90f139810656787f018b78594fdb6a92498a281509b6b410b266be1afc",
+      "patch": {
+        "relativeToEntityOrientation": true,
+        "startTime": 1600
+      }
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "coverage": [
+        190591100,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "109caf9ba40a313ae600b1eedabf44b85f583bee79d9cb9d2f4502f20d239ced",
+      "patch": {
+        "relativeToEntityOrientation": false,
+        "startTime": 18000
+      }
+    }
+  ]
+}

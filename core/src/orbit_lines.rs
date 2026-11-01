@@ -1,5 +1,25 @@
 //! Temporal polyline attachment uses core state, never a nearest spatial guess.
 #[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn reference_point(
+    p: [f64; 3],
+    origin: [f64; 3],
+    q: [f64; 4],
+    inverse: bool,
+) -> [f64; 3] {
+    let sign = if inverse { -1. } else { 1. };
+    let v = [q[1] * sign, q[2] * sign, q[3] * sign];
+    let cross = |a: [f64; 3], b: [f64; 3]| {
+        [
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0],
+        ]
+    };
+    let t = cross(v, p).map(|x| 2. * x);
+    let u = cross(v, t);
+    std::array::from_fn(|i| origin[i] + p[i] + q[0] * t[i] + u[i])
+}
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
 pub(crate) fn parent_path_visibility(
     near_visibility: f32,
     style: Option<&crate::TrajectoryStyle>,
@@ -26,6 +46,9 @@ pub(crate) fn system_path_visibility(
     style: Option<&crate::TrajectoryStyle>,
     view: &TrajectoryFocus<'_>,
 ) -> f32 {
+    if style.is_some_and(|s| s.visible_interval.as_deref() == Some("AlwaysVisible")) {
+        return 1.;
+    }
     // Protect the focused satellite's host and its peers, not its own close-up path.
     if view.focused.is_some_and(|focused| id != focused)
         // The NASA scene root is not a local planetary satellite system.
@@ -243,14 +266,27 @@ pub(crate) fn visit_styled_segments(
                 (right - 1) as f64 + (t - times[right - 1]) / (times[right] - times[right - 1])
             }
         };
-        let first = index_at(epoch - duration);
-        let span = (index_at(epoch) - first).max(f64::EPSILON);
+        let [mut draw_start, mut draw_end] = style
+            .and_then(|s| s.draw_range_tdb_seconds)
+            .unwrap_or([epoch - duration, epoch]);
+        if let Some(style) = style
+            && let Some(built) = style.draw_epoch_tdb_seconds
+        {
+            if style.draw_relative_start {
+                draw_start += epoch - built;
+            }
+            if style.draw_relative_end {
+                draw_end += epoch - built;
+            }
+        }
+        let first = index_at(draw_start);
+        let span = (index_at(draw_end) - first).max(f64::EPSILON);
         for (i, pair) in points.windows(2).enumerate() {
             if breaks.binary_search(&(i + 1)).is_ok() {
                 continue;
             }
-            let lo = times[i].max(epoch - duration);
-            let hi = times[i + 1].min(epoch);
+            let lo = times[i].max(draw_start);
+            let hi = times[i + 1].min(draw_end);
             if lo >= hi {
                 continue;
             }
@@ -283,6 +319,80 @@ pub(crate) fn visit_styled_segments(
 #[cfg(test)]
 mod trail_tests {
     use super::*;
+    #[test]
+    fn cached_relative_window_attaches_current_head_and_absolute_window_stays_fixed() {
+        let points = [[0., 0., 0.], [5., 0., 0.], [10., 0., 0.]];
+        let mut style = crate::TrajectoryStyle {
+            kind: Some("trail".into()),
+            trail_duration_seconds: Some(5.),
+            draw_range_tdb_seconds: Some([0., 5.]),
+            draw_epoch_tdb_seconds: Some(5.),
+            draw_relative_start: true,
+            draw_relative_end: true,
+            ..Default::default()
+        };
+        let mut seen = Vec::new();
+        visit_styled_segments(
+            &points,
+            Some(&[0., 5., 10.]),
+            7.,
+            [7., 0., 0.],
+            Some(&style),
+            |a, b, _, _| seen.push((a, b)),
+        );
+        assert_eq!(seen.first().unwrap().0, [2., 0., 0.]);
+        assert_eq!(seen.last().unwrap().1, [7., 0., 0.]);
+        style.draw_relative_start = false;
+        style.draw_relative_end = false;
+        seen.clear();
+        visit_styled_segments(
+            &points,
+            Some(&[0., 5., 10.]),
+            7.,
+            [7., 0., 0.],
+            Some(&style),
+            |a, b, _, _| seen.push((a, b)),
+        );
+        assert_eq!(seen.last().unwrap().1, [5., 0., 0.]);
+        style.draw_range_tdb_seconds = Some([8., 10.]);
+        seen.clear();
+        visit_styled_segments(
+            &points,
+            Some(&[0., 5., 10.]),
+            7.,
+            [7., 0., 0.],
+            Some(&style),
+            |a, b, _, _| seen.push((a, b)),
+        );
+        assert_eq!(seen.first().unwrap().0, [8., 0., 0.]);
+        assert_eq!(seen.last().unwrap().1, [10., 0., 0.]);
+    }
+    #[test]
+    fn historical_reference_points_follow_current_reference_orientation() {
+        let q = [0.5_f64.sqrt(), 0., 0., 0.5_f64.sqrt()];
+        let world = reference_point([2., 0., 0.], [10., 20., 0.], q, false);
+        assert!((world[0] - 10.).abs() < 1e-12 && (world[1] - 22.).abs() < 1e-12);
+        let local = reference_point([0., 2., 0.], [0.; 3], q, true);
+        assert!((local[0] - 2.).abs() < 1e-12 && local[1].abs() < 1e-12);
+        let style = crate::TrajectoryStyle {
+            visible_interval: Some("AlwaysVisible".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            system_path_visibility(
+                "rover",
+                &[[0.; 3], [1.; 3]],
+                Some(0.),
+                0.,
+                Some(&style),
+                &TrajectoryFocus {
+                    focused: Some("rover"),
+                    parent: Some("mars")
+                }
+            ),
+            1.
+        );
+    }
     #[test]
     fn base_policy_only_protects_direct_children() {
         let style = crate::TrajectoryStyle {

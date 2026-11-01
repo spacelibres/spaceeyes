@@ -35,8 +35,14 @@ test("unresolved source gaps remain broken without shrinking the time window", (
 });
 
 test("budget exhaustion preserves a continuous covered multi-revolution trail", () => {
-  const result = adaptiveTrailTimes(0, 12, 12.5, 256,
-    t => [100 * Math.cos(t), 100 * Math.sin(t), 0], 2 * Math.PI);
+  const result = adaptiveTrailTimes(
+    0,
+    12,
+    12.5,
+    256,
+    (t) => [100 * Math.cos(t), 100 * Math.sin(t), 0],
+    2 * Math.PI,
+  );
   assert.equal(result.times[0], 0);
   assert.equal(result.times.at(-1), 12.5);
   assert.ok(result.times.includes(12));
@@ -45,8 +51,46 @@ test("budget exhaustion preserves a continuous covered multi-revolution trail", 
 });
 
 test("history phase and data boundaries are retained inside the same finite sample budget", () => {
- const result=adaptiveTrailTimes(0,5,10,16,t=>[t,0,0],Infinity,[2,3,8]);
- for(const boundary of [0,2,3,5,8,10]) assert.ok(result.times.includes(boundary));
- assert.ok(result.times.length<=16);
- assert.throws(()=>adaptiveTrailTimes(0,5,10,8,t=>[t,0,0],Infinity,[1,2,3,4,6,7,8]),/budget/);
+  const result = adaptiveTrailTimes(
+    0,
+    5,
+    10,
+    16,
+    (t) => [t, 0, 0],
+    Infinity,
+    [2, 3, 8],
+  );
+  for (const boundary of [0, 2, 3, 5, 8, 10])
+    assert.ok(result.times.includes(boundary));
+  assert.ok(result.times.length <= 16);
+  assert.throws(
+    () =>
+      adaptiveTrailTimes(
+        0,
+        5,
+        10,
+        8,
+        (t) => [t, 0, 0],
+        Infinity,
+        [1, 2, 3, 4, 6, 7, 8],
+      ),
+    /budget/,
+  );
+});
+
+test("cooperative sampler yields during seed evaluations and preserves output", async () => {
+  const { adaptiveTrailSteps } = await import("../adaptive-trail.ts");
+  let calls = 0;
+  const curve = (t: number) => {
+    calls++;
+    return [Math.cos(t), Math.sin(t), 0];
+  };
+  const work = adaptiveTrailSteps(0, 1, 6, 80, curve);
+  let result;
+  do {
+    const before = calls;
+    result = work.next();
+    assert.ok(calls - before <= 1);
+  } while (!result.done);
+  assert.deepEqual(result.value, adaptiveTrailTimes(0, 1, 6, 80, curve));
 });

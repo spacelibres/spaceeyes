@@ -1438,7 +1438,9 @@ test("automatic deep-space spacecraft history is not truncated to 30 days or by 
     for (const count of [32, 128]) {
       const trail = source.trailSamples("sc_psyche", epoch, count);
       assert.ok(Math.abs(trail.durationSeconds-period) < 1, "NASA auto orbital period must survive budget");
-      assert.equal(trail.epochsTdbSeconds[0], epoch-period);
+      assert.equal(trail.drawRangeTdbSeconds[0], epoch-period);
+      assert.ok(trail.epochsTdbSeconds[0]<epoch-period);
+      assert.ok(trail.epochsTdbSeconds.at(-1)!>epoch);
       assert.ok(trail.points.length <= count);
     }
   } finally { source.dispose(); }
@@ -1592,7 +1594,9 @@ test("private mission history crosses parent phases in the current frame without
    assert.equal(local.epochsTdbSeconds[0],boundary);
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true);
    const history=source.trailSamples("sc_cassini",epoch,32);
-   assert.equal(history.epochsTdbSeconds[0],epoch-2000);
+   assert.equal(history.drawRangeTdbSeconds[0],epoch-2000);
+   assert.ok(history.epochsTdbSeconds[0]<history.drawRangeTdbSeconds[0]);
+   assert.ok(history.epochsTdbSeconds.at(-1)!>epoch);
    assert.ok(history.epochsTdbSeconds.includes(boundary));
    for(const point of history.points) assert.deepEqual(point,[10,0,0]);
    assert.deepEqual(source.position("sc_cassini",epoch),position);
@@ -1601,8 +1605,9 @@ test("private mission history crosses parent phases in the current frame without
    for (const offset of [-1, -50, 20, -60, -2000/32, 2000/32]) {
      const t = epoch + offset;
      const reused = source.trailSamples("sc_cassini",t,32);
-     assert.equal(reused.epochsTdbSeconds[0],t-2000,"reverse playback retains the complete requested history window");
-     assert.equal(reused.epochsTdbSeconds.at(-1),t+2000/16,"forward playback retains the complete preview window");
+     assert.ok(reused.refreshRange[0]<t && reused.refreshRange[1]>t,"cosmetic reuse band extends both directions independently of draw end");
+     assert.equal(reused.drawRangeTdbSeconds[0],t-2000,"reverse playback retains the complete requested history window");
+     assert.equal(reused.drawRangeTdbSeconds[1],t,"source default end time remains the current epoch");
      assert.equal(await source.prepareTrailHistory("sc_cassini",t),false,"valid prepared history is reused in both directions");
      assert.equal(requests,preparedRequests,"changing playback direction must not fetch historical sources again");
      for (const point of reused.points) assert.deepEqual(point,[10,0,0]);
@@ -1610,13 +1615,13 @@ test("private mission history crosses parent phases in the current frame without
    assert.equal(JSON.stringify([...states]),published);
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch+100),true,"leaving the reuse band prepares a new history");
    await source.load(["sc_cassini"],boundary-20,[]);
-   assert.equal(await source.prepareTrailHistory("sc_cassini",boundary-20),true,"changing the current parent invalidates the history frame");
+   assert.equal(await source.prepareTrailHistory("sc_cassini",boundary-20),false,"changed frame with complete past coverage does not need private history");
    assert.equal(source.trailSamples("sc_cassini",boundary-20,32).originId,"sun");
    await source.load(["sc_cassini"],epoch,[]);
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true);
    eyesDefinitions.sc_cassini.trail={length:2000,lengthCoverages:[[1800,epoch-10,epoch+10]]};
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true,"changed authored duration invalidates history even at the same epoch");
-   assert.equal(source.trailSamples("sc_cassini",epoch,32).epochsTdbSeconds[0],epoch-1800);
+   assert.equal(source.trailSamples("sc_cassini",epoch,32).drawRangeTdbSeconds[0],epoch-1800);
    eyesDefinitions.sc_cassini.trail={length:2000};
    source.clearTrailHistory();
    const localRequests = requests;
@@ -1651,4 +1656,96 @@ test("an expired valid ORI segment requests the next segment without a known-abs
    assert.equal(source.needsOrientationRefresh("earth",11),false);
    assert.equal(JSON.stringify([...states]),before);
  } finally {source.dispose();}
+});
+test('trail sampling exposes a resumable generator and historical orientation API',()=>{
+ const {ctx}=context();const source=new SolarSystemData(ctx);
+ assert.equal(typeof source.trailSampleSteps,'function');
+ assert.equal(typeof source.orientation,'function');source.dispose();
+});
+import { TrailHistory } from '../trail-history.ts';
+test('history inverse-rotates each sample by reference attitude at its historical epoch',async()=>{
+ const requests:readonly string[][]=[] as any;
+ const manager=new TrailHistory({parentAt:()=>null,boundaries:()=>[],createSource:()=>({
+  async load(ids,t,orientationIds){(requests as string[][]).push([...orientationIds]);},
+  position(id,t){return id==='craft'?[1,0,0]:[0,0,0];},
+  orientation(id,t){return t===0?[1,0,0,0]:[Math.SQRT1_2,0,0,Math.SQRT1_2];},
+  coverage:()=>[0,10],dispose(){},
+ })});
+ try {const history=await manager.prepare('craft',5,0,10,'reference',undefined,{referenceOrientation:true});
+ assert.deepEqual(requests,[['reference']]);assert.deepEqual(history.position(0),[1,0,0]);
+ const p=history.position(5);assert.ok(Math.abs(p[0])<1e-12);assert.ok(Math.abs(p[1]+1)<1e-12);
+ }finally{manager.dispose();}
+});
+import trailPhases from '../eyes-trail-phases.json' with {type:'json'};
+test('authored past-only windows clamp sampling anchor and retain exact draw interval',async()=>{
+ const {ctx}=context(),epoch=880000000;
+ const original=eyesDefinitions.sc_psyche.trail;
+ eyesDefinitions.sc_psyche.trail={length:1000};
+ const slot:any={entity:'sc_psyche',controllerIndex:100,coverage:['-Infinity','Infinity'],phase:'enter',sourceSha256:'test',patch:{endTime:-100}};
+ trailPhases.slots.push(slot);
+ const source=new SolarSystemData(ctx,{fetch:async()=>{
+ const bytes=orb(100),v=new DataView(bytes.buffer);for(let i=0;i<2;i++){v.setFloat64(28+i*72,epoch-2000+i*4000,true);v.setFloat64(28+i*72+24,.001,true);}return new Response(bytes);
+ }});
+ try{await source.load(['sc_psyche'],epoch,[]);
+ const trail=source.trailSamples('sc_psyche',epoch,32);
+ assert.deepEqual(trail.drawRangeTdbSeconds,[epoch-1000,epoch-100]);
+ assert.ok(trail.epochsTdbSeconds.includes(trail.drawRangeTdbSeconds[0]));
+ assert.ok(trail.epochsTdbSeconds.includes(trail.drawRangeTdbSeconds[1]));
+ assert.equal(trail.drawEpochTdbSeconds,epoch);
+ assert.equal(trail.drawRelativeEnd,true);
+ assert.ok(trail.epochsTdbSeconds.at(-1)!>epoch-100);
+ assert.ok(!trail.epochsTdbSeconds.includes(epoch));
+ slot.patch={startTime:100,startTimeMultiplier:-1,endTime:100,endTimeMultiplier:2};
+ const future=source.trailSamples('sc_psyche',epoch,32);
+ assert.deepEqual(future.drawRangeTdbSeconds,[epoch+100,epoch+200]);
+ assert.ok(future.epochsTdbSeconds[0]<epoch+100);
+ assert.ok(future.epochsTdbSeconds.at(-1)!>epoch+200);
+ assert.ok(!future.epochsTdbSeconds.includes(epoch));
+ slot.patch={startTime:4000,endTime:0};
+ const clipped=source.trailSamples('sc_psyche',epoch,32);
+ assert.equal(clipped.drawRangeTdbSeconds[0],epoch-4000);
+ assert.equal(clipped.epochsTdbSeconds[0],epoch-2000);
+ const advanced=source.trailSamples('sc_psyche',epoch+10,32);
+ assert.equal(advanced.drawRangeTdbSeconds[0],epoch+10-4000);
+ assert.equal(advanced.epochsTdbSeconds[0],epoch-2000,'scientific edge stays fixed as raw relative edge advances');
+ slot.patch={startTime:epoch,relativeStartTime:false,endTime:0};
+ assert.equal(source.hasTrajectory('sc_psyche',epoch),false);
+ }finally{source.dispose();trailPhases.slots.pop();eyesDefinitions.sc_psyche.trail=original;}
+});
+test('fixed LLA reference orientation is derived from source landing frame rather than absent ORI',()=>{
+ const {ctx}=context();const source=new SolarSystemData(ctx);
+ eyesDefinitions.test_ground={parents:[[-100,'test_ground_parent']],controllers:[{type:'fixed',llaOnSpheroid:{constructor:'LatLonAlt',values:[0,0,0]}}]};
+ eyesDefinitions.test_ground_parent={spheroid:{equatorialRadius:10,polarRadius:10,planetographic:true},controllers:[{type:'fixed',orientation:{constructor:'Quaternion',values:[1,0,0,0]}}]};
+ try{assert.deepEqual(source.orientation('test_ground',0),[.5,.5,.5,.5]);}finally{source.dispose();delete eyesDefinitions.test_ground;delete eyesDefinitions.test_ground_parent;}
+});
+test('reviewed Huygens landing keyframes load without requesting uncovered spacecraft DYN',async()=>{
+ const {ctx,states}=context(),original=eyesDefinitions.titan;
+ eyesDefinitions.titan={parents:[],controllers:[{type:'fixed',position:{constructor:'Vector3',values:[1000,0,0]},orientation:{constructor:'Quaternion',values:[1,0,0,0]}}]};
+ const source=new SolarSystemData(ctx,{fetch:async()=>{throw Error('unexpected DYN');}});
+ try{
+ const t=158965617.707;await source.load(['sc_huygens'],t,[]);
+ assert.equal(source.status('sc_huygens')?.status,'ready');
+ const p=source.position('sc_huygens',t);
+ assert.ok(p[0]>900 && p[0]<1000,JSON.stringify(p));
+ assert.equal(source.hasTrajectory('sc_huygens',t),true);
+ const trail=source.trailSamples('sc_huygens',t,32,true);
+ assert.equal(trail.originId,'titan');assert.equal(trail.referenceOrientation,true);
+ source.publishAt(t);
+ assert.match(String((states.get('sc_huygens') as any)?.source),/NASA reviewed position keyframes/);
+ const end=158974766.184;
+ await source.load(['sc_huygens'],end-1,[]);
+ const before=source.position('sc_huygens',end-1);
+ await source.load(['sc_huygens'],end,[]);
+ const at=source.position('sc_huygens',end);
+ assert.equal(source.parentAt('sc_huygens',end),'titan');
+ assert.ok(Math.hypot(...at.map((x,i)=>x-before[i]))<1,'closed keyframe endpoint retains explicit Titan frame');
+ assert.equal(source.trailSamples('sc_huygens',end,32,true).originId,'titan');
+ }finally{source.dispose();eyesDefinitions.titan=original;}
+});
+test('InSight landed LLA orientation overrides earlier uncovered ORI without requesting it',async()=>{
+ const {ctx}=context(),old=eyesDefinitions.mars;
+ eyesDefinitions.mars={spheroid:{equatorialRadius:3396.19,polarRadius:3376.2,planetographic:false},controllers:[{type:'fixed',position:{constructor:'Vector3',values:[1e8,0,0]},orientation:{constructor:'Quaternion',values:[1,0,0,0]}}]};
+ const source=new SolarSystemData(ctx,{fetch:async()=>{throw Error('earlier ORI must not be fetched after fixed LLA overrides');}});
+ try{await source.load(['sc_insight'],596533603,['sc_insight']);assert.equal(source.status('sc_insight')?.orientationStatus,'ready');assert.ok(source.orientation('sc_insight',596533603).every(Number.isFinite));assert.equal(source.hasTrajectory('sc_insight',596533603),false);}
+ finally{source.dispose();eyesDefinitions.mars=old;}
 });

@@ -1,0 +1,8 @@
+{
+  "sourceBase": "2294609d1eeb4fcf363d2f4a937cf6ca9d25c753",
+  "candidate": "core 0.0.55 / sdk 0.0.47 / web 0.0.73",
+  "file": "web\\public\\wasm\\spaceeyes_core_bg.wasm",
+  "bytes": 30115478,
+  "sha256": "154e6d8e6c304d9360ac67c2bd88af030cc6b7b1078a66f87786071ca292f2f9",
+  "checks": "checks.log exit 0; 211 platform / 17 foundation WASM / 2 real DYN / 92 web / 65 host / 145 native"
+}

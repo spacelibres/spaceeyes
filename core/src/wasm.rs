@@ -5,6 +5,10 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 #[derive(Default)]
 pub struct WasmCore {
+    #[cfg(feature = "browser-render")]
+    frame_budget: crate::frame_budget::SharedFrameBudget,
+    #[cfg(feature = "browser-render")]
+    render_timings: crate::render_timings::RenderTimings,
     core: SharedCore,
     picks: crate::picking::SharedPickFrame,
     #[cfg(feature = "browser-render")]
@@ -65,6 +69,34 @@ impl WasmCore {
     }
 
     #[cfg(feature = "browser-render")]
+    pub fn renderer_work_pending(&self, pending: u32) -> Result<(), String> {
+        self.frame_budget
+            .lock()
+            .map_err(|_| "RendererUnavailable".to_owned())?
+            .set_noncritical_pending(pending);
+        Ok(())
+    }
+    #[cfg(feature = "browser-render")]
+    pub fn renderer_visible(&self, visible: bool) -> Result<(), String> {
+        self.frame_budget
+            .lock()
+            .map_err(|_| "RendererUnavailable".to_owned())?
+            .set_visible(visible);
+        Ok(())
+    }
+    #[cfg(feature = "browser-render")]
+    pub fn performance_snapshot(&self) -> Result<String, String> {
+        let budget = self
+            .frame_budget
+            .lock()
+            .map_err(|_| "RendererUnavailable".to_owned())?;
+        let mut snapshot = serde_json::to_value(budget.snapshot())
+            .map_err(|_| "RendererUnavailable".to_owned())?;
+        snapshot["stagesMs"] = serde_json::to_value(self.render_timings.snapshot())
+            .map_err(|_| "RendererUnavailable".to_owned())?;
+        Ok(snapshot.to_string())
+    }
+    #[cfg(feature = "browser-render")]
     pub fn start_renderer(&mut self, canvas: &str) -> Result<(), String> {
         if self.renderer_stop.is_some() {
             return Err("RendererAlreadyStarted".into());
@@ -74,8 +106,15 @@ impl WasmCore {
         }
         let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         self.renderer_stop = Some(stop.clone());
-        crate::renderer::create_browser_app(self.core.clone(), stop, canvas, self.picks.clone())
-            .run();
+        crate::renderer::create_browser_app(
+            self.core.clone(),
+            stop,
+            canvas,
+            self.picks.clone(),
+            self.frame_budget.clone(),
+            self.render_timings.clone(),
+        )
+        .run();
         Ok(())
     }
 
@@ -178,10 +217,19 @@ impl WasmCore {
         #[derive(serde::Deserialize)]
         #[serde(rename_all = "camelCase", deny_unknown_fields)]
         struct Timed {
+            draw_range_tdb_seconds: Option<[f64; 2]>,
+            draw_epoch_tdb_seconds: Option<f64>,
+            #[serde(default)]
+            draw_relative_start: bool,
+            #[serde(default)]
+            draw_relative_end: bool,
             conic: Option<crate::ConicOrbit>,
             points: Vec<[f64; 3]>,
             epochs: Vec<f64>,
             origin_id: Option<String>,
+            #[serde(default)]
+            reference_orientation: bool,
+            visible_interval: Option<String>,
             color_rgba: Option<[f32; 4]>,
             kind: Option<String>,
             trail_duration_seconds: Option<f64>,
@@ -205,10 +253,16 @@ impl WasmCore {
             }
             Payload::Timed(timed) => {
                 let Timed {
+                    draw_range_tdb_seconds,
+                    draw_epoch_tdb_seconds,
+                    draw_relative_start,
+                    draw_relative_end,
                     conic,
                     points,
                     epochs,
                     origin_id,
+                    reference_orientation,
+                    visible_interval,
                     color_rgba,
                     kind,
                     trail_duration_seconds,
@@ -221,8 +275,14 @@ impl WasmCore {
                     points,
                     epochs,
                     crate::TrajectoryStyle {
+                        draw_range_tdb_seconds,
+                        draw_epoch_tdb_seconds,
+                        draw_relative_start,
+                        draw_relative_end,
                         conic,
                         origin_id,
+                        reference_orientation,
+                        visible_interval,
                         color_rgba,
                         kind,
                         trail_duration_seconds,

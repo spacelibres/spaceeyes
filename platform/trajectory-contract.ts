@@ -8,8 +8,14 @@ export type TrajectoryConic = {
 };
 /** Display intent only. Coordinates/epochs remain authored by the data plugin. */
 export type TrajectoryStyle = {
+  drawRangeTdbSeconds?: readonly [number, number];
+  drawEpochTdbSeconds?: number;
+  drawRelativeStart?: boolean;
+  drawRelativeEnd?: boolean;
   conic?: Readonly<TrajectoryConic>;
   originId?: string;
+  referenceOrientation?: boolean;
+  visibleInterval?: "AlwaysVisible" | "DefaultVisibleFar";
   colorRgba?: [number, number, number, number];
   kind?: "orbit" | "trail";
   trailDurationSeconds?: number;
@@ -28,14 +34,50 @@ export function snapshotTrajectoryStyle(
         ![
           "conic",
           "originId",
+          "referenceOrientation",
+          "visibleInterval",
           "colorRgba",
           "kind",
           "trailDurationSeconds",
+          "drawRangeTdbSeconds",
+          "drawEpochTdbSeconds",
+          "drawRelativeStart",
+          "drawRelativeEnd",
           "breakIndices",
         ].includes(k),
     )
   )
     throw Error("invalid trajectory style");
+  if (
+    (style.referenceOrientation !== undefined &&
+      typeof style.referenceOrientation !== "boolean") ||
+    (style.referenceOrientation === true &&
+      (typeof style.originId !== "string" || !style.originId)) ||
+    (style.visibleInterval !== undefined &&
+      !["AlwaysVisible", "DefaultVisibleFar"].includes(style.visibleInterval))
+  )
+    throw Error("invalid trajectory reference");
+  if (
+    (style.drawEpochTdbSeconds !== undefined &&
+      !Number.isFinite(style.drawEpochTdbSeconds)) ||
+    (style.drawRelativeStart !== undefined &&
+      typeof style.drawRelativeStart !== "boolean") ||
+    (style.drawRelativeEnd !== undefined &&
+      typeof style.drawRelativeEnd !== "boolean") ||
+    ((style.drawRelativeStart || style.drawRelativeEnd) &&
+      (style.drawRangeTdbSeconds === undefined ||
+        style.drawEpochTdbSeconds === undefined))
+  )
+    throw Error("invalid relative trajectory draw range");
+  if (
+    style.drawRangeTdbSeconds !== undefined &&
+    (style.kind !== "trail" ||
+      !Array.isArray(style.drawRangeTdbSeconds) ||
+      style.drawRangeTdbSeconds.length !== 2 ||
+      !style.drawRangeTdbSeconds.every(Number.isFinite) ||
+      style.drawRangeTdbSeconds[0] >= style.drawRangeTdbSeconds[1])
+  )
+    throw Error("invalid trajectory draw range");
   if (style.kind !== undefined && !["orbit", "trail"].includes(style.kind))
     throw Error("invalid trajectory kind");
   if (
@@ -113,6 +155,13 @@ export function snapshotTrajectoryStyle(
   }
   return Object.freeze({
     ...style,
+    ...(style.drawRangeTdbSeconds
+      ? {
+          drawRangeTdbSeconds: Object.freeze([
+            ...style.drawRangeTdbSeconds,
+          ]) as readonly [number, number],
+        }
+      : {}),
     ...(conic ? { conic } : {}),
     ...(style.breakIndices
       ? { breakIndices: Object.freeze([...style.breakIndices]) }

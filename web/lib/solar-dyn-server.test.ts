@@ -430,3 +430,20 @@ test("reviewed Psyche quat windows retain both sides but reject conflicting dupl
  const changed=child.slice();changed[20]^=1;
  await assert.rejects(()=>fetchSolarDyn(id,meta.epoch,signal(),async input=>new Response(String(input).endsWith("/def.dyn")?definition:changed),"ori"),/sample times must increase/);
 });
+test('Mars2020 duplicate landing records retain exact contiguous pre/post windows',async()=>{
+ const raw=new Uint8Array(await readFile(new URL('./fixtures/sc_mars_2020__surface__lin__0000-source.dyn',import.meta.url)));
+ assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+ for(const [epoch,range] of [[666953097.003,[0,145]],[666953099.003,[254,257]]] as const){
+ const x=reviewedMissionWindow('sc_mars_2020/surface/lin',raw,epoch,'0000');
+ assert.deepEqual(x.selection?.records,range);decodeDyn(x.bytes);
+ assert.deepEqual(x.bytes.subarray(12),raw.subarray(12+range[0]*32,12+range[1]*32));
+ }
+});
+test('InSight EDL identical final terminator selects original ordered records only',async()=>{
+ const raw=new Uint8Array(await readFile(new URL('./fixtures/sc_insight_edl__mars__pos__def-source.dyn',import.meta.url)));
+ assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+ const x=reviewedMissionWindow('sc_insight_edl/mars/pos',raw,596533601);
+ assert.deepEqual(x.selection?.records,[0,183]);decodeDyn(x.bytes);
+ const changed=raw.slice();changed[changed.length-1]^=1;
+ assert.equal(reviewedMissionWindow('sc_insight_edl/mars/pos',changed,596533601).selection,undefined);
+});

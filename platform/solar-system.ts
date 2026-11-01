@@ -1,8 +1,9 @@
+import {eyesPositionKeyframe} from "./eyes-position-keyframes.ts";
 import {TrailHistory, type PreparedHistory} from "./trail-history.ts";
-import {eyesTrailDuration, eyesTrailNextBoundary} from "./eyes-trail-policy.ts";
+import {eyesTrailDuration, eyesTrailPhase, eyesTrailBoundaries} from "./eyes-trail-policy.ts";
 import {eyesOrbAutoLength} from "./eyes-trail-auto.ts";
 import {parsePositionSelection,acceptsPositionEpoch,type PositionSelection} from "./position-selection.ts";
-import {adaptiveTrailTimes} from "./adaptive-trail.ts";
+import {adaptiveTrailSteps} from "./adaptive-trail.ts";
 import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
@@ -111,6 +112,7 @@ type HistorySlot = {
   epoch: number;
   duration: number;
   policyDuration: number | undefined;
+  policyKey: string;
   trackKey: string;
   manager: TrailHistory;
   prepared?: PreparedHistory;
@@ -376,6 +378,8 @@ export class SolarSystemData {
       .map(([, value]) => ({ ...value }));
   }
   parentAt(id: string, epoch: number): string | null {
+    const keyframe=eyesPositionKeyframe(id,epoch);
+    if(keyframe)return keyframe.referenceId;
     return eyesDefinitions[id]
       ? parentAt(id, epoch)
       : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
@@ -491,6 +495,10 @@ export class SolarSystemData {
           return;
         }
         const currentParent = this.parentAt(id, epoch);
+        const trailPolicy=eyesTrailPhase(id,epoch);
+        const trailReference=trailPolicy.relativeToEntity || currentParent;
+        if(trailPolicy.relativeToEntityOrientation && trailReference && trailReference!==id && trailReference!=="sun")
+          await this.load([trailReference],epoch,[trailReference]);
         if (
           currentParent &&
           currentParent !== "sun" &&
@@ -507,7 +515,7 @@ export class SolarSystemData {
           (this.#retained && !this.#retained.has(id))
         )
           return;
-        const fixedCoverage = staticCoverage(id, epoch);
+        const fixedCoverage = eyesPositionKeyframe(id,epoch)?.coverage ?? staticCoverage(id, epoch);
         if (fixedCoverage && id !== "sun") {
           if (currentParent && currentParent !== "sun")
             await this.load([currentParent], epoch, [
@@ -784,7 +792,9 @@ export class SolarSystemData {
         }
     }
     if (!orientationIds.includes(id)) return;
-    if (controllers.some(isOrientationDynamo)) {
+    const active=controllers.filter(c=>!c.coverage || (epoch>=Number(c.coverage[0])&&epoch<=Number(c.coverage[1])));
+    const lastFixed=active.findLastIndex(c=>c.type==='fixed'&&(c.orientation?.constructor==='Quaternion'||c.llaOnSpheroid?.constructor==='LatLonAlt'));
+    if (active.some(isOrientationDynamo) && lastFixed<active.findLastIndex(isOrientationDynamo)) {
       let ori = this.#ori.get(id);
       if (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) {
         let result;
@@ -828,7 +838,9 @@ export class SolarSystemData {
     start: number,
     end: number,
   ): [number, number] {
-    const parents = eyesDefinitions[id]?.parents ?? [];
+    const keyframes=eyesPositionKeyframe(id,t);
+    if(keyframes){start=Math.max(start,keyframes.coverage[0]);end=Math.min(end,keyframes.coverage[1]);}
+    const parents = keyframes ? [] : eyesDefinitions[id]?.parents ?? [];
     for (let i = 0; i < parents.length; i++) {
       const boundary = Number(parents[i][0]);
       if (boundary <= t) start = Math.max(start, boundary);
@@ -850,6 +862,7 @@ export class SolarSystemData {
     return [Math.max(-1e12, start), Math.min(1e12, end)];
   }
   #positionSource(id: string, t: number): "dyn" | "fixed" | "orbital-elements" {
+    if(eyesPositionKeyframe(id,t))return "fixed";
     if (
       activeController(id, t, "fixed").some(
         (c) => c.position || c.llaOnSpheroid,
@@ -909,7 +922,7 @@ export class SolarSystemData {
       parentForOrientation && needsParentOrientation
         ? this.#orientationAt(parentForOrientation, t)
         : undefined;
-    const fixed = staticPosition(id, t, ori);
+    const fixed = eyesPositionKeyframe(id,t)?.position ?? staticPosition(id, t, ori);
     if (!fixed && !d) throw Error("Object unavailable");
     const body = (eyesDefinitions[id]?.controllers ?? []).find(
       (c) => c.type === "dynamo" && c.parentIsBarycenter,
@@ -974,7 +987,35 @@ export class SolarSystemData {
           q = normalizeOrientation(c.orientation.values);
           found = true;
         }
+        // Entity-567 fixed LLA loader synthesizes Spheroid.orientationFromLLA,
+        // followed by parent RotateByEntityOrientation; it is not absent attitude.
+        if(c.type==='fixed' && c.llaOnSpheroid?.constructor==='LatLonAlt') {
+          const parent=c.llaOnSpheroidEntity ?? this.parentAt(id,t);
+          const sph=eyesDefinitions[parent??'']?.spheroid;
+          if(!parent||!sph)throw Error('Landing orientation spheroid unavailable');
+          const [latitude,longitude]=c.llaOnSpheroid.values;
+          let graphic=latitude;
+          if(!sph.planetographic) {
+            const local=staticPosition(id,t,[1,0,0,0]);
+            if(!local)throw Error('Landing orientation position unavailable');
+            const rho=Math.hypot(local[0],local[1]);
+            const e2=1-(sph.polarRadius/sph.equatorialRadius)**2;
+            for(let i=0;i<16;i++) {
+              const n=sph.equatorialRadius/Math.sqrt(1-e2*Math.sin(graphic)**2);
+              graphic=Math.atan2(local[2]+e2*n*Math.sin(graphic),rho);
+            }
+          }
+          const a=Math.sin(graphic),b=Math.sin(longitude),sign=Math.sign(Math.cos(longitude));
+          const local:Quat=[.5*Math.sqrt((1+a)*(1-b)),.5*Math.sqrt((1-a)*(1-b)),.5*Math.sqrt((1-a)*(1+b))*sign,.5*Math.sqrt((1+a)*(1+b))*sign];
+          const [w,x,y,z]=this.#orientationAt(parent,t),[W,X,Y,Z]=local;
+          q=normalizeOrientation([w*W-x*X-y*Y-z*Z,w*X+x*W+y*Z-z*Y,w*Y-x*Z+y*W+z*X,w*Z+x*Y-y*X+z*W]);
+          found=true;
+        }
         if (isOrientationDynamo(c)) {
+          const laterFixed=(eyesDefinitions[id]?.controllers??[]).slice(controllerIndex+1).some(next=>
+            next.type==='fixed' && (next.orientation?.constructor==='Quaternion'||next.llaOnSpheroid?.constructor==='LatLonAlt') &&
+            (!next.coverage || (t>=Number(next.coverage[0])&&t<=Number(next.coverage[1]))));
+          if(laterFixed)continue;
           const bounds = this.#outsideOri.get(id);
           if (bounds && (t < bounds[0] || t > bounds[1])) continue;
           const d = this.#ori.get(id);
@@ -1025,7 +1066,7 @@ export class SolarSystemData {
         const bounds = this.#outsideOri.get(id);
         if (!bounds || (t >= bounds[0] && t <= bounds[1])) source = "dyn";
       }
-      if (c.type === "fixed" && c.orientation) source = "fixed";
+      if (c.type === "fixed" && (c.orientation || c.llaOnSpheroid)) source = c.llaOnSpheroid ? "derived" : "fixed";
       if (isEntityAlign(c) || c.type === "spin") source = "derived";
     }
     return source;
@@ -1042,6 +1083,7 @@ export class SolarSystemData {
   /** Recovered Entity.getVelocityAtTime: controller-local velocity, no ancestor sum. */
   sourceVelocity(id: string, t: number): Vec3 {
     if (id === "sun") return [0, 0, 0];
+    const keyframe=eyesPositionKeyframe(id,t);if(keyframe)return keyframe.velocity;
     if (this.needsPositionRefresh(id,t)) throw Error("Outside source controller coverage");
     if (!hasDisplayCatalog(id))
       throw Error("Reference-only world velocity unavailable: " + id);
@@ -1176,13 +1218,13 @@ export class SolarSystemData {
           source:
             item.id === "sun"
               ? "Local heliocentric origin: zero position defines this scene; not a NASA solar ephemeris"
-              : s.positionSource !== "dyn"
+              : eyesPositionKeyframe(item.id,epoch)?.source ?? (s.positionSource !== "dyn"
                 ? "NASA Eyes recovered " +
                   s.positionSource +
                   " position controller; finite coverage bounded by platform evaluation domain, not observation end; orientation " +
                   (s.orientationSource ?? "unavailable")
                 : JSON.stringify(this.provenance(item.id).slice(-2)) +
-                  " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification",
+                  " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification"),
         });
         this.#published.add(item.id);
         s.status = "ready";
@@ -1201,6 +1243,16 @@ export class SolarSystemData {
   /** Only active position dynamics define a path; landed/static phases have none. */
   hasTrajectory(id: string, epoch: number): boolean {
     if (!Number.isFinite(epoch) || eyesTrailDuration(id, epoch) === 0) return false;
+    const status=this.status(id);
+    if(status && status.status!=="ready")return false;
+    const policy=eyesTrailPhase(id,epoch);
+    const start=policy.relativeStartTime ? (policy.startTime===undefined ? -Infinity : epoch-policy.startTimeMultiplier*policy.startTime) : policy.startTime;
+    const end=policy.relativeEndTime ? epoch+policy.endTimeMultiplier*policy.endTime : policy.endTime;
+    if(start!==undefined && start>=end)return false;
+    if(this.status(id)?.status==='ready') {
+      try {const [lo,hi]=this.trajectoryRange(id,epoch);if(Math.max(lo,start??-Infinity)>=Math.min(hi,end))return false;}
+      catch {return false;}
+    }
     if (
       activeController(id, epoch, "fixed").some(
         (c) => c.position || c.llaOnSpheroid,
@@ -1213,6 +1265,7 @@ export class SolarSystemData {
     );
   }
   trajectoryRange(id: string, epoch: number): [number, number] {
+    const keyframe=eyesPositionKeyframe(id,epoch);if(keyframe)return keyframe.coverage;
     const d = this.#data.get(id);
     const declared = activeController(id, epoch, "orbitalElements").at(-1);
     if (declared) {
@@ -1378,7 +1431,7 @@ export class SolarSystemData {
   }
   #historyAt(id: string, epoch: number) {
     const slot = this.#history;
-    return slot?.id === id && slot.origin === (this.parentAt(id, epoch) || undefined) &&
+    return slot?.id === id && slot.origin === (eyesTrailPhase(id,epoch).relativeToEntity || this.parentAt(id,epoch) || undefined) && slot.policyKey===eyesTrailPhase(id,epoch).key &&
       slot.policyDuration === eyesTrailDuration(id, epoch) &&
       slot.trackKey === positionTrackKey(id,epoch) &&
       Math.abs(epoch - slot.epoch) <= slot.duration / 32 ? slot : undefined;
@@ -1386,7 +1439,8 @@ export class SolarSystemData {
   /** Prepare separate historical sources without publishing states or changing time. */
   async prepareTrailHistory(id: string, epoch: number): Promise<boolean> {
     if (solarCatalog.find(body => body.id === id)?.kind !== "spacecraft" || this.status(id)?.status !== "ready") return false;
-    const origin = this.parentAt(id, epoch) || undefined;
+    const policy=eyesTrailPhase(id,epoch);
+    const origin=policy.relativeToEntity || this.parentAt(id,epoch) || undefined;
     const existing = this.#historyAt(id, epoch);
     if (existing) {
       if (existing.pending) return existing.pending;
@@ -1395,11 +1449,11 @@ export class SolarSystemData {
     this.clearTrailHistory();
     const local = this.trailSamples(id, epoch, 8);
     if (local.epochsTdbSeconds[0] <= epoch - local.durationSeconds + 1e-6 &&
-        local.epochsTdbSeconds.at(-1)! >= epoch + local.durationSeconds / 16 - 1e-6) return false;
+        local.epochsTdbSeconds.at(-1)! >= epoch - 1e-6) return false;
     // Pad both ends for bidirectional reuse without truncating the display window.
     const start = epoch - local.durationSeconds * (1 + 1 / 32), end = epoch + local.durationSeconds * (1 / 16 + 1 / 32);
     const manager = new TrailHistory({
-      parentAt, boundaries: target => [...(eyesDefinitions[target]?.parents ?? []).map(([time]) => Number(time)),...positionTrackBoundaries(target)],
+      parentAt:(target,time)=>this.parentAt(target,time), boundaries: target => [...(eyesDefinitions[target]?.parents ?? []).map(([time]) => Number(time)),...positionTrackBoundaries(target),...eyesTrailBoundaries(target)],
       phaseAt:(target,time)=>positionFrameKey(target,time,origin),
       maxSegments: 32, maxRecords: 200000,
       createSource: (signal, remainingRecords) => new SolarSystemData({
@@ -1416,9 +1470,9 @@ export class SolarSystemData {
         },
       }),
     });
-    const slot: HistorySlot = {id,origin,epoch,duration:local.durationSeconds,policyDuration:eyesTrailDuration(id,epoch),trackKey:positionTrackKey(id,epoch),manager};
+    const slot: HistorySlot = {id,origin,epoch,duration:local.durationSeconds,policyDuration:eyesTrailDuration(id,epoch),trackKey:positionTrackKey(id,epoch),policyKey:policy.key,manager};
     this.#history = slot;
-    slot.pending = manager.prepare(id, epoch, start, end, origin).then(prepared => {
+    slot.pending = manager.prepare(id, Math.max(start,Math.min(end,epoch)), start, end, origin, undefined, {referenceOrientation:policy.relativeToEntityOrientation}).then(prepared => {
       if (this.#history !== slot) {prepared.dispose(); return false;}
       try {prepared.position(epoch);} catch (error) {prepared.dispose(); throw error;}
       slot.prepared = prepared;
@@ -1430,7 +1484,12 @@ export class SolarSystemData {
     });
     return slot.pending;
   }
-  trailSamples(id: string, epoch: number, count = 256, detailed = false) {
+  orientation(id:string,epoch:number):Quat { return [...this.#orientationAt(id,epoch)] as Quat; }
+  trailSamples(id:string,epoch:number,count=256,detailed=false) {
+    const work=this.trailSampleSteps(id,epoch,count,detailed);
+    let step=work.next();while(!step.done)step=work.next();return step.value;
+  }
+  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
     if (!Number.isFinite(epoch) || this.status(id)?.status !== "ready")
@@ -1454,7 +1513,8 @@ export class SolarSystemData {
       : rangeEnd - rangeStart;
     // Preserve a resolved history within the finite sample budget. Never join
     // revolutions with unresolved chords or cross a source coverage gap.
-    const origin = this.parentAt(id, epoch) || undefined;
+    const policy=eyesTrailPhase(id,epoch);
+    const origin=policy.relativeToEntity || this.parentAt(id,epoch) || undefined;
     let history = this.#historyAt(id, epoch)?.prepared;
     if (history) try {history.position(epoch);} catch {history = undefined;}
     const failedProbes = new Set<number>();
@@ -1472,7 +1532,11 @@ export class SolarSystemData {
         failedProbes.add(t);
         throw error;
       }
-      const point = world.map((v, i) => v - parent[i]);
+      let point = world.map((v, i) => v - parent[i]);
+      if(policy.relativeToEntityOrientation && origin) {
+        const q=this.orientation(origin,t);
+        point=rotateVector(point as [number,number,number],[q[0],-q[1],-q[2],-q[3]]);
+      }
       relativeCache.set(t, point);
       return point;
     };
@@ -1512,7 +1576,7 @@ export class SolarSystemData {
         /* Unsupported rotating frames retain the existing finite fallback. */
       }
     }
-    const authoredDuration = eyesTrailDuration(id, epoch);
+    const authoredDuration = policy.relativeStartTime ? policy.startTime : undefined;
     if (authoredDuration === 0) throw Error("Trail disabled by source policy");
     const isSpacecraft = solarCatalog.find(body => body.id === id)?.kind === "spacecraft";
     let durationSeconds = authoredDuration ?? (isSpacecraft
@@ -1522,6 +1586,7 @@ export class SolarSystemData {
       inferredPeriod,
       rate > 0 ? (0.052 * (count - 2)) / (1.0625 * rate) : inferredPeriod,
     ));
+    if(!policy.relativeStartTime && policy.startTime!==undefined) durationSeconds=Math.max(0,epoch-policy.startTime);
     let [coveredStart, coveredEnd] = this.#phaseCoverage(
       id,
       epoch,
@@ -1541,12 +1606,22 @@ export class SolarSystemData {
     if (history) {coveredStart = history.start; coveredEnd = history.end;}
     let start = 0,
       end = 0;
+    let drawRangeTdbSeconds: [number,number] | undefined;
     let times: number[] = [];
     let unresolved = new Set<number>();
     if (authoredDuration !== undefined || isSpacecraft) {
-      start = Math.max(coveredStart, epoch - durationSeconds);
-      end = Math.min(coveredEnd, epoch + durationSeconds / 16);
-      ({times, unresolved} = adaptiveTrailTimes(start, epoch, end, count, relative, period, history?.boundaries));
+      const rawStart=policy.relativeStartTime ? epoch-policy.startTimeMultiplier*durationSeconds : policy.startTime!;
+      const rawEnd=policy.relativeEndTime ? epoch+policy.endTimeMultiplier*policy.endTime : policy.endTime;
+      start=Math.max(coveredStart,rawStart);
+      end=Math.min(coveredEnd,rawEnd);
+      if(start>=end)throw Error('Trail disabled by source policy');
+      // Source-authored edges move independently; renderer clips against actual samples.
+      drawRangeTdbSeconds=[rawStart,rawEnd];
+      const reuse=durationSeconds/(detailed?1024:16);
+      const boundaries=eyesTrailBoundaries(id);
+      if(policy.relativeStartTime) start=Math.max(coveredStart,start-reuse,...boundaries.filter(t=>t<=start));
+      if(policy.relativeEndTime) end=Math.min(coveredEnd,end+reuse,...boundaries.filter(t=>t>=end));
+      ({times,unresolved}=yield* adaptiveTrailSteps(start,Math.max(start,Math.min(end,epoch)),end,count,relative,period,[...(history?.boundaries??[]),...drawRangeTdbSeconds]));
     } else for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);
@@ -1557,11 +1632,13 @@ export class SolarSystemData {
       times = [...new Set(times)].sort((a, b) => a - b);
       unresolved = new Set<number>();
       for (let i = 1; i < times.length; i++) {
+        yield;
         try {
           const p = relative(times[i - 1]),
             q = relative(times[i]);
           let previous = p;
           for (let j = 1; j <= 8; j++) {
+            yield;
             const fraction = j / 8;
             const sample = relative(
               times[i - 1] + (times[i] - times[i - 1]) * fraction,
@@ -1595,6 +1672,7 @@ export class SolarSystemData {
       durationSeconds /= 2;
     }
     if (history) for (const boundary of history.boundaries) {
+      yield;
       const epsilon = Math.min(0.1, (boundary - start) / 4, (end - boundary) / 4);
       if (epsilon <= Math.abs(boundary) * Number.EPSILON * 4) continue;
       try {
@@ -1607,6 +1685,7 @@ export class SolarSystemData {
     const failures = [...failedProbes].sort((a, b) => a - b);
     let failureIndex = 0;
     for (let i = 1; i < times.length; i++) {
+      yield;
       while (
         failureIndex < failures.length &&
         failures[failureIndex] < times[i - 1]
@@ -1615,12 +1694,13 @@ export class SolarSystemData {
       if (failureIndex < failures.length && failures[failureIndex] <= times[i])
         unresolved.add(times[i]);
     }
-    const originId = this.parentAt(id, epoch) || undefined;
+    const originId=origin;
     const epochsTdbSeconds: number[] = [];
     const points: [number, number, number][] = [];
     const breakIndices: number[] = [];
     let gap = false;
     for (const t of [...new Set(times)].sort((a, b) => a - b)) {
+      yield;
       try {
         const point = relative(t) as [number, number, number];
         if (!point.every(Number.isFinite)) throw Error("Invalid trail point");
@@ -1639,11 +1719,18 @@ export class SolarSystemData {
       points,
       epochsTdbSeconds,
       originId,
+      referenceOrientation:policy.relativeToEntityOrientation,
+      visibleInterval:policy.visibleInterval,
+      policyKey:policy.key,
+      drawRangeTdbSeconds:drawRangeTdbSeconds??[start,end] as [number,number],
+      drawEpochTdbSeconds:epoch,
+      drawRelativeStart:policy.relativeStartTime,
+      drawRelativeEnd:policy.relativeEndTime,
       breakIndices,
       durationSeconds,
       refreshRange: [
-        epoch,
-        Math.min(end, eyesTrailNextBoundary(id, epoch), epoch + durationSeconds / (detailed ? 1024 : 16)),
+        Math.max(rangeStart,coveredStart,...eyesTrailBoundaries(id).filter(t=>t<=epoch),epoch-durationSeconds/(detailed?1024:16)),
+        Math.min(rangeEnd,coveredEnd,...eyesTrailBoundaries(id).filter(t=>t>=epoch),epoch+durationSeconds/(detailed?1024:16)),
       ] as [number, number],
     };
   }

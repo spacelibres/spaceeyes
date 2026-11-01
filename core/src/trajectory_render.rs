@@ -68,6 +68,7 @@ impl Material for TrajectoryMaterial {
         Ok(())
     }
 }
+#[derive(Clone, PartialEq)]
 struct Segment {
     a: Vec3,
     b: Vec3,
@@ -77,6 +78,7 @@ struct Segment {
 #[derive(Resource, Default)]
 pub(crate) struct TrajectoryBatch {
     segments: Vec<Segment>,
+    uploaded: Vec<Segment>,
     mesh: Option<Handle<Mesh>>,
     entity: Option<Entity>,
 }
@@ -108,6 +110,63 @@ pub(crate) fn widths(trail: bool, hovered: bool, progress: [f32; 2]) -> [f32; 2]
     })
 }
 impl TrajectoryBatch {
+    fn needs_upload(&self) -> bool {
+        self.segments != self.uploaded
+    }
+    fn remember_upload(&mut self) {
+        self.uploaded.clone_from(&self.segments);
+    }
+    fn update_mesh(&self, mesh: &mut Mesh) {
+        use bevy::mesh::VertexAttributeValues;
+        for (attribute, endpoint) in [
+            (Mesh::ATTRIBUTE_POSITION, false),
+            (Mesh::ATTRIBUTE_NORMAL, true),
+        ] {
+            if let Some(VertexAttributeValues::Float32x3(values)) = mesh.attribute_mut(attribute) {
+                values.clear();
+                for s in &self.segments {
+                    values.extend(
+                        [if endpoint {
+                            s.b.to_array()
+                        } else {
+                            s.a.to_array()
+                        }; 4],
+                    );
+                }
+            }
+        }
+        if let Some(VertexAttributeValues::Float32x2(values)) =
+            mesh.attribute_mut(Mesh::ATTRIBUTE_UV_0)
+        {
+            values.clear();
+            for _ in &self.segments {
+                values.extend([[-0.5, 0.], [0.5, 0.], [-0.5, 1.], [0.5, 1.]]);
+            }
+        }
+        if let Some(VertexAttributeValues::Float32x2(values)) =
+            mesh.attribute_mut(Mesh::ATTRIBUTE_UV_1)
+        {
+            values.clear();
+            for s in &self.segments {
+                values.extend([s.widths; 4]);
+            }
+        }
+        if let Some(VertexAttributeValues::Float32x4(values)) =
+            mesh.attribute_mut(Mesh::ATTRIBUTE_COLOR)
+        {
+            values.clear();
+            for s in &self.segments {
+                values.extend([s.colors[0], s.colors[0], s.colors[1], s.colors[1]]);
+            }
+        }
+        if let Some(Indices::U32(values)) = mesh.indices_mut() {
+            values.clear();
+            for i in 0..self.segments.len() as u32 {
+                let b = i * 4;
+                values.extend([b, b + 1, b + 2, b + 2, b + 1, b + 3]);
+            }
+        }
+    }
     pub(crate) fn clear(&mut self) {
         self.segments.clear();
     }
@@ -158,27 +217,33 @@ impl TrajectoryBatch {
     }
 }
 pub(crate) fn upload(
+    telemetry: Option<Res<crate::render_timings::RenderTimings>>,
     mut commands: Commands,
     mut batch: ResMut<TrajectoryBatch>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<TrajectoryMaterial>>,
 ) {
+    let _stage = telemetry
+        .as_ref()
+        .map(|t| t.scope(crate::render_timings::Stage::TrajectoryUpload));
     if batch.segments.is_empty() {
         if let Some(entity) = batch.entity {
             commands.entity(entity).insert(Visibility::Hidden);
         }
         return;
     }
-    let mesh = batch.build_mesh();
     if let Some(handle) = &batch.mesh {
-        if let Some(mut asset) = meshes.get_mut(handle) {
-            *asset = mesh;
+        if batch.needs_upload() {
+            if let Some(mut asset) = meshes.get_mut(handle) {
+                batch.update_mesh(&mut asset);
+            }
+            batch.remember_upload();
         }
         if let Some(entity) = batch.entity {
             commands.entity(entity).insert(Visibility::Inherited);
         }
     } else {
-        let mesh = meshes.add(mesh);
+        let mesh = meshes.add(batch.build_mesh());
         let entity = commands
             .spawn((
                 Mesh3d(mesh.clone()),
@@ -189,6 +254,7 @@ pub(crate) fn upload(
             .id();
         batch.mesh = Some(mesh);
         batch.entity = Some(entity);
+        batch.remember_upload();
     }
 }
 #[cfg(test)]
@@ -283,5 +349,32 @@ mod tests {
         let mut batch = TrajectoryBatch::default();
         batch.line(Vec3::ZERO, Vec3::X, c, c, [1.2; 2]);
         assert_eq!(batch.segments[0].colors[0], [0.6, 0.4, 0.2, 0.75]);
+    }
+    #[test]
+    fn stable_lines_skip_upload_and_changed_lines_reuse_vertex_capacity() {
+        let mut b = TrajectoryBatch::default();
+        b.line(Vec3::ZERO, Vec3::X, Color::WHITE, Color::WHITE, [1.; 2]);
+        let mut mesh = b.build_mesh();
+        b.remember_upload();
+        assert!(!b.needs_upload());
+        b.clear();
+        b.line(Vec3::ZERO, Vec3::X, Color::WHITE, Color::WHITE, [1.; 2]);
+        assert!(!b.needs_upload());
+        let ptr = match mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap() {
+            bevy::mesh::VertexAttributeValues::Float32x3(v) => v.as_ptr(),
+            _ => panic!("position format"),
+        };
+        b.clear();
+        b.line(Vec3::ZERO, Vec3::Y, Color::WHITE, Color::WHITE, [1.; 2]);
+        assert!(b.needs_upload());
+        b.update_mesh(&mut mesh);
+        match mesh.attribute(Mesh::ATTRIBUTE_POSITION).unwrap() {
+            bevy::mesh::VertexAttributeValues::Float32x3(v) => assert_eq!(v.as_ptr(), ptr),
+            _ => panic!("position format"),
+        }
+        match mesh.attribute(Mesh::ATTRIBUTE_NORMAL).unwrap() {
+            bevy::mesh::VertexAttributeValues::Float32x3(v) => assert_eq!(v[0], Vec3::Y.to_array()),
+            _ => panic!("end format"),
+        }
     }
 }

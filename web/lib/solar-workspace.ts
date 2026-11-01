@@ -1,3 +1,6 @@
+import { FrameMonitor } from "./frame-monitor.ts";
+import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
+import { TrajectoryWorkQueue } from "./trajectory-work.ts";
 import {missionInitialLook} from "./mission-view.ts";
 import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
 import {eyesModelPhase,eyesModelVariants} from "../../platform/eyes-model-phases.ts";
@@ -34,7 +37,6 @@ import {
 import {
   eyesCatalog,
   getEyesDefinition,
-  parentAt,
 } from "../../platform/eyes-catalog.ts";
 import planetAssets from "../../validation/solar-assets.json" with { type: "json" };
 import observationTimes from "../../platform/eyes-observation-times.json" with { type: "json" };
@@ -44,6 +46,9 @@ import {
 } from "../../platform/starfield-source.ts";
 
 export interface HostCore extends WasmCoreBinding {
+  performance_snapshot?(): string;
+  renderer_visible?(visible: boolean): void;
+  renderer_work_pending?(count: number): void;
   camera_render_status?(): string;
   pick_object(u: number, v: number): string | undefined;
   start_renderer(canvas: string): void;
@@ -59,6 +64,7 @@ export interface HostCore extends WasmCoreBinding {
   register_asset(id: string, path: string, kind: string): void;
 }
 export type SolarSnapshot = {
+  performance?: Readonly<Record<string, unknown>>;
   planetPreparation: { ready: number; total: number; failed: number };
   observationMode: "nearby" | "system" | "follow";
   followId?: string;
@@ -210,6 +216,14 @@ export async function createWorkspace(
   } = {},
 ): Promise<WorkspaceRuntime> {
   const startupAt = performance.now();
+  const frameMonitor = new FrameMonitor();
+  let targetHz = 60, lastPerformanceSample = -Infinity;
+  let corePerformance: Record<string, unknown> = {};
+  let longTaskObserver: PerformanceObserver | undefined;
+  if (typeof PerformanceObserver !== "undefined" && PerformanceObserver.supportedEntryTypes?.includes("longtask")) {
+    longTaskObserver = new PerformanceObserver(list => {for (const entry of list.getEntries()) frameMonitor.recordLongTask(entry.duration);});
+    longTaskObserver.observe({entryTypes:["longtask"]});
+  }
   signal.throwIfAborted();
   options.onStartup?.("加载三维核心模块");
   const url = "/wasm/spaceeyes_core.js";
@@ -231,6 +245,9 @@ export async function createWorkspace(
     options.cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis);
   const core = new module.WasmCore(),
     host = new PluginHost(new WasmCorePort(core));
+  const visibilityChanged = () => {frameMonitor.reset();lastFrame = undefined;core.renderer_visible?.(typeof document === "undefined" || !document.hidden);};
+  if (typeof document !== "undefined") document.addEventListener("visibilitychange", visibilityChanged);
+  core.renderer_visible?.(typeof document === "undefined" || !document.hidden);
   let galaxySpec: EnvironmentSpec | undefined;
   let galaxyGeneration = 0;
   let galaxyAbort = new AbortController();
@@ -403,6 +420,10 @@ export async function createWorkspace(
   const secondaryRestores = new Set<string>();
   const secondaryLoads = new Set<string>();
   const secondaryRetryAt = new Map<string, number>();
+  const trajectoryWork = new TrajectoryWorkQueue<ReturnType<SolarSystemData["trailSamples"]>>();
+  const queuedTrails = new Map<string, string>();
+  let trailJobRevision = 0;
+  const trajectoryErrors = new Map<string,string>();
   let lastTrajectoryId: string | undefined;
   let lastTrajectoryRefresh = -Infinity;
   let lastSelectedTrajectoryRefresh = -Infinity;
@@ -570,6 +591,10 @@ export async function createWorkspace(
     (disposal ??= (async () => {
       observationToken++;
       closed = true;
+      longTaskObserver?.disconnect();
+      if (typeof document !== "undefined") document.removeEventListener("visibilitychange", visibilityChanged);
+      trajectoryWork.clear();
+      queuedTrails.clear();
       secondaryRestores.clear();
       secondaryRetryAt.clear();
       secondaryLoads.clear();
@@ -645,13 +670,13 @@ export async function createWorkspace(
         visited.add(id);
         ids.add(id);
         if (id === "sun") break;
-        id = parentAt(id, epoch);
+        id = data.parentAt(id, epoch);
       }
       const system =
         solarCatalog.find((body) => body.id === state.selected)?.kind ===
         "planet"
           ? state.selected
-          : parentAt(state.selected, epoch);
+          : data.parentAt(state.selected, epoch);
       addSystemChildren(ids, epoch, [state.selected, system]);
     } else addSystemChildren(ids, epoch, ["sun"]);
     function addSystemChildren(ids: Set<string>, epoch: number, roots: (string|null)[]) {
@@ -663,9 +688,9 @@ export async function createWorkspace(
               (state.moons &&
                 body.kind === "moon" &&
                 body.subcategory === "Major Moon")) &&
-            systems.has(parentAt(body.id, epoch) ?? ""),
+            systems.has(data.parentAt(body.id, epoch) ?? ""),
         )
-        .sort((a,b) => Number(parentAt(b.id, epoch) === state.selected) - Number(parentAt(a.id, epoch) === state.selected))
+        .sort((a,b) => Number(data.parentAt(b.id, epoch) === state.selected) - Number(data.parentAt(a.id, epoch) === state.selected))
         .slice(0, 128))
         ids.add(body.id);
     }
@@ -675,12 +700,12 @@ export async function createWorkspace(
       seen.add(reference);
       ids.add(reference);
       if (reference === "sun") break;
-      reference = parentAt(reference, epoch) ?? undefined;
+      reference = data.parentAt(reference, epoch) ?? undefined;
     }
     // Retain exactly the scene dependency closure, stopping parent ancestry at Sun.
     for (const id of ids) {
       if (id !== "sun") {
-        const parent = parentAt(id, epoch);
+        const parent = data.parentAt(id, epoch);
         if (parent && hasDisplayCatalog(parent)) ids.add(parent);
       }
       for (const controller of activeController(
@@ -689,7 +714,7 @@ export async function createWorkspace(
         "rotateByEntityOrientation",
       )) {
         const reference =
-          controller.entityForOrientation ?? parentAt(id, epoch);
+          controller.entityForOrientation ?? data.parentAt(id, epoch);
         if (reference && reference !== id && hasDisplayCatalog(reference))
           ids.add(reference);
       }
@@ -736,6 +761,8 @@ export async function createWorkspace(
   };
   const refreshTrajectory = (id: string) => {
     if (!data.hasTrajectory(id, core.epoch())) {
+      trajectoryWork.cancel(id);
+      queuedTrails.delete(id);
       sdk.visual.trajectory(id, []);
       trajectoryWindows.delete(id);
       pendingTrajectories.delete(id);
@@ -746,16 +773,45 @@ export async function createWorkspace(
     const isTrail = ["spacecraft"].includes(
       solarCatalog.find((body) => body.id === id)!.kind,
     );
-    const history = isTrail
-      ? data.trailSamples(
-          id,
-          core.epoch(),
-          budget,
-          state.selected === id,
-        )
-      : undefined;
+    if (isTrail) {
+      const ownedRevision = revision, selected = state.selected, epoch = core.epoch();
+      const key = `${ownedRevision}:${selected}:${budget}`;
+      if (queuedTrails.get(id) === key) return;
+      queuedTrails.set(id, key);
+      trajectoryWork.enqueue({
+        objectId: id, revision: ++trailJobRevision,
+        create: () => data.trailSampleSteps(id, epoch, budget, selected === id),
+        onError: error => {
+          if(closed || signal.aborted || revision!==ownedRevision) return;
+          pendingTrajectories.delete(id);
+          if(state.selected===id) state.error=`${id}：${String(error)}`;
+          trajectoryErrors.set(id,String(error).slice(0,240));
+          if(trajectoryErrors.size>64)trajectoryErrors.delete(trajectoryErrors.keys().next().value!);
+        },
+        release: () => { if (queuedTrails.get(id) === key) queuedTrails.delete(id); },
+        commit: (history) => {
+          if (history.policyKey !== eyesTrailPhase(id, core.epoch()).key || closed || signal.aborted || revision !== ownedRevision || state.selected !== selected || !state.trails || data.status(id)?.status !== "ready" || !data.hasTrajectory(id, core.epoch()) || core.epoch() < history.refreshRange[0] || core.epoch() > history.refreshRange[1]) return;
+          sdk.visual.trajectory(id, history.points, history.epochsTdbSeconds, {
+            kind: "trail", trailDurationSeconds: history.durationSeconds,
+            breakIndices: history.breakIndices, originId: history.originId,
+            drawRangeTdbSeconds: history.drawRangeTdbSeconds,
+            drawEpochTdbSeconds: history.drawEpochTdbSeconds,
+            drawRelativeStart: history.drawRelativeStart,
+            drawRelativeEnd: history.drawRelativeEnd,
+            referenceOrientation: history.referenceOrientation,
+            visibleInterval: history.visibleInterval,
+            colorRgba: eyesLineColor(id),
+          });
+          trajectoryWindows.set(id, history.refreshRange);
+          pendingTrajectories.delete(id);
+          trajectoryCounts.set(id, budget);
+          trajectoryDetails.set(id, selected === id);
+          scheduleHistory(id);
+        },
+      });
+      return;
+    }
     const trail: ReturnType<SolarSystemData["trajectorySamples"]> =
-      history ??
       data.trajectorySamples(
         id,
         core.epoch(),
@@ -764,13 +820,7 @@ export async function createWorkspace(
         "instantaneous",
       );
     sdk.visual.trajectory(id, trail.points, trail.epochsTdbSeconds, {
-      ...(history
-        ? {
-            kind: "trail" as const,
-            trailDurationSeconds: history.durationSeconds,
-            breakIndices: history.breakIndices,
-          }
-        : {kind: "orbit" as const, ...(trail.conic ? {conic: trail.conic} : {})}),
+      kind: "orbit", ...(trail.conic ? {conic: trail.conic} : {}),
       originId: trail.originId,
       colorRgba: eyesLineColor(id),
     });
@@ -778,7 +828,7 @@ export async function createWorkspace(
     pendingTrajectories.delete(id);
     trajectoryCounts.set(id, budget);
     trajectoryDetails.set(id, state.selected === id);
-    if (isTrail) scheduleHistory(id);
+
   };
   const publishJoints = () => {
     for (const body of solarCatalog) {
@@ -802,7 +852,7 @@ export async function createWorkspace(
         const upgrade =
           (state.selected === body.id ||
             ((body.kind === "planet" || body.kind === "moon") &&
-              parentAt(state.selected, core.epoch()) === body.id)) &&
+              data.parentAt(state.selected, core.epoch()) === body.id)) &&
           !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
         const model=getEyesDefinition(body.id)?.model;
@@ -902,7 +952,9 @@ export async function createWorkspace(
       if (systemId !== observationContext.systemId) observe(observationContext.target, observationContext.mode, observationContext.options);
     }
   };
-  const configure = () => {
+  const configure = () => frameMonitor.measurePhase("configure", () => {
+    trajectoryWork.clear();
+    queuedTrails.clear();
     refreshObservationContext();
     for (const id of new Set([...trajectoryWindows.keys(), ...pendingTrajectories])) {
       const kind = solarCatalog.find((body) => body.id === id)?.kind;
@@ -932,7 +984,7 @@ export async function createWorkspace(
       labels: state.labels,
       trajectories: state.trajectories || state.trails,
     });
-  };
+  });
   const refreshDataWarning = () => {
     const unavailable = data
       .status()
@@ -969,21 +1021,21 @@ export async function createWorkspace(
   };
   const primaryMoons = (target: string, epoch: number) => state.moons &&
     solarCatalog.find(body => body.id === target)?.kind === "planet"
-    ? eyesCatalog.filter(body => body.kind === "moon" && body.subcategory === "Major Moon" && parentAt(body.id, epoch) === target).map(body => body.id)
+    ? eyesCatalog.filter(body => body.kind === "moon" && body.subcategory === "Major Moon" && data.parentAt(body.id, epoch) === target).map(body => body.id)
     : [];
   const systemMembers = (target: string, epoch: number) => sceneIds(epoch).filter(id =>
-    id === target || (parentAt(id, epoch) === target && data.status(id)?.status === "ready" &&
+    id === target || (data.parentAt(id, epoch) === target && data.status(id)?.status === "ready" &&
       solarCatalog.find(body => body.id === id)?.kind === (target === "sun" ? "planet" : "moon")));
   const loadOverviewFamily = (ownedRevision = revision) => {
     const epoch = core.epoch();
     const ids = sceneIds(epoch);
-    void data.load(ids.filter(id => !baseSolarIds.includes(id)), epoch, []).then(() => {
+    void data.load(ids.filter(id => !baseSolarIds.includes(id)), epoch, []).then(() => frameMonitor.measurePhase("secondaryApply", () => {
       if (closed || revision !== ownedRevision || state.selected) return;
       data.publishAt(core.epoch());
       configure();
       refreshDataWarning();
       emit();
-    }).catch(error => {
+    })).catch(error => {
       if (!closed && revision === ownedRevision && !state.selected) {
         state.error = String(error);
         emit();
@@ -994,7 +1046,7 @@ export async function createWorkspace(
     const required = new Set<string>(state.selected ? [state.selected] : ["sun"]);
     if (state.followId) required.add(state.followId);
     for (const id of required) {
-      const parent = parentAt(id, epoch);
+      const parent = data.parentAt(id, epoch);
       if (parent && !required.has(parent)) required.add(parent);
       for (const controller of getEyesDefinition(id)?.controllers ?? [])
         if (isEntityAlign(controller))
@@ -1016,7 +1068,7 @@ export async function createWorkspace(
       .catch(() => {})
       .then(async () => {
         if (closed || current !== revision) return;
-        const restore = data.checkpoint();
+        const restore = frameMonitor.measurePhase("checkpoint", () => data.checkpoint());
         sdk.time.setPlayback(false, state.rate);
         try {
           const ids = sceneIds(epoch);
@@ -1024,13 +1076,13 @@ export async function createWorkspace(
           const orientationIds = new Set(
             [...detailedBodies, state.selected].filter(Boolean),
           );
-          let parent = state.selected ? parentAt(state.selected, epoch) : null;
+          let parent = state.selected ? data.parentAt(state.selected, epoch) : null;
           const parentSeen = new Set<string>();
           while (parent && !parentSeen.has(parent)) {
             parentSeen.add(parent);
             if (hasDisplayCatalog(parent)) orientationIds.add(parent);
             if (parent === "sun") break;
-            parent = parentAt(parent, epoch);
+            parent = data.parentAt(parent, epoch);
           }
           const critical = criticalDependencies(epoch);
           const family = state.observationMode === "system" ? primaryMoons(state.selected, epoch) : [];
@@ -1040,6 +1092,8 @@ export async function createWorkspace(
               ? ids.filter((id) => critical.has(id) || family.includes(id))
               : ids;
           await data.load(primaryIds, epoch, [...orientationIds]);
+          const reloadApplyStarted=performance.now();
+          try {
           assertLive();
           if (current !== revision) {
             restore();
@@ -1101,7 +1155,7 @@ export async function createWorkspace(
           validateFollow();
           if (!selectedUnavailable && primaryIds.length < ids.length) {
             const remaining = ids.filter((id) => !primaryIds.includes(id));
-            void data.load(remaining, epoch, [...orientationIds]).then(() => {
+            void data.load(remaining, epoch, [...orientationIds]).then(() => frameMonitor.measurePhase("secondaryApply", () => {
               if (closed || signal.aborted || current !== revision) return;
               data.publishAt(core.epoch());
               configure();
@@ -1111,7 +1165,7 @@ export async function createWorkspace(
               }
               refreshDataWarning();
               emit();
-            }).catch((error) => {
+            })).catch((error) => {
               if (closed || signal.aborted || current !== revision) return;
               state.error = error instanceof Error ? error.message : String(error);
               emit();
@@ -1126,7 +1180,7 @@ export async function createWorkspace(
             const members = sceneIds(epoch).filter(
               (id) =>
                 id === target ||
-                (parentAt(id, epoch) === target &&
+                (data.parentAt(id, epoch) === target &&
                   data.status(id)?.status === "ready" &&
                   solarCatalog.find((body) => body.id === id)?.kind ===
                     (target === "sun" ? "planet" : "moon")),
@@ -1142,6 +1196,7 @@ export async function createWorkspace(
             );
             sdk.camera.view(state.view as "orbit" | "top" | "front" | "side");
           }
+          } finally {frameMonitor.recordPhase("reloadApply",performance.now()-reloadApplyStarted);}
         } finally {
           restore.discard();
           if (!closed && current === revision) {
@@ -1173,7 +1228,7 @@ export async function createWorkspace(
       const token = ++observationToken;
       const previous = { ...state };
       const previousEpoch = core.epoch();
-      const rollbackData = data.checkpoint();
+      const rollbackData = frameMonitor.measurePhase("checkpoint", () => data.checkpoint());
       const rollback = () => {
         cancelRestore = undefined;
         rollbackData();
@@ -1213,7 +1268,7 @@ export async function createWorkspace(
           const members = sceneIds(core.epoch()).filter(
             (id) =>
               id === next.targetId ||
-              (parentAt(id, core.epoch()) === next.targetId &&
+              (data.parentAt(id, core.epoch()) === next.targetId &&
                 data.status(id)?.status === "ready" &&
                 solarCatalog.find((body) => body.id === id)?.kind ===
                   (next.targetId === "sun" ? "planet" : "moon")),
@@ -1395,7 +1450,7 @@ export async function createWorkspace(
       if (!target) throw Error("请先选择观察对象");
       const reference =
         mode === "follow"
-          ? (followId ?? parentAt(target, core.epoch()) ?? undefined)
+          ? (followId ?? data.parentAt(target, core.epoch()) ?? undefined)
           : undefined;
       if (
         mode === "follow" &&
@@ -1417,7 +1472,7 @@ export async function createWorkspace(
         const members = sceneIds(core.epoch()).filter(
           (id) =>
             id === target ||
-            (parentAt(id, core.epoch()) === target &&
+            (data.parentAt(id, core.epoch()) === target &&
               data.status(id)?.status === "ready" &&
               solarCatalog.find((body) => body.id === id)?.kind ===
                 (target === "sun" ? "planet" : "moon")),
@@ -1516,7 +1571,7 @@ export async function createWorkspace(
       sdk.time.setPlayback(playing, rate);
       desiredPlaying = playing;
       state.rate = rate;
-      if (wasPlaying !== playing) lastFrame = undefined;
+      if (wasPlaying !== playing) {lastFrame = undefined;frameMonitor.reset();}
       emit();
     },
     seek: reload,
@@ -1678,9 +1733,20 @@ export async function createWorkspace(
       });
     const tick = (now: number) => {
       if (closed) return;
+      if (typeof document !== "undefined" && document.hidden) {frameMonitor.reset();lastFrame=undefined;frame=requestFrame(tick);return;}
+      if (now-lastPerformanceSample>=1000) {
+        try {corePerformance=JSON.parse(core.performance_snapshot?.() ?? "{}");}catch{corePerformance={};}
+        const reported=corePerformance.target_fps;
+        targetHz=reported===30?30:60;
+        state.performance={...frameMonitor.snapshot(now),sampleIntervalSeconds:1,targetHz,core:corePerformance,trajectoryErrors:Object.fromEntries(trajectoryErrors)};
+        lastPerformanceSample=now;
+      }
+      const accepted=frameMonitor.accept(now,targetHz);
+      if(accepted===undefined){frame=requestFrame(tick);return;}
+      const workStarted=performance.now();
       try {
         if (!state.busy) {
-          core.tick(lastFrame === undefined ? 0 : (now - lastFrame) / 1000);
+          core.tick(lastFrame === undefined ? 0 : accepted);
           if (
             state.selected &&
             data.status(state.selected)?.status === "ready" &&
@@ -1726,10 +1792,10 @@ export async function createWorkspace(
               secondaryRetryAt.set(item.id, now + 1000);
               secondaryLoads.add(item.id);
               const requestedRevision = revision;
-              void data.load([item.id], epoch, []).then(() => {
+              void data.load([item.id], epoch, []).then(() => frameMonitor.measurePhase("secondaryApply", () => {
                 if (!closed && requestedRevision === revision && data.status(item.id)?.status === "ready")
                   secondaryRestores.add(item.id);
-              }).catch(() => {}).finally(() => {
+              })).catch(() => {}).finally(() => {
                 secondaryLoads.delete(item.id);
               });
             }
@@ -1744,6 +1810,7 @@ export async function createWorkspace(
             }
             publishJoints();
             validateFollow();
+            let orbitPublished = false;
             if (!restored && (state.trajectories || state.trails) && (pendingTrajectories.size > 0 || now - lastTrajectoryRefresh >= 50)) {
               // Cosmetic maintenance must not rebuild the whole scene in one RAF.
               // Rotate over current windows; no deferred work can publish a stale selection.
@@ -1771,6 +1838,7 @@ export async function createWorkspace(
                   )) {
                   try {
                     refreshTrajectory(id);
+                    orbitPublished = solarCatalog.find(body => body.id === id)?.kind !== "spacecraft";
                   } catch (error) {
                     if (id === state.selected) throw error;
                     pendingTrajectories.delete(id);
@@ -1786,6 +1854,12 @@ export async function createWorkspace(
                 }
               }
             }
+            if (!restored && !orbitPublished) {
+              const work=trajectoryWork.turn({budgetMs:targetHz===30?1:1.5,maxSteps:2048});
+              core.renderer_work_pending?.(work.active+work.pending);
+              frameMonitor.recordSlice(work.samplingMs);
+              frameMonitor.recordPublication(work.commitMs);
+            }
             lastPublishedEpoch = core.epoch();
           }
         }
@@ -1800,6 +1874,7 @@ export async function createWorkspace(
         desiredPlaying = false;
         emit();
       }
+      frameMonitor.recordWork(performance.now()-workStarted);
       frame = requestFrame(tick);
     };
     frame = requestFrame(tick);

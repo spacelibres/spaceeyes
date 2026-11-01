@@ -1,6 +1,6 @@
 type Segment = { a: number; b: number; score: number; terminal: boolean };
 /** Refine curvature rather than shortening source-authored history. */
-export function adaptiveTrailTimes(
+export function* adaptiveTrailSteps(
   start: number,
   epoch: number,
   end: number,
@@ -8,7 +8,7 @@ export function adaptiveTrailTimes(
   position: (time: number) => readonly number[],
   period?: number,
   boundaries: readonly number[] = [],
-): { times: number[]; unresolved: Set<number> } {
+): Generator<void, { times: number[]; unresolved: Set<number> }> {
   if (
     !Number.isInteger(count) ||
     count < 8 ||
@@ -39,9 +39,10 @@ export function adaptiveTrailTimes(
       throw error;
     }
   };
-  const evaluate = (a: number, b: number): Segment => {
+  const evaluate = function* (a: number, b: number): Generator<void, Segment> {
     const points: (readonly number[] | undefined)[] = [];
     for (let i = 0; i <= 8; i++) {
+      yield;
       try {
         points.push(sample(a + ((b - a) * i) / 8));
       } catch {
@@ -98,7 +99,14 @@ export function adaptiveTrailTimes(
       terminal: false,
     };
   };
-  const required = [...new Set([start, epoch, end, ...boundaries.filter(t => Number.isFinite(t) && t > start && t < end)])];
+  const required = [
+    ...new Set([
+      start,
+      epoch,
+      end,
+      ...boundaries.filter((t) => Number.isFinite(t) && t > start && t < end),
+    ]),
+  ];
   if (required.length > count) throw Error("History boundary sample budget");
   const seeds = Math.min(
     Math.max(1, count - required.length + 1),
@@ -116,16 +124,20 @@ export function adaptiveTrailTimes(
       ),
     ]),
   ].sort((a, b) => a - b);
-  const segments = times.slice(1).map((b, i) => evaluate(times[i], b));
+  const segments: Segment[] = [];
+  for (let i = 1; i < times.length; i++)
+    segments.push(yield* evaluate(times[i - 1], times[i]));
   while (times.length < count) {
     let index = -1;
-    for (let i = 0; i < segments.length; i++)
+    for (let i = 0; i < segments.length; i++) {
+      yield;
       if (
         !segments[i].terminal &&
         segments[i].score > 1 &&
         (index < 0 || segments[i].score > segments[index].score)
       )
         index = i;
+    }
     if (index < 0) break;
     const s = segments[index],
       mid = (s.a + s.b) / 2;
@@ -133,7 +145,12 @@ export function adaptiveTrailTimes(
       s.terminal = true;
       continue;
     }
-    segments.splice(index, 1, evaluate(s.a, mid), evaluate(mid, s.b));
+    segments.splice(
+      index,
+      1,
+      yield* evaluate(s.a, mid),
+      yield* evaluate(mid, s.b),
+    );
     times.push(mid);
   }
   times.sort((a, b) => a - b);
@@ -141,11 +158,21 @@ export function adaptiveTrailTimes(
     unresolved = new Set<number>();
   let failure = 0;
   for (const s of segments) {
+    yield;
     while (failure < bad.length && bad[failure] < s.a) failure++;
     // Exhausted geometric refinement is an approximation, not a source gap.
     // Keep the best covered polyline; only missing source data breaks it.
-    if (failure < bad.length && bad[failure] <= s.b)
-      unresolved.add(s.b);
+    if (failure < bad.length && bad[failure] <= s.b) unresolved.add(s.b);
   }
   return { times, unresolved };
+}
+
+/** Synchronous compatibility API with exactly the same refinement algorithm. */
+export function adaptiveTrailTimes(
+  ...args: Parameters<typeof adaptiveTrailSteps>
+) {
+  const work = adaptiveTrailSteps(...args);
+  let result = work.next();
+  while (!result.done) result = work.next();
+  return result.value;
 }

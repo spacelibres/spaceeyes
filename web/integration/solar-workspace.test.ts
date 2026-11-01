@@ -959,6 +959,8 @@ test("natural satellites use orbits and artificial satellites use timed trails",
     assert.ok(moon.conic, 'Moon must forward analytic orbit independent of point count');
     assert.ok(moon.epochs.length > 2);
     await app.select("sc_juno");
+    app.play(false, 1);
+    for (let frame = 0; frame < 1000 && !fixtures.trails().some(t => t.id === "sc_juno" && t.count > 0); frame++) fixtures.step(frame * 16);
     const craft = fixtures
       .trails()
       .filter((t) => t.id === "sc_juno" && t.count > 0)
@@ -1613,6 +1615,8 @@ test("InSight landing clears a previously dynamic trajectory without a static-or
   try {
     await app.seek(590000000);
     await app.select("sc_insight");
+    app.play(false, 1);
+    for (let frame = 0; frame < 1000 && !fixtures.trails().some(t => t.id === "sc_insight" && t.count > 0); frame++) fixtures.step(frame * 16);
     assert.ok(
       fixtures.trails().some((t) => t.id === "sc_insight" && t.count > 0),
     );
@@ -1758,12 +1762,12 @@ test("expired orbit maintenance publishes at most one path per animation frame",
     assert.equal(fixtures.core().epoch(), 2e9);
     for (let frame = 1; frame < 12; frame++) {
       const count = fixtures.trails().length;
-      fixtures.step(200 + frame * 16);
+      fixtures.step(200 + frame * 20);
       assert.ok(fixtures.trails().length - count <= 1);
     }
     const refreshed = fixtures.trails().slice(before).map((trail) => trail.id);
     assert.ok(new Set(refreshed).size > 1, "maintenance must progress through background objects");
-    assert.ok(Math.abs(fixtures.core().epoch() - (2e9 + 0.176)) < 0.00001, "cosmetic maintenance preserves elapsed simulation time");
+    assert.ok(Math.abs(fixtures.core().epoch() - (2e9 + 0.22)) < 0.00001, "cosmetic maintenance preserves elapsed simulation time");
   } finally {
     await app.dispose();
   }
@@ -1777,6 +1781,8 @@ test("expired orbit maintenance publishes at most one path per animation frame",
   });
   try {
     await app.select("sc_iss");
+    app.play(false, 1);
+    for (let frame = 0; frame < 1000 && !fixtures.trails().some(t => t.id === "sc_iss" && t.count > 0); frame++) fixtures.step(frame * 20);
     const selected = fixtures.trails().filter((trail) => trail.id === "sc_iss");
     assert.ok(selected.some((trail) => trail.count > 0));
     assert.ok(selected.every((trail) => trail.count <= 256));
@@ -1784,10 +1790,10 @@ test("expired orbit maintenance publishes at most one path per animation frame",
     fixtures.step(0);
     const start = fixtures.core().epoch();
     for (let index = 1; index <= 60; index++) {
-      fixtures.step(index * 16);
+      fixtures.step(index * 20);
       assert.equal(fixtures.core().playing(), true);
     }
-    assert.ok(Math.abs(fixtures.core().epoch() - start - 460.8) < 0.001);
+    assert.ok(Math.abs(fixtures.core().epoch() - start - 576) < 0.001);
     assert.ok(fixtures.trails().filter((trail) => trail.id === "sc_iss").every((trail) => trail.count <= 256));
   } finally { await app.dispose(); }
 });
@@ -1812,15 +1818,15 @@ test("unrelated expired Moon coverage loads in background without pausing covere
     armed = true;
     app.play(true, 480);
     fixtures.step(0);
-    fixtures.step(16);
-    fixtures.step(32);
+    fixtures.step(20);
+    fixtures.step(40);
     assert.equal(fixtures.core().playing(), true, JSON.stringify(states.at(-1)));
-    assert.ok(Math.abs(fixtures.core().epoch() - (846686628 - 1 + 15.36)) < 0.001);
+    assert.ok(Math.abs(fixtures.core().epoch() - (846686628 - 1 + 19.2)) < 0.001);
     assert.equal(states.at(-1)!.busy, false);
     release?.();
     await Promise.resolve();
     await Promise.resolve();
-    fixtures.step(48);
+    fixtures.step(60);
     assert.equal(fixtures.core().playing(), true, JSON.stringify(states.at(-1)));
     assert.ok(fixtures.core().epoch() > 846686628 + 20);
   } finally {
@@ -1851,12 +1857,12 @@ for (const failed of [false, true]) {
       app.play(true, 480);
       fixtures.step(0);
       for (let index = 1; index <= 60; index++) {
-        fixtures.step(index * 16);
+        fixtures.step(index * 20);
         await new Promise<void>((resolve) => setImmediate(resolve));
         assert.equal(fixtures.core().playing(), true);
       }
       assert.ok(retries > 0 && retries <= 1, `secondary fetches within 960ms: ${retries}`);
-      assert.ok(Math.abs(fixtures.core().epoch() - (846686627 + 460.8)) < 0.001);
+      assert.ok(Math.abs(fixtures.core().epoch() - (846686627 + 576)) < 0.001);
     } finally { await app.dispose(); }
   });
 }
@@ -1884,7 +1890,7 @@ test("selected ISS coverage reload resumes before supplementary objects finish",
     armed = true;
     app.play(true, 480);
     fixtures.step(0);
-    fixtures.step(16);
+    fixtures.step(20);
     for (let attempt = 0; attempt < 100 && (states.at(-1)!.busy || !blocked); attempt++)
       await new Promise<void>((resolve) => setImmediate(resolve));
     assert.equal(blocked, true, "supplementary source is still pending");
@@ -1892,8 +1898,8 @@ test("selected ISS coverage reload resumes before supplementary objects finish",
     assert.equal(fixtures.core().playing(), true);
     assert.equal(fixtures.focused(), "sc_iss");
     const epoch = fixtures.core().epoch();
-    fixtures.step(32);
-    fixtures.step(48);
+    fixtures.step(40);
+    fixtures.step(60);
     assert.ok(fixtures.core().epoch() > epoch);
   } finally { release(); await app.dispose(); }
 });
@@ -1924,7 +1930,7 @@ test("follow Moon coverage reload preserves reference before supplementary objec
     armed = true;
     app.play(true, 480);
     fixtures.step(0);
-    fixtures.step(16);
+    fixtures.step(20);
     for (let attempt = 0; attempt < 100 && (states.at(-1)!.busy || !blocked); attempt++)
       await new Promise<void>((resolve) => setImmediate(resolve));
     assert.equal(blocked, true, JSON.stringify(states.at(-1)));
@@ -1934,8 +1940,8 @@ test("follow Moon coverage reload preserves reference before supplementary objec
     assert.equal(states.at(-1)!.observationMode, "follow");
     assert.equal(states.at(-1)!.followId, "moon");
     const epoch = fixtures.core().epoch();
-    fixtures.step(32);
-    fixtures.step(48);
+    fixtures.step(40);
+    fixtures.step(60);
     assert.ok(fixtures.core().epoch() > epoch);
   } finally { release(); await app.dispose(); }
 });
@@ -1957,10 +1963,10 @@ test("background coverage recovery restores only the removed object's visual", a
     armed = true;
     app.play(true, 480);
     fixtures.step(0);
-    fixtures.step(16);
+    fixtures.step(20);
     for (let frame = 2; frame < 20 && fixtures.visuals().length === before; frame++) {
       await new Promise<void>((resolve) => setImmediate(resolve));
-      fixtures.step(frame * 16);
+      fixtures.step(frame * 20);
     }
     const restored = fixtures.visuals().slice(before);
     assert.deepEqual(restored.filter(entry => existing.has(entry.id)).map(entry => entry.id), ["moon"]);
@@ -1980,7 +1986,7 @@ test("dense Earth scene keeps resolved long spacecraft histories without starvin
   try {
     await app.select("earth");
     await ready;
-    for (let frame = 0; frame < 150; frame++) {
+    for (let frame = 0; frame < 1500; frame++) {
       const before = fixtures.trails().length;
       fixtures.step(frame * 16);
       assert.ok(fixtures.trails().length - before <= 1, "initial trails also share the per-frame limit");
@@ -2135,11 +2141,11 @@ test("continuous playback rate changes never discard every animation interval", 
  try {
    app.play(true,1);fixtures.step(0);const start=fixtures.core().epoch();
    const rates=[1,2,3,5,10,20,60];let expected=0;
-   for(let i=0;i<rates.length;i++){app.play(true,rates[i]);fixtures.step((i+1)*16);expected+=rates[i]*.016;}
+   for(let i=0;i<rates.length;i++){app.play(true,rates[i]);fixtures.step((i+1)*20);expected+=rates[i]*.020;}
    assert.ok(Math.abs(fixtures.core().epoch()-start-expected)<1e-6,"continuous slider changes must retain frame time");
    app.play(false,60);fixtures.step(10000);const paused=fixtures.core().epoch();
-   app.play(true,2);fixtures.step(20000);fixtures.step(20016);
-   assert.ok(Math.abs(fixtures.core().epoch()-paused-.032)<1e-6,"resume must exclude paused wall time");
+   app.play(true,2);fixtures.step(20000);fixtures.step(20020);
+   assert.ok(Math.abs(fixtures.core().epoch()-paused-.040)<1e-6,"resume must exclude paused wall time");
  } finally {await app.dispose();}
 });
 
@@ -2171,4 +2177,38 @@ test("first LRO selection upgrades the observed Moon surface without visiting Mo
    await app.select("sc_lunar_reconnaissance_orbiter");
    assert.ok(fixtures.visuals().some(({id,spec})=>id==="moon" && Array.isArray(spec.faceAssets) && spec.faceAssets.length===6));
  } finally {await app.dispose();}
+});
+
+test("cooperative pending spacecraft work cannot revive after trails are disabled", async () => {
+ const fixtures = harness();
+ const app = await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+ await app.select("sc_iss");
+ app.trails(false);
+ const count=fixtures.trails().length;
+ const epoch=fixtures.core().epoch();
+ for(let i=0;i<100;i++)fixtures.step(i*16);
+ assert.ok(fixtures.trails().slice(count).every(t=>t.id!=="sc_iss" || t.count===0));
+ assert.ok(fixtures.core().epoch()>=epoch);
+ }finally{await app.dispose();}
+});
+
+
+test("spacecraft sampling errors preserve playback and other jobs", async () => {
+ const {SolarSystemData}=await import('../../platform/solar-system.ts');
+ const original=SolarSystemData.prototype.trailSampleSteps;
+ SolarSystemData.prototype.trailSampleSteps=function*(...args:Parameters<typeof original>){if(args[0]==='sc_iss')throw Error('injected local trail gap');return yield* original.apply(this,args);};
+ const fixtures=harness();const snapshots:SolarSnapshot[]=[];
+ const app=await createWorkspace('#test',s=>snapshots.push(s),new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes('type=ori')))});
+ try{await app.select('sc_iss');app.play(true,1);fixtures.step(0);const epoch=fixtures.core().epoch();for(let i=1;i<20;i++)fixtures.step(i*20);assert.equal(fixtures.core().playing(),true);assert.ok(fixtures.core().epoch()>epoch);assert.match(snapshots.at(-1)!.error,/local trail gap/);}finally{SolarSystemData.prototype.trailSampleSteps=original;await app.dispose();}
+});
+
+test('Huygens closed landing endpoint retains its reviewed Titan reference',async()=>{
+ const fixtures=harness();const snapshots:SolarSnapshot[]=[];
+ const app=await createWorkspace('#test',s=>snapshots.push(s),new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes('type=ori')))});
+ try {await app.seek(158974766.184);await app.select('sc_huygens');
+ assert.equal(snapshots.at(-1)!.parentId,'titan');
+ const titan=JSON.parse(fixtures.core().state_at('titan',158974766.184));
+ assert.ok(titan.positionKm.every(Number.isFinite));
+ }finally{await app.dispose();}
 });
