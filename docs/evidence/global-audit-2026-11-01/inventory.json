@@ -1,0 +1,1679 @@
+{
+  "baseline": "8e97509ffc006071b95e8c78a2da3ad35a888c1f",
+  "files": [
+    {
+      "path": "core/src/camera_collision.rs",
+      "bytes": 5255,
+      "lines": 149,
+      "sha256": "1ccb8054bb1a3d990e87019c236da97c1d06b4de80c95acd80e760615fe95a29",
+      "symbols": [
+        "padded",
+        "constrain",
+        "sweep_blocks_tunneling_and_allows_tangent_motion",
+        "recovers_inside_and_detours_repeated_head_on_focus",
+        "nearest_body_and_rebased_coordinates_are_consistent"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/camera_framing.rs",
+      "bytes": 7570,
+      "lines": 228,
+      "sha256": "204ce0d08dda412eb59f51ec49ce4fd8a82228c1628650dea7c12580b4fdd571",
+      "symbols": [
+        "initial_look_angles",
+        "fit_distance",
+        "visual_extent_km",
+        "system_min_distance_km",
+        "fit",
+        "central_sphere_uses_narrow_axis_tangent_envelope",
+        "wide_and_portrait_preserve_asymmetric_positions",
+        "rotated_camera_uses_inverse_view_basis",
+        "rejects_invalid_fit_inputs",
+        "model_extent_hint_cannot_shrink_physical_sphere",
+        "ring_envelope_includes_outer_radius",
+        "nasa_system_minimums_are_exact",
+        "target_and_sky_use_opposite_external_viewing_sides_in_display_basis"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/camera_intent.rs",
+      "bytes": 16087,
+      "lines": 445,
+      "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9",
+      "symbols": [
+        "camera_render_status",
+        "record_camera_render_status",
+        "camera_lighting",
+        "set_camera_lighting",
+        "camera_observation",
+        "set_camera_observation_with_context",
+        "set_camera_observation",
+        "input_authorize",
+        "camera_orbit",
+        "camera_zoom",
+        "take_camera_input",
+        "core",
+        "observation_system_is_validated_atomically_and_survives_missing_geometry",
+        "render_status_is_finite_read_only_and_clearable",
+        "lighting_requires_permission_validates_and_releases_owner",
+        "input_authorization_bounds_consumption_and_release",
+        "observation_contract_and_focus_lifecycle",
+        "observation_json_rejects_unknown_fields",
+        "invalid_initial_composition_is_atomic_and_reference_cleanup_is_independent"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/camera_motion.rs",
+      "bytes": 4185,
+      "lines": 127,
+      "sha256": "205bdd7723f959081bd8364ab64bd633694e2d1eb65fbbd201ec010db96b29e5",
+      "symbols": [
+        "accept",
+        "clear",
+        "drag",
+        "coast",
+        "zoom",
+        "zoom_step",
+        "reentry_requires_fresh_press",
+        "decay_is_frame_independent_and_bounded",
+        "release_has_a_visible_bounded_tail_then_stops",
+        "reset_stops_every_axis",
+        "reversal_replaces_velocity",
+        "logarithmic_zoom_partition"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/clock.rs",
+      "bytes": 1546,
+      "lines": 58,
+      "sha256": "05ce63c38b7ee3d2b9ebf1871bd3803b4de345c56cf8c30c8d4aa2a6e01e9c8f",
+      "symbols": [
+        "default",
+        "epoch",
+        "rate",
+        "is_playing",
+        "set_playing",
+        "seek",
+        "set_rate",
+        "advance"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/deep_lod.rs",
+      "bytes": 2247,
+      "lines": 70,
+      "sha256": "88c9472ed44ac8f77db57355be0ce5a6b682c21b483a651739bf832d80ecf266",
+      "symbols": [
+        "desired",
+        "update_lod",
+        "keep_level",
+        "actual_vertical_fov_is_not_clamped_to_host_long_axis_limit",
+        "density_hysteresis_prevents_boundary_chatter"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/deep_render.rs",
+      "bytes": 21119,
+      "lines": 578,
+      "sha256": "b082a5121492b59393eb5ec20619189bda8a17b4a0ff26ca6ec6cc794b3a6b5f",
+      "symbols": [
+        "vertex_shader",
+        "fragment_shader",
+        "alpha_mode",
+        "depth_bias",
+        "enable_prepass",
+        "enable_shadows",
+        "tile_mesh",
+        "budget_target",
+        "admit_texture",
+        "tile_visible",
+        "sync_environment",
+        "packed_cube_and_visible_panorama_share_world_directions",
+        "oversized_view_falls_back_to_complete_level",
+        "full_sky_requests_cannot_exceed_residency_budget",
+        "tile_mesh_has_bounded_angular_coverage_and_inward_winding",
+        "disabled_environment_releases_mesh_material_and_entity",
+        "tile_visibility_culls_opposite_hemisphere_and_handles_poles"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/deep_space.rs",
+      "bytes": 6571,
+      "lines": 189,
+      "sha256": "ee029e2c68d37fe7074e5f27aaf3b3768daad40990276ecc44747cce4d2b0eb9",
+      "symbols": [
+        "environment_revision",
+        "environment_spec",
+        "set_environment",
+        "environment_ownership_validation_and_release_are_atomic"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/face_texture.rs",
+      "bytes": 20092,
+      "lines": 589,
+      "sha256": "99a1ebc044c2d542d73a95a924eb6afc7d911439b0e96f2e4574058432a62b3a",
+      "symbols": [
+        "get",
+        "insert",
+        "clear",
+        "face_uv_reference",
+        "face_uv",
+        "rgba_pixel",
+        "convert_rows",
+        "resolve_faces",
+        "cardinal_face_order",
+        "source",
+        "row_batches_match_full_conversion_and_publish_only_at_end",
+        "rgba_source_fast_path_preserves_exact_bytes",
+        "closed_mapping_preserves_reference_uv_and_later_face_ties",
+        "fifo_budget_reuse_and_clear_preserve_material_assets",
+        "failed_face_identifies_zero_based_index_path_and_preserves_failed_state"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/frame_budget.rs",
+      "bytes": 24424,
+      "lines": 638,
+      "sha256": "cc68e2792fc13bc2c4b6a91f2914f9bde20306751e66cf123cb69e086e85d4ad",
+      "symbols": [
+        "default",
+        "set_noncritical_pending",
+        "snapshot",
+        "set_visible",
+        "admit",
+        "record_cpu",
+        "install",
+        "frame_budget_thirty_cpu_thirteen_preserves_and_restores_quality",
+        "frame_budget_degrades_quality_then_recovers_before_sixty",
+        "frame_budget_resolution_override_preserves_logical_camera_viewport",
+        "frame_budget_30hz_quantizes_on_144hz_without_losing_rate",
+        "frame_budget_telemetry_percentiles_and_stalled_second",
+        "frame_budget_late_frame_cannot_burst",
+        "frame_budget_window_lifecycle_reconciles_after_removal_trackers_expire",
+        "frame_budget_phase_jitter_keeps_cadence_and_no_burst_after_gap",
+        "frame_budget_preserves_pending_asset_messages_while_skipped",
+        "frame_budget_gates_real_subapp_extraction_and_schedule",
+        "frame_budget_event_flood_and_visibility",
+        "frame_budget_hysteresis",
+        "resync_window_lifecycle",
+        "apply_resolution_scale"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/hdr_assets.rs",
+      "bytes": 4850,
+      "lines": 140,
+      "sha256": "1aec7ed3a18f8acc975285e334a99277a894fa07ff3d1044dcd6cbdbe9fcc7c3",
+      "symbols": [
+        "invalid",
+        "decode",
+        "load",
+        "extensions",
+        "black_hdr_and_rejection",
+        "cube_face_order_and_mip_upload_are_preserved"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/joint_render.rs",
+      "bytes": 15021,
+      "lines": 396,
+      "sha256": "23dd8a764d7007acc4ade01e4058589546348e8e5cf9d0b4533bdca35f240590",
+      "symbols": [
+        "source_node_name",
+        "hinge_rotation",
+        "parent_rotation",
+        "apply_model_joints",
+        "aim",
+        "solar_hinge_respects_parent_frame_and_replays_without_accumulation",
+        "nested_nodes_update_in_one_frame_and_clear_restores_bind_pose"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/label_visibility.rs",
+      "bytes": 4475,
+      "lines": 137,
+      "sha256": "3b86c667e0671f1e08272b62aaf875a5e0d3e81b41520fdc94bdcfb4d7cb82b3",
+      "symbols": [
+        "occluded",
+        "update",
+        "foreground_only_occludes_other_body",
+        "near_far_hysteresis_and_interaction_threshold",
+        "disallowed_label_declines_and_projection_reset_restarts_fade",
+        "selecting_hides_immediately_and_deselecting_only_restores_at_distance",
+        "solar_overview",
+        "marker_projection_valid",
+        "subpixel_satellite_keeps_its_marker"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/lib.rs",
+      "bytes": 30393,
+      "lines": 924,
+      "sha256": "e98a473eb454caead5185bc1f3acc276bad6baf4f55aea7a29f3f412b60ed007",
+      "symbols": [
+        "is_valid",
+        "default",
+        "valid_id",
+        "object_ids",
+        "with_limits",
+        "authorize",
+        "publish_object",
+        "remove_object",
+        "clock",
+        "tick",
+        "seek",
+        "set_playback",
+        "set_object_state",
+        "object_state_at",
+        "open_session",
+        "open_session_with_permissions",
+        "register_object",
+        "focus",
+        "set_annotation",
+        "set_timed_trajectory",
+        "set_trajectory_with_style",
+        "trajectory_epochs",
+        "trajectory_style",
+        "set_layers",
+        "annotations",
+        "focus_revision",
+        "camera_fov_degrees",
+        "set_camera_fov",
+        "camera_view",
+        "set_camera_view",
+        "focused_object",
+        "camera_zoom_to_overview",
+        "release_session",
+        "annotations_enforce_owner_budget_layers_and_cleanup",
+        "fov_is_authorized_bounded_and_released_without_refocus",
+        "trajectory_reference_types_and_missing_origin_rejected"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/model_joints.rs",
+      "bytes": 3872,
+      "lines": 115,
+      "sha256": "0658ec09b20d54a5034c05cebb330fefc2762cd1debe82012e0bc21f8681c603",
+      "symbols": [
+        "canonical_joint_name",
+        "set_model_joints",
+        "model_joints",
+        "model_joint_status",
+        "record_model_joint_status"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/observation.rs",
+      "bytes": 5697,
+      "lines": 154,
+      "sha256": "6d097e7b33719d2f57e9aef99f98e9d2bce9358061cc0182591764bc7e7879db",
+      "symbols": [
+        "from_camera",
+        "sky_density",
+        "vertical_degrees",
+        "density",
+        "pick_ray",
+        "radius_pixels",
+        "camera",
+        "dpi_changes_texture_density_without_changing_logical_labels_or_pick_angles",
+        "invalid_or_missing_viewport_never_creates_a_stale_observation"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/orbit_lines.rs",
+      "bytes": 27621,
+      "lines": 777,
+      "sha256": "bdd4bd3d5d383272f11cffbc253099b9d82795ef7d9fbd484c0203320a33bd81",
+      "symbols": [
+        "reference_point",
+        "parent_path_visibility",
+        "system_path_visibility",
+        "path_visibility",
+        "path_scale_fade",
+        "local_system_hides_solar_orbit_but_keeps_trail_and_recovers",
+        "distance_fade",
+        "visit_segments",
+        "close_inspection_hides_orbits_and_zooming_out_restores_them_continuously",
+        "current_epoch_splits_its_own_interval_in_both_playback_directions",
+        "exact_vertex_is_updated_without_closing_uncovered_endpoints",
+        "visit_styled_segments",
+        "cached_relative_window_attaches_current_head_and_absolute_window_stays_fixed",
+        "historical_reference_points_follow_current_reference_orientation",
+        "base_policy_only_protects_direct_children",
+        "selected_satellite_does_not_hide_other_satellites_of_its_host",
+        "satellite_family_keeps_host_peers_and_children_but_fades_own_and_foreign_paths",
+        "solar_root_reference_does_not_turn_planet_focus_into_a_local_satellite_family",
+        "parent_inspection_keeps_natural_satellite_orbits_at_every_zoom",
+        "host_fades_but_child_orbits_and_trails_bypass_both_fades_without_stale_parent",
+        "clips_past_window_and_never_bridges_breaks_or_uncovered_future",
+        "closed_degree_ring_attaches_exact_current_without_epoch_dependence",
+        "off_plane_current_does_not_deform_ring",
+        "rejects_invalid_basis_and_wire_fields",
+        "adaptive_times_fade_by_visible_sample_index_like_nasa"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/picking.rs",
+      "bytes": 8684,
+      "lines": 256,
+      "sha256": "529043028a2714aab783f06268f527eca35069f0b336cf3062f18c5665f9dab4",
+      "symbols": [
+        "hover",
+        "pick",
+        "ring_ray_handles_perspective_holes_and_offscreen_centers",
+        "disc",
+        "hover_clears_on_leave_drag_and_no_hit",
+        "overlapping_discs_select_nearest_visible_body",
+        "placed_label_is_pickable_but_does_not_select_through_nearer_body",
+        "invalid_coordinates_and_cleared_frames_never_hit",
+        "depth_ties_are_stable_and_invalid_targets_are_ignored"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/render_assets.rs",
+      "bytes": 17244,
+      "lines": 485,
+      "sha256": "4c54cf565f3fca21bdb76cb27b1e6a37b04826706fed8373ace3f80f6149b5bc",
+      "symbols": [
+        "sphere_material",
+        "id",
+        "joint_fixture",
+        "attach_visuals",
+        "world_ready",
+        "poll_visuals",
+        "sphere_asset_paths_keep_one_lit_material_policy"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/render_timings.rs",
+      "bytes": 3374,
+      "lines": 114,
+      "sha256": "5ab616376ac90cbdc7489e77e880db85a00d7e7f69bdfc7dde9944d009cbc818",
+      "symbols": [
+        "name",
+        "record",
+        "snapshot",
+        "scope",
+        "drop",
+        "bounded_quantiles_and_invalid_samples"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/renderer.rs",
+      "bytes": 126148,
+      "lines": 3318,
+      "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae",
+      "symbols": [
+        "default",
+        "workspace_winit_update_mode",
+        "visible_workspace_winit_settings",
+        "create_browser_app",
+        "setup",
+        "update_camera_fill",
+        "apply",
+        "update_focus",
+        "enforce_camera_collision",
+        "follow_display_direction",
+        "follow_keeps_craft_inside_nasa_field_of_view",
+        "field_of_view_matches_eyes_long_viewport_axis",
+        "startup_reserves_webgl_directional_budget_for_sun",
+        "camera_fill_tracks_final_camera_without_rotating_solar_light",
+        "observation_modes_frame_large_origin_and_follow_moving_reference",
+        "follow_uses_display_basis_and_changes_with_reference",
+        "host_zoom_survives_canvas_blur_without_replaying_native_motion",
+        "controlled_zoom_is_consumed_once_independent_of_frame_duration",
+        "apply_controlled_input",
+        "orbit_input",
+        "stop_renderer",
+        "asymmetric_overview_keeps_scientific_origin_on_camera_axis_after_orbit_and_return",
+        "transformed_bounds_include_offset_rotation_and_scale",
+        "transformed_bounds",
+        "replacement_and_target_switch_reframe_without_changing_scientific_radius",
+        "stellar_marker_color",
+        "distant_marker_keeps_surface_palette_instead_of_legacy_gold",
+        "maintain_labels",
+        "draw_annotations",
+        "moving_target_transition_stays_in_target_frame",
+        "switching_origin_reprojects_previous_camera_then_locks_without_follow_lag",
+        "preset_allows_next_frame_drag_in_overview_and_focus",
+        "update_labels",
+        "label_entities_survive_frames_and_are_removed_only_when_absent",
+        "overview_distance_is_not_reinterpreted_before_new_focus_is_framed",
+        "explicit_focus_of_same_target_restores_framing",
+        "update_illumination",
+        "fast_orbit_rebases_sweep_and_keeps_parent_in_clip_range",
+        "rumba_seek_then_focus_converges_with_solar_and_earth_collision",
+        "a_noncentral_body_blocks_camera_after_floating_origin_changes",
+        "system_fit_is_view_aware_stable_during_motion_and_refits_on_resize",
+        "ui_focus_uses_browser_redraw_without_a_second_timer",
+        "initial_task_view_is_applied_once_and_never_overwrites_manual_or_preset_views"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/ring_texture.rs",
+      "bytes": 7508,
+      "lines": 229,
+      "sha256": "aaa5b996d78eac76c844d86c92166db3a411528b7976f24cf45ad15abb5e61ab",
+      "symbols": [
+        "fragment_shader",
+        "resolve_rings",
+        "ring_pixel",
+        "gray_bottom_uses_top_opacity_including_transparent_gaps"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/runtime.rs",
+      "bytes": 5017,
+      "lines": 146,
+      "sha256": "907e1fd1e40a9cef1b0941e7a69c5aa302651bf96352750d5e08e03de4d0b603",
+      "symbols": [
+        "display_rotation",
+        "new",
+        "default",
+        "build",
+        "create_headless_app",
+        "sync_scene"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/screen_layout.rs",
+      "bytes": 4391,
+      "lines": 135,
+      "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb",
+      "symbols": [
+        "label_size",
+        "place",
+        "dense_cluster_keeps_priority_and_original_anchor_across_frames",
+        "rejects_offscreen_without_clamping",
+        "weight_then_depth_then_name_decides_collisions"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/sky_render.rs",
+      "bytes": 7863,
+      "lines": 220,
+      "sha256": "6346dfebbe3758b232e50f46303e519172da3d43e6f950cf2fa53e7482d22095",
+      "symbols": [
+        "vertex_shader",
+        "fragment_shader",
+        "alpha_mode",
+        "depth_bias",
+        "enable_prepass",
+        "enable_shadows",
+        "sync_sky",
+        "session_layers_are_batched_and_assets_released"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/solar_surface.rs",
+      "bytes": 9968,
+      "lines": 276,
+      "sha256": "d053e165f0e5d22c8c783cf21a609441ac7162a359a74f05deaeefbe2f73866e",
+      "symbols": [
+        "vertex_shader",
+        "fragment_shader",
+        "enable_prepass",
+        "enable_shadows",
+        "valid_distance",
+        "sync_solar_surface",
+        "surface_does_not_change_material_at_plasma_distance_thresholds",
+        "fixture",
+        "app_near_far_style_and_source_lifecycle_preserve_shared_mesh",
+        "app_masks_only_original_pixels_and_rejects_ambiguous_camera"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/starfield.rs",
+      "bytes": 5996,
+      "lines": 188,
+      "sha256": "edd224f0dceb8c3a8ca4ee4d0090d53fbf41ff55b69b22dc46c37b46677101f2",
+      "symbols": [
+        "validate",
+        "set_starfield",
+        "starfield_count",
+        "spec",
+        "validation",
+        "permissions_budget_replace_cleanup"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/state.rs",
+      "bytes": 2517,
+      "lines": 68,
+      "sha256": "e27241be436953faf9bc21a4c4ab93757a8e9b10bff90dc29474f8ecd1ec6c4e",
+      "symbols": [
+        "validate",
+        "rejects_non_unit_orientation_and_preserves_absence"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/stellar_render.rs",
+      "bytes": 28034,
+      "lines": 729,
+      "sha256": "71a8b6fb7b729b2da7f8d06715fbbd94b74282f494c2c178dbd8abde5f7e584d",
+      "symbols": [
+        "vertex_shader",
+        "fragment_shader",
+        "alpha_mode",
+        "enable_prepass",
+        "enable_shadows",
+        "specialize",
+        "prominence_mesh",
+        "prominence_mesh_tuned",
+        "prominence_mesh_physical",
+        "fragment_shader",
+        "alpha_mode",
+        "enable_prepass",
+        "enable_shadows",
+        "observation_settings",
+        "physical_threads_have_requested_diameter_height_and_signed_arc_distance",
+        "repeated_activity_regions_have_distinct_bundles_within_vertex_budget",
+        "legacy_geometry_ignores_new_physical_dimensions_and_uses_additive_blending",
+        "hydrogen_sample_si_conversion_reference_is_not_an_mhd_solution",
+        "transfer_reference_covers_transparent_thick_absorbing_and_ordered_layers",
+        "arches_are_bounded_surface_anchored_and_batched",
+        "plasma_near",
+        "sync_stellar_lod",
+        "distance_gate_has_hysteresis_and_rejects_invalid_values",
+        "approach_departure_and_source_removal_manage_owned_assets",
+        "default_settings",
+        "legacy_settings",
+        "legacy_parameters_seed_untuned_settings"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/stellar_tuning.rs",
+      "bytes": 11078,
+      "lines": 286,
+      "sha256": "01360884caf751b3d563003e66de966494c65c81a304439845036240d1edb2c6",
+      "symbols": [
+        "normalize_legacy",
+        "value",
+        "valid",
+        "tune_stellar",
+        "stellar_tuning",
+        "valid",
+        "metadata_and_strict_legacy_migration_match",
+        "snapshot_bounds_and_cross_constraints",
+        "owned_tuning_preserves_revision_and_cleans_lifecycle",
+        "wire_rejects_unknown_fields"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/time_conversion.rs",
+      "bytes": 888,
+      "lines": 25,
+      "sha256": "7e3a06df58503a5275e90fa66b1c18a8fa7f3e04839cd0c9a4a3ca0a268b1d84",
+      "symbols": [
+        "tdb_to_utc_unix"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/trajectory_render.rs",
+      "bytes": 14255,
+      "lines": 380,
+      "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461",
+      "symbols": [
+        "line_blend",
+        "configure_pipeline",
+        "vertex_shader",
+        "fragment_shader",
+        "alpha_mode",
+        "enable_prepass",
+        "enable_shadows",
+        "specialize",
+        "color",
+        "opacity",
+        "widths",
+        "needs_upload",
+        "remember_upload",
+        "update_mesh",
+        "clear",
+        "line",
+        "build_mesh",
+        "upload",
+        "nasa_additive_lines_do_not_punch_dark_holes_in_bright_sky",
+        "pipeline_preserves_planet_depth_testing_without_writing_transparent_depth",
+        "invisible_segments_are_not_uploaded_and_trail_taper_matches_nasa",
+        "upload_reuses_one_owned_mesh_and_material_and_hides_empty_batch",
+        "nasa_raw_shader_rgb_reaches_vertex_buffer_without_extra_srgb_decoding",
+        "stable_lines_skip_upload_and_changed_lines_reuse_vertex_capacity"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/visuals.rs",
+      "bytes": 12746,
+      "lines": 381,
+      "sha256": "d85dd6c8dc5ecdadab028add82d410ae02df71bdf0d244967494a1af4a2d5859",
+      "symbols": [
+        "revision_string",
+        "valid",
+        "owned_visual_status",
+        "register_asset",
+        "asset_descriptor",
+        "visual_assignment",
+        "set_visual",
+        "visual_status",
+        "record_visual_status",
+        "record_visual_part_ready",
+        "suspend_visual"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "core/src/wasm.rs",
+      "bytes": 20964,
+      "lines": 608,
+      "sha256": "8e94b2c7413ebfb8101c69b328c4abb87862b2ad54571dc4b73cda45974f17dc",
+      "symbols": [
+        "lock",
+        "drop",
+        "set_model_joints",
+        "model_joint_status",
+        "new",
+        "renderer_work_pending",
+        "renderer_visible",
+        "performance_snapshot",
+        "start_renderer",
+        "stop_renderer",
+        "pick_object",
+        "open_session",
+        "tdb_to_utc",
+        "utc_to_tdb",
+        "trajectory",
+        "label",
+        "layers",
+        "camera_fov",
+        "camera_fov_degrees",
+        "camera_observe",
+        "camera_observation",
+        "camera_orbit",
+        "camera_zoom",
+        "camera_lighting",
+        "camera_render_status",
+        "camera_lighting_mode",
+        "camera_view",
+        "register_asset",
+        "set_visual",
+        "tune_stellar",
+        "visual_status",
+        "owned_visual_status",
+        "publish_object",
+        "remove_object",
+        "focus",
+        "focused_object",
+        "state_at",
+        "seek",
+        "set_playback",
+        "tick",
+        "epoch",
+        "playing",
+        "set_starfield",
+        "set_environment",
+        "environment_status",
+        "starfield_count",
+        "release_session",
+        "host_pick_revalidates_failed_removed_objects_and_stopped_renderer"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/adaptive-trail.ts",
+      "bytes": 5033,
+      "lines": 178,
+      "sha256": "92edf61df05195fb4a4830bb8999c362d0c9f4076efda17cd16d7ccc8c45f7e4",
+      "symbols": [
+        "adaptiveTrailTimes"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/camera-contract.ts",
+      "bytes": 3293,
+      "lines": 85,
+      "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8",
+      "symbols": [
+        "cameraInput",
+        "snapshotObservation"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/core-port.ts",
+      "bytes": 3991,
+      "lines": 118,
+      "sha256": "9c39b949f78a1b2df444b96ad8ad1a5cd3ad6376d5a1e245d0c209c405887538",
+      "symbols": [],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/dyn-decoder.ts",
+      "bytes": 7307,
+      "lines": 243,
+      "sha256": "7116eefa378b04bb35ad8a5ba0fb136c10115702462099d399a88267a76db2da",
+      "symbols": [
+        "check",
+        "decodeDyn"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/dyn-evaluator.ts",
+      "bytes": 6428,
+      "lines": 193,
+      "sha256": "6395e3ad92de027f1e12b928183cdbb168965f135783b021f75b74bcca97a122",
+      "symbols": [
+        "rotate",
+        "propagateState",
+        "evaluateOrb",
+        "evaluateOrbVelocity",
+        "evaluateOri"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/environment-contract.ts",
+      "bytes": 3720,
+      "lines": 122,
+      "sha256": "bcc6758c2f84fdd44a924dee565eab7350b9852caa005eee16a2dbe900809ad3",
+      "symbols": [
+        "snapshotLod",
+        "snapshotEnvironment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-catalog.ts",
+      "bytes": 5421,
+      "lines": 145,
+      "sha256": "1a25e5d105bbd427bef966c95b3c1ebf26c7590964abd607448fa11241b4548f",
+      "symbols": [
+        "parentAt",
+        "declaredTracks",
+        "positionTrackKey",
+        "positionTrackBoundaries",
+        "positionFrameKey",
+        "visit"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-controllers.ts",
+      "bytes": 3724,
+      "lines": 121,
+      "sha256": "1d7efddc1f6c1befdfc94f2af64002c722082453fce71e629856863e89abafd8",
+      "symbols": [
+        "activeController",
+        "rotateVector",
+        "staticPosition",
+        "staticCoverage"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-coverage.ts",
+      "bytes": 4603,
+      "lines": 124,
+      "sha256": "6d3d8ba7b5afc57daf688900ac6f194ae0f3a152c091e7dff43dd1bad490cd26",
+      "symbols": [
+        "CoverageLifecycle",
+        "eyesCoverageLabel"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-joints.ts",
+      "bytes": 1781,
+      "lines": 58,
+      "sha256": "00d8f59e76c42534126ffceb6e928de659f03704936aaafa19b4ea2b9fad753b",
+      "symbols": [
+        "compileJointAims"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-line-style.ts",
+      "bytes": 641,
+      "lines": 15,
+      "sha256": "1d6cfb3f01d0aac254da3c5568ff9f2662bc781102b210d1526a2c8f1b6eb35f",
+      "symbols": [
+        "eyesLineColor"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-model-phases.ts",
+      "bytes": 3718,
+      "lines": 94,
+      "sha256": "5baf133df29476e9af59ea09fb492cfb05381b2402f2a4f02a1099d62ba55c99",
+      "symbols": [
+        "freeze",
+        "coverageMask",
+        "eyesModelVariants",
+        "eyesModelPhase"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-orientation.ts",
+      "bytes": 8010,
+      "lines": 244,
+      "sha256": "9b3a0d47fce15165d933568aa82eeda146f8ee0920ceb969d9d1ca1f5512549e",
+      "symbols": [
+        "fail",
+        "vector",
+        "unit",
+        "normalizeOrientation",
+        "mult",
+        "rotate",
+        "axis",
+        "isEntityAlign",
+        "kind",
+        "entityAlignDependencies",
+        "applyEntityAlign",
+        "applySourceSpin"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-position-keyframes.ts",
+      "bytes": 2301,
+      "lines": 76,
+      "sha256": "09e9895ae38a58e88edc003790a6d4fcefdb216f2f15901cf6464f58c503aa4c",
+      "symbols": [
+        "eyesPositionKeyframe"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-trail-auto.ts",
+      "bytes": 1602,
+      "lines": 34,
+      "sha256": "e88aeaa501070573190e7a8232fa322add65ea827aa7c669d2df5cbaf1633672",
+      "symbols": [
+        "eyesOrbAutoLength"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/eyes-trail-policy.ts",
+      "bytes": 3571,
+      "lines": 104,
+      "sha256": "7af5884dc6f64cf7767e4a4d9cc6cafd048521a6080530166b3be0203247ae65",
+      "symbols": [
+        "eyesTrailDuration",
+        "eyesTrailNextBoundary",
+        "eyesTrailBoundaries",
+        "eyesTrailPhase"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/joint-contract.ts",
+      "bytes": 1684,
+      "lines": 23,
+      "sha256": "c8c84793b8f7a3c0be36ad4364b226b9ca3f19fb38910d8be8c65c815910d9a8",
+      "symbols": [
+        "snapshotJoints"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/osculating-orbit.ts",
+      "bytes": 2951,
+      "lines": 89,
+      "sha256": "e21019e5e68352394eb656392ea325b7210ff4f6cd5b4a51471cd076c72d587e",
+      "symbols": [
+        "osculatingOrbit"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/plugin-host.ts",
+      "bytes": 23205,
+      "lines": 631,
+      "sha256": "0a35249a5684b812ea01ccc3f0c9159d5f3654dacc53c772027108868da9d6d0",
+      "symbols": [
+        "PluginHost"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/position-selection.ts",
+      "bytes": 1536,
+      "lines": 26,
+      "sha256": "804007e37172431b0dbab9f5bea877c3aae86a805ae4c9077dd44e56ddc44de6",
+      "symbols": [
+        "acceptsPositionEpoch",
+        "parsePositionSelection"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/resource-client.ts",
+      "bytes": 4283,
+      "lines": 83,
+      "sha256": "47c8f758eabb969ad5f42dc2593ba9302c64c12afe5dc8c27174c4d1042184d7",
+      "symbols": [
+        "ResourceClient"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/solar-system.ts",
+      "bytes": 70027,
+      "lines": 1757,
+      "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043",
+      "symbols": [
+        "OrientationOutsideCoverage",
+        "hasDisplayCatalog",
+        "isOrientationDynamo",
+        "SolarSystemData"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/solar-wind.ts",
+      "bytes": 2346,
+      "lines": 37,
+      "sha256": "c0e52fc48291c502ea132f7669695ea9820ba4a97a4a3a83b061b437eeef3803",
+      "symbols": [
+        "parkerWind",
+        "speedMS",
+        "at",
+        "windMaterialPoint"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/starfield-contract.ts",
+      "bytes": 2337,
+      "lines": 80,
+      "sha256": "5f05dd04d285344dfec0b7913bd06d1df7998a2cddbb19dbff04ccd1c52ffef4",
+      "symbols": [
+        "snapshotStarfield"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/starfield-source.ts",
+      "bytes": 6573,
+      "lines": 198,
+      "sha256": "e5c1c789b30e29023cc6a950a07e7645bf19ba1897a7ef46dc1ab1c7d157a52b",
+      "symbols": [
+        "StarfieldSource"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/starfield.ts",
+      "bytes": 1870,
+      "lines": 56,
+      "sha256": "8b643ffc43f81f23afbd6882e7b9fabfd8526b17cf4a06f1aa292daa5b7b54c1",
+      "symbols": [
+        "decodeStarfield"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/state-contract.ts",
+      "bytes": 2213,
+      "lines": 64,
+      "sha256": "b5f9f1ed6df57c73e2c80c5b44bc613b671dd886bb95a1d13cbcb086c22904fe",
+      "symbols": [
+        "targetId",
+        "snapshotState"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/stellar-tuning.ts",
+      "bytes": 5271,
+      "lines": 60,
+      "sha256": "43eecb9d585e427adffb09bcf5095ba4ea8aa8817efe41527225cd44014a90aa",
+      "symbols": [
+        "stellarDefaults",
+        "snapshotSettings",
+        "wind",
+        "describeStellarWind",
+        "snapshotStellarTuning",
+        "buildStellarTuning",
+        "applySolarReferencePalette",
+        "applySolarObservationPreset"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/trail-history.ts",
+      "bytes": 8438,
+      "lines": 238,
+      "sha256": "d17035c31d164d52fbaa5cd22abbfa9b0a1acec0c6534817f1c262524e3e20de",
+      "symbols": [
+        "TrailHistory"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/trajectory-contract.ts",
+      "bytes": 5538,
+      "lines": 170,
+      "sha256": "c48c1707783dee7450c6730a8f14dc7917d182957e0d39909541188c5e8067c6",
+      "symbols": [
+        "snapshotTrajectoryStyle"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/visual-contract.ts",
+      "bytes": 5631,
+      "lines": 181,
+      "sha256": "fdb7995f96a82eb935bb702378df839adeb683c9d716eda0e9856dd3821d4c0a",
+      "symbols": [
+        "assetId",
+        "snapshotVisual"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "platform/wasm-core-port.ts",
+      "bytes": 10014,
+      "lines": 311,
+      "sha256": "2bfef431dd1b5a01a7c428e08c8c85808eff7bc002f4145dce761ca6b01b8913",
+      "symbols": [
+        "WasmCorePort"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/canvas-wheel.ts",
+      "bytes": 844,
+      "lines": 17,
+      "sha256": "11e5ddff41f711e4160a371eb570618c4726d297fd7ff02a959a8b7611a077a8",
+      "symbols": [
+        "canvasWheelDelta",
+        "handleCanvasWheel"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/catalog-projection.ts",
+      "bytes": 2590,
+      "lines": 82,
+      "sha256": "cf64a6ed008e16aaaf1492c83308ee58b494b5f1cc5b9572a8e145b3508c49aa",
+      "symbols": [
+        "CatalogProjection"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/controls.ts",
+      "bytes": 729,
+      "lines": 21,
+      "sha256": "3c4d882bc4d0b44d5d902e5f579aaea71560803a9ed24e8fc1cf29b11f3e401a",
+      "symbols": [
+        "parseEpoch",
+        "boundedEpoch",
+        "onceAsync"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/dyn-catalog.ts",
+      "bytes": 481,
+      "lines": 13,
+      "sha256": "a4be6fb657156575164779214c17bc1d02d35bc2f397e1c02778d53ed17074cf",
+      "symbols": [],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/dyn-server.ts",
+      "bytes": 2140,
+      "lines": 67,
+      "sha256": "e6519f600c59545d579a16851459c7eac61c38bfbde65a610bd0345d72062429",
+      "symbols": [
+        "fetchDyn"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/eyes-assets.ts",
+      "bytes": 14513,
+      "lines": 421,
+      "sha256": "58adcb96034bedb3f4f3776a255bfd1205df07216c38b895866ca5236c2d38f8",
+      "symbols": [
+        "share",
+        "EyesAssetService"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/eyes-model-convert.ts",
+      "bytes": 8971,
+      "lines": 238,
+      "sha256": "cbae17f5ae0aaee4aa67ada9f732994ced2b7f591cdf83902bc9a0e156ff1624",
+      "symbols": [
+        "eyesModelLookupName",
+        "basisModule",
+        "decodeEyesKtx2",
+        "selectEyesModelImages",
+        "convertEyesModel"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/frame-monitor.ts",
+      "bytes": 3954,
+      "lines": 139,
+      "sha256": "740136dfa5403d23f043253333097f5c008759bff1c99b4f84667c55bbe9ad48",
+      "symbols": [
+        "FrameMonitor"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/galaxy-convert.ts",
+      "bytes": 1731,
+      "lines": 53,
+      "sha256": "d7622d35e6aec7f09c7540e201117075769e946e3d6bc5cd1f56c79920c5c6db",
+      "symbols": [
+        "decodeGalaxy",
+        "toneMapGalaxy"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/galaxy-hdr-server.ts",
+      "bytes": 4462,
+      "lines": 165,
+      "sha256": "7fa0bf5ac12794552f8119d4ff3d89fad526e51988bfcfe75572431408bb0bf6",
+      "symbols": [
+        "bounded",
+        "validateGalaxyManifest",
+        "readGalaxyManifest",
+        "readGalaxyHdr"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/galaxy-hdr.ts",
+      "bytes": 2261,
+      "lines": 74,
+      "sha256": "ee6965f1765c1f820468f25ed721f95029f5154d9a90c9f2269ad68b5975df80",
+      "symbols": [
+        "half",
+        "icrfCubeFaces",
+        "encodeSehdr"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/galaxy-server.ts",
+      "bytes": 6034,
+      "lines": 175,
+      "sha256": "43df7a3208382875f863159253ac92d6e91dda4a30a62ef1fafe6bd0d97f65f0",
+      "symbols": [
+        "GalaxyService"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/mission-view.ts",
+      "bytes": 1131,
+      "lines": 38,
+      "sha256": "08218c41426fa46bb48de8d2c032bc809777c44e4455274b0c5500a911e53847",
+      "symbols": [
+        "missionInitialLook"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/planet-texture-server.ts",
+      "bytes": 3006,
+      "lines": 96,
+      "sha256": "4aed681504a7c6b0db42b57b46a89bee458ba1e4cbcbd0414a86570bfc5fc7f3",
+      "symbols": [
+        "planetTexture"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/reviewed-dyn-window.ts",
+      "bytes": 2037,
+      "lines": 38,
+      "sha256": "467c5325a82d346e9af509c568dbee698c33f41664b1bac5207763530501b1e0",
+      "symbols": [
+        "selectReviewedDynWindow"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/reviewed-mission-window.ts",
+      "bytes": 3403,
+      "lines": 90,
+      "sha256": "4c3d040613dfc9805c5e7c024df56c03251a0ac2cd0218f7f55b2927703247db",
+      "symbols": [
+        "ReviewedMissionOutsideCoverage",
+        "reviewedMissionWindow"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/scene-gesture.ts",
+      "bytes": 1193,
+      "lines": 46,
+      "sha256": "395c132cf45a5ecf89d550fbcbb3a07c2a59fd19d26d8c921b5991b59fcd4aee",
+      "symbols": [
+        "SceneGesture"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/scene-link.ts",
+      "bytes": 4519,
+      "lines": 163,
+      "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d",
+      "symbols": [
+        "invalid",
+        "parseSceneLink",
+        "formatSceneLink"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/solar-dyn-server.ts",
+      "bytes": 9707,
+      "lines": 222,
+      "sha256": "62b85729fec92cc987e27a790d6c1020e0a2fce1bd948cddf3897632562d1fc3",
+      "symbols": [
+        "reviewedQuatWindow",
+        "OrientationOutsideCoverage",
+        "PositionOutsideCoverage",
+        "fetchTrack",
+        "fetchSolarDyn"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/solar-settings.ts",
+      "bytes": 627,
+      "lines": 11,
+      "sha256": "f61cb1767f339014840b890ac2ab082e57a8da619180d8f63c6a0027a8869a1a",
+      "symbols": [
+        "solarWorkspaceSettings",
+        "restoreSolarWorkspaceSettings"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/solar-workspace.ts",
+      "bytes": 74335,
+      "lines": 1886,
+      "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958",
+      "symbols": [
+        "createWorkspace",
+        "addSystemChildren"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/starfield-server.ts",
+      "bytes": 5377,
+      "lines": 174,
+      "sha256": "da22f2b39df980db59f49c18f46f34a98d8a11e528a71e32cbf1e82af996835b",
+      "symbols": [
+        "StarfieldService",
+        "starfieldFile"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/time-controls.ts",
+      "bytes": 2968,
+      "lines": 90,
+      "sha256": "c69d9a119e172fa889744be5dd9b43095048a152b3e7d918819cabdf4346bff1",
+      "symbols": [
+        "finite",
+        "unit",
+        "roundSigned",
+        "rounded",
+        "createRates",
+        "rateToSliderIndex",
+        "adjacentRate",
+        "formatRate",
+        "isLive"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/touch-camera.ts",
+      "bytes": 1577,
+      "lines": 47,
+      "sha256": "39ae00f4034e361b8b48cf4ab6a0ddc53c01fa769d254f6e5456ff469fde0403",
+      "symbols": [
+        "TouchCamera"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/trajectory-refresh.ts",
+      "bytes": 373,
+      "lines": 10,
+      "sha256": "afe64b4d22620adee4095281bb740dd56d4129c4367bd168cddd54aa29a91062",
+      "symbols": [
+        "shouldRefreshTrajectory"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/trajectory-work.ts",
+      "bytes": 4549,
+      "lines": 156,
+      "sha256": "68313e5c979e9c39145fbccd678719dcdfd1321f369e47590093936d4391ac78",
+      "symbols": [
+        "TrajectoryWorkQueue"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/lib/zoom-button.ts",
+      "bytes": 2329,
+      "lines": 69,
+      "sha256": "151dbb1c4bbdfd70949f99f3f82457bf40afde4b21e45602ba6c4b95458f7f26",
+      "symbols": [
+        "zoomButtonDelta",
+        "ZoomButtonGesture"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/api/dyn/[id]/route.ts",
+      "bytes": 662,
+      "lines": 23,
+      "sha256": "f04bd662979dbca05254cc7bfcb837d65ba110db58bda322be0c094ab68619cd",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/api/galaxy-manifest/route.ts",
+      "bytes": 393,
+      "lines": 14,
+      "sha256": "f49349fe1af7679884e157c60a47930bf360d555510ebf21d9f2d78c5fbf9749",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/api/solar-dyn/[id]/route.ts",
+      "bytes": 2015,
+      "lines": 56,
+      "sha256": "7f044b7850c12a8a461ad237c8b3cce83fd2e45d87baf46d3dc3144429bb51c6",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/api/starfield/[file]/route.ts",
+      "bytes": 700,
+      "lines": 9,
+      "sha256": "dc85b1620804883b23767d985767cdbfddb3b7f90ac3b677369018ba623b4bd1",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/assets/deep-space/[file]/route.ts",
+      "bytes": 1320,
+      "lines": 43,
+      "sha256": "91109399c720beca1afcf342f6f559dfb8da06b988f3c43f8c9f4c3b08f7f1dc",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/assets/eyes/[id]/[...path]/route.ts",
+      "bytes": 809,
+      "lines": 26,
+      "sha256": "397b3057c54c6443372a3c88841f8f0a0031caa76a54234ef1dfabfee3229ec3",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/assets/planet-rings/[file]/route.ts",
+      "bytes": 683,
+      "lines": 23,
+      "sha256": "693291b828413738788be8c323287445e29ff3b4e02a50a8fdb40cee2d7438ce",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/assets/planets/[body]/[file]/route.ts",
+      "bytes": 742,
+      "lines": 23,
+      "sha256": "e36ce9fe2e1edb42f906e18b44f7e515e2ed9c013703ea6d6d1e8015915a98c5",
+      "symbols": [
+        "GET"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/diagnostics/page.tsx",
+      "bytes": 318,
+      "lines": 11,
+      "sha256": "9ff822e8ed3c6453d712cb0e2e8c8746c6d6a104d22353713522fa1cb1e1fe28",
+      "symbols": [
+        "Diagnostics"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/dyn-inspector.tsx",
+      "bytes": 2837,
+      "lines": 86,
+      "sha256": "7797063df51591d156a367a77e0f43bac0656b140c6eb11e201124196aea4b68",
+      "symbols": [
+        "DynInspector",
+        "cancel",
+        "inspect"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/layout.tsx",
+      "bytes": 434,
+      "lines": 15,
+      "sha256": "029de11d996fcfc48e8198b693f757bd7f295b614c8b3b3bdfa346db2bb17c50",
+      "symbols": [
+        "Layout"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/page.tsx",
+      "bytes": 96,
+      "lines": 4,
+      "sha256": "fbd4bbfbe0957aa470b0a4099e79e70aebe55b129cdc93a1334255f4c188e0e7",
+      "symbols": [
+        "Page"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/solar-tuning-panel.tsx",
+      "bytes": 8167,
+      "lines": 76,
+      "sha256": "ebb3af44f1a54a18f194970c41ba49b9645df5df392508e372622fa5ee7e7376",
+      "symbols": [
+        "SolarTuningPanel"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/style.css",
+      "bytes": 10299,
+      "lines": 515,
+      "sha256": "61bde9e026f19486a918661be2da5b1c7d6dccb81735031b7917de31767cd1e8",
+      "symbols": [],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/workspace-view.tsx",
+      "bytes": 40802,
+      "lines": 1118,
+      "sha256": "7ddf7423c4f7a0294561e6f75f0d637d2d52bd88c7bddc772f754cfd8df5bce1",
+      "symbols": [
+        "WorkspaceView"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/workspace.css",
+      "bytes": 14533,
+      "lines": 738,
+      "sha256": "3022b038f6f2fa427fc6593c1e9574664936e535e9fdac543aee66023def6733",
+      "symbols": [],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/app/workspace.tsx",
+      "bytes": 12866,
+      "lines": 357,
+      "sha256": "f83588143a5c644a1331f4cd102393d3c6d6537f430b93cbf102f84926999faf",
+      "symbols": [
+        "Workspace"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/galaxy.wgsl",
+      "bytes": 999,
+      "lines": 19,
+      "sha256": "5e85cfa50fd2060acac42c5c56291f7faf197cbb9b1697e9bf73564b68bef945",
+      "symbols": [
+        "vertex",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/prominence.wgsl",
+      "bytes": 2257,
+      "lines": 34,
+      "sha256": "d031290cc17aa11680e7a177f31cf259221e598bc3cc98bf977ebb46ed303b6b",
+      "symbols": [
+        "param",
+        "rgb",
+        "hash",
+        "noise",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/ring-particles.wgsl",
+      "bytes": 1337,
+      "lines": 29,
+      "sha256": "7d33fa10546d8ca7522bbf7f0c6da98aea20d80866a2853310103dc58cca675e",
+      "symbols": [
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/solar-surface.wgsl",
+      "bytes": 3832,
+      "lines": 64,
+      "sha256": "249f99fafd952a1564a97c0967394097f2295acb379c5b8d5bda9f8e71dae694",
+      "symbols": [
+        "p",
+        "hash",
+        "noise",
+        "vertex",
+        "linear_color",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/starfield.wgsl",
+      "bytes": 1912,
+      "lines": 31,
+      "sha256": "001e4a8bd27a7c6b0d5b93625bbb557130793cda13c2259d98e4e002000c84bf",
+      "symbols": [
+        "vertex",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/stellar.wgsl",
+      "bytes": 6733,
+      "lines": 129,
+      "sha256": "4c08c57f4cb817a93f72c5df5cabd78e66e900e2ec53af696dbd0c0746769ab1",
+      "symbols": [
+        "param",
+        "rgb",
+        "tuned_wind",
+        "hash",
+        "noise",
+        "vertex",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    },
+    {
+      "path": "web/resources/shaders/trajectory.wgsl",
+      "bytes": 1682,
+      "lines": 41,
+      "sha256": "a8a75d5366be9e5eba176f6bc7cac1149dfd731116254c2ebb1fdc10bae4b72d",
+      "symbols": [
+        "clip_near",
+        "vertex",
+        "fragment"
+      ],
+      "scope": "inventory and source-risk mapping; not per-line certification"
+    }
+  ]
+}

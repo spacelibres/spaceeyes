@@ -1,0 +1,1416 @@
+{
+  "baseline": "8e97509ffc006071b95e8c78a2da3ad35a888c1f",
+  "entries": [
+    {
+      "entity": "jupiter",
+      "controllerIndex": 2,
+      "phase": "update",
+      "sourceSha256": "9f8f2289b9d8d26ca99950257d213057939514c4d52a10570651fdce9c575895",
+      "category": "surface-longitude-animation",
+      "id": 0,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified695.js",
+          "line": 353
+        }
+      ]
+    },
+    {
+      "entity": "sc_grace_1",
+      "controllerIndex": 2,
+      "phase": "update",
+      "sourceSha256": "6541a9d9b0fcb78ed152424f342416a391a5158c77c9f0749701a85b71b5751f",
+      "category": "inter-spacecraft-link-animation",
+      "id": 1,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1040
+        }
+      ]
+    },
+    {
+      "entity": "sc_grace_fo1",
+      "controllerIndex": 2,
+      "phase": "update",
+      "sourceSha256": "4efe07f61bd0ed5249d9c85a33fd91a6751bafe84e33dd4a3c33bf2c4782f555",
+      "category": "inter-spacecraft-link-animation",
+      "id": 2,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1127
+        }
+      ]
+    },
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "phase": "enter",
+      "sourceSha256": "24dc831c46ea2fa3ef68d2fcc1d28f80745c692d59c5fd964e6160dc0682b82f",
+      "category": "model-url-transform-phase",
+      "id": 3,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1853
+        }
+      ]
+    },
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "phase": "exit",
+      "sourceSha256": "b82617fb2c6f92715da03942c5dfa0543600766e2034b4975d54fdd6a96de1d3",
+      "category": "model-url-transform-phase",
+      "id": 4,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1859
+        }
+      ]
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "phase": "enter",
+      "sourceSha256": "e57e3c9d88842b4bf0d57eeed44c069b1d40622e334fd8b195bfaca068447ef2",
+      "category": "model-url-transform-phase",
+      "id": 5,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 138
+        }
+      ]
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "phase": "exit",
+      "sourceSha256": "0284c246f53167d0fc08faa33910bd32216886e2e176a34c6760c42bee433395",
+      "category": "model-url-transform-phase",
+      "id": 6,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 144
+        }
+      ]
+    },
+    {
+      "entity": "sc_themis_b",
+      "controllerIndex": 4,
+      "phase": "enter",
+      "sourceSha256": "86a61d33e4c2ed6c46b1716d606a01dec3a88b463b24bf638260a8134b528ccf",
+      "category": "label-text",
+      "id": 7,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 514
+        }
+      ]
+    },
+    {
+      "entity": "sc_themis_b",
+      "controllerIndex": 4,
+      "phase": "exit",
+      "sourceSha256": "d697ff8e724c41ab7e3adee986d9585760f9ed98365768f27bc6dd45ac29f38f",
+      "category": "label-text",
+      "id": 8,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 520
+        }
+      ]
+    },
+    {
+      "entity": "sc_themis_c",
+      "controllerIndex": 4,
+      "phase": "enter",
+      "sourceSha256": "dc5992cb52474bd7eac0aea4e65089c700fd957e1ae6c3c891fd5c02adf1d0a8",
+      "category": "label-text",
+      "id": 9,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 561
+        }
+      ]
+    },
+    {
+      "entity": "sc_themis_c",
+      "controllerIndex": 4,
+      "phase": "exit",
+      "sourceSha256": "db261f3c0460ce3b52c6c4ff89265cc1765182b54687631c70bb2aeb1396bdef",
+      "category": "label-text",
+      "id": 10,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 567
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 10,
+      "phase": "enter",
+      "sourceSha256": "79cdeb40844ae3e20f3226743c24f310d8d4bbc36c99996646d18320255b2865",
+      "category": "source-no-op-label-replace",
+      "id": 11,
+      "state": "source-no-op",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 144
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 10,
+      "phase": "exit",
+      "sourceSha256": "b2ec9b5c077011e8e63bb5718479b1b5501f78911d93f6848ec50471d884d1b1",
+      "category": "source-no-op-label-replace",
+      "id": 12,
+      "state": "source-no-op",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 150
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "phase": "enter",
+      "sourceSha256": "be798f0c829d5ffa7a32d92f0b402458f49b9398fde6dfc88d3f6dc10b30b150",
+      "category": "trail-policy",
+      "id": 13,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 159
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "category": "trail-policy",
+      "id": 14,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "category": "trail-policy",
+      "id": 15,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "category": "trail-policy",
+      "id": 16,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "phase": "enter",
+      "sourceSha256": "5f595f571e3097a736f74ca738f6372e7c6f8aa8a8581362aabbea10b79aea5d",
+      "category": "model-url-transform-phase",
+      "id": 17,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 190
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "phase": "exit",
+      "sourceSha256": "434a9ed71edf1abdfdff676a2583571f36776f0f87af458c06cd81581b2b0820",
+      "category": "model-url-transform-phase",
+      "id": 18,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 198
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "category": "trail-policy",
+      "id": 19,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 209
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 377
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "category": "trail-policy",
+      "id": 20,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 215
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 383
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "category": "model-part-visibility",
+      "id": 21,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 224
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 392
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "category": "model-part-visibility",
+      "id": 22,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 231
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 399
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 12,
+      "phase": "enter",
+      "sourceSha256": "ca8e1784d7bd7bf6324ba3e66670dd5f80bc4679ccde9649cd209a35bd602d8a",
+      "category": "source-no-op-label-replace",
+      "id": 23,
+      "state": "source-no-op",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 328
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 12,
+      "phase": "exit",
+      "sourceSha256": "d69d02318fd01922e0decd95249ad8314eb72cf09c037bea51e39bc426045aed",
+      "category": "source-no-op-label-replace",
+      "id": 24,
+      "state": "source-no-op",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 334
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "category": "trail-policy",
+      "id": 25,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "category": "trail-policy",
+      "id": 26,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "phase": "enter",
+      "sourceSha256": "fae57df2c378fcc8d8daf16094c50d2e636a2d004b3740b8172b51b06263729a",
+      "category": "model-url-transform-phase",
+      "id": 27,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 358
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "phase": "exit",
+      "sourceSha256": "2cfc19bde7ab21373dd25c0d1633056eea3247104e0eac3dd03dc07c2d6e2d1b",
+      "category": "model-url-transform-phase",
+      "id": 28,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 366
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "category": "trail-policy",
+      "id": 29,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 209
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 377
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "category": "trail-policy",
+      "id": 30,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 215
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 383
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "category": "model-part-visibility",
+      "id": 31,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 224
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 392
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "category": "model-part-visibility",
+      "id": 32,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 231
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 399
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "category": "trail-policy",
+      "id": 33,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 517
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 672
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "category": "trail-policy",
+      "id": 34,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 524
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 679
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "phase": "enter",
+      "sourceSha256": "d0a54186200a8b7bf2bb61f37461c744668e75cfe1ba004d142a22723164242c",
+      "category": "trail-policy",
+      "id": 35,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 534
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "category": "trail-policy",
+      "id": 36,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "category": "model-url-transform-phase",
+      "id": 37,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 550
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 705
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "category": "model-url-transform-phase",
+      "id": 38,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 556
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 711
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "category": "trail-policy",
+      "id": 39,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 517
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 672
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "category": "trail-policy",
+      "id": 40,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 524
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 679
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "phase": "enter",
+      "sourceSha256": "ed50119548cfb4b3ff192203b7efd7766fafc1aa6fb183c16d288d51c76f29e9",
+      "category": "trail-policy",
+      "id": 41,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 689
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "category": "trail-policy",
+      "id": 42,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "category": "model-url-transform-phase",
+      "id": 43,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 550
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 705
+        }
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "category": "model-url-transform-phase",
+      "id": 44,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 556
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 711
+        }
+      ]
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "category": "trail-policy",
+      "id": 45,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "category": "trail-policy",
+      "id": 46,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745
+        }
+      ]
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 9,
+      "phase": "enter",
+      "sourceSha256": "4bcf06611b9726386c77e437e7d6bb6c3fbde0ba249e113cc385bbefa6972df8",
+      "category": "model-url-transform-phase",
+      "id": 47,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 801
+        }
+      ]
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 10,
+      "phase": "enter",
+      "sourceSha256": "89f4bee0d82b317ecd9bc93ff977798f9775d51b76c51b35c436e74eb863a79b",
+      "category": "model-url-transform-phase",
+      "id": 48,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 812
+        }
+      ]
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "phase": "enter",
+      "sourceSha256": "983f33feadc06bfa233dbb372a7f74bd3d2a3b6a8165075bc6170e53d60d161a",
+      "category": "model-url-transform-phase",
+      "id": 49,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 1116
+        }
+      ]
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "phase": "exit",
+      "sourceSha256": "390d9497c174d986f8351d68852030f1f3b4c82785e97f5e084bd243bfb8a5d8",
+      "category": "model-url-transform-phase",
+      "id": 50,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 1122
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 11,
+      "phase": "exit",
+      "sourceSha256": "624e027bde48ce788e017e15a7babfb51077248cce383826d5c807cdfe589bc5",
+      "category": "model-joint-animation",
+      "id": 51,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 74
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 11,
+      "phase": "update",
+      "sourceSha256": "4695e9809719f5e5a9b1c02a86f6602b2856b584052a1314bb550c4351f33413",
+      "category": "model-joint-animation",
+      "id": 52,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 62
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 12,
+      "phase": "exit",
+      "sourceSha256": "895f8187e25fe98d243120a4414acf41743c9188965c8e85ecc45d9058012ab3",
+      "category": "burn-particle-state",
+      "id": 53,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 95
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 202
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 12,
+      "phase": "update",
+      "sourceSha256": "6afa633440a62b34cca2acce9e9fe29742bf7b9abca21e5bc07dc4ff5534bcbc",
+      "category": "burn-particle-state",
+      "id": 54,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 85
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "phase": "enter",
+      "sourceSha256": "7d62e60a55597728f999ce8469b030c53d10f551f11565610cefee409bd06621",
+      "category": "trail-policy",
+      "id": 55,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "phase": "exit",
+      "sourceSha256": "1ad1684454bd041c0865e3ac6c7fdadcc54ca7b34925dee98277a048b91fb422",
+      "category": "trail-policy",
+      "id": 56,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 110
+        }
+      ]
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 10,
+      "phase": "exit",
+      "sourceSha256": "895f8187e25fe98d243120a4414acf41743c9188965c8e85ecc45d9058012ab3",
+      "category": "burn-particle-state",
+      "id": 57,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 95
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 202
+        }
+      ]
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 10,
+      "phase": "update",
+      "sourceSha256": "f7b52c941139a54e5c23a3fbd7b142665ff030803fca0953aa7a7192c4d6fc4c",
+      "category": "burn-particle-state",
+      "id": 58,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 192
+        }
+      ]
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "phase": "enter",
+      "sourceSha256": "cb802876a4021db648705a128a4e37e47ac9112cbbcc99788df24fad367b5392",
+      "category": "model-part-visibility",
+      "id": 59,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 211
+        }
+      ]
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "phase": "exit",
+      "sourceSha256": "063defc0f61531ff3cea5d3336b4eeb1788526052e2cfbc33ad4274ed5b4e0fb",
+      "category": "model-part-visibility",
+      "id": 60,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 217
+        }
+      ]
+    },
+    {
+      "entity": "sc_galileo",
+      "controllerIndex": 9,
+      "phase": "enter",
+      "sourceSha256": "cb921a21b3b14e49649aa7f5dc12a57bd30d109e4ee42e38e882791c1283f964",
+      "category": "articulated-spin-rate",
+      "id": 61,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 346
+        }
+      ]
+    },
+    {
+      "entity": "sc_galileo",
+      "controllerIndex": 9,
+      "phase": "exit",
+      "sourceSha256": "ac1721029b4ded0c22882683a6bde4bd09c423fb662570742293343beb5e3732",
+      "category": "articulated-spin-rate",
+      "id": 62,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 352
+        }
+      ]
+    },
+    {
+      "entity": "sc_galileo_probe",
+      "controllerIndex": 3,
+      "phase": "enter",
+      "sourceSha256": "1150a9f64f99567ebbec0c45d7ae86bdb3836f28cb3ec531fdf6e24d7502270a",
+      "category": "combined-label-trail-translation-state",
+      "id": 63,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 394
+        }
+      ]
+    },
+    {
+      "entity": "sc_galileo_probe",
+      "controllerIndex": 3,
+      "phase": "exit",
+      "sourceSha256": "79a221f523321b17ebd104072390ccd3baadb933c43c92a959565d9812a8f6a1",
+      "category": "combined-label-trail-translation-state",
+      "id": 64,
+      "state": "not-implemented",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 408
+        }
+      ]
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "category": "trail-policy",
+      "id": 65,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "category": "trail-policy",
+      "id": 66,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745
+        }
+      ]
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "phase": "enter",
+      "sourceSha256": "556c0934dc1f5335fb3f62ccc85fb1e8fc842a98ad58b31afaaac97fb02e6d36",
+      "category": "model-part-visibility",
+      "id": 67,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 535
+        }
+      ]
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "phase": "exit",
+      "sourceSha256": "4ac436fe485fef783d2a6f40a43a12ea78134d9eb6a088235047efc3339a6073",
+      "category": "model-part-visibility",
+      "id": 68,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 541
+        }
+      ]
+    },
+    {
+      "entity": "sc_osiris_rex",
+      "controllerIndex": 11,
+      "phase": "enter",
+      "sourceSha256": "ce7e38c35275e92229757cf39df493b2c7a93a5f962a52d7f55dddd463c04291",
+      "category": "label-text",
+      "id": 69,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 627
+        }
+      ]
+    },
+    {
+      "entity": "sc_osiris_rex",
+      "controllerIndex": 11,
+      "phase": "exit",
+      "sourceSha256": "5b868b1ee8881f9b75111dcb4c6b39a672cba061e351aae15b046552e0564a23",
+      "category": "label-text",
+      "id": 70,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 633
+        }
+      ]
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "category": "trail-policy",
+      "id": 71,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739
+        }
+      ]
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "category": "trail-policy",
+      "id": 72,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514
+        },
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745
+        }
+      ]
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "phase": "enter",
+      "sourceSha256": "60678dd4002fdba931490136fd76adb88c45eb225b597b4af95b645ab17f4e01",
+      "category": "model-part-visibility",
+      "id": 73,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 943
+        }
+      ]
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "phase": "exit",
+      "sourceSha256": "0f0900485c9dcea312d6c38620b9d57612ffe339958219f2c1ab63d6a5e9e9b0",
+      "category": "model-part-visibility",
+      "id": 74,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 947
+        }
+      ]
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "phase": "enter",
+      "sourceSha256": "4485dc90f139810656787f018b78594fdb6a92498a281509b6b410b266be1afc",
+      "category": "trail-policy",
+      "id": 75,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 988
+        }
+      ]
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "phase": "exit",
+      "sourceSha256": "109caf9ba40a313ae600b1eedabf44b85f583bee79d9cb9d2f4502f20d239ced",
+      "category": "trail-policy",
+      "id": 76,
+      "state": "declarative-mapping-present-not-full-runtime-acceptance",
+      "sourceRefs": [
+        {
+          "path": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 995
+        }
+      ]
+    }
+  ]
+}

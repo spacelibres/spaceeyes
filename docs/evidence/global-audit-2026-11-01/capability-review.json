@@ -1,0 +1,464 @@
+{
+  "method": "current source review with explicit differences; performance candidates are not measured regressions",
+  "entries": [
+    {
+      "id": "A01",
+      "item": "架构与SDK边界",
+      "status": "source-compared",
+      "ours": "platform/plugin-host.ts",
+      "nasaFile": "engine/core/Entity-62.js",
+      "assessment": "TS数据插件经受控SDK进入Rust/Bevy；不应照搬NASA内部对象API。继续核验权限、归属和清理。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A02",
+      "item": "目录、父体与当前系统",
+      "status": "partial",
+      "ours": "platform/eyes-catalog.ts",
+      "nasaFile": "engine/managers/SceneManager.js",
+      "assessment": "目录844定义不等于633可浏览项全部可用；父体按时间切换，系统集合仍有数量上限，需要按NASA场景逐项核对遗漏。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A03",
+      "item": "位置控制器选择",
+      "status": "confirmed-failure",
+      "ours": "web/lib/solar-dyn-server.ts",
+      "nasaFile": "engine/core/Entity-62.js",
+      "assessment": "逆序位置控制器已实现，但未来阶段坏包在coverage判定前解码失败会阻断较早有效控制器；三飞船真实请求复现。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A04",
+      "item": "ORI多轨选择与缓存",
+      "status": "different",
+      "ours": "web/lib/solar-dyn-server.ts",
+      "nasaFile": "engine/core/Entity-62.js",
+      "assessment": "ORI按声明正序首个成功返回且不按epoch筛controller coverage；NASA按有效控制器顺序覆盖。当前缓存按对象存一份ORI，需独立控制器身份和边界回归。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A05",
+      "item": "DYN解码和来源",
+      "status": "partial",
+      "ours": "platform/dyn-decoder.ts",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "assessment": "严格拒绝重复时间和坏索引是平台约束；精确SHA连续窗口仅覆盖已审查包，不能全局排序/去重来假装NASA兼容。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A06",
+      "item": "轨道位置速度求值",
+      "status": "source-compared",
+      "ours": "platform/dyn-evaluator.ts",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "assessment": "已有orb/pos/lin/ori/quat数值实现及测试；仍需同源端点、异常包和全部类型数值对照，不能以存在函数宣称完全一致。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A07",
+      "item": "固定位置与表面经纬度",
+      "status": "partial",
+      "ours": "platform/eyes-controllers.ts",
+      "nasaFile": "engine/core/Entity-567.js",
+      "assessment": "固定位置、LLA、轨道元素有实现；staticPosition遍历首个固定控制器返回，staticCoverage取末个，重叠声明需查明是否一致并补样本，不判定全部现有任务已错误。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A08",
+      "item": "单位、参考系与显示原点",
+      "status": "source-compared",
+      "ours": "core/src/runtime.rs",
+      "nasaFile": "engine/core/Entity-62.js",
+      "assessment": "km/ICRF科学状态与显示比例分离，先f64减原点后f32；跨父体及尺度变化仍需成对视觉测试。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A09",
+      "item": "UTC/TDB与当前时间",
+      "status": "different",
+      "ours": "core/src/time_conversion.rs",
+      "nasaFile": "engine/core/TimeUtils.js",
+      "assessment": "显式UTC/TDB路径与NASA转换实现不同，需要闰秒及边界金值对照；不能以科学公式不同直接判错。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A10",
+      "item": "播放、倍率与倒播",
+      "status": "source-compared",
+      "ours": "web/lib/time-controls.ts",
+      "nasaFile": "ui/components/TimeControls.js",
+      "assessment": "倍率表、显示与正倒播具备测试；真实页面长时播放、忙态恢复和隐藏语义仍需对照。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A11",
+      "item": "任务时间端点",
+      "status": "different",
+      "ours": "web/lib/solar-workspace.ts",
+      "nasaFile": "engine/managers/TimeManager-922.js",
+      "assessment": "当前关键覆盖失效回退lastPublishedEpoch再reload；NASA边界内移1ms并rate=0，不能称完全相同。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A12",
+      "item": "Coverage生命周期及动作",
+      "status": "partial",
+      "ours": "platform/eyes-coverage.ts",
+      "nasaFile": "engine/controllers/CoverageController.js",
+      "assessment": "77槽位逐条复核：60有映射、4源无效、13未实现；映射存在不等于动作全上下文验收。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A13",
+      "item": "历史缓存与取消",
+      "status": "source-compared",
+      "ours": "platform/trail-history.ts",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "assessment": "有双向复用、边界、预算、缺口和取消；本轮65宿主及相关平台回归通过，NASA全量跨阶段成对结果仍缺。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A14",
+      "item": "自动拖尾长度",
+      "status": "partial",
+      "ours": "platform/eyes-trail-auto.ts",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "assessment": "orb公式已对照；非orb与退化回退、实际源覆盖和有限点预算仍须逐任务核对，不能缩时长换性能。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A15",
+      "item": "轨迹时间窗及参考姿态",
+      "status": "partial",
+      "ours": "platform/eyes-trail-policy.ts",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "assessment": "28动作已映射；绝对/相对窗、参考体和逆旋有测试，需继续九对象全部端点成对渲染。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A16",
+      "item": "天然轨道与航天器拖尾",
+      "status": "partial",
+      "ours": "core/src/orbit_lines.rs",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "assessment": "当前自然轨道/人造历史拖尾分开，真实缺口不强闭合；采样密度、长轨和闭合条件应逐目标验收。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A17",
+      "item": "线条颜色、高亮、宽度",
+      "status": "partial",
+      "ours": "core/src/trajectory_render.rs",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "assessment": "按星体颜色及悬停宽度存在；当前几类固定opacity/width不是NASA各上下文全部配置。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A18",
+      "item": "轨迹连接、光晕与虚线",
+      "status": "different",
+      "ours": "web/resources/shaders/trajectory.wgsl",
+      "nasaFile": "engine/core/TrailShader.js",
+      "assessment": "本地按独立段屏幕展开且直接输出颜色；NASA有prev/curr/next连接、dash和edgeGlow，现有WGSL没有等价全部通道。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A19",
+      "item": "入场、聚焦与取景比例",
+      "status": "different",
+      "ours": "core/src/renderer.rs",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "assessment": "CameraBlend固定0.35秒smoothstep；NASA典型1.5秒两段入场并由Sun方向、up和offset构图。用户确认差异须保留，不能统称一致。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A20",
+      "item": "系统范围及卫星群",
+      "status": "partial",
+      "ours": "core/src/camera_framing.rs",
+      "nasaFile": "engine/core/Cameras.js",
+      "assessment": "已有NASA系统最小距离和切线拟合；目前只列八大行星最小值，NASA还含矮行星，系统成员和加载完成后的拟合需逐一验收。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A21",
+      "item": "Follow参考体和姿态",
+      "status": "different",
+      "ours": "core/src/camera_intent.rs",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "assessment": "具备所属系统/跟随参考和外部任务构图；NASA完整上下文up、限制、遮挡和合成参考体尚非一一等价。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A22",
+      "item": "惯性、鼠标及触摸",
+      "status": "partial",
+      "ours": "core/src/camera_motion.rs",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "assessment": "有限惯性与缩放按钮/触摸有测试，常数为本地策略；需要同手势同时间的NASA输入响应对照。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A23",
+      "item": "相机碰撞和投影",
+      "status": "partial",
+      "ours": "core/src/camera_collision.rs",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "assessment": "已有扫掠碰撞、动态near/far和物理原点；上一轮ISS截图仍有近距主星构图疑点，需重现而非单凭截图判几何错误。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A24",
+      "item": "仪器、表面、比较、自由飞行",
+      "status": "missing",
+      "ours": "platform/camera-contract.ts",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "assessment": "当前公开DTO只有现有观察模式，缺仪器签名光轴/经纬度表面/双视口比较/自由飞行完整工作流。任务外部构图不能替代仪器视角。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A25",
+      "item": "选择、点击与场景链接",
+      "status": "partial",
+      "ours": "web/lib/scene-link.ts",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "assessment": "选择/分享/恢复有实现和测试，但NASA context、抑制规则、故事/工具上下文尚无完整映射。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A26",
+      "item": "标签对象可见性",
+      "status": "partial",
+      "ours": "core/src/label_visibility.rs",
+      "nasaFile": "engine/components/LabelComponent.js",
+      "assessment": "对象有效性、视锥、遮挡、近距渐隐和选中隐藏已有；标签最终还依赖VisualPhase::Ready，资源失败/加载场景需与NASA及用户卫星名称要求核对。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A27",
+      "item": "标签碰撞与类别权重",
+      "status": "different",
+      "ours": "core/src/screen_layout.rs",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "assessment": "本地贪心包围盒抑制，类别仅Sun/八行星/sc/其它四档；NASA有焦点矩形、四叉树和矮行星/小行星/彗星/着陆点等权重。名称固定锚点保留但不能说全等价。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A28",
+      "item": "图标、例外及逐对象开关",
+      "status": "partial",
+      "ours": "core/src/renderer.rs",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "assessment": "本地通用圆点及标签，不具备NASA全部类别图标、可点击例外和逐对象标签/图标开关契约。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A29",
+      "item": "图层与上下文恢复",
+      "status": "partial",
+      "ours": "web/lib/solar-workspace.ts",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "assessment": "当前全局moons/craft/orbits/trails等布尔和系统集合，缺NASA完整上下文分类、表面图层及目标历史栈；祖先依赖保留不等于图层错误。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A30",
+      "item": "行星材质通道",
+      "status": "missing",
+      "ours": "core/src/render_assets.rs",
+      "nasaFile": "engine/components/SpheroidLODComponent.js",
+      "assessment": "球体主要baseColor且固定roughness0.9/metallic0；没有完整normal/specular/night/cloud/atmosphere通道对接。模型PBR与银河IBL不等于行星表面已补齐。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A31",
+      "item": "行星LOD与近距资源精度",
+      "status": "different",
+      "ours": "core/src/face_texture.rs",
+      "nasaFile": "engine/components/SpheroidLODComponent.js",
+      "assessment": "六面纹理CPU转换为固定2048×1024等距图；不是NASA表面瓦片LOD，近景细节受限。八行星预载是用户确认规则，不应简单取消来省内存。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A32",
+      "item": "土星环双面及遮挡",
+      "status": "partial",
+      "ours": "core/src/ring_texture.rs",
+      "nasaFile": "engine/components/RingsComponent.js",
+      "assessment": "顶部/底部透明PBR及粒子响应存在；真实阴影/遮挡和反射仍需双面光照成对验收，不把仅双面绘制当完成。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A33",
+      "item": "太阳光照与自然光",
+      "status": "different",
+      "ours": "core/src/renderer.rs",
+      "nasaFile": "engine/components/LightSourceComponent.js",
+      "assessment": "所有对象共享DirectionalLight，以当前显示origin指向Sun；origin为零时返回保留旧方向，多行星同时显示并非各自指向真实Sun。shadow_maps_enabled=false，不能宣称完整NASA阴影。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A34",
+      "item": "太阳表面、日珥和太阳风",
+      "status": "approved-extension-needs-validation",
+      "ours": "core/src/solar_surface.rs",
+      "nasaFile": "engine/components/SpheroidComponent.js",
+      "assessment": "用户明确批准的程序化等离子体扩展，不能强行退回NASA贴图，也不称完整MHD。WGSL/物理参数/近距触发和预算需独立验收。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A35",
+      "item": "恒星与银河七级LOD",
+      "status": "approved-extension-needs-validation",
+      "ours": "core/src/deep_lod.rs",
+      "nasaFile": "engine/managers/SceneManager.js",
+      "assessment": "已实现七级共享视场与瓦片/恒星；依据用户科学尺度扩展，2D银河不是具有完整距离的3D银河。应保留真实姿态与恒星数据，不伪造太阳系内巨大视差。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A36",
+      "item": "模型获取与PBR转换",
+      "status": "partial",
+      "ours": "web/lib/eyes-model-convert.ts",
+      "nasaFile": "engine/managers/ResourceManager.js",
+      "assessment": "转换保留节点/材质并外置资源，有模型阶段校验；所有633项资源、模型和阶段并非逐一可用性验收。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A37",
+      "item": "连续骨骼/展开动画",
+      "status": "missing",
+      "ours": "core/src/render_assets.rs",
+      "nasaFile": "engine/controllers/KeyframeController.js",
+      "assessment": "有场景实例加载和离散模型变体，但未见AnimationPlayer/AnimationGraph播放链。连续动画、关键帧控制器与离散换模型是三件事。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A38",
+      "item": "机身align、spin与ORI",
+      "status": "partial",
+      "ours": "platform/eyes-orientation.ts",
+      "nasaFile": "engine/controllers/AlignController.js",
+      "assessment": "机身align/spin及部分ORI已有；多ORI覆盖和custom/Keyframe等完整控制链仍缺，不用单位四元数冒充真实姿态。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A39",
+      "item": "太阳翼关节追日",
+      "status": "partial",
+      "ours": "platform/eyes-joints.ts",
+      "nasaFile": "engine/controllers/AlignController.js",
+      "assessment": "只支持primary none+secondary point Sun的铰链子集，含嵌套更新及诊断；单轴只能对可达方向投影，不保证所有面法线在所有姿态严格指向Sun。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A40",
+      "item": "阶段模型与部件显隐",
+      "status": "partial",
+      "ours": "platform/eyes-model-phases.ts",
+      "nasaFile": "engine/controllers/CoverageController.js",
+      "assessment": "26槽位及27变体已映射，保留原节点与阶段恢复；连续部署动作及剩余关节/自转不能因此算完成。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A41",
+      "item": "自定义关键帧与复合动作",
+      "status": "partial",
+      "ours": "platform/eyes-position-keyframes.ts",
+      "nasaFile": "engine/controllers/KeyframeController.js",
+      "assessment": "只受审查Huygens位置关键帧，额外局部平移/复合状态仍缺；不能泛化为30个custom控制器全支持。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A42",
+      "item": "60/30帧率与保真原则",
+      "status": "rule-conflict",
+      "ours": "core/src/frame_budget.rs",
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "assessment": "30档超预算自动resolution_scale降至0.85/0.7/0.5仍在运行，违背最新规则。保留帧率调度，后续独立取消画质降级并同画质重测。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A43",
+      "item": "主线程求值与Worker分工",
+      "status": "performance-candidate",
+      "ours": "web/lib/solar-workspace.ts",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "assessment": "数据解码/求值/发布及部分采样仍在主线程；生成器让出但没有Worker路径。需剖析耗时与传输后决定，不机械搬GPU。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A44",
+      "item": "每帧集合及状态复制",
+      "status": "performance-candidate",
+      "ours": "core/src/runtime.rs",
+      "nasaFile": "engine/core/Entity-62.js",
+      "assessment": "sync_scene每帧构造HashMap/HashSet/ids并重复状态读取；标签另构造集合，joint每帧clone原旋转。候选热点，尚无本轮分配剖析，不能直接称泄漏。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A45",
+      "item": "WASM边界与GPU上传",
+      "status": "performance-candidate",
+      "ours": "platform/wasm-core-port.ts",
+      "nasaFile": "engine/core/TrailShader.js",
+      "assessment": "逐对象JSON状态/关节和轨迹序列化；线段缓存可复用但变化时仍CPU展开并上传整个mesh。应测量字节与调用，不缩短轨迹作为优化。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A46",
+      "item": "纹理CPU转换及解压",
+      "status": "performance-candidate",
+      "ours": "core/src/face_texture.rs",
+      "nasaFile": "engine/components/SpheroidLODComponent.js",
+      "assessment": "六面转换、环纹理扩展在CPU执行；转换分帧但固定输出精度，模型KTX转PNG/RGBA可能增加驻留成本。评估服务器预处理或GPU直采并保持精度。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A47",
+      "item": "缓存、内存与显存总账",
+      "status": "needs-measurement",
+      "ours": "platform/resource-client.ts",
+      "nasaFile": "engine/managers/ResourceManager.js",
+      "assessment": "存在字节预算/句柄清理，但ResourceClient/解码历史/八行星/生成图/资产服务器预算分散，不能把某缓存上限当进程/显存峰值；需要全链路归属与峰值测量。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A48",
+      "item": "后台、取消与生命周期",
+      "status": "partial",
+      "ours": "web/lib/solar-workspace.ts",
+      "nasaFile": "engine/managers/ResourceManager.js",
+      "assessment": "visibility暂停、队列取消、revision和dispose有自动测试；设备丢失/恢复、页面退出重入及显存回收尚缺本轮真实GPU证据。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A49",
+      "item": "工具、故事及信息工作流",
+      "status": "missing",
+      "ours": "web/app/workspace-view.tsx",
+      "nasaFile": "engine/managers/ComparisonManager.js",
+      "assessment": "距离/光行时ERT/完整比较/故事/事件/表面地图/仪器FOV等NASA入口尚无完整闭环，须列后续对齐清单，不能把太阳系浏览等同全站。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A50",
+      "item": "品牌与已确认差异",
+      "status": "approved-difference",
+      "ours": "web/app/workspace-view.tsx",
+      "nasaFile": "ui/components/CameraViewBlock.js",
+      "assessment": "保留spacelibre VI、Rust/TS插件边界、科学数据有效性及用户批准的任务构图/太阳扩展；对齐行为不等于照抄NASA品牌或引擎实现。",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "A51",
+      "item": "测试、账本与视觉证据",
+      "status": "validation-gap",
+      "ours": "docs/NASA-Eyes函数级对齐审查.md",
+      "nasaFile": "engine/managers/SceneManager.js",
+      "assessment": "历史142条不是142独立功能验收，原verified两条不升级全站。当前测试通过但实源失败，缺相同时间/视角/画质NASA与本地成对录像和GPU内存剖析。",
+      "pairedRuntimeParity": false
+    }
+  ]
+}
