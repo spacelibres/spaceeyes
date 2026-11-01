@@ -100,6 +100,16 @@ export type SolarStatus = {
   positionSource?: "dyn" | "fixed" | "orbital-elements";
   coverage?: [number, number];
 };
+type HistorySlot = {
+  id: string;
+  origin: string | undefined;
+  epoch: number;
+  duration: number;
+  policyDuration: number | undefined;
+  manager: TrailHistory;
+  prepared?: PreparedHistory;
+  pending?: Promise<boolean>;
+};
 /** Reference frames are resolvable definitions, not display bodies. */
 export function hasDisplayCatalog(id: string): boolean {
   return solarCatalog.some((item) => item.id === id);
@@ -138,7 +148,7 @@ export class SolarSystemData {
       selection?: string;
     }
   >();
-  #history?: {id:string;origin:string|undefined;epoch:number;duration:number;manager:TrailHistory;prepared?:PreparedHistory;pending?:Promise<boolean>};
+  #history?: HistorySlot;
   #networkActive = 0;
   #queueAbort = new AbortController();
   #networkQueue: {
@@ -1329,19 +1339,27 @@ export class SolarSystemData {
     this.#history?.manager.dispose();
     this.#history = undefined;
   }
+  #historyAt(id: string, epoch: number) {
+    const slot = this.#history;
+    return slot?.id === id && slot.origin === (this.parentAt(id, epoch) || undefined) &&
+      slot.policyDuration === eyesTrailDuration(id, epoch) &&
+      Math.abs(epoch - slot.epoch) <= slot.duration / 32 ? slot : undefined;
+  }
   /** Prepare separate historical sources without publishing states or changing time. */
   async prepareTrailHistory(id: string, epoch: number): Promise<boolean> {
     if (solarCatalog.find(body => body.id === id)?.kind !== "spacecraft" || this.status(id)?.status !== "ready") return false;
     const origin = this.parentAt(id, epoch) || undefined;
-    const existing = this.#history;
-    if (existing?.id === id && existing.origin === origin && epoch >= existing.epoch && epoch <= existing.epoch + existing.duration / 32) {
+    const existing = this.#historyAt(id, epoch);
+    if (existing) {
       if (existing.pending) return existing.pending;
       return false;
     }
     this.clearTrailHistory();
     const local = this.trailSamples(id, epoch, 8);
-    const start = epoch - local.durationSeconds, end = epoch + local.durationSeconds / 16;
-    if (local.epochsTdbSeconds[0] <= start + 1e-6 && local.epochsTdbSeconds.at(-1)! >= end - 1e-6) return false;
+    if (local.epochsTdbSeconds[0] <= epoch - local.durationSeconds + 1e-6 &&
+        local.epochsTdbSeconds.at(-1)! >= epoch + local.durationSeconds / 16 - 1e-6) return false;
+    // Pad both ends for bidirectional reuse without truncating the display window.
+    const start = epoch - local.durationSeconds * (1 + 1 / 32), end = epoch + local.durationSeconds * (1 / 16 + 1 / 32);
     const manager = new TrailHistory({
       parentAt, boundaries: target => (eyesDefinitions[target]?.parents ?? []).map(([time]) => Number(time)),
       maxSegments: 32, maxRecords: 200000,
@@ -1356,7 +1374,7 @@ export class SolarSystemData {
         },
       }),
     });
-    const slot: {id:string;origin:string|undefined;epoch:number;duration:number;manager:TrailHistory;prepared?:PreparedHistory;pending?:Promise<boolean>} = {id,origin,epoch,duration:local.durationSeconds,manager};
+    const slot: HistorySlot = {id,origin,epoch,duration:local.durationSeconds,policyDuration:eyesTrailDuration(id,epoch),manager};
     this.#history = slot;
     slot.pending = manager.prepare(id, epoch, start, end, origin).then(prepared => {
       if (this.#history !== slot) {prepared.dispose(); return false;}
@@ -1395,7 +1413,7 @@ export class SolarSystemData {
     // Preserve a resolved history within the finite sample budget. Never join
     // revolutions with unresolved chords or cross a source coverage gap.
     const origin = this.parentAt(id, epoch) || undefined;
-    let history = this.#history?.id === id && this.#history.origin === origin && epoch >= this.#history.epoch && epoch <= this.#history.epoch + this.#history.duration / 32 ? this.#history.prepared : undefined;
+    let history = this.#historyAt(id, epoch)?.prepared;
     if (history) try {history.position(epoch);} catch {history = undefined;}
     const failedProbes = new Set<number>();
     const relativeCache = new Map<number, number[]>();

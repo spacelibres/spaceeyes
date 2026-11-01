@@ -1448,10 +1448,11 @@ test("actual LRO and Psyche align definitions remain valid outside their optiona
 test("private mission history crosses parent phases in the current frame without mutating published state", async () => {
  const {ctx,states}=context();
  const boundary=139219264.185, epoch=boundary+1000;
- let jump = false, broken = false;
+ let jump = false, broken = false, requests = 0;
  const original=eyesDefinitions.sc_cassini.trail;
  eyesDefinitions.sc_cassini.trail={length:2000};
  const source=new SolarSystemData(ctx,{fetch:async input=>{
+   requests++;
    if (broken) throw Error("historical source offline");
    const url=new URL(String(input),"http://localhost"), t=Number(url.searchParams.get("epoch"));
    const craft=url.pathname.endsWith("/sc_cassini");
@@ -1473,7 +1474,29 @@ test("private mission history crosses parent phases in the current frame without
    for(const point of history.points) assert.deepEqual(point,[10,0,0]);
    assert.deepEqual(source.position("sc_cassini",epoch),position);
    assert.equal(JSON.stringify([...states]),published);
+   const preparedRequests = requests;
+   for (const offset of [-1, -50, 20, -60, -2000/32, 2000/32]) {
+     const t = epoch + offset;
+     const reused = source.trailSamples("sc_cassini",t,32);
+     assert.equal(reused.epochsTdbSeconds[0],t-2000,"reverse playback retains the complete requested history window");
+     assert.equal(reused.epochsTdbSeconds.at(-1),t+2000/16,"forward playback retains the complete preview window");
+     assert.equal(await source.prepareTrailHistory("sc_cassini",t),false,"valid prepared history is reused in both directions");
+     assert.equal(requests,preparedRequests,"changing playback direction must not fetch historical sources again");
+     for (const point of reused.points) assert.deepEqual(point,[10,0,0]);
+   }
+   assert.equal(JSON.stringify([...states]),published);
+   assert.equal(await source.prepareTrailHistory("sc_cassini",epoch+100),true,"leaving the reuse band prepares a new history");
+   assert.equal(await source.prepareTrailHistory("sc_cassini",boundary-20),true,"changing the current parent invalidates the history frame");
+   assert.equal(source.trailSamples("sc_cassini",boundary-20,32).originId,"sun");
+   assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true);
+   eyesDefinitions.sc_cassini.trail={length:2000,lengthCoverages:[[1800,epoch-10,epoch+10]]};
+   assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true,"changed authored duration invalidates history even at the same epoch");
+   assert.equal(source.trailSamples("sc_cassini",epoch,32).epochsTdbSeconds[0],epoch-1800);
+   eyesDefinitions.sc_cassini.trail={length:2000};
    source.clearTrailHistory();
+   const localRequests = requests;
+   assert.equal(await source.prepareTrailHistory("sc_cassini",boundary+5000),false,"complete main-source coverage does not need private history");
+   assert.equal(requests,localRequests);
    jump = true;
    await source.prepareTrailHistory("sc_cassini",epoch);
    assert.ok(source.trailSamples("sc_cassini",epoch,32).breakIndices.length > 0, "discontinuous source handoff must break the line");

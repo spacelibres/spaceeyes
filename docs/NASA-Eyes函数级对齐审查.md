@@ -36,3 +36,9 @@ NASA SceneManager 会保留相机所需祖先体，因此选中 LRO 后 Moon 仍
 在项目根目录运行 `python tools/check-nasa-function-audit.py` 核验账本结构；加 `--nasa-root C:/Users/stone/Documents/solarsystem/eyes/src` 核验引用文件、所提供行号及源文件集合指纹。该检查不证明每条结论正确，也不证明 GPU 效果一致。本轮不重新运行未改变的运行程序，不将既往测试冒充新实现测试。
 
 基线版本远端 CI：[41260094555](https://github.com/spacelibres/spaceeyes/actions/runs/41260094555)，本轮通过 gh 确认为 completed/success。此结果属于基线；本次文档提交的 CI 另行跟踪。
+
+## 实施进度：SDK 0.0.43 / 网页 0.0.69
+
+已完成顺序1的历史缓存子项：双向复用、两端完整窗口、父体/显式长度策略失效及集中回归。原审查JSON保留基线快照，不覆盖为虚假的全量通过状态。验证和边界见[本批证据](evidence/time-history-0.0.69/README.md)。orb自动长度、覆盖生命周期和时间端点行为继续待实现。
+
+Coverage已静态定位23实体、41控制器的77个动作槽位（58个不同hash），见[动作清单](evidence/time-history-0.0.69/coverage-actions.json)。其中4个标签replace未赋值，为源代码无效动作，不应当作缺失功能补造。下一步按模型阶段、部件显隐和轨迹策略逐项映射声明式能力；不能执行恢复的回调表达式。
