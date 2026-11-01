@@ -1371,3 +1371,136 @@ test("automatic spacecraft histories remain publishable for radial and stationar
     }
   } finally {source.dispose();}
 });
+
+test("known ORI root coverage skips its controller without erasing prior align", async () => {
+  const old=eyesDefinitions.earth.controllers;
+  try {
+    eyesDefinitions.earth.controllers=[{type:"align",primary:{type:"point",target:"sun",axis:{expression:"Pioneer.Vector3.XAxis"}}},{type:"dynamo",url:"earth/ori"}];
+    const {ctx,states}=context();
+    const source=new SolarSystemData(ctx,{fetch:async input=>String(input).includes("type=ori")
+      ?new Response("outside",{status:502,headers:{"x-dyn-orientation-coverage":"[100,110]"}}):new Response(orb(10))});
+    try {await source.load(["earth"],5);source.publishAt(5);
+      assert.equal(source.status("earth")?.orientationStatus,"ready");
+      assert.equal(source.status("earth")?.orientationSource,"derived");
+      assert.ok((states.get("earth") as any).orientationWxyz);
+      source.publishAt(6);assert.equal(source.status("earth")?.orientationStatus,"ready");
+      assert.equal(source.needsOrientationRefresh("earth",6),false);
+      assert.equal(source.needsOrientationRefresh("earth",100),true);
+      assert.equal(source.needsOrientationRefresh("earth",110),true);
+      assert.equal(source.needsOrientationRefresh("earth",111),false);
+      const restore=source.checkpoint();source.retain([]);
+      assert.equal(source.needsOrientationRefresh("earth",100),false);restore();
+      assert.equal(source.needsOrientationRefresh("earth",100),true);
+    }finally{source.dispose();}
+  }finally{eyesDefinitions.earth.controllers=old;}
+});
+
+test("ORI absence and failures never fabricate a body orientation", async () => {
+ const old=eyesDefinitions.earth.controllers;
+ try {
+  for(const mode of ["only-ori","joint-only","network","malformed-bounds","decode"]) {
+   const align={type:"align",primary:{type:"point",target:"sun",axis:{expression:"Pioneer.Vector3.XAxis"}}};
+   eyesDefinitions.earth.controllers=mode === "joint-only" ? [{...align,joint:"Array"},{type:"dynamo",url:"earth/ori"}]
+     : mode === "only-ori" ? [{type:"dynamo",url:"earth/ori"}] : [align,{type:"dynamo",url:"earth/ori"}];
+   const {ctx,states}=context();
+   const source=new SolarSystemData(ctx,{fetch:async input=>{
+    if(!String(input).includes("type=ori"))return new Response(orb(10));
+    if(mode==="network")throw Error("network offline");
+    if(mode==="decode")return new Response(new Uint8Array([1,2,3]));
+    return new Response("outside",{status:502,headers:{"x-dyn-orientation-coverage":mode==="malformed-bounds"?"[110,100]":"[100,110]"}});
+   }});
+   try {await source.load(["earth"],5);source.publishAt(5);
+    assert.equal(source.status("earth")?.orientationStatus,"unavailable",mode);
+    assert.equal((states.get("earth") as any).orientationWxyz,undefined,mode);
+   }finally{source.dispose();}
+  }
+ }finally{eyesDefinitions.earth.controllers=old;}
+});
+test("valid ORI still overrides align in source controller order", async()=>{
+ const old=eyesDefinitions.earth.controllers;
+ try {
+  eyesDefinitions.earth.controllers=[{type:"align",primary:{type:"point",target:"sun",axis:{expression:"Pioneer.Vector3.XAxis"}}},{type:"dynamo",url:"earth/ori"}];
+  const {ctx,states}=context();const source=new SolarSystemData(ctx,{fetch:async input=>new Response(String(input).includes("type=ori")?orientation():orb(10))});
+  try{await source.load(["earth"],5);source.publishAt(5);assert.deepEqual((states.get("earth") as any).orientationWxyz,[1,0,0,0]);assert.equal(source.status("earth")?.orientationSource,"dyn");}finally{source.dispose();}
+ }finally{eyesDefinitions.earth.controllers=old;}
+});
+
+test("actual LRO and Psyche align definitions remain valid outside their optional ORI epochs", async()=>{
+ const epoch=846724000;
+ for(const id of ["sc_lunar_reconnaissance_orbiter","sc_psyche"]) {
+  const {ctx,states}=context();
+  const source=new SolarSystemData(ctx,{fetch:async input=>{
+   const url=String(input);
+   if(url.includes("type=ori")) return new Response("outside",{status:502,headers:{"x-dyn-orientation-coverage":"[0,10]"}});
+   const bytes=orb(url.includes("/sc_")?2:10000),v=new DataView(bytes.buffer);
+   for(let i=0;i<2;i++) {v.setFloat64(28+i*72,-4e9+i*8e9,true);v.setFloat64(28+i*72+24,1e-5,true);v.setFloat64(28+i*72+32,i*8e4,true);}
+   return new Response(bytes);
+  }});
+  try {await source.load([id],epoch,[id]);source.publishAt(epoch);
+   assert.equal(source.status(id)?.orientationStatus,"ready",id+": "+source.status(id)?.orientationError);
+   assert.equal(source.status(id)?.orientationSource,"derived");
+   assert.ok((states.get(id) as any).orientationWxyz.every(Number.isFinite));
+   if(id==="sc_psyche")assert.ok(source.jointAims(id,epoch).length>0);
+  }finally{source.dispose();}
+ }
+});
+
+test("private mission history crosses parent phases in the current frame without mutating published state", async () => {
+ const {ctx,states}=context();
+ const boundary=139219264.185, epoch=boundary+1000;
+ let jump = false, broken = false;
+ const original=eyesDefinitions.sc_cassini.trail;
+ eyesDefinitions.sc_cassini.trail={length:2000};
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+   if (broken) throw Error("historical source offline");
+   const url=new URL(String(input),"http://localhost"), t=Number(url.searchParams.get("epoch"));
+   const craft=url.pathname.endsWith("/sc_cassini");
+   const radius=craft?(t<boundary?(jump?2010:1010):10):1000;
+   const bytes=new Uint8Array(76),v=new DataView(bytes.buffer);
+   v.setInt16(0,2,true);bytes.set([108,105,110,0,3,1],2);v.setInt32(8,2,true);
+   for(let i=0;i<2;i++){v.setFloat64(12+i*32,boundary-10000+i*20000,true);v.setFloat64(20+i*32,radius,true);}
+   return new Response(bytes);
+ }});
+ try {
+   await source.load(["sc_cassini"],epoch,[]);source.publishAt(epoch);
+   const published=JSON.stringify([...states]), position=source.position("sc_cassini",epoch);
+   const local=source.trailSamples("sc_cassini",epoch,32);
+   assert.equal(local.epochsTdbSeconds[0],boundary);
+   assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true);
+   const history=source.trailSamples("sc_cassini",epoch,32);
+   assert.equal(history.epochsTdbSeconds[0],epoch-2000);
+   assert.ok(history.epochsTdbSeconds.includes(boundary));
+   for(const point of history.points) assert.deepEqual(point,[10,0,0]);
+   assert.deepEqual(source.position("sc_cassini",epoch),position);
+   assert.equal(JSON.stringify([...states]),published);
+   source.clearTrailHistory();
+   jump = true;
+   await source.prepareTrailHistory("sc_cassini",epoch);
+   assert.ok(source.trailSamples("sc_cassini",epoch,32).breakIndices.length > 0, "discontinuous source handoff must break the line");
+   source.clearTrailHistory();
+   assert.equal(source.trailSamples("sc_cassini",epoch,32).epochsTdbSeconds[0],boundary);
+   broken = true;
+   await assert.rejects(source.prepareTrailHistory("sc_cassini",epoch));
+   assert.doesNotThrow(() => source.trailSamples("sc_cassini",epoch,32));
+   assert.deepEqual(source.position("sc_cassini",epoch),position);
+ }finally{source.dispose();eyesDefinitions.sc_cassini.trail=original;}
+});
+
+test("an expired valid ORI segment requests the next segment without a known-absence record", async () => {
+ const {ctx,states}=context();let requests=0;
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+   const url=String(input);
+   if(url.includes("type=ori")){requests++;return new Response(orientation(Number(new URL(url,"http://localhost").searchParams.get("epoch"))<10?0:10));}
+   const bytes=orb(10);new DataView(bytes.buffer).setFloat64(100,20,true);return new Response(bytes);
+ }});
+ try {
+   await source.load(["earth"],5);source.publishAt(5);
+   assert.equal(source.needsOrientationRefresh("earth",5),false);
+   assert.equal(source.needsOrientationRefresh("earth",11),true);
+   const before=JSON.stringify([...states]);
+   await source.refreshOrientation("earth",11);
+   assert.equal(requests,2);
+   assert.equal(source.needsOrientationRefresh("earth",11),false);
+   assert.equal(JSON.stringify([...states]),before);
+ } finally {source.dispose();}
+});

@@ -1,0 +1,9 @@
+{
+  "epoch": 846724000,
+  "child": "193",
+  "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_psyche/ori/",
+  "sha256": {
+    "definition": "d5ee6cd80f81324a0cde586195b0d5759c6dd73c08e661dad2a61e436c245e58",
+    "child": "a4f60b1ad7790d0bfd73019a1b9bbc40a3dc8b9440e94504d7b241c1020e375f"
+  }
+}

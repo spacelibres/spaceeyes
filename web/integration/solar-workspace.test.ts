@@ -172,6 +172,7 @@ function harness(initialNullEnvironmentStatus = false) {
     freed: () => freed,
     core: () => core!,
     seekEpoch: (epoch: number) => core.seek(...timeSession, epoch),
+    clearCoreFocus: () => core.camera_view!(...timeSession, "overview"),
     focused: () =>
       (
         core as HostCore & { focused_object(): string | undefined }
@@ -1887,6 +1888,7 @@ test("background coverage recovery restores only the removed object's visual", a
   try {
     await app.seek(846686627);
     const before = fixtures.visuals().length;
+    const existing = new Set(fixtures.visuals().map(entry => entry.id));
     armed = true;
     app.play(true, 480);
     fixtures.step(0);
@@ -1896,7 +1898,7 @@ test("background coverage recovery restores only the removed object's visual", a
       fixtures.step(frame * 16);
     }
     const restored = fixtures.visuals().slice(before);
-    assert.deepEqual(restored.map((entry) => entry.id), ["moon"]);
+    assert.deepEqual(restored.filter(entry => existing.has(entry.id)).map(entry => entry.id), ["moon"]);
     assert.equal(fixtures.core().playing(), true);
   } finally { await app.dispose(); }
 });
@@ -2015,4 +2017,49 @@ test("Moon selection includes its own orbiters as well as Earth-system siblings"
     await app.groups(true, false);
     assert.throws(() => fixtures.core().state_at("sc_lunar_reconnaissance_orbiter", fixtures.core().epoch()));
   } finally { await app.dispose(); }
+});
+
+test("solar overview retains heliocentric spacecraft after returning from a local family", {timeout:5000}, async () => {
+ const fixtures=harness();
+ let notify:(()=>void)|undefined;
+ const app=await createWorkspace("#test",state=>{
+   if (!state.selected && !state.busy) try {
+     fixtures.core().state_at("sc_psyche",fixtures.core().epoch()); notify?.();
+   } catch {}
+ },new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+   await app.seek(846724000);
+   await app.select("moon");
+   const ready=new Promise<void>(resolve=>{notify=resolve;});
+   app.overview();
+   await ready;
+   assert.doesNotThrow(()=>fixtures.core().state_at("sc_psyche",fixtures.core().epoch()));
+   assert.doesNotThrow(()=>fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch()));
+   assert.throws(()=>fixtures.core().state_at("sc_lunar_reconnaissance_orbiter",fixtures.core().epoch()));
+   await app.groups(true,false);
+   assert.throws(()=>fixtures.core().state_at("sc_psyche",fixtures.core().epoch()));
+ } finally {await app.dispose();}
+});
+
+test("solar spacecraft populate startup and survive automatic zoom-out without pausing time", {timeout:5000}, async () => {
+ const fixtures=harness();
+ let notify!:()=>void;
+ let completed=new Promise<void>(resolve=>{notify=resolve;});
+ let selection="";
+ const app=await createWorkspace("#test",state=>{
+   selection=state.selected;
+   if(!selection && !state.busy) try {fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch());notify();}catch{}
+ },new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+   await completed;
+   await app.select("moon");
+   completed=new Promise<void>(resolve=>{notify=resolve;});
+   app.play(true,1);
+   fixtures.clearCoreFocus();
+   fixtures.step(0);
+   await completed;
+   assert.equal(selection,"");
+   assert.equal(fixtures.core().playing(),true);
+   assert.doesNotThrow(()=>fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch()));
+ } finally {await app.dispose();}
 });

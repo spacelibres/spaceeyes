@@ -43,3 +43,10 @@ test("budget exhaustion preserves a continuous covered multi-revolution trail", 
   assert.equal(result.unresolved.size, 0);
   assert.ok(result.times.length <= 256);
 });
+
+test("history phase and data boundaries are retained inside the same finite sample budget", () => {
+ const result=adaptiveTrailTimes(0,5,10,16,t=>[t,0,0],Infinity,[2,3,8]);
+ for(const boundary of [0,2,3,5,8,10]) assert.ok(result.times.includes(boundary));
+ assert.ok(result.times.length<=16);
+ assert.throws(()=>adaptiveTrailTimes(0,5,10,8,t=>[t,0,0],Infinity,[1,2,3,4,6,7,8]),/budget/);
+});

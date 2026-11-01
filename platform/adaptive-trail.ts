@@ -7,6 +7,7 @@ export function adaptiveTrailTimes(
   count: number,
   position: (time: number) => readonly number[],
   period?: number,
+  boundaries: readonly number[] = [],
 ): { times: number[]; unresolved: Set<number> } {
   if (
     !Number.isInteger(count) ||
@@ -97,8 +98,10 @@ export function adaptiveTrailTimes(
       terminal: false,
     };
   };
+  const required = [...new Set([start, epoch, end, ...boundaries.filter(t => Number.isFinite(t) && t > start && t < end)])];
+  if (required.length > count) throw Error("History boundary sample budget");
   const seeds = Math.min(
-    count - 2,
+    Math.max(1, count - required.length + 1),
     Math.max(
       8,
       Math.min(64, Math.ceil(((end - start) / (period || Infinity)) * 4)),
@@ -106,7 +109,7 @@ export function adaptiveTrailTimes(
   );
   let times = [
     ...new Set([
-      epoch,
+      ...required,
       ...Array.from(
         { length: seeds + 1 },
         (_, i) => start + ((end - start) * i) / seeds,

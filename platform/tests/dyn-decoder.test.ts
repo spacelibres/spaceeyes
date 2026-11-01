@@ -32,7 +32,7 @@ function fixture(
   view.setInt32(
     p,
     inline
-      ? values.length / (type === "orb" ? 9 : 8)
+      ? values.length / (type === "orb" ? 9 : type === "quat" ? 5 : 8)
       : values.length / (version === 1 ? 2 : 1),
     true,
   );
@@ -112,4 +112,12 @@ test("budgets reject before record allocation", () => {
   assert.throws(() => decodeDyn(fixture(), { maxBytes: 10 }), /budget/);
   assert.throws(() => decodeDyn(fixture(), { maxRecords: 1 }), /budget/);
   assert.throws(() => decodeDyn(fixture(), { maxRecords: Infinity }), /budget/);
+});
+
+test("NASA quat wire samples are five float64 values and normalize to zero-rate ori",()=>{
+ const d=decodeDyn(fixture(2,"quat",true,[0,1,0,0,0,10,0,0,0,1]));
+ assert.equal(d.type,"ori");assert.equal(d.sourceType,"quat");
+ if(d.kind!=="inline"||d.type!=="ori")throw Error("Expected attitude");
+ assert.deepEqual(d.records[1].angularVelocity,[0,0,0]);
+ assert.deepEqual(d.records[1].orientation,[0,0,0,1]);
 });

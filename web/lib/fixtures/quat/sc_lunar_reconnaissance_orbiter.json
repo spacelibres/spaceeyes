@@ -1,0 +1,19 @@
+{
+  "epoch": 450000000,
+  "child": "215_206",
+  "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_lunar_reconnaissance_orbiter/ori/",
+  "nodes": [
+    {
+      "name": "215",
+      "sha256": "996a5025ad5a00452b7e3681547f29ba2134072cb01cfa63da2565556289029d"
+    },
+    {
+      "name": "215_206",
+      "sha256": "5fd2ccbcff59f77d049d9b09ce7f1fc55117a654e6293752647ef73aa0ed1d06"
+    }
+  ],
+  "sha256": {
+    "definition": "e83cfa18b833b6935d0a527926b0ba154c293c3e37a523985f21b9628211f3a6",
+    "child": "5fd2ccbcff59f77d049d9b09ce7f1fc55117a654e6293752647ef73aa0ed1d06"
+  }
+}

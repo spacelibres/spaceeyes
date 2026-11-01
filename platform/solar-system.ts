@@ -1,3 +1,4 @@
+import {TrailHistory, type PreparedHistory} from "./trail-history.ts";
 import {eyesTrailDuration, eyesTrailNextBoundary} from "./eyes-trail-policy.ts";
 import {adaptiveTrailTimes} from "./adaptive-trail.ts";
 import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
@@ -78,6 +79,10 @@ export const solarCatalog = [
   ),
 ];
 export const baseSolarIds = baseCatalog.map((x) => x.id);
+class OrientationOutsideCoverage extends Error {
+  readonly coverage: [number,number];
+  constructor(coverage: [number,number]) {super("Outside orientation source coverage");this.coverage=coverage;}
+}
 export type SolarStatus = {
   id: string;
   status:
@@ -111,6 +116,7 @@ export class SolarSystemData {
   #ctx: PluginContext;
   #fetch: typeof fetch;
   #abort = new AbortController();
+  #outsideOri = new Map<string, [number,number]>();
   #data = new Map<string, DecodedDyn>();
   #dataParents = new Map<string, string | null>();
   #ori = new Map<string, DecodedDyn>();
@@ -132,6 +138,7 @@ export class SolarSystemData {
       selection?: string;
     }
   >();
+  #history?: {id:string;origin:string|undefined;epoch:number;duration:number;manager:TrailHistory;prepared?:PreparedHistory;pending?:Promise<boolean>};
   #networkActive = 0;
   #queueAbort = new AbortController();
   #networkQueue: {
@@ -140,10 +147,11 @@ export class SolarSystemData {
     signal: AbortSignal;
     abort: () => void;
   }[] = [];
-  async #read(url: string) {
+  async #read(url: string, externalSignal?: AbortSignal) {
     const queueSignal = AbortSignal.any([
       this.#abort.signal,
       this.#queueAbort.signal,
+      ...(externalSignal ? [externalSignal] : []),
     ]);
     queueSignal.throwIfAborted();
     await new Promise<void>((resolve, reject) => {
@@ -189,6 +197,13 @@ export class SolarSystemData {
     const r = await this.#fetch(url, { signal, redirect: "error" });
     if (!r.ok || r.redirected) {
       await r.body?.cancel();
+      const raw = r.headers.get("x-dyn-orientation-coverage");
+      if (r.status === 502 && raw && raw.length <= 256 && url.includes("type=ori")) {
+        let coverage: unknown;
+        try {coverage = JSON.parse(raw);} catch {}
+        if (Array.isArray(coverage) && coverage.length === 2 && coverage.every(Number.isFinite) && coverage[0] <= coverage[1])
+          throw new OrientationOutsideCoverage(coverage as [number,number]);
+      }
       throw Error(
         "DYN HTTP " + r.status + " " + (r.headers.get("x-dyn-error") ?? ""),
       );
@@ -261,6 +276,7 @@ export class SolarSystemData {
     const dataParents = new Map(this.#dataParents);
     const retained = this.#retained ? new Set(this.#retained) : undefined;
     const ori = new Map(this.#ori);
+    const outsideOri = new Map(this.#outsideOri);
     const spinAnchors = new Map(
       [...this.#spinAnchors].map(([id, values]) => [id, new Map(values)]),
     );
@@ -285,6 +301,7 @@ export class SolarSystemData {
       data.clear();
       dataParents.clear();
       ori.clear();
+      outsideOri.clear();
       spinAnchors.clear();
       states.clear();
       provenance.clear();
@@ -306,6 +323,7 @@ export class SolarSystemData {
       this.#dataParents = new Map(dataParents);
       this.#retained = retained;
       this.#ori = new Map(ori);
+      this.#outsideOri = new Map(outsideOri);
       this.#spinAnchors = new Map(
         [...spinAnchors].map(([id, values]) => [id, new Map(values)]),
       );
@@ -347,8 +365,9 @@ export class SolarSystemData {
       ids.some((id) => !solarCatalog.some((item) => item.id === id))
     )
       throw Error("Invalid retained scene");
+    this.clearTrailHistory();
     this.#cancelLoads();
-    for (const map of [this.#data, this.#ori, this.#dataParents])
+    for (const map of [this.#data, this.#ori, this.#dataParents, this.#outsideOri])
       for (const id of map.keys()) if (!keep.has(id)) map.delete(id);
     for (const key of this.#provenance.keys())
       if (!keep.has(key.slice(0, key.lastIndexOf(":"))))
@@ -682,6 +701,22 @@ export class SolarSystemData {
     };
     visit(id, "orientation", []);
   }
+  async refreshOrientation(id: string, epoch: number): Promise<void> {
+    const generation = this.#loadGeneration;
+    if (this.status(id)?.status !== "ready" || !this.needsOrientationRefresh(id, epoch)) return;
+    await this.#prepareOrientation(id, epoch, [id], generation);
+    if (generation !== this.#loadGeneration) return;
+    const status = this.#states.get(id);
+    if (status) {status.orientationStatus = "ready"; delete status.orientationError;}
+  }
+  needsOrientationRefresh(id: string, epoch: number): boolean {
+    const coverage = this.#outsideOri.get(id);
+    const ori = this.#ori.get(id);
+    return Number.isFinite(epoch) &&
+      (coverage ? epoch >= coverage[0] && epoch <= coverage[1] : !!ori) &&
+      (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) &&
+      activeController(id, epoch, "dynamo").some(isOrientationDynamo);
+  }
   async #prepareOrientation(
     id: string,
     epoch: number,
@@ -716,9 +751,21 @@ export class SolarSystemData {
     if (controllers.some(isOrientationDynamo)) {
       let ori = this.#ori.get(id);
       if (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) {
-        const result = await this.#read(
-          `/api/solar-dyn/${id}?epoch=${epoch}&type=ori`,
-        );
+        let result;
+        try {
+          result = await this.#read(`/api/solar-dyn/${id}?epoch=${epoch}&type=ori`);
+        } catch (error) {
+          if (!(error instanceof OrientationOutsideCoverage) ||
+              (epoch >= error.coverage[0] && epoch <= error.coverage[1])) throw error;
+          if (generation !== this.#loadGeneration || this.#abort.signal.aborted ||
+              (this.#retained && !this.#retained.has(id))) return;
+          if (!this.#outsideOri.has(id) && this.#outsideOri.size >= 256)
+            throw Error("Orientation coverage budget");
+          this.#outsideOri.set(id, error.coverage);
+          this.#orientationAt(id, epoch);
+          return;
+        }
+
         ori = decodeDyn(result.bytes);
         if (ori.kind !== "inline" || ori.type !== "ori")
           throw Error("Invalid orientation payload");
@@ -882,6 +929,8 @@ export class SolarSystemData {
           found = true;
         }
         if (isOrientationDynamo(c)) {
+          const bounds = this.#outsideOri.get(id);
+          if (bounds && (t < bounds[0] || t > bounds[1])) continue;
           const d = this.#ori.get(id);
           if (!d || t < d.coverage.start || t > d.coverage.end)
             throw Error("DYN orientation unavailable or outside coverage");
@@ -926,7 +975,10 @@ export class SolarSystemData {
         (t < Number(c.coverage[0]) || t > Number(c.coverage[1]))
       )
         continue;
-      if (isOrientationDynamo(c)) source = "dyn";
+      if (isOrientationDynamo(c)) {
+        const bounds = this.#outsideOri.get(id);
+        if (!bounds || (t >= bounds[0] && t <= bounds[1])) source = "dyn";
+      }
       if (c.type === "fixed" && c.orientation) source = "fixed";
       if (isEntityAlign(c) || c.type === "spin") source = "derived";
     }
@@ -1273,6 +1325,51 @@ export class SolarSystemData {
       ] as [number, number],
     };
   }
+  clearTrailHistory() {
+    this.#history?.manager.dispose();
+    this.#history = undefined;
+  }
+  /** Prepare separate historical sources without publishing states or changing time. */
+  async prepareTrailHistory(id: string, epoch: number): Promise<boolean> {
+    if (solarCatalog.find(body => body.id === id)?.kind !== "spacecraft" || this.status(id)?.status !== "ready") return false;
+    const origin = this.parentAt(id, epoch) || undefined;
+    const existing = this.#history;
+    if (existing?.id === id && existing.origin === origin && epoch >= existing.epoch && epoch <= existing.epoch + existing.duration / 32) {
+      if (existing.pending) return existing.pending;
+      return false;
+    }
+    this.clearTrailHistory();
+    const local = this.trailSamples(id, epoch, 8);
+    const start = epoch - local.durationSeconds, end = epoch + local.durationSeconds / 16;
+    if (local.epochsTdbSeconds[0] <= start + 1e-6 && local.epochsTdbSeconds.at(-1)! >= end - 1e-6) return false;
+    const manager = new TrailHistory({
+      parentAt, boundaries: target => (eyesDefinitions[target]?.parents ?? []).map(([time]) => Number(time)),
+      maxSegments: 32, maxRecords: 200000,
+      createSource: (signal, remainingRecords) => new SolarSystemData({
+        signal: AbortSignal.any([signal, this.#abort.signal]), onDispose() {},
+        data: {publish() {}, remove() {}},
+      } as unknown as PluginContext, {
+        maxCachedRecords: remainingRecords,
+        fetch: async (input, init) => {
+          const result = await this.#read(String(input), init?.signal ?? undefined);
+          return new Response(result.bytes, {headers: {"x-dyn-source-sha256": result.evidence.sourceSha256 ?? result.evidence.sha256}});
+        },
+      }),
+    });
+    const slot: {id:string;origin:string|undefined;epoch:number;duration:number;manager:TrailHistory;prepared?:PreparedHistory;pending?:Promise<boolean>} = {id,origin,epoch,duration:local.durationSeconds,manager};
+    this.#history = slot;
+    slot.pending = manager.prepare(id, epoch, start, end, origin).then(prepared => {
+      if (this.#history !== slot) {prepared.dispose(); return false;}
+      try {prepared.position(epoch);} catch (error) {prepared.dispose(); throw error;}
+      slot.prepared = prepared;
+      slot.pending = undefined;
+      return true;
+    }).catch(error => {
+      if (this.#history === slot) this.clearTrailHistory();
+      throw error;
+    });
+    return slot.pending;
+  }
   trailSamples(id: string, epoch: number, count = 256, detailed = false) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
@@ -1298,9 +1395,12 @@ export class SolarSystemData {
     // Preserve a resolved history within the finite sample budget. Never join
     // revolutions with unresolved chords or cross a source coverage gap.
     const origin = this.parentAt(id, epoch) || undefined;
+    let history = this.#history?.id === id && this.#history.origin === origin && epoch >= this.#history.epoch && epoch <= this.#history.epoch + this.#history.duration / 32 ? this.#history.prepared : undefined;
+    if (history) try {history.position(epoch);} catch {history = undefined;}
     const failedProbes = new Set<number>();
     const relativeCache = new Map<number, number[]>();
     const relative = (t: number) => {
+      if (history) return history.position(t);
       const cached = relativeCache.get(t);
       if (cached) return cached;
       let world: [number, number, number];
@@ -1367,6 +1467,7 @@ export class SolarSystemData {
       coveredEnd = Math.min(coveredEnd, coverage[1]);
       ancestor = this.parentAt(ancestor, epoch);
     }
+    if (history) {coveredStart = history.start; coveredEnd = history.end;}
     let start = 0,
       end = 0;
     let times: number[] = [];
@@ -1374,7 +1475,7 @@ export class SolarSystemData {
     if (authoredDuration !== undefined || isSpacecraft) {
       start = Math.max(coveredStart, epoch - durationSeconds);
       end = Math.min(coveredEnd, epoch + durationSeconds / 16);
-      ({times, unresolved} = adaptiveTrailTimes(start, epoch, end, count, relative, period));
+      ({times, unresolved} = adaptiveTrailTimes(start, epoch, end, count, relative, period, history?.boundaries));
     } else for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);
@@ -1422,6 +1523,16 @@ export class SolarSystemData {
       if (!unresolved.size || attempt === 8) break;
       durationSeconds /= 2;
     }
+    if (history) for (const boundary of history.boundaries) {
+      const epsilon = Math.min(0.1, (boundary - start) / 4, (end - boundary) / 4);
+      if (epsilon <= Math.abs(boundary) * Number.EPSILON * 4) continue;
+      try {
+        const a = relative(boundary - epsilon * 2), b = relative(boundary - epsilon);
+        const c = relative(boundary + epsilon), d = relative(boundary + epsilon * 2);
+        const distance = (p: readonly number[], q: readonly number[]) => Math.hypot(...p.map((x,i) => x-q[i]));
+        if (distance(b,c) > 8 * Math.max(distance(a,b),distance(c,d)) + 0.01) failedProbes.add(boundary);
+      } catch {failedProbes.add(boundary);}
+    }
     const failures = [...failedProbes].sort((a, b) => a - b);
     let failureIndex = 0;
     for (let i = 1; i < times.length; i++) {
@@ -1466,7 +1577,7 @@ export class SolarSystemData {
     };
   }
   dispose() {
-    this.#generation++;
+    this.clearTrailHistory();    this.#generation++;
     this.#loadGeneration++;
     this.#abort.abort();
     for (const id of this.#published)
@@ -1477,6 +1588,7 @@ export class SolarSystemData {
     this.#states.clear();
     this.#data.clear();
     this.#ori.clear();
+    this.#outsideOri.clear();
     this.#spinAnchors.clear();
     this.#dataParents.clear();
     this.#provenance.clear();

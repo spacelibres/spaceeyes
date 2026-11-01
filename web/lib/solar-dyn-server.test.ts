@@ -262,3 +262,54 @@ test("all hash-pinned mission windows preserve contiguous original records and s
     );
   }
 });
+
+test("single orientation root exposes precise coverage rather than treating network errors as absence", async()=>{
+ const {OrientationOutsideCoverage}=await import("./solar-dyn-server.ts");
+ const bytes=new Uint8Array(140),v=new DataView(bytes.buffer);
+ v.setInt16(0,2,true);bytes.set([111,114,105,0,3,1],2);v.setInt32(8,2,true);
+ for(let i=0;i<2;i++) [100+i*10,1,0,0,0,0,0,0].forEach((n,j)=>v.setFloat64(12+i*64+j*8,n,true));
+ await assert.rejects(()=>fetchSolarDyn("sc_psyche",5,signal(),async()=>new Response(bytes),"ori"),error=>error instanceof OrientationOutsideCoverage && error.coverage[0]===100 && error.coverage[1]===110);
+ await assert.rejects(()=>fetchSolarDyn("sc_psyche",5,signal(),async()=>new Response("",{status:503}),"ori"),error=>!(error instanceof OrientationOutsideCoverage));
+});
+
+test("hash-pinned NASA LRO and Psyche quat index/children decode offline with actual wire headers",async()=>{
+ const {createHash}=await import("node:crypto");
+ const {evaluateOri}=await import("../../platform/dyn-evaluator.ts");
+ for(const id of ["sc_psyche","sc_lunar_reconnaissance_orbiter"]) {
+  const metadata=JSON.parse(await readFile(new URL("./fixtures/quat/"+id+".json",import.meta.url),"utf8"));
+  const definition=new Uint8Array(await readFile(new URL("./fixtures/quat/"+id+"-def.dyn",import.meta.url)));
+  const child=new Uint8Array(await readFile(new URL("./fixtures/quat/"+id+"-"+metadata.child+".dyn",import.meta.url)));
+  assert.equal(createHash("sha256").update(definition).digest("hex"),metadata.sha256.definition);
+  assert.equal(createHash("sha256").update(child).digest("hex"),metadata.sha256.child);
+  const requests:string[]=[];
+  const nodes=new Map<string,Uint8Array<ArrayBuffer>>();
+  for(const node of metadata.nodes??[{name:metadata.child,sha256:metadata.sha256.child}]) {
+    const raw=new Uint8Array(await readFile(new URL("./fixtures/quat/"+id+"-"+node.name+".dyn",import.meta.url)));
+    assert.equal(createHash("sha256").update(raw).digest("hex"),node.sha256);nodes.set(node.name,raw);
+  }
+  const bytes=await fetchSolarDyn(id,metadata.epoch,signal(),async input=>{const url=String(input);requests.push(url);return new Response(url.endsWith("/def.dyn")?definition:nodes.get(url.split("/").at(-1)!.replace(".dyn",""))!);},"ori");
+  assert.equal(requests.length,nodes.size+1);assert.ok(requests.at(-1)!.endsWith("/"+metadata.child+".dyn"));
+  assert.deepEqual(Array.from(bytes.slice(0,8)),Array.from(definition.slice(0,8)));
+  const d=decodeDyn(bytes);assert.equal(d.sourceType,"quat");assert.equal(d.type,"ori");
+  assert.ok(Math.abs(Math.hypot(...evaluateOri(d,metadata.epoch))-1)<1e-12);
+  if(d.kind!=="inline"||d.type!=="ori")throw Error("Expected attitude");
+  assert.ok(d.records.every(r=>r.angularVelocity.every(v=>v===0)));
+ }
+});
+
+test("reviewed Psyche quat windows retain both sides but reject conflicting duplicate epoch",async()=>{
+ const id="sc_psyche",meta=JSON.parse(await readFile(new URL("./fixtures/quat/"+id+".json",import.meta.url),"utf8"));
+ const definition=new Uint8Array(await readFile(new URL("./fixtures/quat/"+id+"-def.dyn",import.meta.url)));
+ const child=new Uint8Array(await readFile(new URL("./fixtures/quat/"+id+"-"+meta.child+".dyn",import.meta.url)));
+ const raw=new Uint8Array(8+child.length);raw.set(definition.slice(0,8));raw.set(child,8);
+ assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+ const v=new DataView(child.buffer,child.byteOffset,child.byteLength);
+ const q=(i:number)=>Array.from({length:4},(_,j)=>v.getFloat64(5+i*40+8+j*8,true));
+ const a=q(3),b=q(4),dot=Math.abs(a.reduce((sum,n,i)=>sum+n*b[i],0)/(Math.hypot(...a)*Math.hypot(...b)));
+ assert.ok(1-dot>1e-12,"duplicate attitudes are not sign-equivalent");
+ const fetcher:typeof fetch=async input=>new Response(String(input).endsWith("/def.dyn")?definition:child);
+ const later=decodeDyn(await fetchSolarDyn(id,846756077,signal(),fetcher,"ori"));assert.equal(later.type,"ori");
+ await assert.rejects(()=>fetchSolarDyn(id,846755939.6190909,signal(),fetcher,"ori"),/Ambiguous/);
+ const changed=child.slice();changed[20]^=1;
+ await assert.rejects(()=>fetchSolarDyn(id,meta.epoch,signal(),async input=>new Response(String(input).endsWith("/def.dyn")?definition:changed),"ori"),/sample times must increase/);
+});

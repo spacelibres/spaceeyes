@@ -16,6 +16,7 @@ export type DynOriRecord = Readonly<{
   angularVelocity: DynVector;
 }>;
 type Common = Readonly<{
+  sourceType?: "quat";
   version: 1 | 2;
   paddingWidth: number;
   coverage: DynInterval;
@@ -101,10 +102,11 @@ export function decodeDyn(
       (typeText === "orb" ||
         typeText === "ori" ||
         typeText === "pos" ||
-        typeText === "lin"),
+        typeText === "lin" ||
+        typeText === "quat"),
     "unsupported type",
   );
-  const type = typeText;
+  const type = typeText === "quat" ? "ori" : typeText;
   let paddingWidth = version === 2 ? u8() : 0;
   const gravitationalParameter1 = type === "orb" ? f64() : undefined;
   const gravitationalParameter2 = type === "orb" ? f64() : undefined;
@@ -121,7 +123,7 @@ export function decodeDyn(
           ? 56
           : type === "lin"
             ? 32
-            : 64
+            : typeText === "quat" ? 40 : 64
       : version === 1
         ? 16
         : 8;
@@ -133,6 +135,7 @@ export function decodeDyn(
     Object.freeze({ start, end });
   const header = {
     version,
+    ...(typeText === "quat" ? {sourceType:"quat" as const} : {}),
     gravitationalParameter1,
     gravitationalParameter2,
   } as const;
@@ -226,7 +229,7 @@ export function decodeDyn(
       Object.freeze({
         time: time(),
         orientation: quaternion(),
-        angularVelocity: vector(),
+        angularVelocity: typeText === "quat" ? Object.freeze([0,0,0] as const) : vector(),
       }),
     );
   return Object.freeze({

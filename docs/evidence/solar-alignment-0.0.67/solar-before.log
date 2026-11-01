@@ -1,0 +1,15 @@
+✖ solar overview retains heliocentric spacecraft after returning from a local family (5003.0892ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5346.0151
+
+✖ failing tests:
+
+test at web\integration\solar-workspace.test.ts:2020:1
+✖ solar overview retains heliocentric spacecraft after returning from a local family (5003.0892ms)
+  'test timed out after 5000ms'

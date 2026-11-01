@@ -628,7 +628,10 @@ export async function createWorkspace(
         "planet"
           ? state.selected
           : parentAt(state.selected, epoch);
-      const systems = new Set([state.selected, system].filter(Boolean));
+      addSystemChildren(ids, epoch, [state.selected, system]);
+    } else addSystemChildren(ids, epoch, ["sun"]);
+    function addSystemChildren(ids: Set<string>, epoch: number, roots: (string|null)[]) {
+      const systems = new Set(roots.filter(Boolean));
       for (const body of eyesCatalog
         .filter(
           (body) =>
@@ -682,6 +685,31 @@ export async function createWorkspace(
       ? (solarCatalog.find((body) => body.id === id)?.kind === "spacecraft" ? 512 : 256)
       : Math.min(256, Math.floor((16384 - 1024) / Math.max(1, count)));
   };
+  const historyLoads = new Set<string>();
+  const historyRetry = new Map<string, number>();
+  const scheduleHistory = (id: string) => {
+    const ownedRevision = revision;
+    const key = `${ownedRevision}:${id}`;
+    if (id !== state.selected || !state.trails || historyLoads.has(key) || Date.now() < (historyRetry.get(id) ?? 0)) return;
+    historyLoads.add(key);
+    void data.prepareTrailHistory(id, core.epoch()).then(updated => {
+      if (updated && !closed && ownedRevision === revision && state.selected === id && state.trails) pendingTrajectories.add(id);
+    }).catch(error => {
+      if (!closed && ownedRevision === revision && state.selected === id && state.trails) {
+        historyRetry.set(id, Date.now() + 30000);
+        state.error = `历史轨迹准备未完成：${String(error)}`;
+        emit();
+      }
+    }).finally(() => historyLoads.delete(key));
+  };
+  const orientationLoads = new Set<string>();
+  const orientationRetry = new Map<string, number>();
+  const refreshSelectedOrientation = (epoch: number) => {
+    const id = state.selected;
+    if (!id || orientationLoads.has(id) || Date.now() < (orientationRetry.get(id) ?? 0) || !data.needsOrientationRefresh(id, epoch)) return;
+    orientationLoads.add(id);
+    void data.refreshOrientation(id, epoch).catch(() => orientationRetry.set(id, Date.now() + 30000)).finally(() => orientationLoads.delete(id));
+  };
   const refreshTrajectory = (id: string) => {
     if (!data.hasTrajectory(id, core.epoch())) {
       sdk.visual.trajectory(id, []);
@@ -726,6 +754,7 @@ export async function createWorkspace(
     pendingTrajectories.delete(id);
     trajectoryCounts.set(id, budget);
     trajectoryDetails.set(id, state.selected === id);
+    if (isTrail) scheduleHistory(id);
   };
   const publishJoints = () => {
     for (const body of solarCatalog) {
@@ -918,6 +947,22 @@ export async function createWorkspace(
   const systemMembers = (target: string, epoch: number) => sceneIds(epoch).filter(id =>
     id === target || (parentAt(id, epoch) === target && data.status(id)?.status === "ready" &&
       solarCatalog.find(body => body.id === id)?.kind === (target === "sun" ? "planet" : "moon")));
+  const loadOverviewFamily = (ownedRevision = revision) => {
+    const epoch = core.epoch();
+    const ids = sceneIds(epoch);
+    void data.load(ids.filter(id => !baseSolarIds.includes(id)), epoch, []).then(() => {
+      if (closed || revision !== ownedRevision || state.selected) return;
+      data.publishAt(core.epoch());
+      configure();
+      refreshDataWarning();
+      emit();
+    }).catch(error => {
+      if (!closed && revision === ownedRevision && !state.selected) {
+        state.error = String(error);
+        emit();
+      }
+    });
+  };
   const criticalDependencies = (epoch: number) => {
     const required = new Set<string>(state.selected ? [state.selected] : ["sun"]);
     if (state.followId) required.add(state.followId);
@@ -962,9 +1007,11 @@ export async function createWorkspace(
           }
           const critical = criticalDependencies(epoch);
           const family = state.observationMode === "system" ? primaryMoons(state.selected, epoch) : [];
-          const primaryIds = prioritizeSelection && state.selected
-            ? ids.filter((id) => critical.has(id) || family.includes(id))
-            : ids;
+          const primaryIds = !state.selected
+            ? ids.filter(id => baseSolarIds.includes(id))
+            : prioritizeSelection
+              ? ids.filter((id) => critical.has(id) || family.includes(id))
+              : ids;
           await data.load(primaryIds, epoch, [...orientationIds]);
           assertLive();
           if (current !== revision) {
@@ -1025,7 +1072,7 @@ export async function createWorkspace(
             state.phase = "所选对象数据不可用，已返回太阳系总览并暂停";
           refreshDataWarning();
           validateFollow();
-          if (prioritizeSelection && !selectedUnavailable) {
+          if (!selectedUnavailable && primaryIds.length < ids.length) {
             const remaining = ids.filter((id) => !primaryIds.includes(id));
             void data.load(remaining, epoch, [...orientationIds]).then(() => {
               if (closed || signal.aborted || current !== revision) return;
@@ -1395,7 +1442,7 @@ export async function createWorkspace(
       state.observationMode = "nearby";
       state.followId = undefined;
       state.selected = "";
-      data.retain(baseSolarIds);
+      data.retain(sceneIds(core.epoch()));
       refreshDataWarning();
       configure();
       sdk.camera.view("overview");
@@ -1403,11 +1450,12 @@ export async function createWorkspace(
       state.phase = "太阳系总览";
       refreshDataWarning();
       emit();
+      if (!state.busy) loadOverviewFamily(ownedRevision);
       if (state.busy)
         void queue
           .finally(() => {
             if (closed || revision !== ownedRevision) return;
-            data.retain(baseSolarIds);
+            data.retain(sceneIds(core.epoch()));
             refreshDataWarning();
             data.publishAt(core.epoch());
             configure();
@@ -1416,6 +1464,7 @@ export async function createWorkspace(
             state.phase = "太阳系总览";
             refreshDataWarning();
             emit();
+            loadOverviewFamily(ownedRevision);
           })
           .catch((error) => {
             if (!closed && revision === ownedRevision) {
@@ -1499,6 +1548,8 @@ export async function createWorkspace(
     trails(enabled) {
       assertLive();
       state.trails = enabled;
+      if (!enabled) data.clearTrailHistory();
+      else if (state.selected) scheduleHistory(state.selected);
       configure();
       emit();
     },
@@ -1609,11 +1660,12 @@ export async function createWorkspace(
             !state.busy
           ) {
             state.selected = "";
-            data.retain(baseSolarIds);
+            data.retain(sceneIds(core.epoch()));
             configure();
             state.view = "orbit";
             state.phase = "已拉远至太阳系总览";
             emit();
+            loadOverviewFamily();
           }
           const epoch = core.epoch();
           const required = criticalDependencies(epoch);
@@ -1628,6 +1680,7 @@ export async function createWorkspace(
               emit();
             });
           } else {
+            refreshSelectedOrientation(epoch);
             data.publishAt(epoch);
             refreshObservationContext();
             // Publish first so expired secondary objects disappear before loading.

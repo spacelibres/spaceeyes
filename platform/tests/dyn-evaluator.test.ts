@@ -55,3 +55,8 @@ test("Eyes velocity blends analytic endpoint velocities and rejects uncovered ep
   }
   assert.throws(()=>evaluateOrbVelocity(d,11),/coverage/);
 });
+
+test("normalized quat samples evaluate as shortest-path spherical interpolation",()=>{
+ const d:DecodedDyn={version:2,paddingWidth:3,type:"ori",sourceType:"quat",kind:"inline",coverage:{start:0,end:10},records:[{time:0,orientation:[1,0,0,0],angularVelocity:[0,0,0]},{time:10,orientation:[0,0,0,1],angularVelocity:[0,0,0]}]};
+ const q=evaluateOri(d,5);assert.ok(Math.abs(q[0]-Math.SQRT1_2)<1e-12);assert.ok(Math.abs(q[3]-Math.SQRT1_2)<1e-12);
+});
