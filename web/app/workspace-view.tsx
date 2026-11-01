@@ -124,16 +124,13 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   const [timeExpanded, setTimeExpanded] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
-  const [settingsExpanded, setSettingsExpanded] = useState(true);
+  const [settingsCategory, setSettingsCategory] = useState("观察");
   const zoomIntent = useRef(p.onZoom);
   zoomIntent.current = p.onZoom;
   const zoomButtons = useRef(
     new ZoomButtonGesture((delta) => zoomIntent.current?.(delta)),
   );
   useEffect(() => {
-    setSettingsExpanded(
-      !window.matchMedia("(max-width: 760px), (max-height: 440px)").matches,
-    );
     const stop = () => zoomButtons.current.cancel();
     const visibility = () => {
       if (document.hidden) stop();
@@ -259,9 +256,14 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     },
     [p.active],
   );
-  const [panel, setPanel] = useState<"catalog" | "info" | "time" | null>(null);
+  const [panel, setPanel] = useState<
+    "catalog" | "info" | "time" | "settings" | null
+  >(null);
   useEffect(() => {
-    if (panel && document.activeElement !== document.getElementById("spaceeyes-canvas"))
+    if (
+      panel &&
+      document.activeElement !== document.getElementById("spaceeyes-canvas")
+    )
       document
         .getElementById(`${panel}-panel`)
         ?.querySelector<HTMLButtonElement>(".close-panel")
@@ -279,7 +281,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     setPanel("info");
     p.onSelect(id);
   };
-  const togglePanel = (next: "catalog" | "info" | "time") => {
+  const togglePanel = (next: "catalog" | "info" | "time" | "settings") => {
     pickRevision.current++;
     setPanel(panel === next ? null : next);
   };
@@ -288,15 +290,53 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   const [category, setCategory] = useState("all");
   const canObserve =
     p.active && Boolean(object) && p.dataStatus.startsWith("ready");
-  const performanceText=useMemo(()=>JSON.stringify(p.performance??{},null,2),[p.performance]);
-  const projector=useRef(new CatalogProjection<CatalogEntry>());
-  const projection=projector.current.project(p.catalog,p.epoch,p.search,category,p.selected);
-  const matches=projection.matches;
-  const displayName=(entry:CatalogEntry)=>projection.labels.get(entry.id)??entry.name;
-  const selectIntent=useRef(select);
-  selectIntent.current=select;
-  const followOptions=useMemo(()=>projection.follow.map(o=><option key={o.id} value={o.id}>{projection.labels.get(o.id)??o.name}</option>),[projection.follow,projection.labels]);
-  const catalogRows=useMemo(()=>panel==='catalog'?matches.map(o=><button key={o.id} aria-pressed={p.selected===o.id} disabled={!p.active} className={o.parentId?'catalog-object child':'catalog-object'} onClick={()=>selectIntent.current(o.id)}><span>{projection.labels.get(o.id)??o.name}</span><small>{o.id}</small></button>):null,[panel,matches,p.selected,p.active,projection.labels]);
+  const performanceText = useMemo(
+    () =>
+      panel === "settings" && settingsCategory === "开发诊断"
+        ? JSON.stringify(p.performance ?? {}, null, 2)
+        : "",
+    [p.performance, panel, settingsCategory],
+  );
+  const projector = useRef(new CatalogProjection<CatalogEntry>());
+  const projection = projector.current.project(
+    p.catalog,
+    p.epoch,
+    p.search,
+    category,
+    p.selected,
+  );
+  const matches = projection.matches;
+  const displayName = (entry: CatalogEntry) =>
+    projection.labels.get(entry.id) ?? entry.name;
+  const selectIntent = useRef(select);
+  selectIntent.current = select;
+  const followOptions = useMemo(
+    () =>
+      projection.follow.map((o) => (
+        <option key={o.id} value={o.id}>
+          {projection.labels.get(o.id) ?? o.name}
+        </option>
+      )),
+    [projection.follow, projection.labels],
+  );
+  const catalogRows = useMemo(
+    () =>
+      panel === "catalog"
+        ? matches.map((o) => (
+            <button
+              key={o.id}
+              aria-pressed={p.selected === o.id}
+              disabled={!p.active}
+              className={o.parentId ? "catalog-object child" : "catalog-object"}
+              onClick={() => selectIntent.current(o.id)}
+            >
+              <span>{projection.labels.get(o.id) ?? o.name}</span>
+              <small>{o.id}</small>
+            </button>
+          ))
+        : null,
+    [panel, matches, p.selected, p.active, projection.labels],
+  );
   return (
     <main
       ref={screen}
@@ -343,7 +383,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             aria-controls="info-panel"
             onClick={() => togglePanel("info")}
           >
-            对象与图层
+            对象信息
           </button>
           <button disabled={!p.active} onClick={p.onOverview}>
             太阳系总览
@@ -366,7 +406,14 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           >
             分享场景
           </button>
-          <a href="/diagnostics">数据诊断</a>
+          <button
+            data-panel="settings"
+            aria-controls="settings-panel"
+            aria-expanded={panel === "settings"}
+            onClick={() => togglePanel("settings")}
+          >
+            设置
+          </button>
         </div>
       </header>
       {sharing && (
@@ -402,23 +449,9 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
       )}
       <div className="workspace-status" role="status">
         <span className={p.active ? "status-dot live" : "status-dot"} />
-        <span className="phase-text">{p.phase}</span>
-        {p.active && p.planetPreparation && (
-          <small role="status" aria-label="八大行星资源准备">
-            行星资源 {p.planetPreparation.ready}/{p.planetPreparation.total}
-            {p.planetPreparation.failed > 0
-              ? ` · ${p.planetPreparation.failed}项失败`
-              : p.planetPreparation.ready === p.planetPreparation.total
-                ? " · 已就绪"
-                : " · 初始化预载中"}
-          </small>
-        )}
-        {p.active && p.startupMs !== undefined && (
-          <small>
-            本次初始化 {(p.startupMs / 1000).toFixed(2)}{" "}
-            秒（不含首帧及贴图就绪）
-          </small>
-        )}
+        <span className="phase-text">
+          {p.busy ? "正在加载场景" : p.active ? "三维工作区" : "准备探索太阳系"}
+        </span>
         <button onClick={p.busy || p.active ? p.onStop : p.onStart}>
           {p.busy ? "取消加载" : p.active ? "退出工作区" : "进入工作区"}
         </button>
@@ -470,9 +503,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           >
             ↗ 返回太阳系总览
           </button>
-          <nav aria-label="太阳系对象">
-            {catalogRows}
-          </nav>
+          <nav aria-label="太阳系对象">{catalogRows}</nav>
           {!matches.length && <p>没有匹配对象。尝试太阳、地球或月球。</p>}
         </aside>
         <section className="viewport" aria-label="Bevy太阳系三维画布">
@@ -576,9 +607,10 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               !p.busy &&
               !p.dataStatus.startsWith("ready")
                 ? `${displayName(object)} · 无可用数据，当前显示太阳系总览`
-                : (object ? displayName(object) : "太阳系总览")}
+                : object
+                  ? displayName(object)
+                  : "太阳系总览"}
             </span>
-            <span>ICRF · {object ? "km" : "AU"}</span>
           </div>
           {!p.active && (
             <div className="viewport-empty">
@@ -604,133 +636,37 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </div>
           )}
           <div className="view-controls" ref={observationTools}>
-            <div
-              id="observation-controls"
-              className="observation-controls"
-              hidden={!settingsExpanded}
-            >
-              <label>
-                光照
-                <select
-                  disabled={!p.active || p.busy}
-                  value={p.lighting ?? "natural"}
-                  onChange={(e) =>
-                    p.onLighting?.(
-                      e.target.value as "natural" | "shadow" | "flood",
-                    )
-                  }
-                >
-                  <option value="natural">自然光</option>
-                  <option value="shadow">暗面补光</option>
-                  <option value="flood">强补光</option>
-                </select>
-              </label>
-              <button
-                className="zoom-button"
-                disabled={!p.active}
-                aria-label="放大"
-                {...zoomButtonProps(-1)}
-              >
-                +
-              </button>
-              <button
-                className="zoom-button"
-                disabled={!p.active}
-                aria-label="缩小"
-                {...zoomButtonProps(1)}
-              >
-                −
-              </button>
-              <label>
-                观察模式
-                <select
-                  disabled={!canObserve || p.busy}
-                  value={p.observationMode ?? "nearby"}
-                  onChange={(e) =>
-                    p.onObservation?.(
-                      e.target.value as "nearby" | "system" | "follow",
-                      p.followId,
-                    )
-                  }
-                >
-                  <option value="nearby">Nearby · 近景</option>
-                  <option value="system">System · 系统</option>
-                  <option value="follow">Follow · 跟随</option>
-                </select>
-              </label>
-              <label>
-                跟随参考
-                <select
-                  disabled={!canObserve || p.busy}
-                  value={p.followId ?? ""}
-                  onChange={(e) => p.onFollow(e.target.value)}
-                >
-                  <option value="">所属父体</option>
-                  {followOptions}
-                </select>
-              </label>
-              <label>
-                观测视场 {p.fovDegrees}°
-                <input
-                  aria-label="观测视场（度）"
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="1"
-                  disabled={!p.active || p.busy}
-                  value={p.fovDegrees}
-                  onChange={(e) => p.onFov(Number(e.target.value))}
-                />
-              </label>
-              <label>
-                观察视角
-                <select
-                  disabled={!p.active || p.busy}
-                  value={p.view}
-                  onChange={(e) => p.onView(e.target.value)}
-                >
-                  <option value="orbit">自由环绕</option>
-                  <option value="top">俯视</option>
-                  <option value="front">正视</option>
-                  <option value="side">侧视</option>
-                </select>
-              </label>
-            </div>
             <button
-              className="settings-toggle"
+              className="zoom-button"
               disabled={!p.active}
-              aria-label={settingsExpanded ? "收起观察设置" : "展开观察设置"}
-              title={settingsExpanded ? "收起观察设置" : "展开观察设置"}
-              aria-expanded={settingsExpanded}
-              aria-controls="observation-controls"
-              onClick={() => {
-                zoomButtons.current.cancel();
-                setSettingsExpanded((value) => !value);
-              }}
+              aria-label="放大"
+              {...zoomButtonProps(-1)}
             >
-              <svg
-                viewBox="0 0 24 24"
-                width="20"
-                height="20"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M5 3v18M12 3v18M19 3v18" />
-                <path d="M2 8h6M9 16h6M16 6h6" strokeWidth="3" />
-              </svg>
+              +
+            </button>
+            <button
+              className="zoom-button"
+              disabled={!p.active}
+              aria-label="缩小"
+              {...zoomButtonProps(1)}
+            >
+              −
+            </button>
+            <button
+              data-panel="settings"
+              aria-controls="settings-panel"
+              aria-expanded={panel === "settings"}
+              onClick={() => togglePanel("settings")}
+            >
+              设置
             </button>
           </div>
-          <span className="caption">
-            点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
-          </span>
         </section>
         <aside
           id="info-panel"
           className="object-details tool-panel"
           hidden={panel !== "info"}
-          aria-label="对象与图层面板"
+          aria-label="对象信息面板"
         >
           <button
             className="close-panel"
@@ -741,7 +677,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           </button>
           <p className="eyebrow">对象信息</p>
           <h2>{object ? displayName(object) : "太阳系"}</h2>
-          <p className="metadata">{object?.id ?? "SOLAR SYSTEM"}</p>
+
           <div className="target-actions">
             <button disabled={!canObserve || p.busy} onClick={p.onFocus}>
               聚焦
@@ -754,32 +690,6 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             </button>
           </div>
           <dl>
-            <dt>数据状态</dt>
-            <dd>{p.dataStatus}</dd>
-            <dt>姿态来源与状态</dt>
-            <dd>{p.attitude ?? "尚未核验姿态来源"}</dd>
-            {p.articulation && (
-              <>
-                <dt>骨骼与太阳翼</dt>
-                <dd>{p.articulation}</dd>
-              </>
-            )}
-            <dt>科学来源</dt>
-            <dd>{p.source}</dd>
-            {p.selected === "sun" && (
-              <>
-                <dt>太阳风模型</dt>
-                <dd>
-                  Parker 等温跨声速模型 ·{" "}
-                  {p.stellarSettings?.temperatureMK ?? 1.5} MK、1 AU 密度{" "}
-                  {p.stellarSettings?.densityCm3 ?? 5} cm⁻³
-                  为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整
-                  MHD。
-                </dd>
-              </>
-            )}
-            <dt>有效覆盖 · J2000 TDB 秒</dt>
-            <dd>{p.coverage}</dd>
             {object && (
               <>
                 <dt>
@@ -816,180 +726,413 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 ))}
             </section>
           )}
-          {p.selected === "sun" && p.onStellar && (
-            <SolarTuningPanel
-              active={p.active && !p.busy}
-              onApply={p.onStellar}
-              initial={p.stellarSettings}
-            />
-          )}
-          <h3>显示图层</h3>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              disabled={!p.active || p.busy}
-              checked={p.moons ?? true}
-              onChange={(e) =>
-                p.onGroups?.(e.target.checked, p.spacecraft ?? true)
-              }
-            />
-            天然卫星
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              disabled={!p.active || p.busy}
-              checked={p.spacecraft ?? true}
-              onChange={(e) => p.onGroups?.(p.moons ?? true, e.target.checked)}
-            />
-            人造卫星与飞船
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={p.galaxy.enabled}
-              disabled={!p.active}
-              onChange={p.onGalaxy}
-            />
-            银河全景
-          </label>
-          <p className="muted" role="status" aria-label="银河加载状态">
-            {!p.galaxy.enabled
-              ? "银河已关闭"
-              : p.galaxy.phase === "ready"
-                ? "NASA 银河全景已就绪"
-                : p.galaxy.phase === "failed"
-                  ? "银河资源暂不可用"
-                  : "正在加载 NASA 银河全景"}
-          </p>
-          {p.galaxy.phase === "failed" && (
-            <div>
-              <p>{p.galaxy.detail}</p>
-              <button disabled={!p.active} onClick={p.onRetryGalaxy}>
-                重试银河
-              </button>
-            </div>
-          )}
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={p.starfield.enabled}
-              disabled={!p.active}
-              onChange={p.onStarfield}
-            />
-            背景星空
-          </label>
-          <p className="muted" role="status" aria-label="背景星空状态">
-            {!p.starfield.enabled
-              ? "星空已关闭"
-              : `${p.starfield.loading ? "星空加载中" : "星空数据"}：${p.starfield.readyLayers}/${p.starfield.totalLayers} 层 · ${p.starfield.pointCount.toLocaleString()} 点`}
-          </p>
-          {p.starfield.error && (
-            <div role="alert">
-              <p>星空部分资源未就绪：{p.starfield.error}</p>
-              <button
-                disabled={!p.active || p.starfield.loading}
-                onClick={p.onRetryStarfield}
+        </aside>
+        <aside
+          id="settings-panel"
+          className="workspace-settings tool-panel"
+          hidden={panel !== "settings"}
+          aria-label="设置面板"
+        >
+          <button
+            className="close-panel"
+            aria-label="关闭设置"
+            onClick={closePanel}
+          >
+            ×
+          </button>
+          <h2>设置</h2>
+          <div className="settings-tabs" role="tablist" aria-label="设置分类">
+            {["观察", "图层", "太阳特效", "数据与来源", "开发诊断"].map(
+              (category) => (
+                <button
+                  key={category}
+                  id={`settings-tab-${category}`}
+                  role="tab"
+                  tabIndex={settingsCategory === category ? 0 : -1}
+                  onKeyDown={(event) => {
+                    const categories = [
+                      "观察",
+                      "图层",
+                      "太阳特效",
+                      "数据与来源",
+                      "开发诊断",
+                    ];
+                    const index = categories.indexOf(category);
+                    const next =
+                      event.key === "ArrowRight"
+                        ? (index + 1) % categories.length
+                        : event.key === "ArrowLeft"
+                          ? (index + categories.length - 1) % categories.length
+                          : event.key === "Home"
+                            ? 0
+                            : event.key === "End"
+                              ? categories.length - 1
+                              : -1;
+                    if (next >= 0) {
+                      event.preventDefault();
+                      setSettingsCategory(categories[next]);
+                      document
+                        .getElementById(`settings-tab-${categories[next]}`)
+                        ?.focus();
+                    }
+                  }}
+                  aria-selected={settingsCategory === category}
+                  aria-controls={`settings-content-${category}`}
+                  onClick={() => setSettingsCategory(category)}
+                >
+                  {category}
+                </button>
+              ),
+            )}
+          </div>
+          <section
+            role="tabpanel"
+            id="settings-content-观察"
+            aria-labelledby="settings-tab-观察"
+            hidden={settingsCategory !== "观察"}
+          >
+            <label>
+              光照
+              <select
+                disabled={!p.active || p.busy}
+                value={p.lighting ?? "natural"}
+                onChange={(e) =>
+                  p.onLighting?.(
+                    e.target.value as "natural" | "shadow" | "flood",
+                  )
+                }
               >
-                重试星空
-              </button>
-            </div>
-          )}
-          <details className="muted">
-            <summary>场景与深空数据诊断</summary>
-            <details>
-              <summary>帧预算与轨迹性能</summary>
-              <pre aria-label="帧预算诊断">{performanceText}</pre>
-            </details>
-            <details>
-              <summary>相机只读诊断</summary>
-              <pre>
-                {p.cameraDebug
-                  ? JSON.stringify(p.cameraDebug, null, 2)
-                  : "渲染器尚未提供相机诊断"}
-              </pre>
-            </details>
-            <dl aria-label="DYN缓存诊断">
-              <dt>缓存记录 / 上限</dt>
-              <dd>
-                {p.dataCache?.records ?? 0} /{" "}
-                {p.dataCache?.maxRecords ?? 1000000}
-              </dd>
-              <dt>位置 / 姿态缓存项</dt>
-              <dd>
-                {p.dataCache?.positionEntries ?? 0} /{" "}
-                {p.dataCache?.orientationEntries ?? 0}
-              </dd>
-              <dt>来源项</dt>
-              <dd>{p.dataCache?.provenance ?? 0}</dd>
-            </dl>
-            <p className="muted">
-              统计解码记录与缓存项数量，非 JavaScript 堆内存字节。
+                <option value="natural">自然光</option>
+                <option value="shadow">暗面补光</option>
+                <option value="flood">强补光</option>
+              </select>
+            </label>
+            <label>
+              观察模式
+              <select
+                disabled={!canObserve || p.busy}
+                value={p.observationMode ?? "nearby"}
+                onChange={(e) =>
+                  p.onObservation?.(
+                    e.target.value as "nearby" | "system" | "follow",
+                    p.followId,
+                  )
+                }
+              >
+                <option value="nearby">Nearby · 近景</option>
+                <option value="system">System · 系统</option>
+                <option value="follow">Follow · 跟随</option>
+              </select>
+            </label>
+            <label>
+              跟随参考
+              <select
+                disabled={!canObserve || p.busy}
+                value={p.followId ?? ""}
+                onChange={(e) => p.onFollow(e.target.value)}
+              >
+                <option value="">所属父体</option>
+                {followOptions}
+              </select>
+            </label>
+            <label>
+              观测视场 {p.fovDegrees}°
+              <input
+                aria-label="观测视场（度）"
+                type="range"
+                min="10"
+                max="100"
+                step="1"
+                disabled={!p.active || p.busy}
+                value={p.fovDegrees}
+                onChange={(e) => p.onFov(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              观察视角
+              <select
+                disabled={!p.active || p.busy}
+                value={p.view}
+                onChange={(e) => p.onView(e.target.value)}
+              >
+                <option value="orbit">自由环绕</option>
+                <option value="top">俯视</option>
+                <option value="front">正视</option>
+                <option value="side">侧视</option>
+              </select>
+            </label>
+            <p>点击天体或标签 · 拖动环绕 · 滚轮缩放；远景标记非真实尺寸。</p>
+          </section>
+          <section
+            role="tabpanel"
+            id="settings-content-图层"
+            aria-labelledby="settings-tab-图层"
+            hidden={settingsCategory !== "图层"}
+          >
+            <h3>显示图层</h3>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                disabled={!p.active || p.busy}
+                checked={p.moons ?? true}
+                onChange={(e) =>
+                  p.onGroups?.(e.target.checked, p.spacecraft ?? true)
+                }
+              />
+              天然卫星
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                disabled={!p.active || p.busy}
+                checked={p.spacecraft ?? true}
+                onChange={(e) =>
+                  p.onGroups?.(p.moons ?? true, e.target.checked)
+                }
+              />
+              人造卫星与飞船
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={p.galaxy.enabled}
+                disabled={!p.active}
+                onChange={p.onGalaxy}
+              />
+              银河全景
+            </label>
+            <p className="muted" role="status" aria-label="银河加载状态">
+              {!p.galaxy.enabled
+                ? "银河已关闭"
+                : p.galaxy.phase === "ready"
+                  ? "NASA 银河全景已就绪"
+                  : p.galaxy.phase === "failed"
+                    ? "银河资源暂不可用"
+                    : "正在加载 NASA 银河全景"}
             </p>
-            <dl aria-label="深空资源诊断">
-              <dt>目标 / 就绪 / 当前层级</dt>
-              <dd>
-                {[p.galaxy.desiredLod, p.galaxy.readyLod, p.galaxy.currentLod]
-                  .map((v) => (v === undefined || v < 0 ? "—" : String(v + 1)))
-                  .join(" / ")}
-              </dd>
-              <dt>过渡进度</dt>
-              <dd>
-                {p.galaxy.blend === undefined
-                  ? "—"
-                  : `${Math.round(p.galaxy.blend * 100)}%`}
-              </dd>
-              <dt>已载入瓦片</dt>
-              <dd>{p.galaxy.loadedTiles ?? "—"}</dd>
-              <dt>背景纹理显存</dt>
-              <dd>
-                {p.galaxy.gpuBytes === undefined
-                  ? "—"
-                  : `${(p.galaxy.gpuBytes / 1048576).toFixed(2)} MiB / 64 MiB`}
-              </dd>
-              <dt>资源错误</dt>
-              <dd>{p.galaxy.detail || p.starfield.error || "无"}</dd>
+            {p.galaxy.phase === "failed" && (
+              <div>
+                <p>{p.galaxy.detail}</p>
+                <button disabled={!p.active} onClick={p.onRetryGalaxy}>
+                  重试银河
+                </button>
+              </div>
+            )}
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={p.starfield.enabled}
+                disabled={!p.active}
+                onChange={p.onStarfield}
+              />
+              背景星空
+            </label>
+            <p className="muted" role="status" aria-label="背景星空状态">
+              {!p.starfield.enabled
+                ? "星空已关闭"
+                : `${p.starfield.loading ? "星空加载中" : "星空数据"}：${p.starfield.readyLayers}/${p.starfield.totalLayers} 层 · ${p.starfield.pointCount.toLocaleString()} 点`}
+            </p>
+            {p.starfield.error && (
+              <div role="alert">
+                <p>星空部分资源未就绪：{p.starfield.error}</p>
+                <button
+                  disabled={!p.active || p.starfield.loading}
+                  onClick={p.onRetryStarfield}
+                >
+                  重试星空
+                </button>
+              </div>
+            )}
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={p.labels}
+                disabled={!p.active}
+                onChange={p.onLabels}
+              />
+              对象标签
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={p.trajectories}
+                disabled={!p.active}
+                onChange={p.onTrajectories}
+              />
+              轨道线
+            </label>
+            <label className="toggle">
+              <input
+                type="checkbox"
+                checked={p.trails}
+                disabled={!p.active}
+                onChange={p.onTrails}
+              />
+              卫星拖尾
+            </label>
+            <p className="muted">
+              行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+            </p>
+          </section>
+          <section
+            role="tabpanel"
+            id="settings-content-太阳特效"
+            aria-labelledby="settings-tab-太阳特效"
+            hidden={settingsCategory !== "太阳特效"}
+          >
+            {p.selected === "sun" && p.onStellar && (
+              <SolarTuningPanel
+                active={p.active && !p.busy}
+                onApply={p.onStellar}
+                initial={p.stellarSettings}
+              />
+            )}
+            {p.selected !== "sun" && (
+              <button disabled={!p.active} onClick={() => p.onSelect("sun")}>
+                观察太阳并调参
+              </button>
+            )}
+          </section>
+          <section
+            role="tabpanel"
+            id="settings-content-数据与来源"
+            aria-labelledby="settings-tab-数据与来源"
+            hidden={settingsCategory !== "数据与来源"}
+          >
+            <p>{p.phase}</p>{" "}
+            {p.active && p.planetPreparation && (
+              <small role="status" aria-label="八大行星资源准备">
+                行星资源 {p.planetPreparation.ready}/{p.planetPreparation.total}
+                {p.planetPreparation.failed > 0
+                  ? ` · ${p.planetPreparation.failed}项失败`
+                  : p.planetPreparation.ready === p.planetPreparation.total
+                    ? " · 已就绪"
+                    : " · 初始化预载中"}
+              </small>
+            )}
+            {p.active && p.startupMs !== undefined && (
+              <small>
+                本次初始化 {(p.startupMs / 1000).toFixed(2)}{" "}
+                秒（不含首帧及贴图就绪）
+              </small>
+            )}
+            <dl>
+              <dt>对象标识</dt>
+              <dd>{object?.id ?? "SOLAR SYSTEM"}</dd> <dt>数据状态</dt>
+              <dd>{p.dataStatus}</dd>
+              <dt>姿态来源与状态</dt>
+              <dd>{p.attitude ?? "尚未核验姿态来源"}</dd>
+              {p.articulation && (
+                <>
+                  <dt>骨骼与太阳翼</dt>
+                  <dd>{p.articulation}</dd>
+                </>
+              )}
+              <dt>科学来源</dt>
+              <dd>{p.source}</dd>
+              {p.selected === "sun" && (
+                <>
+                  <dt>太阳风模型</dt>
+                  <dd>
+                    Parker 等温跨声速模型 ·{" "}
+                    {p.stellarSettings?.temperatureMK ?? 1.5} MK、1 AU 密度{" "}
+                    {p.stellarSettings?.densityCm3 ?? 5} cm⁻³
+                    为示例边界，非实时观测。外流按飞行时间压缩播放、亮度增强；表面与日珥尚非完整
+                    MHD。
+                  </dd>
+                </>
+              )}
+              <dt>有效覆盖 · J2000 TDB 秒</dt>
+              <dd>{p.coverage}</dd>
             </dl>
-          </details>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={p.labels}
-              disabled={!p.active}
-              onChange={p.onLabels}
-            />
-            对象标签
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={p.trajectories}
-              disabled={!p.active}
-              onChange={p.onTrajectories}
-            />
-            轨道线
-          </label>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={p.trails}
-              disabled={!p.active}
-              onChange={p.onTrails}
-            />
-            卫星拖尾
-          </label>
-          <p className="muted">
-            行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
-          </p>
+            <p>{p.epoch.toFixed(3)} J2000 TDB s · ICRF · km</p>{" "}
+            <label>
+              跳转到 TDB 秒
+              <input
+                value={p.jump}
+                onChange={(e) => p.onJumpInput(e.target.value)}
+                inputMode="decimal"
+              />
+            </label>
+            <button disabled={!p.active} onClick={p.onJump}>
+              跳转
+            </button>
+            {p.error && <p role="alert">{p.error}</p>}
+          </section>
+          <section
+            role="tabpanel"
+            id="settings-content-开发诊断"
+            aria-labelledby="settings-tab-开发诊断"
+            hidden={settingsCategory !== "开发诊断"}
+          >
+            <details className="muted">
+              <summary>场景与深空数据诊断</summary>
+              <details>
+                <summary>帧预算与轨迹性能</summary>
+                <pre aria-label="帧预算诊断">{performanceText}</pre>
+              </details>
+              <details>
+                <summary>相机只读诊断</summary>
+                <pre>
+                  {p.cameraDebug &&
+                  panel === "settings" &&
+                  settingsCategory === "开发诊断"
+                    ? JSON.stringify(p.cameraDebug, null, 2)
+                    : "渲染器尚未提供相机诊断"}
+                </pre>
+              </details>
+              <dl aria-label="DYN缓存诊断">
+                <dt>缓存记录 / 上限</dt>
+                <dd>
+                  {p.dataCache?.records ?? 0} /{" "}
+                  {p.dataCache?.maxRecords ?? 1000000}
+                </dd>
+                <dt>位置 / 姿态缓存项</dt>
+                <dd>
+                  {p.dataCache?.positionEntries ?? 0} /{" "}
+                  {p.dataCache?.orientationEntries ?? 0}
+                </dd>
+                <dt>来源项</dt>
+                <dd>{p.dataCache?.provenance ?? 0}</dd>
+              </dl>
+              <p className="muted">
+                统计解码记录与缓存项数量，非 JavaScript 堆内存字节。
+              </p>
+              <dl aria-label="深空资源诊断">
+                <dt>目标 / 就绪 / 当前层级</dt>
+                <dd>
+                  {[p.galaxy.desiredLod, p.galaxy.readyLod, p.galaxy.currentLod]
+                    .map((v) =>
+                      v === undefined || v < 0 ? "—" : String(v + 1),
+                    )
+                    .join(" / ")}
+                </dd>
+                <dt>过渡进度</dt>
+                <dd>
+                  {p.galaxy.blend === undefined
+                    ? "—"
+                    : `${Math.round(p.galaxy.blend * 100)}%`}
+                </dd>
+                <dt>已载入瓦片</dt>
+                <dd>{p.galaxy.loadedTiles ?? "—"}</dd>
+                <dt>背景纹理显存</dt>
+                <dd>
+                  {p.galaxy.gpuBytes === undefined
+                    ? "—"
+                    : `${(p.galaxy.gpuBytes / 1048576).toFixed(2)} MiB / 64 MiB`}
+                </dd>
+                <dt>资源错误</dt>
+                <dd>{p.galaxy.detail || p.starfield.error || "无"}</dd>
+              </dl>
+            </details>
+            <a href="/diagnostics">打开完整数据诊断</a>
+          </section>
         </aside>
       </div>
       <section className="timeline" aria-label="统一时间控制">
         <div>
           <p className="eyebrow">统一仿真时间</p>
           <output>{p.utc || "尚未设置时间"}</output>
-          <small className="time-diagnostic">
-            {p.epoch.toFixed(3)} J2000 TDB s
-          </small>
         </div>
         <div className="time-summary" aria-live="off">
           <span>{p.playing ? formatRate(Number(p.rate)) : "已暂停"}</span>
@@ -1083,17 +1226,6 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           <button disabled={!p.active || p.busy} onClick={p.onUtcJump}>
             跳转日期
           </button>
-          <label>
-            跳转到 TDB 秒
-            <input
-              value={p.jump}
-              onChange={(e) => p.onJumpInput(e.target.value)}
-              inputMode="decimal"
-            />
-          </label>
-          <button disabled={!p.active} onClick={p.onJump}>
-            跳转
-          </button>
         </div>
         <button disabled={!p.active} onClick={p.onNow}>
           当前时间
@@ -1105,14 +1237,17 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         </p>
       )}
       {p.error && (
-        <p className="error" role="alert">
-          {p.error}
-        </p>
+        <div className="error" role="alert">
+          <button
+            onClick={() => {
+              setSettingsCategory("数据与来源");
+              setPanel("settings");
+            }}
+          >
+            资源提示 · 在设置中查看详情
+          </button>
+        </div>
       )}
-      <footer>
-        真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU
-        效果分别核验
-      </footer>
     </main>
   );
 }

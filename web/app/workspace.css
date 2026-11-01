@@ -736,3 +736,65 @@
     max-height: calc(100dvh - 236px);
   }
 }
+
+/* Categorized settings keep engineering controls off the observation canvas. */
+.immersive .workspace-settings {
+  right: 24px;
+  width: min(440px, calc(100vw - 48px));
+  background: var(--overlay);
+  color: var(--surface);
+}
+.immersive .settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--muted);
+  margin-bottom: 16px;
+}
+.immersive .settings-tabs button {
+  background: var(--deep);
+  color: var(--surface);
+  border-color: var(--muted);
+}
+.immersive .settings-tabs [aria-selected="true"] {
+  background: var(--primaryOnLight);
+  border-color: var(--primaryOnDark);
+}
+.immersive .workspace-settings label:not(.toggle) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 14px 0;
+}
+.immersive .workspace-settings select,
+.immersive .workspace-settings input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+}
+.immersive .workspace-settings dt {
+  margin-top: 16px;
+}
+.immersive .workspace-settings dd {
+  margin-left: 0;
+  overflow-wrap: anywhere;
+}
+.immersive .workspace-settings pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.immersive .workspace-settings small {
+  display: block;
+  margin: 8px 0;
+}
+.immersive .workspace-settings .muted {
+  color: var(--surface);
+  opacity: 0.85;
+}
+@media (max-width: 760px) {
+  .immersive .workspace-settings {
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
+}

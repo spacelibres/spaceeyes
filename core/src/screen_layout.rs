@@ -1,4 +1,4 @@
-//! Stable object-attached labels; collisions suppress names rather than relocate them.
+//! Stable object-attached labels; overlapping names remain attached and visible.
 use bevy::prelude::*;
 use std::collections::{HashMap, HashSet};
 pub(crate) fn label_size(text: &str) -> Vec2 {
@@ -36,7 +36,6 @@ impl LabelLayout {
                 })
                 .then_with(|| a.0.cmp(&b.0))
         });
-        let mut boxes: Vec<(Vec2, Vec2)> = Vec::new();
         items
             .into_iter()
             .filter(|(id, text, anchor)| {
@@ -56,12 +55,6 @@ impl LabelLayout {
                 {
                     return false;
                 }
-                if boxes.iter().any(|(a, b)| {
-                    lo.x < b.x + 5. && hi.x + 5. > a.x && lo.y < b.y + 4. && hi.y + 4. > a.y
-                }) {
-                    return false;
-                }
-                boxes.push((lo, hi));
                 true
             })
             .collect()
@@ -88,7 +81,9 @@ mod tests {
                 &HashMap::new(),
                 &HashSet::new(),
             );
-            assert_eq!(result, vec![("9".into(), "BODY".into(), Vec2::splat(100.))]);
+            assert_eq!(result.len(), 200, "overlap must not suppress object names");
+            assert_eq!(result[0].0, "9");
+            assert!(result.iter().all(|item| item.2 == Vec2::splat(100.)));
         }
     }
     #[test]
@@ -111,7 +106,7 @@ mod tests {
 mod priority_tests {
     use super::*;
     #[test]
-    fn weight_then_depth_then_name_decides_collisions() {
+    fn weight_then_depth_then_name_orders_overlapping_labels() {
         let mut layout = LabelLayout::default();
         layout.priorities = HashMap::from([
             ("a".into(), (30, 1.)),
@@ -130,6 +125,12 @@ mod priority_tests {
             &HashMap::new(),
             &HashSet::new(),
         );
-        assert_eq!(result[0].0, "c");
+        assert_eq!(
+            result
+                .iter()
+                .map(|item| item.0.as_str())
+                .collect::<Vec<_>>(),
+            vec!["c", "d", "b", "a"]
+        );
     }
 }
