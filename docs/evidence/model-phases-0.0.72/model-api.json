@@ -1,0 +1,16 @@
+[
+  {
+    "key": "phase-0",
+    "status": 200,
+    "bytes": 2586308,
+    "etag": "\"14d3d396af77221db5c204ec4a674d3353530065ff049b28f9445194d2f0bd18\"",
+    "magic": "glTF"
+  },
+  {
+    "key": "phase-1",
+    "status": 200,
+    "bytes": 3856012,
+    "etag": "\"e0f5551a21b38e18976eaf66fe164d9a5f67bde5bda229d75bad578745345a16\"",
+    "magic": "glTF"
+  }
+]

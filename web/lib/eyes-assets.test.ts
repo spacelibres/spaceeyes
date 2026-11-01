@@ -5,6 +5,7 @@ import dependencies from "../../validation/eyes-dependencies.json" with { type: 
 import { tmpdir } from "node:os";
 import { join, dirname, resolve, basename } from "node:path";
 import { EyesAssetService } from "./eyes-assets.ts";
+import {eyesModelVariants} from "../../platform/eyes-model-phases.ts";
 test("asset service rejects unknown objects and paths before network and honors cancellation", async () => {
   let calls = 0;
   const cache = await mkdtemp(join(tmpdir(), "eyes-assets-"));
@@ -19,6 +20,8 @@ test("asset service rejects unknown objects and paths before network and honors 
     await assert.rejects(service.get("unknown-object", "model.glb"), /Unknown/);
     await assert.rejects(service.get("__proto__", "model.glb"), /Unknown/);
     await assert.rejects(service.get("sc_juno", "../secret"), /path/);
+    await assert.rejects(service.get("sc_jwst", "model-phase-999.glb"), /Unknown/);
+    await assert.rejects(service.get("sc_juno", "model-phase-0.glb"), /Unknown/);
     const controller = new AbortController();
     controller.abort();
     await assert.rejects(
@@ -31,6 +34,24 @@ test("asset service rejects unknown objects and paths before network and honors 
     assert.ok(basename(cache).startsWith("eyes-assets-"));
     await rm(cache, { recursive: true, force: true });
   }
+});
+
+test("phase resource paths resolve only reviewed model variants before any conversion",async()=>{
+ const cache=await mkdtemp(join(tmpdir(),"eyes-assets-phase-"));
+ const urls:string[]=[];
+ const service=new EyesAssetService({cacheDirectory:cache,fetch:async input=>{
+   urls.push(String(input));return new Response("source unavailable",{status:503});
+ }});
+ try {
+   const stowed=eyesModelVariants("sc_jwst").find(p=>p.model.url.includes("stowed"))!;
+   await assert.rejects(service.get("sc_jwst",`model-${stowed.key}.glb`),/HTTP 503/);
+   assert.equal(urls.length,1);
+   assert.equal(urls[0],"https://eyes.nasa.gov/assets/static/models/sc_jwst/webb_stowed.gltf");
+ }finally{
+   assert.equal(dirname(resolve(cache)),resolve(tmpdir()));
+   assert.ok(basename(cache).startsWith("eyes-assets-phase-"));
+   await rm(cache,{recursive:true,force:true});
+ }
 });
 
 test("changed dependency bytes are refused even when buffer lengths still match the glTF declaration", async () => {

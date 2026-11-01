@@ -1,6 +1,7 @@
 import type { SceneLinkState } from "../lib/scene-link.ts";
 import { StarfieldSource } from "../../platform/starfield-source.ts";
 import { solarWorkspaceSettings } from "../lib/solar-settings.ts";
+import {eyesModelPhase} from "../../platform/eyes-model-phases.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
@@ -215,6 +216,36 @@ test("coverage names update at scene entry, direct seek and reverse ticks withou
    assert.equal(last("sc_osiris_rex"),"OSIRIS-APEX");
    await app.seek(748838792);
    assert.equal(last("sc_osiris_rex"),"OSIRIS-REX");
+ }finally{await app.dispose();}
+});
+
+test("model phase resources switch on seek and playback without replacing unchanged visual revisions",async()=>{
+ const fixtures=harness();
+ const states:SolarSnapshot[]=[];
+ const app=await createWorkspace("#test",s=>states.push(s),new AbortController().signal,{
+   ...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori"))),
+ });
+ const modelCalls=(id:string)=>fixtures.visuals().filter(v=>v.id===id&&v.spec.kind==="model");
+ const expected=(id:string,t:number)=>`eyes:${id}:model:${eyesModelPhase(id,t)!.key}`;
+ try {
+   app.play(false,1);
+   const boundary=694937889.184;
+   await app.seek(boundary);await app.select("sc_jwst");
+   assert.equal(modelCalls("sc_jwst").at(-1)?.spec.assetId,expected("sc_jwst",boundary));
+   assert.ok(!states.at(-1)?.error);
+   fixtures.seekEpoch(boundary+1);fixtures.step(0);
+   assert.equal(modelCalls("sc_jwst").at(-1)?.spec.assetId,expected("sc_jwst",boundary+1));
+   const count=modelCalls("sc_jwst").length;
+   fixtures.step(100);fixtures.step(200);
+   assert.equal(modelCalls("sc_jwst").length,count,"stable phase must not reset model loading each frame");
+   await app.seek(boundary-1);
+   assert.equal(modelCalls("sc_jwst").at(-1)?.spec.assetId,expected("sc_jwst",boundary-1));
+   await app.seek(157212063);await app.select("sc_cassini");
+   const before=modelCalls("sc_cassini").at(-1)!.spec.assetId;
+   await app.seek(157212064.184);
+   assert.notEqual(modelCalls("sc_cassini").at(-1)!.spec.assetId,before,"Huygens separation switches to the hidden-probe variant");
+   await app.seek(157212063);
+   assert.equal(modelCalls("sc_cassini").at(-1)!.spec.assetId,before);
  }finally{await app.dispose();}
 });
 

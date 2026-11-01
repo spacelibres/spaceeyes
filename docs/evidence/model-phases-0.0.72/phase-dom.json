@@ -1,0 +1,23 @@
+[
+  {
+    "stage": "webb-stowed",
+    "dom": "- main:\n  - img \"spacelibre\"\n  - heading \"太空之眼 SPACE EYES\" [level=1]\n  - button \"探索天体\"\n  - button \"对象与图层\"\n  - button \"太阳系总览\"\n  - button \"全屏\"\n  - button \"分享场景\"\n  - link \"数据诊断\":\n    - /url: /diagnostics\n  - status:\n    - generic: 当前场景：71/86 个对象可用 · 目录 633 项 · 12项当前时间无覆盖\n    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪\n    - generic: 本次初始化 4.11 秒（不含首帧及贴图就绪）\n    - button \"退出工作区\"\n  - region \"Bevy太阳系三维画布\":\n    - generic \"三维场景：方向键环绕，加减缩放，Home近景，空格播放\"\n    - generic: James Webb Space Telescope\n    - generic: ICRF · km\n    - text: 光照\n    - combobox \"光照\":\n      - option \"自然光\"\n      - option \"暗面补光\" [selected]\n      - option \"强补光\"\n    - button \"放大\": +\n    - button \"缩小\": −\n    - text: 观察模式\n    - combobox \"观察模式\":\n      - option \"Nearby · 近景\" [selected]\n      - option \"System · 系统\"\n      - option \"Follow · 跟随\"\n    - text: 跟随参考\n    - combobox \"跟随参考\":\n      - option \"所属父体\" [selected]\n      - option \"太阳\"\n      - option \"水星\"\n      - option \"金星\"\n      - option \"地球\"\n      - option \"月球\"\n      - option \"火星\"\n      - option \"木星\"\n      - option \"土星\"\n      - option \"天王星\"\n      - option \"海王星\"\n      - option \"Ariel\"\n      - option \"Callisto\"\n      - option \"Chandra X-ray Observatory\"\n      - option \"Charon\"\n      - option \"Adrastea\"\n      - option \"Aegaeon\"\n      - option \"Aegir\"\n      - option \"Aitne\"\n      - option \"Albiorix\"\n      - option \"Amalthea\"\n      - option \"Ananke\"\n      - option \"Anthe\"\n      - option \"Aoede\"\n      - option \"Arche\"\n      - option \"Atlas\"\n      - option \"Autonoe\"\n      - option \"Bebhionn\"\n      - option \"Belinda\"\n      - option \"Bergelmir\"\n      - option \"Bestla\"\n      - option \"Bianca\"\n      - option \"Caliban\"\n      - option \"Callirrhoe\"\n      - option \"Calypso\"\n      - option \"Ca",
+    "time": "统一仿真时间\n\n2022-01-08T18:16:58.815Z\n694937888.000 J2000 TDB s\n已暂停\n历史 / 仿真\n收起时间栏 ▾\n▶ 播放\n−\n播放速率 · real rate\n+\n1× 速度\n日期与跳转\n当前时间"
+  },
+  {
+    "stage": "webb-deployed",
+    "time": "统一仿真时间\n\n2022-01-08T18:17:00.815Z\n694937890.000 J2000 TDB s\n已暂停\n历史 / 仿真\n收起时间栏 ▾\n▶ 播放\n−\n播放速率 · real rate\n+\n1× 速度\n日期与跳转\n当前时间"
+  },
+  {
+    "stage": "webb-restored",
+    "time": "统一仿真时间\n\n2022-01-08T18:16:58.815Z\n694937888.000 J2000 TDB s\n已暂停\n历史 / 仿真\n收起时间栏 ▾\n▶ 播放\n−\n播放速率 · real rate\n+\n1× 速度\n日期与跳转\n当前时间"
+  },
+  {
+    "stage": "cassini-before",
+    "time": "统一仿真时间\n\n2004-12-25T01:59:58.816Z\n157212063.000 J2000 TDB s\n已暂停\n历史 / 仿真\n收起时间栏 ▾\n▶ 播放\n−\n播放速率 · real rate\n+\n1× 速度\n日期与跳转\n当前时间"
+  },
+  {
+    "stage": "cassini-after",
+    "time": "统一仿真时间\n\n2004-12-25T02:00:00.816Z\n157212065.000 J2000 TDB s\n已暂停\n历史 / 仿真\n收起时间栏 ▾\n▶ 播放\n−\n播放速率 · real rate\n+\n1× 速度\n日期与跳转\n当前时间"
+  }
+]

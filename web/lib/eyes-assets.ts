@@ -11,10 +11,14 @@ import { resolve, join, sep } from "node:path";
 import sharp from "sharp";
 import manifests from "../../validation/eyes-models.json" with { type: "json" };
 import dependencies from "../../validation/eyes-dependencies.json" with { type: "json" };
+import stageModels from "../../validation/eyes-model-stages.json" with {type:"json"};
+import stageDependencies from "../../validation/eyes-model-stage-dependencies.json" with {type:"json"};
+import {eyesModelVariants,type ModelPhase} from "../../platform/eyes-model-phases.ts";
 import { getEyesDefinition } from "../../platform/eyes-catalog.ts";
 import {
   convertEyesModel,
   selectEyesModelImages,
+  type ModelTransform,
 } from "./eyes-model-convert.ts";
 
 const digest = (bytes: Uint8Array | string) =>
@@ -22,6 +26,15 @@ const digest = (bytes: Uint8Array | string) =>
 const SOURCE = "https://eyes.nasa.gov/assets/static/";
 const VERSION = "eyes-compatible-km-v2";
 const dependencyRevision = digest(JSON.stringify(dependencies.files));
+const stageDependencyRevision=digest(JSON.stringify(stageDependencies.files));
+const phaseConversionRevision="eyes-model-phase-v1";
+const modelRows=[...manifests.rows,...stageModels.rows];
+const dependencyFiles:Record<string,{sha256:string;bytes:number}>={...dependencies.files};
+for(const [url,pin]of Object.entries(stageDependencies.files)) {
+  if(dependencyFiles[url]&&dependencyFiles[url].sha256!==pin.sha256)
+    throw Error("Conflicting phase resource pin");
+  dependencyFiles[url]=pin;
+}
 export type EyesAsset = { bytes: Uint8Array; mime: string; sha256: string };
 type Job<T = EyesAsset> = {
   promise: Promise<T>;
@@ -238,9 +251,7 @@ export class EyesAssetService {
       parsed.hash
     )
       throw Error("Asset origin refused");
-    const locked = (
-      dependencies.files as Record<string, { sha256: string; bytes: number }>
-    )[url];
+    const locked = dependencyFiles[url];
     expected ??= locked?.sha256;
     if (!expected)
       throw Error("Resource is not in the pinned dependency registry");
@@ -282,18 +293,19 @@ export class EyesAssetService {
       expected,
     );
   }
-  async #model(id: string, signal: AbortSignal): Promise<Uint8Array> {
+  async #model(id: string, signal: AbortSignal,phase?:ModelPhase): Promise<Uint8Array> {
     const definition = getEyesDefinition(id)!;
-    const model = definition.model;
+    const model:(ModelTransform&{url:string})|undefined = phase?.model??definition.model;
     if (!model) throw Error("No source model for object");
     const url = model.url.replace("$STATIC_ASSETS_URL", SOURCE.slice(0, -1));
-    const pinned = manifests.rows.find((row) => row.url === url);
+    const pinned = modelRows.find((row) => row.url === url);
     if (!pinned?.sha256)
       throw Error("Model entry is not in the audited resource manifest");
     const transform = {
       scale: model.scale ?? 0.001,
       rotate: model.rotate ?? [],
       translate: model.translate ?? [0, 0, 0],
+      ...(model.rotationWxyz?{rotationWxyz:model.rotationWxyz}:{}),
     };
     return this.#cache(
       JSON.stringify({
@@ -301,6 +313,7 @@ export class EyesAssetService {
         transform,
         manifest: pinned.sha256,
         dependencyRevision,
+        ...(phase?{phaseConversionRevision,stageDependencyRevision,hiddenNodes:phase.hiddenNodes}:{}),
       }),
       async (signal) => {
         const json = selectEyesModelImages(
@@ -342,7 +355,7 @@ export class EyesAssetService {
         for (const buffer of json.buffers ?? [])
           if (resources[buffer.uri]?.length !== buffer.byteLength)
             throw Error("Model buffer length mismatch");
-        const result = await convertEyesModel(json, resources, model);
+        const result = await convertEyesModel(json, resources, model,phase?.hiddenNodes);
         if (result.length > 256 * 1024 ** 2)
           throw Error("Converted model byte budget");
         return result;
@@ -380,7 +393,10 @@ export class EyesAssetService {
   ): Promise<EyesAsset> {
     signal?.throwIfAborted();
     if (!getEyesDefinition(id)) throw Error("Unknown NASA Eyes object");
-    if (file !== "model.glb" && !/^face-[0-5]\.png$/.test(file))
+    const variantKey=/^model-(phase-\d+)\.glb$/.exec(file)?.[1];
+    const variant=variantKey?eyesModelVariants(id).find(phase=>phase.key===variantKey):undefined;
+    const isModel=file==="model.glb"||Boolean(variant);
+    if (!isModel && !/^face-[0-5]\.png$/.test(file))
       throw Error("Unknown resource path");
     const key = id + "/" + file;
     return share(
@@ -389,12 +405,12 @@ export class EyesAssetService {
       (deadline) =>
         this.#slot(deadline, async () => {
           const bytes =
-            file === "model.glb"
-              ? await this.#model(id, deadline)
+            isModel
+              ? await this.#model(id, deadline,variant)
               : await this.#face(id, Number(file[5]), deadline);
           return {
             bytes,
-            mime: file === "model.glb" ? "model/gltf-binary" : "image/png",
+            mime: isModel ? "model/gltf-binary" : "image/png",
             sha256: digest(bytes),
           };
         }),

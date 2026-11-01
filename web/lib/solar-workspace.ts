@@ -1,5 +1,6 @@
 import {missionInitialLook} from "./mission-view.ts";
 import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
+import {eyesModelPhase,eyesModelVariants} from "../../platform/eyes-model-phases.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
 import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
 import {
@@ -325,6 +326,11 @@ export async function createWorkspace(
         `eyes/${body.id}/model.glb`,
         "model",
       );
+    for(const phase of eyesModelVariants(body.id))core.register_asset(
+      `eyes:${body.id}:model:${phase.key}`,
+      `eyes/${body.id}/model-${phase.key}.glb`,
+      "model",
+    );
   }
   const surfaceAssets = new Map<
     string,
@@ -613,6 +619,8 @@ export async function createWorkspace(
       .map((body) => body.id),
   );
   const labelTexts=new Map<string,string>();
+  const modelPhaseKeys=new Map<string,string>();
+  const phaseBodies=solarCatalog.filter(body=>eyesModelVariants(body.id).length>0);
   const coverageLabelIds=[...new Set(EYES_COVERAGE_LABEL_MANIFEST.map(slot=>slot.entity))];
   const refreshLabel=(id:string) => {
     if (data.status(id)?.status !== "ready" || !sdk.visual.status(id)) {
@@ -797,14 +805,16 @@ export async function createWorkspace(
               parentAt(state.selected, core.epoch()) === body.id)) &&
           !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
+        const model=getEyesDefinition(body.id)?.model;
+        const phase=detailed&&model?eyesModelPhase(body.id,core.epoch()):undefined;
+        const phaseChanged=Boolean(phase)&&modelPhaseKeys.get(body.id)!==phase!.key;
         const hadVisual=Boolean(sdk.visual.status(body.id));
-        if (restore || !hadVisual || upgrade) {
-          const model = getEyesDefinition(body.id)?.model;
+        if (restore || !hadVisual || upgrade || phaseChanged) {
           const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius;
           if (detailed && model) {
             sdk.visual.set(body.id, {
               kind: "model",
-              assetId: `eyes:${body.id}:model`,
+              assetId: phase?`eyes:${body.id}:model:${phase.key}`:`eyes:${body.id}:model`,
               scaleKmPerUnit: 1,
               ...(typeof framingRadiusKm === "number" &&
               Number.isFinite(framingRadiusKm) &&
@@ -853,6 +863,8 @@ export async function createWorkspace(
           if (body.id === "sun" && stellarSettings)
             sdk.visual.stellar(body.id, buildStellarTuning(stellarSettings));
           if (upgrade) detailedBodies.add(body.id);
+          if(phase)modelPhaseKeys.set(body.id,phase.key);
+          else modelPhaseKeys.delete(body.id);
           if (!hadVisual) labelTexts.delete(body.id);
         }
         refreshLabel(body.id);
@@ -1699,6 +1711,9 @@ export async function createWorkspace(
             refreshSelectedOrientation(epoch);
             data.publishAt(epoch);
             for(const id of coverageLabelIds) refreshLabel(id);
+            for(const body of phaseBodies)
+              if(detailedBodies.has(body.id)&&modelPhaseKeys.get(body.id)!==eyesModelPhase(body.id,epoch)?.key)
+                configureBody(body);
             refreshObservationContext();
             // Publish first so expired secondary objects disappear before loading.
             // Secondary cache work never seeks time or changes playback/selection.

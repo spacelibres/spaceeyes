@@ -1,5 +1,5 @@
 /// <reference path="../types/draco3dgltf.d.ts" />
-import { NodeIO, type JSONDocument } from "@gltf-transform/core";
+import { NodeIO, type JSONDocument, type Node as GltfNode } from "@gltf-transform/core";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import draco from "draco3dgltf";
 import sharp from "sharp";
@@ -7,12 +7,21 @@ import { quat } from "gl-matrix";
 import { dirname, join, resolve } from "node:path";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-type SourceVector = { constructor: string; values: number[] };
+type SourceVector = { constructor: string; values: readonly number[] };
 export type ModelTransform = {
-  scale?: number | number[] | SourceVector;
-  rotate?: Record<string, number>[];
-  translate?: number[] | SourceVector;
+  scale?: number | readonly number[] | SourceVector;
+  rotate?: readonly Readonly<Record<string, number>>[];
+  translate?: readonly number[] | SourceVector;
+  rotationWxyz?: readonly number[];
 };
+/** NASA's GLTFLoader uses THREE.PropertyBinding's sanitized object names.
+ * Match that alias without changing the source nodes used by joint controllers.
+ */
+export function eyesModelLookupName(name:string):string {
+  let result=name.replace(/\s/g,"_");
+  for(const character of ["[","]",".",":","/"])result=result.replaceAll(character,"");
+  return result;
+}
 const nativeRequire = process
   .getBuiltinModule("node:module")
   .createRequire(import.meta.url);
@@ -119,6 +128,7 @@ export async function convertEyesModel(
   input: Record<string, any>,
   sourceResources: Record<string, Uint8Array>,
   transform: ModelTransform,
+  hiddenNodes: readonly string[] = [],
 ): Promise<Uint8Array> {
   const json = selectEyesModelImages(input),
     resources = { ...sourceResources };
@@ -153,13 +163,28 @@ export async function convertEyesModel(
     }))();
   const io = await ioPromise;
   const doc = await io.readJSON({ json, resources } as JSONDocument);
+  // Keep transforms, joint names and shared meshes. Only the named subtree's
+  // draw geometry is omitted; another immutable variant restores source meshes.
+  for(const scene of doc.getRoot().listScenes()) {
+    const nodes:GltfNode[]=[];
+    for(const root of scene.listChildren())root.traverse(node=>nodes.push(node));
+    for(const name of hiddenNodes) {
+      const node=nodes.find(node=>node.getName()===name||eyesModelLookupName(node.getName())===name);
+      node?.traverse(child=>child.setMesh(null));
+    }
+  }
   doc
     .getRoot()
     .listExtensionsUsed()
     .find((e) => e.extensionName === "KHR_draco_mesh_compression")
     ?.dispose();
   const rotation = quat.create();
-  for (const step of transform.rotate ?? []) {
+  if(transform.rotationWxyz) {
+    const q=transform.rotationWxyz;
+    if(q.length!==4||!q.every(Number.isFinite)||Math.hypot(...q)<1e-12)
+      throw Error("Invalid model phase quaternion");
+    quat.normalize(rotation,quat.fromValues(q[1],q[2],q[3],q[0]));
+  } else for (const step of transform.rotate ?? []) {
     const axis = Object.keys(step)[0];
     const v = axis === "x" ? [1, 0, 0] : axis === "y" ? [0, 1, 0] : [0, 0, 1];
     const next = quat.setAxisAngle(
@@ -182,13 +207,13 @@ export async function convertEyesModel(
         ? [transform.scale, transform.scale, transform.scale]
         : Array.isArray(transform.scale)
           ? transform.scale
-          : transform.scale.values;
+          : (transform.scale as SourceVector).values;
   const translation =
     transform.translate === undefined
       ? [0, 0, 0]
       : Array.isArray(transform.translate)
         ? transform.translate
-        : transform.translate.values;
+        : (transform.translate as SourceVector).values;
   if (
     scale.length !== 3 ||
     scale.some((x) => !Number.isFinite(x) || x <= 0) ||
@@ -200,7 +225,7 @@ export async function convertEyesModel(
     const children = scene.listChildren();
     const root = doc
       .createNode("SpaceEyes source model frame")
-      .setScale(scale as [number, number, number])
+      .setScale([scale[0],scale[1],scale[2]])
       .setRotation(Array.from(rotation) as [number, number, number, number])
       .setTranslation([translation[0], translation[2], -translation[1]]);
     for (const child of children) {
