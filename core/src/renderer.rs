@@ -46,6 +46,8 @@ struct OrbitView {
     focus_revision: u64,
     framing_radius_km: f64,
     system_framing_km: Option<(f64, f32, f32)>,
+    frame: Quat,
+    zoom_ground_distance: f32,
     yaw: f32,
     pitch: f32,
     distance: f32,
@@ -60,6 +62,8 @@ impl Default for OrbitView {
             focus_revision: 0,
             framing_radius_km: 0.,
             system_framing_km: None,
+            frame: Quat::IDENTITY,
+            zoom_ground_distance: 0.,
             yaw: 0.0,
             pitch: 0.0,
             distance: 4.0,
@@ -432,6 +436,7 @@ fn update_focus(
         }
         settings.origin_km = DVec3::ZERO;
         settings.units_per_km = AU_KM.recip();
+        orbit.zoom_ground_distance = 0.;
         orbit.framing_radius_km = radius;
         let radius_display = (radius / AU_KM) as f32;
         if orbit.target.is_some() {
@@ -519,19 +524,72 @@ fn update_focus(
             focus_revision: core.focus_revision(),
             ..default()
         };
-        if core.camera_view() == "orbit"
-            && let Some(look) = core
+        if core.camera_view() == "orbit" {
+            let authored_look = core
                 .camera_observation()
-                .and_then(|observation| observation.initial_look.as_ref())
-            && let Ok(reference) = core.object_state_at(&look.reference_id, core.clock().epoch())
-            && let Some((yaw, pitch)) = crate::camera_framing::initial_look_angles(
-                state.position_km,
-                reference.position_km,
-                look.kind == "sky",
-            )
+                .and_then(|o| o.initial_look.as_ref());
+            let entry = authored_look
+                .and_then(|look| {
+                    core.object_state_at(&look.reference_id, core.clock().epoch())
+                        .ok()
+                        .map(|reference| {
+                            (reference, look.kind == "sky", reference.orientation_wxyz)
+                        })
+                })
+                .or_else(|| {
+                    // NASA goToCelestialObject enters from the illuminated side with body north up.
+                    let celestial = core
+                        .visual_assignment(id)
+                        .is_some_and(|v| matches!(v.spec, VisualSpec::Sphere { .. }));
+                    if celestial
+                        && id != "sun"
+                        && core.camera_observation().is_none_or(|o| o.mode == "nearby")
+                    {
+                        core.object_state_at("sun", core.clock().epoch())
+                            .ok()
+                            .map(|sun| (sun, true, state.orientation_wxyz))
+                    } else {
+                        None
+                    }
+                });
+            if let Some((reference, sky, north)) = entry {
+                let up = crate::runtime::display_rotation(north) * Vec3::Y;
+                orbit.frame = Quat::from_rotation_arc(Vec3::Y, up.normalize());
+                if let Some((yaw, pitch)) = crate::camera_framing::initial_look_angles(
+                    state.position_km,
+                    reference.position_km,
+                    sky,
+                    orbit.frame,
+                ) {
+                    orbit.yaw = yaw;
+                    orbit.pitch = pitch;
+                }
+            }
+        }
+        if core.camera_view() == "orbit"
+            && core
+                .camera_observation()
+                .is_some_and(|o| o.mode == "system")
         {
-            orbit.yaw = yaw;
-            orbit.pitch = pitch;
+            // NASA _goToSystem preserves the prior azimuth, projects it into
+            // the reference plane, then rises 25 degrees above that plane.
+            let up = crate::runtime::display_rotation(state.orientation_wxyz) * Vec3::Y;
+            orbit.frame = Quat::from_rotation_arc(Vec3::Y, up.normalize());
+            let relative = camera.iter_mut().next().map(|(transform, _)| {
+                let p = transform.translation.as_dvec3() / old_settings.units_per_km;
+                old_settings.origin_km + DVec3::new(p.x, -p.z, p.y) - settings.origin_km
+            });
+            let back = relative
+                .filter(|v| v.is_finite() && v.length_squared() > 1e-20)
+                .map(|v| DVec3::new(v.x, v.z, -v.y).normalize().as_vec3())
+                .unwrap_or(Vec3::Z);
+            let local = orbit.frame.inverse() * back;
+            orbit.yaw = if local.x.hypot(local.z) > 1e-6 {
+                local.x.atan2(local.z)
+            } else {
+                0.
+            };
+            orbit.pitch = -25_f32.to_radians();
         }
     }
     apply_controlled_input(&mut core, &mut orbit, delta.unwrap_or(1. / 60.));
@@ -546,10 +604,23 @@ fn update_focus(
             _ => None,
         })
         .unwrap_or(1.0);
+    let authored_radius = core
+        .visual_assignment(id)
+        .and_then(|assignment| match assignment.spec {
+            VisualSpec::Model {
+                framing_radius_km: Some(hint),
+                ..
+            } => {
+                let projected = (hint * settings.units_per_km) as f32;
+                (projected.is_finite() && projected > 0.).then_some(projected)
+            }
+            _ => None,
+        });
     if let Some(assignment) = core.visual_assignment(id)
         && let VisualSpec::Model {
             scale_km_per_unit, ..
         } = assignment.spec
+        && authored_radius.is_none()
         && core.visual_status(id).ok().flatten().is_some_and(|status| {
             status.revision == assignment.revision && status.phase == VisualPhase::Ready
         })
@@ -591,17 +662,15 @@ fn update_focus(
             radius = ((max - min).length() * 0.5).max(1e-7);
         }
     }
-    if let Some(assignment) = core.visual_assignment(id)
-        && let VisualSpec::Model {
-            framing_radius_km: Some(hint),
-            ..
-        } = assignment.spec
-    {
-        let hinted = (hint * settings.units_per_km) as f32;
-        if hinted.is_finite() && hinted > 0. {
-            radius = hinted.max(1e-7);
-        }
+    if let Some(hinted) = authored_radius {
+        radius = hinted.max(1e-7);
     }
+    // Presets keep their documented fixed axes; entry north only affects free orbit.
+    let frame = if core.camera_view() == "orbit" {
+        orbit.frame
+    } else {
+        Quat::IDENTITY
+    };
     if let Some(observation) = core.camera_observation()
         && observation.mode == "system"
     {
@@ -645,8 +714,9 @@ fn update_focus(
                 "side" => (std::f64::consts::FRAC_PI_2, 0.),
                 _ => (orbit.yaw as f64, orbit.pitch as f64),
             };
-            let rotation =
-                bevy::math::DQuat::from_rotation_y(yaw) * bevy::math::DQuat::from_rotation_x(pitch);
+            let rotation = frame.as_dquat().normalize()
+                * bevy::math::DQuat::from_rotation_y(yaw)
+                * bevy::math::DQuat::from_rotation_x(pitch);
             for (_, projection) in &mut camera {
                 if let Projection::Perspective(p) = &*projection {
                     let vertical = p.fov as f64 * 0.5;
@@ -676,6 +746,10 @@ fn update_focus(
         orbit.system_framing_km = None;
     }
     orbit.framing_radius_km = radius as f64 / settings.units_per_km;
+    let is_model = core
+        .visual_assignment(id)
+        .is_some_and(|v| matches!(v.spec, VisualSpec::Model { .. }));
+    orbit.zoom_ground_distance = if is_model { 0. } else { 1. / radius };
     for (mut transform, mut projection) in &mut camera {
         let is_model = core
             .visual_assignment(id)
@@ -721,11 +795,12 @@ fn update_focus(
                 _ => {}
             }
         }
-        let position = Quat::from_rotation_y(orbit.yaw)
+        let position = frame
+            * Quat::from_rotation_y(orbit.yaw)
             * Quat::from_rotation_x(orbit.pitch)
             * Vec3::new(0.0, 0.0, distance * radius);
         let mut desired =
-            Transform::from_translation(center + position).looking_at(center, Vec3::Y);
+            Transform::from_translation(center + position).looking_at(center, frame * Vec3::Y);
         if let Some(observation) = core.camera_observation()
             && observation.mode == "follow"
             && let Some(reference) = observation.follow_id.as_deref()
@@ -820,9 +895,10 @@ fn enforce_camera_collision(
             .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
             .map_or(DVec3::ZERO, |body| DVec3::from_array(body.position_km));
         let target = (target - settings.origin_km) * scale;
+        let up = camera.rotation * Vec3::Y;
         camera.look_at(
             Vec3::new(target.x as f32, target.z as f32, -target.y as f32),
-            Vec3::Y,
+            up,
         );
     }
     let desired_inside = core
@@ -1337,7 +1413,7 @@ mod camera_intent_render_tests {
                 }
                 let orbit = app.world().resource::<OrbitView>();
                 assert!(
-                    (orbit.distance / before - 0.3_f32.exp()).abs() < 0.0001,
+                    ((orbit.distance - 1.) / (before - 1.) - 0.3_f32.exp()).abs() < 0.0001,
                     "host intent must survive blur and apply once: focused={focused}, hz={hz}"
                 );
                 assert_eq!(orbit.yaw, 0.);
@@ -1351,7 +1427,7 @@ mod camera_intent_render_tests {
                     let orbit = app.world().resource::<OrbitView>();
                     assert_eq!(orbit.yaw, 0.);
                     assert_eq!(orbit.pitch, 0.);
-                    assert!((orbit.distance / before - 0.3_f32.exp()).abs() < 0.0001);
+                    assert!(((orbit.distance - 1.) / (before - 1.) - 0.3_f32.exp()).abs() < 0.0001);
                 }
                 let mut core = shared.lock().unwrap();
                 assert_eq!(core.take_camera_input(), [0.; 3]);
@@ -1389,6 +1465,15 @@ mod camera_intent_render_tests {
     }
 }
 
+fn apply_orbit_zoom(orbit: &mut OrbitView, zoom: f32) {
+    if zoom == 0. {
+        return;
+    }
+    let ground = orbit.zoom_ground_distance;
+    let altitude = (orbit.distance - ground).max(0.);
+    orbit.distance = (ground + altitude * zoom.exp()).clamp(1e-8, 1e12);
+}
+
 fn apply_controlled_input(core: &mut crate::Core, orbit: &mut OrbitView, dt: f32) {
     let input = core.take_camera_input();
     orbit.input_active |= input != [0.; 3];
@@ -1400,7 +1485,7 @@ fn apply_controlled_input(core: &mut crate::Core, orbit: &mut OrbitView, dt: f32
     orbit.host_zoom.zoom(input[2]);
     let zoom = orbit.host_zoom.zoom_step(dt);
     orbit.input_active |= zoom.abs() > f32::EPSILON;
-    orbit.distance = (orbit.distance * zoom.exp()).clamp(1e-8, 1e12);
+    apply_orbit_zoom(orbit, zoom);
 }
 
 fn orbit_input(
@@ -1450,7 +1535,7 @@ fn orbit_input(
         orbit.motion.zoom(-amount * 0.1);
     }
     let zoom = orbit.motion.zoom_step(dt);
-    orbit.distance = (orbit.distance * zoom.exp()).clamp(1e-8, 1e12);
+    apply_orbit_zoom(&mut orbit, zoom);
 }
 fn stop_renderer(store: Res<CoreStore>, stop: Res<RendererStop>, mut exit: MessageWriter<AppExit>) {
     if stop.0.load(Ordering::Acquire) {
@@ -3314,5 +3399,264 @@ mod task_composition_tests {
         assert_eq!(app.world().resource::<OrbitView>().yaw, 0.);
         app.update();
         assert_eq!(app.world().resource::<OrbitView>().yaw, 0.);
+    }
+}
+
+#[cfg(test)]
+mod camera_parity_regression_tests {
+    use super::*;
+    use crate::{AssetDescriptor, AssetKind, Core, ObjectState, SessionPermissions};
+    fn scene() -> (App, SharedCore, Entity) {
+        let mut c = Core::default();
+        c.open_session_with_permissions(
+            "s",
+            "p",
+            SessionPermissions {
+                camera_control: true,
+                visual_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        for (id, position, radius) in [("parent", [0.; 3], 10.), ("craft", [0., 50., 0.], 0.00272)]
+        {
+            c.register_object("s", id).unwrap();
+            c.set_object_state(
+                "s",
+                id,
+                ObjectState {
+                    position_km: position,
+                    radius_km: radius,
+                    orientation_wxyz: Some([1., 0., 0., 0.]),
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 10.],
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                },
+            )
+            .unwrap();
+        }
+        c.set_camera_observation_with_context(
+            "s",
+            "p",
+            crate::CameraObservation {
+                target_id: "craft".into(),
+                mode: "nearby".into(),
+                members: vec![],
+                follow_id: None,
+                system_id: Some("parent".into()),
+                initial_look: Some(crate::InitialLook {
+                    kind: "target".into(),
+                    reference_id: "parent".into(),
+                }),
+            },
+        )
+        .unwrap();
+        c.set_camera_view("s", "p", "orbit").unwrap();
+        let shared = Arc::new(std::sync::Mutex::new(c));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        let camera = app
+            .world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()))
+            .id();
+        (app, shared, camera)
+    }
+    #[test]
+    fn nasa_entry_uses_parent_north_and_preserves_manual_orbit() {
+        let (mut app, shared, camera) = scene();
+        {
+            let mut c = shared.lock().unwrap();
+            let mut p = c.object_state_at("parent", 0.).unwrap().clone();
+            let a = std::f64::consts::FRAC_PI_6 / 2.;
+            p.orientation_wxyz = Some([a.cos(), 0., a.sin(), 0.]);
+            c.set_object_state("s", "parent", p).unwrap();
+        }
+        app.update();
+        let t = app.world().get::<Transform>(camera).unwrap();
+        let expected = Vec3::new(0.5, 3_f32.sqrt() / 2., 0.);
+        assert!(
+            t.up().dot(expected) > 0.99999,
+            "entry roll must use parent north, not world Y"
+        );
+        assert!(t.forward().dot(Vec3::Z) > 0.99999);
+        shared
+            .lock()
+            .unwrap()
+            .camera_orbit("s", "p", 0.2, 0.1)
+            .unwrap();
+        app.update();
+        let manual = *app.world().get::<Transform>(camera).unwrap();
+        app.update();
+        assert_eq!(
+            app.world().get::<Transform>(camera).unwrap().translation,
+            manual.translation
+        );
+    }
+    #[test]
+    fn nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center() {
+        let (mut app, shared, camera) = scene();
+        {
+            let mut c = shared.lock().unwrap();
+            c.register_asset(
+                "model",
+                AssetDescriptor {
+                    kind: AssetKind::Model,
+                    path: "model.glb".into(),
+                },
+            )
+            .unwrap();
+            c.set_visual(
+                "s",
+                "p",
+                "craft",
+                Some(VisualSpec::Model {
+                    asset_id: "model".into(),
+                    scene: 0,
+                    scale_km_per_unit: 1.,
+                    framing_radius_km: Some(0.0038),
+                }),
+            )
+            .unwrap();
+            let r = c.visual_assignment("craft").unwrap().revision;
+            c.record_visual_status("craft", r, VisualPhase::Ready, None);
+        }
+        let root = app
+            .world_mut()
+            .spawn((SceneObject { id: "craft".into() }, Transform::default()))
+            .id();
+        let mesh = app
+            .world_mut()
+            .spawn((
+                Transform::from_xyz(0.001, 0., 0.),
+                Aabb::from_min_max(-Vec3::splat(0.001), Vec3::splat(0.001)),
+                ChildOf(root),
+            ))
+            .id();
+        app.update();
+        let t = *app.world().get::<Transform>(camera).unwrap();
+        assert!(
+            t.forward().dot((-t.translation).normalize()) > 0.99999,
+            "authored radius is centered on the entity origin"
+        );
+        app.world_mut()
+            .get_mut::<Transform>(mesh)
+            .unwrap()
+            .translation = Vec3::new(0.002, 0.001, 0.);
+        app.update();
+        assert_eq!(
+            app.world().get::<Transform>(camera).unwrap().translation,
+            t.translation,
+            "joint motion cannot move the framing center"
+        );
+    }
+    #[test]
+    fn nasa_tilted_system_fit_uses_actual_camera_basis() {
+        let (mut app, shared, camera) = scene();
+        {
+            let mut c = shared.lock().unwrap();
+            let mut parent = c.object_state_at("parent", 0.).unwrap().clone();
+            let a = std::f64::consts::FRAC_PI_6 / 2.;
+            parent.orientation_wxyz = Some([a.cos(), a.sin(), 0., 0.]);
+            c.set_object_state("s", "parent", parent).unwrap();
+            let mut craft = c.object_state_at("craft", 0.).unwrap().clone();
+            craft.position_km = [20., 40., 60.];
+            c.set_object_state("s", "craft", craft).unwrap();
+            c.register_object("s", "sun").unwrap();
+            c.set_object_state(
+                "s",
+                "sun",
+                ObjectState {
+                    position_km: [-10000., 0., 0.],
+                    radius_km: 1.,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 10.],
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                    orientation_wxyz: None,
+                },
+            )
+            .unwrap();
+            c.set_visual(
+                "s",
+                "p",
+                "parent",
+                Some(serde_json::from_str(r#"{"kind":"sphere"}"#).unwrap()),
+            )
+            .unwrap();
+            c.set_camera_observation(
+                "s",
+                "p",
+                "parent",
+                "system",
+                vec!["parent".into(), "craft".into()],
+                None,
+            )
+            .unwrap();
+        }
+        if let Projection::Perspective(p) =
+            &mut *app.world_mut().get_mut::<Projection>(camera).unwrap()
+        {
+            p.aspect_ratio = 2.;
+        }
+        app.update();
+        let t = app.world().get::<Transform>(camera).unwrap();
+        assert!(
+            (app.world().resource::<OrbitView>().frame * Vec3::Y).dot(Vec3::Y) < 0.99,
+            "test requires a tilted north frame"
+        );
+        let north = Vec3::new(0., 3_f32.sqrt() / 2., 0.5);
+        assert!(
+            (t.translation.normalize().dot(north) - 25_f32.to_radians().sin()).abs() < 1e-5,
+            "NASA system entry must rise 25 degrees above its reference plane"
+        );
+        let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap() else {
+            panic!()
+        };
+        let v = p.fov as f64 / 2.;
+        let h = (v.tan() * p.aspect_ratio as f64).atan();
+        let expected = crate::camera_framing::fit_distance(
+            &[
+                crate::camera_framing::FramingBody {
+                    offset_km: DVec3::ZERO,
+                    radius_km: 10.,
+                },
+                crate::camera_framing::FramingBody {
+                    offset_km: DVec3::new(20., 60., -40.),
+                    radius_km: 0.00272,
+                },
+            ],
+            t.rotation.as_dquat().normalize(),
+            h,
+            v,
+        )
+        .unwrap()
+            * 1.3;
+        let actual = t.translation.length() as f64 * 10.;
+        assert!(
+            (actual - expected).abs() < expected * 1e-5,
+            "system fit used different axes: actual={actual}, expected={expected}"
+        );
+    }
+
+    #[test]
+    fn nasa_near_surface_zoom_scales_altitude() {
+        let (mut app, shared, _) = scene();
+        shared.lock().unwrap().focus("s", "p", "parent").unwrap();
+        app.update();
+        let before = app.world().resource::<OrbitView>().distance;
+        shared.lock().unwrap().camera_zoom("s", "p", 0.3).unwrap();
+        app.update();
+        for _ in 0..90 {
+            app.update();
+        }
+        let after = app.world().resource::<OrbitView>().distance;
+        assert!(
+            ((after - 1.) / (before - 1.) - 0.3_f32.exp()).abs() < 1e-5,
+            "planet zoom must multiply altitude, not distance to center"
+        );
     }
 }

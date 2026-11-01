@@ -14,10 +14,12 @@ pub(crate) fn initial_look_angles(
     target: [f64; 3],
     reference: [f64; 3],
     sky: bool,
+    frame: bevy::math::Quat,
 ) -> Option<(f32, f32)> {
     let offset = DVec3::from_array(target) - DVec3::from_array(reference);
     let world = if sky { -offset } else { offset };
-    let direction = DVec3::new(world.x, world.z, -world.y).try_normalize()?;
+    let direction =
+        frame.as_dquat().inverse() * DVec3::new(world.x, world.z, -world.y).try_normalize()?;
     if !direction.is_finite() {
         return None;
     }
@@ -207,7 +209,9 @@ mod initial_look_tests {
     fn target_and_sky_use_opposite_external_viewing_sides_in_display_basis() {
         for reference in [[50., 0., 0.], [0., 50., 0.], [0., 0., 50.], [20., 30., 40.]] {
             let offset = |sky| {
-                let (yaw, pitch) = initial_look_angles([0.; 3], reference, sky).unwrap();
+                let (yaw, pitch) =
+                    initial_look_angles([0.; 3], reference, sky, bevy::math::Quat::IDENTITY)
+                        .unwrap();
                 bevy::math::Quat::from_rotation_y(yaw)
                     * bevy::math::Quat::from_rotation_x(pitch)
                     * bevy::math::Vec3::Z
@@ -222,7 +226,10 @@ mod initial_look_tests {
             assert!(offset(false).dot(to_reference) < -0.99);
             assert!(offset(true).dot(to_reference) > 0.99);
         }
-        assert!(initial_look_angles([0.; 3], [0.; 3], false).is_none());
-        assert!(initial_look_angles([f64::NAN; 3], [0.; 3], false).is_none());
+        assert!(initial_look_angles([0.; 3], [0.; 3], false, bevy::math::Quat::IDENTITY).is_none());
+        assert!(
+            initial_look_angles([f64::NAN; 3], [0.; 3], false, bevy::math::Quat::IDENTITY)
+                .is_none()
+        );
     }
 }

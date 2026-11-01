@@ -1,0 +1,64 @@
+[
+  {
+    "id": "sc_lunar_reconnaissance_orbiter",
+    "status": {
+      "id": "sc_lunar_reconnaissance_orbiter",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        846579869.7686055,
+        847480881.3988521
+      ]
+    },
+    "position": [
+      115650058.46956386,
+      85500529.34762342,
+      37074879.60001541
+    ],
+    "orientation": "Error: DYN orientation unavailable or outside coverage"
+  },
+  {
+    "id": "moon",
+    "status": {
+      "id": "moon",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        836169537.7186799,
+        852615807.5075626
+      ]
+    },
+    "position": [
+      115651111.62785636,
+      85500509.77812058,
+      37076391.56534469
+    ],
+    "orientation": [
+      -0.8507688019847184,
+      -0.16305471424605003,
+      -0.10256735666158401,
+      0.4889637441355764
+    ]
+  },
+  {
+    "id": "earth",
+    "status": {
+      "id": "earth",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        -3155716758.816,
+        3155716869.184
+      ]
+    },
+    "position": [
+      115860595.16009673,
+      85224015.71664461,
+      36943003.974680595
+    ],
+    "orientation": "Error: DYN orientation unavailable or outside coverage"
+  }
+]

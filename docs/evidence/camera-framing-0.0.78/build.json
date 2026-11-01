@@ -1,0 +1,8 @@
+{
+  "core": "0.0.58",
+  "web": "0.0.78",
+  "sdk": "0.0.48",
+  "wasmSha256": "4528d8e795099858bf3fa22df6ad7600bd1bff856e55941791fd17900c3429ee",
+  "wasmBytes": 30114266,
+  "preparedRuntimeMatches": true
+}
