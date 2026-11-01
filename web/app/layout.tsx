@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import "./style.css";
 import "./workspace.css";
+import "./observation-ui.css";
 export const metadata = {
   title: "太空之眼 · 太阳系工作区",
   description: "探索太阳系天体、时间与轨迹的三维仿真工作区",

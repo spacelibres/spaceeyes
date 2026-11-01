@@ -1,4 +1,5 @@
 "use client";
+import { startupProgress as initialStartupProgress } from "../lib/startup-progress";
 import { useEffect, useRef, useState } from "react";
 import {
   solarWorkspaceSettings,
@@ -20,6 +21,9 @@ import {
 
 export default function Workspace() {
   const [state, setState] = useState(initialSnapshot);
+  const [loadingProgress, setLoadingProgress] = useState(
+    initialStartupProgress("module"),
+  );
   const latest = useRef(initialSnapshot);
   const lastHandledHref = useRef<string | undefined>(undefined);
   const [shareUrl, setShareUrl] = useState("");
@@ -62,16 +66,23 @@ export default function Workspace() {
     // Capture browser wheel input before winit: a panel can own keyboard focus
     // while the pointer still intentionally zooms the canvas.
     const uiWheel = (event: WheelEvent) => {
-      if (event.target instanceof HTMLCanvasElement &&
-          event.target.id === "spaceeyes-canvas" && runtime.current && latest.current.active &&
-          !controller.current?.signal.aborted) {
+      if (
+        event.target instanceof HTMLCanvasElement &&
+        event.target.id === "spaceeyes-canvas" &&
+        runtime.current &&
+        latest.current.active &&
+        !controller.current?.signal.aborted
+      ) {
         const current = runtime.current;
         // Wheel over the canvas is an explicit return to scene interaction.
         // Restore the renderer's focused cadence without scrolling the page.
         event.target.focus({ preventScroll: true });
-        handleCanvasWheel(event, event.target.clientHeight, delta => {
-          try { current.zoom(delta); }
-          catch (error) { setActionError(String(error)); }
+        handleCanvasWheel(event, event.target.clientHeight, (delta) => {
+          try {
+            current.zoom(delta);
+          } catch (error) {
+            setActionError(String(error));
+          }
         });
         return;
       }
@@ -81,7 +92,10 @@ export default function Workspace() {
       )
         event.stopImmediatePropagation();
     };
-    window.addEventListener("wheel", uiWheel, { capture: true, passive: false });
+    window.addEventListener("wheel", uiWheel, {
+      capture: true,
+      passive: false,
+    });
     window.addEventListener("pagehide", leave);
     return () => {
       mounted.current = false;
@@ -176,6 +190,7 @@ export default function Workspace() {
     }
     started.current = true;
     controller.current = new AbortController();
+    setLoadingProgress(initialStartupProgress("module"));
     setState((current) => ({
       ...current,
       busy: true,
@@ -196,13 +211,23 @@ export default function Workspace() {
         (value) => {
           if (mounted.current) {
             latest.current = value;
-            setState(value);
+            // Data batches may finish before startup has created the renderer.
+            // Keep the startup overlay until an active scene is actually published.
+            setState(
+              !runtime.current &&
+                !value.active &&
+                !controller.current?.signal.aborted
+                ? { ...value, busy: true }
+                : value,
+            );
           }
         },
         controller.current.signal,
         {
           stellarSettings: initialSolar,
-          onStartup: (phase) => {
+          onStartup: (phase, progress) => {
+            if (mounted.current && !controller.current?.signal.aborted)
+              setLoadingProgress(progress);
             if (mounted.current && !controller.current?.signal.aborted)
               setState((current) => ({ ...current, busy: true, phase }));
           },
@@ -241,6 +266,7 @@ export default function Workspace() {
   }, []);
   return (
     <WorkspaceView
+      loadingProgress={loadingProgress}
       planetPreparation={state.planetPreparation}
       cameraDebug={state.cameraDebug}
       performance={state.performance}
@@ -311,6 +337,13 @@ export default function Workspace() {
       onStart={() => void start()}
       onStop={() => {
         controller.current?.abort();
+        setState((current) => ({
+          ...current,
+          active: false,
+          busy: false,
+          error: "",
+          phase: "工作区已取消，可重新进入",
+        }));
         const current = runtime.current;
         runtime.current = null;
         void current?.dispose();

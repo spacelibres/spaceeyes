@@ -1,0 +1,14 @@
+[
+  {
+    "path": "src/ui/components/TimeControls.js",
+    "sha256": "cf6fc5120f5f2e56ec0a190358a080739ffd29dd3332eb05844cef032fa22761"
+  },
+  {
+    "path": "src/ui/templates/TimeControlsTemplate.html",
+    "sha256": "b5a1da1d9af2bd215168bbe515fd21942825cc2ae17fa444189fb6b54c594d3f"
+  },
+  {
+    "path": "shell/app.css",
+    "sha256": "a6984196f35e8bcc78938923442344149e4736b61d6fec32a3f9145810ca1d34"
+  }
+]

@@ -1,3 +1,4 @@
+import { startupProgress, type StartupProgress, type StartupStage } from "./startup-progress.ts";
 import { FrameMonitor } from "./frame-monitor.ts";
 import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
 import { TrajectoryWorkQueue } from "./trajectory-work.ts";
@@ -202,7 +203,7 @@ export async function createWorkspace(
   update: (state: SolarSnapshot) => void,
   signal: AbortSignal,
   options: {
-    onStartup?: (phase: string) => void;
+    onStartup?: (phase: string, progress: StartupProgress) => void;
     stellarSettings?: Record<string, number>;
     backgroundStars?: boolean;
     backgroundGalaxy?: boolean;
@@ -225,7 +226,11 @@ export async function createWorkspace(
     longTaskObserver.observe({entryTypes:["longtask"]});
   }
   signal.throwIfAborted();
-  options.onStartup?.("加载三维核心模块");
+  const reportStartup = (stage: StartupStage) => {
+    const progress = startupProgress(stage);
+    options.onStartup?.(progress.label, progress);
+  };
+  reportStartup("module");
   const url = "/wasm/spaceeyes_core.js";
   const module = (
     options.loadCore
@@ -236,13 +241,14 @@ export async function createWorkspace(
     WasmCore: new () => HostCore;
   };
   signal.throwIfAborted();
-  options.onStartup?.("下载并初始化 WASM");
+  reportStartup("wasm");
   await module.default();
   signal.throwIfAborted();
   const requestFrame =
     options.requestFrame ?? globalThis.requestAnimationFrame.bind(globalThis);
   const cancelFrame =
     options.cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis);
+  reportStartup("catalog");
   const core = new module.WasmCore(),
     host = new PluginHost(new WasmCorePort(core));
   const visibilityChanged = () => {frameMonitor.reset();lastFrame = undefined;core.renderer_visible?.(typeof document === "undefined" || !document.hidden);};
@@ -1711,7 +1717,7 @@ export async function createWorkspace(
     );
     await host.enable("spaceeyes.background-galaxy", ["scene.visual"]);
     assertLive();
-    options.onStartup?.("加载八大行星轨道、姿态和表面资源");
+    reportStartup("data");
     await reload(core.utc_to_tdb(Date.now() / 1000));
     assertLive();
     if (
@@ -1722,9 +1728,10 @@ export async function createWorkspace(
       assertLive();
     }
     sdk.camera.view("overview");
-    options.onStartup?.("启动三维渲染器");
+    reportStartup("renderer");
     runtime.lighting("shadow");
     core.start_renderer(canvas);
+    reportStartup("ready");
     state.startupMs = Math.max(0, performance.now() - startupAt);
     state.active = true;
     if (options.backgroundGalaxy !== false) runtime.galaxy(true);

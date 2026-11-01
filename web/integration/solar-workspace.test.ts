@@ -2234,3 +2234,26 @@ test("high-speed forward and reverse playback stop inside NASA default century l
   await assert.rejects(app.seekUtc("1949-12-30T00:00"),/时间覆盖范围/);
  } finally {await app.dispose();}
 });
+
+
+test("startup progress follows actual async boundaries and completes only after renderer startup", async () => {
+  const phases:number[]=[];
+  const fixtures=harness();
+  const app=await createWorkspace("#test",()=>{},new AbortController().signal,{
+    ...fixtures,
+    onStartup: (_phase, progress) => phases.push(progress?.completedStages ?? -1),
+  });
+  try { assert.deepEqual(phases,[0,1,2,3,4,5]); } finally { await app.dispose(); }
+});
+
+
+test("failed WASM initialization never reports later startup completion", async () => {
+  const phases:number[]=[];
+  const fixtures=harness();
+  await assert.rejects(createWorkspace("#test",()=>{},new AbortController().signal,{
+    ...fixtures,
+    onStartup: (_phase, progress) => phases.push(progress.completedStages),
+    loadCore: async () => ({ ...(await fixtures.loadCore()), default: async () => { throw Error("WASM download unavailable"); } }),
+  }), /WASM download unavailable/);
+  assert.deepEqual(phases,[0,1]);
+});

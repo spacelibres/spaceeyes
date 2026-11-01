@@ -8,12 +8,9 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { ZoomButtonGesture, type ZoomDirection } from "../lib/zoom-button";
-import {
-  TIME_RATES,
-  rateToSliderIndex,
-  adjacentRate,
-  formatRate,
-} from "../lib/time-controls";
+import LoadingScene from "./loading-scene";
+import ObservationTimeline from "./observation-timeline";
+import { startupProgress, type StartupProgress } from "../lib/startup-progress";
 import SolarTuningPanel from "./solar-tuning-panel";
 import { TouchCamera } from "../lib/touch-camera";
 import { SceneGesture } from "../lib/scene-gesture";
@@ -29,6 +26,7 @@ export type CatalogEntry = {
   keywords?: string[];
 };
 export type WorkspaceViewProps = {
+  loadingProgress?: StartupProgress;
   planetPreparation?: { ready: number; total: number; failed: number };
   cameraDebug?: Readonly<Record<string, unknown>>;
   performance?: Readonly<Record<string, unknown>>;
@@ -121,7 +119,6 @@ export type WorkspaceViewProps = {
   onTrails: () => void;
 };
 export default function WorkspaceView(p: WorkspaceViewProps) {
-  const [timeExpanded, setTimeExpanded] = useState(true);
   const [sharing, setSharing] = useState(false);
   const [copyStatus, setCopyStatus] = useState("");
   const [settingsCategory, setSettingsCategory] = useState("观察");
@@ -340,7 +337,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
   return (
     <main
       ref={screen}
-      className={`immersive ${timeExpanded ? "time-expanded" : "time-collapsed"}`}
+      className="immersive"
       onKeyDown={(event) => {
         if (event.key === "Escape" && panel) {
           event.stopPropagation();
@@ -612,29 +609,29 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                   : "太阳系总览"}
             </span>
           </div>
-          {!p.active && (
-            <div className="viewport-empty">
-              <h2>
-                {p.busy
-                  ? "正在准备三维场景"
-                  : p.phase.startsWith("启动失败")
+          {!p.active &&
+            (p.busy ? (
+              <LoadingScene
+                progress={p.loadingProgress ?? startupProgress("module")}
+                detail={p.phase}
+                planets={p.planetPreparation}
+                onCancel={p.onStop}
+              />
+            ) : (
+              <div className="viewport-empty">
+                <h2>
+                  {p.phase.startsWith("启动失败")
                     ? "暂时无法进入场景"
                     : "从太阳系出发"}
-              </h2>
-              <p>
-                {p.busy
-                  ? p.phase
-                  : "进入工作区，选择天体、观察关联对象并探索时间。"}
-              </p>
-              <button disabled={p.busy} onClick={p.onStart}>
-                {p.busy
-                  ? "正在加载…"
-                  : p.phase.startsWith("启动失败")
+                </h2>
+                <p>进入工作区，选择天体、观察关联对象并探索时间。</p>
+                <button onClick={p.onStart}>
+                  {p.phase.startsWith("启动失败")
                     ? "重新进入工作区 →"
                     : "进入三维工作区 →"}
-              </button>
-            </div>
-          )}
+                </button>
+              </div>
+            ))}
           <div className="view-controls" ref={observationTools}>
             <button
               className="zoom-button"
@@ -1129,79 +1126,22 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
           </section>
         </aside>
       </div>
-      <section className="timeline" aria-label="统一时间控制">
-        <div>
-          <p className="eyebrow">统一仿真时间</p>
-          <output>{p.utc || "尚未设置时间"}</output>
-        </div>
-        <div className="time-summary" aria-live="off">
-          <span>{p.playing ? formatRate(Number(p.rate)) : "已暂停"}</span>
-          <span className={p.live ? "live-badge is-live" : "live-badge"}>
-            {p.live ? "● LIVE" : "历史 / 仿真"}
-          </span>
-        </div>
-        <button
-          className="time-toggle"
-          aria-expanded={timeExpanded}
-          aria-controls="rate-controls"
-          onClick={() => setTimeExpanded(!timeExpanded)}
-        >
-          {timeExpanded ? "收起时间栏 ▾" : "展开时间栏 ▴"}
-        </button>
-        <div
-          id="rate-controls"
-          className="rate-controls"
-          hidden={!timeExpanded}
-        >
-          <button
-            disabled={!p.active || (p.busy && !p.playing)}
-            onClick={p.onPlay}
-          >
-            {p.playing ? "Ⅱ 暂停" : "▶ 播放"}
-          </button>
-          <button
-            aria-label="降低播放倍率"
-            disabled={!p.active || p.busy || Number(p.rate) <= TIME_RATES[0]}
-            onClick={() => p.onRate(String(adjacentRate(Number(p.rate), -1)))}
-          >
-            −
-          </button>
-          <label className="rate-slider">
-            播放速率 · {formatRate(Number(p.rate))}
-            <input
-              aria-label="播放速率"
-              aria-valuetext={formatRate(Number(p.rate))}
-              type="range"
-              min="0"
-              max="100"
-              step="1"
-              disabled={!p.active || p.busy}
-              value={rateToSliderIndex(Number(p.rate))}
-              onChange={(e) =>
-                p.onRate(String(TIME_RATES[Number(e.target.value)]))
-              }
-            />
-          </label>
-          <button
-            aria-label="提高播放倍率"
-            disabled={!p.active || p.busy || Number(p.rate) >= TIME_RATES[100]}
-            onClick={() => p.onRate(String(adjacentRate(Number(p.rate), 1)))}
-          >
-            +
-          </button>
-          <button disabled={!p.active || p.busy} onClick={() => p.onRate("1")}>
-            1× 速度
-          </button>
-        </div>
-        <button
-          className="time-detail-toggle"
-          data-panel="time"
-          aria-expanded={panel === "time"}
-          aria-controls="time-panel"
-          onClick={() => togglePanel("time")}
-        >
-          日期与跳转
-        </button>
+      <ObservationTimeline
+        active={p.active}
+        busy={p.busy}
+        playing={p.playing}
+        rate={Number(p.rate)}
+        live={p.live}
+        utc={p.utc}
+        dateOpen={panel === "time"}
+        onDate={() => {
+          if (!p.utcJump && p.utc) p.onUtcInput(p.utc.slice(0, 16));
+          togglePanel("time");
+        }}
+        onNow={p.onNow}
+        onPlay={p.onPlay}
+        onRate={p.onRate}
+      >
         <div
           id="time-panel"
           className="time-panel tool-panel"
@@ -1227,10 +1167,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             跳转日期
           </button>
         </div>
-        <button disabled={!p.active} onClick={p.onNow}>
-          当前时间
-        </button>
-      </section>
+      </ObservationTimeline>
       {fullscreenError && (
         <p className="error" role="alert">
           {fullscreenError}
