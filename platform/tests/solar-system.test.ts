@@ -1,7 +1,7 @@
 import { eyesDefinitions } from "../eyes-catalog.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { SolarSystemData, hasDisplayCatalog } from "../solar-system.ts";
+import { SolarSystemData, hasDisplayCatalog, solarCatalog } from "../solar-system.ts";
 import type { PluginContext } from "../plugin-host.ts";
 function orb(radius: number) {
   const b = new Uint8Array(28 + 144),
@@ -1748,4 +1748,62 @@ test('InSight landed LLA orientation overrides earlier uncovered ORI without req
  const source=new SolarSystemData(ctx,{fetch:async()=>{throw Error('earlier ORI must not be fetched after fixed LLA overrides');}});
  try{await source.load(['sc_insight'],596533603,['sc_insight']);assert.equal(source.status('sc_insight')?.orientationStatus,'ready');assert.ok(source.orientation('sc_insight',596533603).every(Number.isFinite));assert.equal(source.hasTrajectory('sc_insight',596533603),false);}
  finally{source.dispose();eyesDefinitions.mars=old;}
+});
+
+test('ORI cache identity and source ordering survive forward/reverse covered-stage switches',async()=>{
+ const old=eyesDefinitions.earth.controllers;
+ eyesDefinitions.earth.controllers=[{type:'dynamo',url:'earth/a/ori'},{type:'dynamo',url:'earth/b/ori',coverage:[4,6]}];
+ const {ctx}=context();let requests=0;
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+  const url=String(input);if(!url.includes('type=ori'))return new Response(orb(10));
+  requests++;const t=Number(new URL(url,'http://localhost').searchParams.get('epoch')),b=t>=4&&t<=6;const bytes=orientation(),v=new DataView(bytes.buffer);
+  if(b)for(let i=0;i<2;i++){v.setFloat64(20+i*64,0,true);v.setFloat64(44+i*64,1,true);}
+  return new Response(bytes,{headers:{'x-dyn-controller-selection':JSON.stringify({track:b?'earth/b/ori':'earth/a/ori'})}});
+ }});
+ try{
+  await source.load(['earth'],3);assert.deepEqual(source.orientation('earth',3),[1,0,0,0]);
+  const restore=source.checkpoint();
+  for(const t of [4,6.001,5,3]){assert.equal(source.needsOrientationRefresh('earth',t),true);await source.refreshOrientation('earth',t);assert.deepEqual(source.orientation('earth',t),t>=4&&t<=6?[0,0,0,1]:[1,0,0,0]);}
+  assert.equal(requests,5);source.retain([]);restore();assert.deepEqual(source.orientation('earth',3),[1,0,0,0]);assert.equal(source.needsOrientationRefresh('earth',4),true);
+ }finally{source.dispose();eyesDefinitions.earth.controllers=old;}
+});
+test('ORI effective cache domain refreshes an overlapping source despite unchanged declared set',async()=>{
+ const old=eyesDefinitions.earth.controllers;eyesDefinitions.earth.controllers=[{type:'dynamo',url:'earth/a/ori'},{type:'dynamo',url:'earth/b/ori'}];
+ const {ctx}=context();const source=new SolarSystemData(ctx,{fetch:async input=>new Response(String(input).includes('type=ori')?orientation():orb(10),String(input).includes('type=ori')?{headers:{'x-dyn-controller-selection':JSON.stringify({track:'earth/a/ori',upperExclusive:4})}}:{})});
+ try{await source.load(['earth'],3);assert.equal(source.needsOrientationRefresh('earth',3.5),false);assert.equal(source.needsOrientationRefresh('earth',4),true);assert.throws(()=>source.orientation('earth',4),/orientation/i);}
+ finally{source.dispose();eyesDefinitions.earth.controllers=old;}
+});
+test('ORI proven multi-source absence retains fixed attitude only inside its open domain',async()=>{
+ const old=eyesDefinitions.earth.controllers;eyesDefinitions.earth.controllers=[{type:'fixed',orientation:{constructor:'Quaternion',values:[1,0,0,0]}},{type:'dynamo',url:'earth/a/ori'},{type:'dynamo',url:'earth/b/ori'}];
+ const {ctx}=context();const source=new SolarSystemData(ctx,{fetch:async input=>String(input).includes('type=ori')?new Response('outside',{status:502,headers:{'x-dyn-orientation-absence':JSON.stringify({track:'orientation-absence',lowerExclusive:2,upperExclusive:8})}}):new Response(orb(10))});
+ try{await source.load(['earth'],5);assert.equal(source.status('earth')?.orientationStatus,'ready');assert.deepEqual(source.orientation('earth',5),[1,0,0,0]);assert.equal(source.needsOrientationRefresh('earth',6),false);assert.equal(source.needsOrientationRefresh('earth',2),true);assert.equal(source.needsOrientationRefresh('earth',8),true);assert.throws(()=>source.orientation('earth',8),/orientation/i);}
+ finally{source.dispose();eyesDefinitions.earth.controllers=old;}
+});
+
+test('ORI selected earlier source is not replayed at an uncovered later slot after align',async()=>{
+ const old=eyesDefinitions.earth.controllers;eyesDefinitions.earth.controllers=[{type:'dynamo',url:'earth/a/ori'},{type:'align',primary:{type:'point',target:'sun',axis:{expression:'Pioneer.Vector3.XAxis'}}},{type:'dynamo',url:'earth/b/ori'}];
+ const {ctx}=context();const source=new SolarSystemData(ctx,{fetch:async input=>String(input).includes('type=ori')?new Response(orientation(),{headers:{'x-dyn-controller-selection':JSON.stringify({track:'earth/a/ori',upperExclusive:20})}}):new Response(orb(10))});
+ try{await source.load(['earth'],5);assert.deepEqual(source.orientation('earth',5),[0,0,0,1]);}finally{source.dispose();eyesDefinitions.earth.controllers=old;}
+});
+test('unproven ORI absence or foreign controller metadata cannot fabricate valid attitude',async()=>{
+ const old=eyesDefinitions.earth.controllers;eyesDefinitions.earth.controllers=[{type:'fixed',orientation:{constructor:'Quaternion',values:[1,0,0,0]}},{type:'dynamo',url:'earth/a/ori'},{type:'dynamo',url:'earth/b/ori'}];
+ try{for(const mode of ['wrong-domain','empty-domain','foreign-track','missing-track']){
+  const {ctx,states}=context();const source=new SolarSystemData(ctx,{fetch:async input=>{
+   if(!String(input).includes('type=ori'))return new Response(orb(10));
+   if(mode==='foreign-track'||mode==='missing-track')return new Response(orientation(),mode==='foreign-track'?{headers:{'x-dyn-controller-selection':JSON.stringify({track:'foreign/ori'})}}:{});
+   return new Response('bad',{status:502,headers:{'x-dyn-orientation-absence':JSON.stringify(mode==='wrong-domain'?{track:'orientation-absence',lowerExclusive:6,upperExclusive:8}:{track:'orientation-absence'})}});
+  }});
+  try{await source.load(['earth'],5);source.publishAt(5);assert.equal(source.status('earth')?.orientationStatus,'unavailable',mode);assert.equal((states.get('earth') as any).orientationWxyz,undefined,mode);}finally{source.dispose();}
+ }}finally{eyesDefinitions.earth.controllers=old;}
+});
+
+test('ORI multi-source absence shares the 256-object budget and retain/rollback lifecycle',async()=>{
+ const originalLength=solarCatalog.length,ids=Array.from({length:257},(_,i)=>'test_ori_budget_'+i);
+ for(const id of ids){solarCatalog.push({...solarCatalog.find(x=>x.id==='earth')!,id,orbPath:undefined,parentId:null} as any);eyesDefinitions[id]={parents:[],controllers:[{type:'fixed',position:{constructor:'Vector3',values:[10,0,0]},orientation:{constructor:'Quaternion',values:[1,0,0,0]}},{type:'dynamo',url:id+'/a/ori'},{type:'dynamo',url:id+'/b/ori'}]};}
+ const {ctx}=context();const source=new SolarSystemData(ctx,{fetch:async()=>new Response('outside',{status:502,headers:{'x-dyn-orientation-absence':JSON.stringify({track:'orientation-absence',lowerExclusive:2,upperExclusive:8})}})});
+ try{
+  for(const id of ids.slice(0,256)){await source.load([id],5);assert.equal(source.status(id)?.orientationStatus,'ready');}
+  await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'unavailable');assert.match(source.status(ids[256])?.orientationError??'',/budget/i);
+  const restore=source.checkpoint();source.retain([ids[256]]);await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'ready');restore();await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'unavailable');
+ }finally{source.dispose();solarCatalog.splice(originalLength);for(const id of ids)delete eyesDefinitions[id];}
 });

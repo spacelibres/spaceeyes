@@ -143,3 +143,8 @@ export const eyesDependencies = (() => {
       };
     });
 })();
+
+/** Orientation cache identity includes active declarations, not only an object's parent. */
+export function orientationTrackKey(id:string,epoch:number):string {
+  return JSON.stringify(declaredTracks(id,"ori",epoch));
+}

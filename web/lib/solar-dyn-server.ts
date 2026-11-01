@@ -34,6 +34,10 @@ export class OrientationOutsideCoverage extends Error {
   readonly coverage: readonly [number,number];
   constructor(coverage: readonly [number, number]) { super("Outside source coverage");this.coverage=coverage; }
 }
+export class OrientationControllersOutsideCoverage extends Error {
+  readonly domain: PositionSelection;
+  constructor(domain: PositionSelection) {super("Outside source coverage across orientation controllers");this.domain=domain;}
+}
 class PositionOutsideCoverage extends Error {
   readonly lowerExclusive?:number;
   readonly upperExclusive?:number;
@@ -177,12 +181,12 @@ export async function fetchSolarDyn(
 ): Promise<Uint8Array> {
   if (!Number.isFinite(epoch)) throw Error("Invalid solar resource");
   const allDeclared = declaredTracks(id, type);
-  const declared = declaredTracks(id, type, type === "orb" ? epoch : undefined);
-  if (type === "orb" && allDeclared.length && !declared.length)
+  const declared = declaredTracks(id, type, epoch);
+  if (allDeclared.length && !declared.length)
     throw Error("Outside source controller coverage");
   // Entity evaluates position controllers in declaration order: later covered
   // tracks override earlier tracks, regardless of the URL's parent-looking path.
-  const tracks = type === "orb" ? [...declared].reverse() : declared;
+  const tracks = [...declared].reverse();
   if (!getEyesDefinition(id) || !tracks.length)
     return fetchTrack(id, epoch, signal, fetcher, type, onSelection);
   let failure: unknown;
@@ -202,7 +206,7 @@ export async function fetchSolarDyn(
         value => { domain=value; },
       );
       if (selection) onSelection?.(selection);
-      if(type==="orb") {
+      {
         const lower=Math.max(lowerExclusive,domain?.lowerExclusive??-Infinity);
         const upper=Math.min(upperExclusive,domain?.upperExclusive??Infinity);
         onController?.({track,
@@ -214,8 +218,14 @@ export async function fetchSolarDyn(
     } catch (e) {
       signal.throwIfAborted();
       // Only proven source absence of this epoch permits trying an earlier
-      // position controller. Transport/decode failures are not coverage facts.
+      // controller. Transport/decode failures are not coverage facts.
       if (type === "orb" && !(e instanceof PositionOutsideCoverage)) throw e;
+      if (type === "ori") {
+        if (!(e instanceof OrientationOutsideCoverage)) throw e;
+        if (epoch < e.coverage[0]) upperExclusive=Math.min(upperExclusive,e.coverage[0]);
+        else if (epoch > e.coverage[1]) lowerExclusive=Math.max(lowerExclusive,e.coverage[1]);
+        else throw e;
+      }
       if(e instanceof PositionOutsideCoverage){
         lowerExclusive=Math.max(lowerExclusive,e.lowerExclusive??-Infinity);
         lowerInclusive=Math.max(lowerInclusive,e.lowerInclusive??-Infinity);
@@ -225,6 +235,8 @@ export async function fetchSolarDyn(
     }
   }
   if (tracks.length > 1 && failure instanceof OrientationOutsideCoverage)
-    throw Error("Outside source coverage across multiple orientation tracks");
+    throw new OrientationControllersOutsideCoverage({track:"orientation-absence",
+      ...(Number.isFinite(lowerExclusive)?{lowerExclusive}:{}),
+      ...(Number.isFinite(upperExclusive)?{upperExclusive}:{})});
   throw failure;
 }

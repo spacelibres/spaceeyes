@@ -28,6 +28,7 @@ import {
   eyesDefinitions,
   parentAt,
   positionTrackKey,
+  orientationTrackKey,
   positionTrackBoundaries,
   positionFrameKey,
 } from "./eyes-catalog.ts";
@@ -89,6 +90,10 @@ class OrientationOutsideCoverage extends Error {
   readonly coverage: [number,number];
   constructor(coverage: [number,number]) {super("Outside orientation source coverage");this.coverage=coverage;}
 }
+class OrientationControllersOutsideCoverage extends Error {
+  readonly domain: PositionSelection;
+  constructor(domain:PositionSelection) {super("Outside orientation controllers coverage");this.domain=domain;}
+}
 export type SolarStatus = {
   id: string;
   status:
@@ -140,6 +145,9 @@ export class SolarSystemData {
   #dataTracks = new Map<string, string>();
   #dataSelections = new Map<string,PositionSelection>();
   #ori = new Map<string, DecodedDyn>();
+  #oriKeys = new Map<string,string>();
+  #oriSelections = new Map<string,PositionSelection>();
+  #oriAbsences = new Map<string,PositionSelection>();
   #states = new Map<string, SolarStatus>();
   #generation = 0;
   // Scene requests can be cancelled without invalidating a transaction rollback.
@@ -217,6 +225,14 @@ export class SolarSystemData {
     const r = await this.#fetch(url, { signal, redirect: "error" });
     if (!r.ok || r.redirected) {
       await r.body?.cancel();
+      const absence = r.headers.get("x-dyn-orientation-absence");
+      if (r.status === 502 && absence && absence.length <= 1024 && url.includes("type=ori")) {
+        let domain:PositionSelection|undefined;
+        try {domain=parsePositionSelection(absence);}catch {}
+        if(domain?.track==="orientation-absence" && domain.lowerInclusive===undefined &&
+           (domain.lowerExclusive!==undefined || domain.upperExclusive!==undefined))
+          throw new OrientationControllersOutsideCoverage(domain);
+      }
       const raw = r.headers.get("x-dyn-orientation-coverage");
       if (r.status === 502 && raw && raw.length <= 256 && url.includes("type=ori")) {
         let coverage: unknown;
@@ -298,6 +314,9 @@ export class SolarSystemData {
     const dataSelections = new Map(this.#dataSelections);
     const retained = this.#retained ? new Set(this.#retained) : undefined;
     const ori = new Map(this.#ori);
+    const oriKeys = new Map(this.#oriKeys);
+    const oriSelections = new Map(this.#oriSelections);
+    const oriAbsences = new Map(this.#oriAbsences);
     const outsideOri = new Map(this.#outsideOri);
     const spinAnchors = new Map(
       [...this.#spinAnchors].map(([id, values]) => [id, new Map(values)]),
@@ -325,6 +344,9 @@ export class SolarSystemData {
       dataTracks.clear();
       dataSelections.clear();
       ori.clear();
+      oriKeys.clear();
+      oriSelections.clear();
+      oriAbsences.clear();
       outsideOri.clear();
       spinAnchors.clear();
       states.clear();
@@ -349,6 +371,9 @@ export class SolarSystemData {
       this.#dataSelections = new Map(dataSelections);
       this.#retained = retained;
       this.#ori = new Map(ori);
+      this.#oriKeys = new Map(oriKeys);
+      this.#oriSelections = new Map(oriSelections);
+      this.#oriAbsences = new Map(oriAbsences);
       this.#outsideOri = new Map(outsideOri);
       this.#spinAnchors = new Map(
         [...spinAnchors].map(([id, values]) => [id, new Map(values)]),
@@ -395,7 +420,7 @@ export class SolarSystemData {
       throw Error("Invalid retained scene");
     this.clearTrailHistory();
     this.#cancelLoads();
-    for (const map of [this.#data, this.#ori, this.#dataParents, this.#dataTracks, this.#dataSelections, this.#outsideOri])
+    for (const map of [this.#data, this.#ori, this.#dataParents, this.#dataTracks, this.#dataSelections, this.#outsideOri, this.#oriKeys, this.#oriSelections, this.#oriAbsences])
       for (const id of map.keys()) if (!keep.has(id)) map.delete(id);
     for (const key of this.#provenance.keys())
       if (!keep.has(key.slice(0, key.lastIndexOf(":"))))
@@ -434,7 +459,7 @@ export class SolarSystemData {
     });
   }
   #cache(map: Map<string, DecodedDyn>, id: string, value: DecodedDyn) {
-    const ids = new Set([...this.#data.keys(), ...this.#ori.keys(), id]);
+    const ids = new Set([...this.#data.keys(), ...this.#ori.keys(), ...this.#oriKeys.keys(), id]);
     if (ids.size > 256) throw Error("DYN cached object budget exceeded");
     const count = (d?: DecodedDyn) =>
       d ? (d.kind === "inline" ? d.records.length : d.segments.length) : 0;
@@ -753,13 +778,31 @@ export class SolarSystemData {
     const status = this.#states.get(id);
     if (status) {status.orientationStatus = "ready"; delete status.orientationError;}
   }
+  #checkOrientationBudget(id:string) {
+    const ids=new Set([...this.#data.keys(),...this.#ori.keys(),...this.#oriKeys.keys(),id]);
+    if(ids.size>256)throw Error("Orientation cached object budget exceeded");
+  }
+  #oriAbsent(id:string,epoch:number):boolean {
+    if(this.#oriKeys.get(id)!==orientationTrackKey(id,epoch))return false;
+    const domain=this.#oriAbsences.get(id);
+    if(domain)return acceptsPositionEpoch(domain,epoch);
+    const bounds=this.#outsideOri.get(id);
+    return !!bounds && (epoch<bounds[0] || epoch>bounds[1]);
+  }
+  #oriCacheValid(id:string,epoch:number):boolean {
+    const ori=this.#ori.get(id);
+    return !!ori && this.#oriKeys.get(id)===orientationTrackKey(id,epoch) &&
+      epoch>=ori.coverage.start && epoch<=ori.coverage.end &&
+      acceptsPositionEpoch(this.#oriSelections.get(id),epoch);
+  }
   needsOrientationRefresh(id: string, epoch: number): boolean {
-    const coverage = this.#outsideOri.get(id);
-    const ori = this.#ori.get(id);
-    return Number.isFinite(epoch) &&
-      (coverage ? epoch >= coverage[0] && epoch <= coverage[1] : !!ori) &&
-      (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) &&
-      activeController(id, epoch, "dynamo").some(isOrientationDynamo);
+    if(!Number.isFinite(epoch) || this.status(id)?.status!=="ready")return false;
+    const active=activeController(id,epoch,"dynamo");
+    if(!active.some(isOrientationDynamo))return false;
+    const all=(eyesDefinitions[id]?.controllers??[]).filter(c=>!c.coverage || (epoch>=Number(c.coverage[0])&&epoch<=Number(c.coverage[1])));
+    const lastFixed=all.findLastIndex(c=>c.type==='fixed'&&(c.orientation?.constructor==='Quaternion'||c.llaOnSpheroid?.constructor==='LatLonAlt'));
+    if(lastFixed>=all.findLastIndex(isOrientationDynamo))return false;
+    return !this.#oriAbsent(id,epoch) && !this.#oriCacheValid(id,epoch);
   }
   async #prepareOrientation(
     id: string,
@@ -796,18 +839,29 @@ export class SolarSystemData {
     const lastFixed=active.findLastIndex(c=>c.type==='fixed'&&(c.orientation?.constructor==='Quaternion'||c.llaOnSpheroid?.constructor==='LatLonAlt'));
     if (active.some(isOrientationDynamo) && lastFixed<active.findLastIndex(isOrientationDynamo)) {
       let ori = this.#ori.get(id);
-      if (!ori || epoch < ori.coverage.start || epoch > ori.coverage.end) {
+      if (!this.#oriAbsent(id,epoch) && !this.#oriCacheValid(id,epoch)) {
         let result;
         try {
           result = await this.#read(`/api/solar-dyn/${id}?epoch=${epoch}&type=ori`);
         } catch (error) {
-          if (!(error instanceof OrientationOutsideCoverage) ||
+          if(error instanceof OrientationControllersOutsideCoverage) {
+            if(!acceptsPositionEpoch(error.domain,epoch))throw error;
+          }else if (!(error instanceof OrientationOutsideCoverage) ||
               (epoch >= error.coverage[0] && epoch <= error.coverage[1])) throw error;
           if (generation !== this.#loadGeneration || this.#abort.signal.aborted ||
               (this.#retained && !this.#retained.has(id))) return;
-          if (!this.#outsideOri.has(id) && this.#outsideOri.size >= 256)
-            throw Error("Orientation coverage budget");
-          this.#outsideOri.set(id, error.coverage);
+          this.#checkOrientationBudget(id);
+          this.#oriKeys.set(id,orientationTrackKey(id,epoch));
+          this.#ori.delete(id);
+          this.#oriSelections.delete(id);
+          this.#provenance.delete(id+":ori");
+          if(error instanceof OrientationControllersOutsideCoverage) {
+            this.#oriAbsences.set(id,error.domain);
+            this.#outsideOri.delete(id);
+          }else {
+            this.#outsideOri.set(id,error.coverage);
+            this.#oriAbsences.delete(id);
+          }
           this.#orientationAt(id, epoch);
           return;
         }
@@ -823,7 +877,17 @@ export class SolarSystemData {
           (this.#retained && !this.#retained.has(id))
         )
           return;
+        const dynamics=active.filter(isOrientationDynamo);
+        if(result.controller && (!dynamics.some(c=>c.url===result.controller!.track) || !acceptsPositionEpoch(result.controller,epoch)))
+          throw Error("Invalid orientation controller selection");
+        if(dynamics.length>1 && !result.controller)throw Error("Missing orientation controller selection");
+        this.#checkOrientationBudget(id);
         this.#cache(this.#ori, id, ori);
+        this.#oriKeys.set(id,orientationTrackKey(id,epoch));
+        if(result.controller)this.#oriSelections.set(id,result.controller);
+        else this.#oriSelections.delete(id);
+        this.#outsideOri.delete(id);
+        this.#oriAbsences.delete(id);
         this.#provenance.set(id + ":ori", {
           url: result.url,
           ...result.evidence,
@@ -1016,10 +1080,11 @@ export class SolarSystemData {
             next.type==='fixed' && (next.orientation?.constructor==='Quaternion'||next.llaOnSpheroid?.constructor==='LatLonAlt') &&
             (!next.coverage || (t>=Number(next.coverage[0])&&t<=Number(next.coverage[1]))));
           if(laterFixed)continue;
-          const bounds = this.#outsideOri.get(id);
-          if (bounds && (t < bounds[0] || t > bounds[1])) continue;
+          if (this.#oriAbsent(id,t)) continue;
+          const selected=this.#oriSelections.get(id);
+          if(selected && selected.track!==c.url)continue;
           const d = this.#ori.get(id);
-          if (!d || t < d.coverage.start || t > d.coverage.end)
+          if (!d || !this.#oriCacheValid(id,t))
             throw Error("DYN orientation unavailable or outside coverage");
           q = normalizeOrientation(evaluateOri(d, t));
           found = true;
@@ -1063,8 +1128,8 @@ export class SolarSystemData {
       )
         continue;
       if (isOrientationDynamo(c)) {
-        const bounds = this.#outsideOri.get(id);
-        if (!bounds || (t >= bounds[0] && t <= bounds[1])) source = "dyn";
+        const selected=this.#oriSelections.get(id);
+        if (!this.#oriAbsent(id,t) && (!selected || selected.track===c.url) && this.#oriCacheValid(id,t)) source = "dyn";
       }
       if (c.type === "fixed" && (c.orientation || c.llaOnSpheroid)) source = c.llaOnSpheroid ? "derived" : "fixed";
       if (isEntityAlign(c) || c.type === "spin") source = "derived";
@@ -1746,6 +1811,9 @@ export class SolarSystemData {
     this.#states.clear();
     this.#data.clear();
     this.#ori.clear();
+    this.#oriKeys.clear();
+    this.#oriSelections.clear();
+    this.#oriAbsences.clear();
     this.#outsideOri.clear();
     this.#spinAnchors.clear();
     this.#dataParents.clear();

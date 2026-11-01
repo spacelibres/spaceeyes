@@ -1,4 +1,4 @@
-import { fetchSolarDyn, OrientationOutsideCoverage } from "../../../../lib/solar-dyn-server";
+import { fetchSolarDyn, OrientationOutsideCoverage, OrientationControllersOutsideCoverage } from "../../../../lib/solar-dyn-server";
 import type { DynSelection } from "../../../../lib/reviewed-dyn-window";
 import type {PositionSelection} from "../../../../../platform/position-selection";
 export const runtime = "nodejs";
@@ -44,6 +44,7 @@ export async function GET(
         status: 502,
         headers: {
           ...(e instanceof OrientationOutsideCoverage ? { "x-dyn-orientation-coverage": JSON.stringify(e.coverage) } : {}),
+          ...(e instanceof OrientationControllersOutsideCoverage ? {"x-dyn-orientation-absence":JSON.stringify(e.domain)} : {}),
           "x-dyn-error": String(e).includes("sample times must increase")
             ? "sample times must increase"
             : String(e).includes("Outside source coverage")

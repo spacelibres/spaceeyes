@@ -516,3 +516,33 @@ test('three complete mission controller chains resolve current cruise after futu
   const d=decodeDyn(bytes);assert.ok(d.coverage.start<=846686627&&d.coverage.end>=846686627);
  }
 });
+
+function oriRange(start:number,end:number,q=[1,0,0,0]) {
+ const bytes=new Uint8Array(140),v=new DataView(bytes.buffer);
+ v.setInt16(0,2,true);bytes.set([111,114,105,0,3,1],2);v.setInt32(8,2,true);
+ for(let i=0;i<2;i++)[i?end:start,...q,0,0,0].forEach((n,j)=>v.setFloat64(12+i*64+j*8,n,true));
+ return bytes;
+}
+test('ORI chooses the last covered controller and respects closed declared endpoints',async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:'dynamo',url:'moon/a/ori'},{type:'dynamo',url:'moon/b/ori',coverage:[4,6]}];
+ try{for(const [epoch,expected] of [[3,'moon/a/ori'],[4,'moon/b/ori'],[6,'moon/b/ori'],[6.001,'moon/a/ori']] as const){
+  const requests:string[]=[];let controller:any;
+  await fetchSolarDyn('moon',epoch,signal(),async input=>{const track=String(input).split('/dynamo/')[1].replace('/def.dyn','');requests.push(track);return new Response(oriRange(0,10));},'ori',undefined,v=>{controller=v;});
+  assert.deepEqual(requests,[expected]);assert.equal(controller.track,expected);
+ }}finally{eyesDefinitions.moon.controllers=old;}
+});
+test('ORI root coverage fallback exports cache boundary but transport or decode failures never fall back',async()=>{
+ const old=eyesDefinitions.moon.controllers;eyesDefinitions.moon.controllers=[{type:'dynamo',url:'moon/a/ori'},{type:'dynamo',url:'moon/b/ori'}];
+ try{let controller:any;const requests:string[]=[];
+  await fetchSolarDyn('moon',3,signal(),async input=>{const b=String(input).includes('/b/');requests.push(b?'b':'a');return new Response(b?oriRange(4,6):oriRange(0,10));},'ori',undefined,v=>{controller=v;});
+  assert.deepEqual(requests,['b','a']);assert.equal(controller.upperExclusive,4);
+  for(const mode of ['http','decode'])await assert.rejects(()=>fetchSolarDyn('moon',5,signal(),async input=>String(input).includes('/b/')?(mode==='http'?new Response('',{status:503}):new Response(new Uint8Array([1,2,3]))):new Response(oriRange(0,10)),'ori'),mode==='http'?/HTTP 503/:/DYN/);
+ }finally{eyesDefinitions.moon.controllers=old;}
+});
+test('ORI multi-track absence describes only the proven open gap',async()=>{
+ const old=eyesDefinitions.moon.controllers;eyesDefinitions.moon.controllers=[{type:'dynamo',url:'moon/a/ori'},{type:'dynamo',url:'moon/b/ori'}];
+ try{await assert.rejects(()=>fetchSolarDyn('moon',5,signal(),async input=>new Response(String(input).includes('/b/')?oriRange(8,10):oriRange(0,2)),'ori'),(e:any)=>{
+  assert.deepEqual(e.domain,{track:'orientation-absence',lowerExclusive:2,upperExclusive:8});return true;
+ });}finally{eyesDefinitions.moon.controllers=old;}
+});
