@@ -417,6 +417,10 @@ export async function createWorkspace(
   let stellarSettings = solarWorkspaceSettings(options.stellarSettings);
   let desiredPlaying = false;
   let lastPublishedEpoch = core.epoch();
+  // NASA BaseApp defaults, UTC dates converted by the scientific time library.
+  const timeMinimum = core.utc_to_tdb(Date.parse("1949-12-31T00:00:00Z") / 1000);
+  const timeMaximum = core.utc_to_tdb(Date.parse("2049-12-31T00:00:00Z") / 1000);
+
   const secondaryRestores = new Set<string>();
   const secondaryLoads = new Set<string>();
   const secondaryRetryAt = new Map<string, number>();
@@ -1060,6 +1064,12 @@ export async function createWorkspace(
       return Promise.reject(new Error("工作区已关闭"));
     if (!Number.isFinite(epoch) || Math.abs(epoch) > 1e12)
       return Promise.reject(new Error("请输入有限的 J2000 TDB 秒"));
+    if (epoch < timeMinimum || epoch > timeMaximum) {
+      desiredPlaying = false;
+      sdk.time.setPlayback(false, state.rate);
+      emit();
+      return Promise.reject(new Error("超出 NASA Eyes 时间覆盖范围：1949-12-31 至 2049-12-31（UTC）"));
+    }
     const current = ++revision;
     state.busy = true;
     state.phase = "按对象和时间加载数据";
@@ -1746,7 +1756,14 @@ export async function createWorkspace(
       const workStarted=performance.now();
       try {
         if (!state.busy) {
-          core.tick(lastFrame === undefined ? 0 : accepted);
+          const elapsed = lastFrame === undefined ? 0 : accepted;
+          const predictedEpoch = core.epoch() + (core.playing() ? elapsed * state.rate : 0);
+          if (predictedEpoch < timeMinimum || predictedEpoch > timeMaximum) {
+            // NASA application TimeManager stops one millisecond inside the limit.
+            sdk.time.seek(predictedEpoch < timeMinimum ? timeMinimum + .001 : timeMaximum - .001);
+            sdk.time.setPlayback(false, state.rate);
+            desiredPlaying = false;
+          } else core.tick(elapsed);
           if (
             state.selected &&
             data.status(state.selected)?.status === "ready" &&

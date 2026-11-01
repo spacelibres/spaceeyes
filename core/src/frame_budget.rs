@@ -190,7 +190,9 @@ impl FrameBudget {
         } else {
             // Overload may change cadence, never resource precision or render quality.
             self.overload = None;
-            if p95 < 8. && self.snapshot.noncritical_pending <= 2 {
+            // Pending count is not elapsed work: bounded trajectory jobs may remain
+            // queued throughout accelerated playback. Only measured cost gates recovery.
+            if p95 < 8. {
                 let start = *self.recovery.get_or_insert(now);
                 if now - start >= 10. {
                     self.intervals.clear();
@@ -306,6 +308,19 @@ mod tests {
             );
         }
         assert_eq!(budget.snapshot().target_fps, 30);
+    }
+
+    #[test]
+    fn bounded_background_work_does_not_lock_recovered_renderer_at_thirty() {
+        let mut budget = FrameBudget::default();
+        budget.snapshot.target_fps = 30;
+        budget.set_noncritical_pending(4);
+        for i in 0..=330 {
+            budget.record_cpu(i as f64 / 30., 5.7);
+        }
+        assert_eq!(budget.snapshot().target_fps, 60);
+        assert_eq!(budget.snapshot().noncritical_pending, 4);
+        assert_eq!(budget.snapshot().resolution_scale, 1.);
     }
 
     #[test]

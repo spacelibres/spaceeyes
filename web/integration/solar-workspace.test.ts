@@ -379,14 +379,14 @@ test("returning to overview invalidates a pending seek before it can change time
       ...fixtures,
       fetch: async (input) => {
         const url = String(input);
-        if (url.includes("epoch=10000000000")) {
+        if (url.includes("epoch=1400000000")) {
           began();
           await gate;
         }
         return new Response(
           sample(
             url.includes("type=ori"),
-            url.includes("epoch=10000000000") ? 2e10 : 4e9,
+            url.includes("epoch=1400000000") ? 2e9 : 1e9,
           ),
         );
       },
@@ -395,7 +395,7 @@ test("returning to overview invalidates a pending seek before it can change time
   try {
     const before = fixtures.core().epoch();
     // Force a request outside the initial loaded coverage.
-    const seeking = app.seek(1e10);
+    const seeking = app.seek(1.4e9);
     await ready;
     app.overview();
     release();
@@ -1232,7 +1232,7 @@ test("scene cache diagnostics stay bounded across scene changes and failed time 
     const before = states.at(-1)!.dataCache;
     assert.ok(before.records > 0 && before.records <= before.maxRecords);
     assert.ok(before.positionEntries > 0 && before.positionEntries <= 256);
-    await assert.rejects(app.seek(2e9));
+    await assert.rejects(app.seek(1.4e9));
     assert.equal(states.at(-1)!.epoch, 100);
     assert.ok(states.at(-1)!.dataCache.records <= before.maxRecords);
   } finally {
@@ -1755,11 +1755,11 @@ test("expired orbit maintenance publishes at most one path per animation frame",
   try {
     const before = fixtures.trails().length;
     // Advance authoritative time independently of cosmetic trajectory cache windows.
-    fixtures.seekEpoch(2e9);
+    fixtures.seekEpoch(1.4e9);
     fixtures.step(200);
     assert.ok(fixtures.trails().length - before <= 1,
       `one frame rebuilt ${fixtures.trails().length - before} paths`);
-    assert.equal(fixtures.core().epoch(), 2e9);
+    assert.equal(fixtures.core().epoch(), 1.4e9);
     for (let frame = 1; frame < 12; frame++) {
       const count = fixtures.trails().length;
       fixtures.step(200 + frame * 20);
@@ -1767,7 +1767,7 @@ test("expired orbit maintenance publishes at most one path per animation frame",
     }
     const refreshed = fixtures.trails().slice(before).map((trail) => trail.id);
     assert.ok(new Set(refreshed).size > 1, "maintenance must progress through background objects");
-    assert.ok(Math.abs(fixtures.core().epoch() - (2e9 + 0.22)) < 0.00001, "cosmetic maintenance preserves elapsed simulation time");
+    assert.ok(Math.abs(fixtures.core().epoch() - (1.4e9 + 0.22)) < 0.00001, "cosmetic maintenance preserves elapsed simulation time");
   } finally {
     await app.dispose();
   }
@@ -2211,4 +2211,26 @@ test('Huygens closed landing endpoint retains its reviewed Titan reference',asyn
  const titan=JSON.parse(fixtures.core().state_at('titan',158974766.184));
  assert.ok(titan.positionKm.every(Number.isFinite));
  }finally{await app.dispose();}
+});
+
+
+test("high-speed forward and reverse playback stop inside NASA default century limits", async () => {
+ const fixture=harness();const states:SolarSnapshot[]=[];
+ const app=await createWorkspace("#test",s=>states.push(s),new AbortController().signal,{
+  ...fixture,fetch:async input=>new Response(sample(String(input).includes("type=ori"))),
+ });
+ try {
+  const min=fixture.core().utc_to_tdb(Date.parse("1949-12-31T00:00:00Z")/1000);
+  const max=fixture.core().utc_to_tdb(Date.parse("2049-12-31T00:00:00Z")/1000);
+  for(const target of ["", "earth"]) for(const [edge,rate] of [[max,36000],[min,-86400]] as const) {
+   app.play(false,1);await app.seek(edge-Math.sign(rate)*1);
+   if(target)await app.select(target);else app.overview();
+   app.play(true,rate);fixture.step(0);fixture.step(100);
+   assert.equal(fixture.core().playing(),false,"crossing the global boundary pauses instead of running beyond NASA's domain");
+   assert.ok(Math.abs(fixture.core().epoch()-(edge-Math.sign(rate)*.001))<1e-5);
+   assert.equal(states.at(-1)!.selected,target);
+  }
+  await assert.rejects(app.seek(max+86400),/时间覆盖范围/);
+  await assert.rejects(app.seekUtc("1949-12-30T00:00"),/时间覆盖范围/);
+ } finally {await app.dispose();}
 });

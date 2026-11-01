@@ -1,0 +1,160 @@
+{
+  "asyncPhases": {
+    "configure": {
+      "samples": 4,
+      "p50": 2.300000011920929,
+      "p95": 6,
+      "p99": 6,
+      "latest": 2.300000011920929,
+      "mean": 5.0250000059604645,
+      "max": 11.5
+    },
+    "reloadApply": {
+      "samples": 3,
+      "p50": 12.100000023841858,
+      "p95": 12.100000023841858,
+      "p99": 12.100000023841858,
+      "latest": 12.100000023841858,
+      "mean": 9.5,
+      "max": 15.199999988079071
+    },
+    "secondaryApply": {
+      "samples": 240,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0.10000002384185791,
+      "latest": 0,
+      "mean": 0.0029166671137015026,
+      "max": 0.10000002384185791
+    },
+    "checkpoint": {
+      "samples": 4,
+      "p50": 0,
+      "p95": 0,
+      "p99": 0,
+      "latest": 0,
+      "mean": 0.025000005960464478,
+      "max": 0.10000002384185791
+    }
+  },
+  "monotonicNowMs": 110489.3,
+  "hostFrames": 4743,
+  "admittedIntervalMs": {
+    "samples": 240,
+    "p50": 20.80000000000291,
+    "p95": 21,
+    "p99": 21
+  },
+  "rafIntervalMs": {
+    "samples": 240,
+    "p50": 6.900000000008731,
+    "p95": 7.100000000005821,
+    "p99": 7.19999999999709
+  },
+  "hostWorkMs": {
+    "samples": 240,
+    "p50": 2.699999988079071,
+    "p95": 3.5,
+    "p99": 3.799999952316284
+  },
+  "trajectorySliceMs": {
+    "samples": 240,
+    "p50": 1.2999999523162842,
+    "p95": 1.5,
+    "p99": 1.5
+  },
+  "trajectoryPublicationMs": {
+    "samples": 240,
+    "p50": 0,
+    "p95": 0,
+    "p99": 0
+  },
+  "longTaskMs": {
+    "samples": 5,
+    "p50": 262,
+    "p95": 304,
+    "p99": 304
+  },
+  "sampleIntervalSeconds": 1,
+  "targetHz": 60,
+  "core": {
+    "cpu_p50_ms": 4.5,
+    "cpu_p95_ms": 5.8999999999999995,
+    "cpu_p99_ms": 7.1000000000000005,
+    "gpu_ms": null,
+    "noncritical_pending": 9,
+    "present_interval_p50_ms": 20.899999999997476,
+    "present_interval_p95_ms": 22.00000000000557,
+    "present_interval_p99_ms": 22.800000000003706,
+    "rendered_frames": 4748,
+    "resolution_scale": 1,
+    "skipped_frames": 10411,
+    "stagesMs": {
+      "annotations": {
+        "count": 120,
+        "latest": 0.1,
+        "mean": 0.1924999999999998,
+        "p50": 0.2,
+        "p95": 0.3,
+        "p99": 0.4
+      },
+      "extract": {
+        "count": 120,
+        "latest": 0.5,
+        "mean": 0.5316666666666671,
+        "p50": 0.5,
+        "p95": 0.7,
+        "p99": 0.8
+      },
+      "main": {
+        "count": 120,
+        "latest": 1.7,
+        "mean": 1.5374999999999988,
+        "p50": 1.5,
+        "p95": 1.9,
+        "p99": 2.2
+      },
+      "render": {
+        "count": 120,
+        "latest": 2.6,
+        "mean": 2.600833333333333,
+        "p50": 2.5,
+        "p95": 3.5,
+        "p99": 4
+      },
+      "sync_scene": {
+        "count": 120,
+        "latest": 0,
+        "mean": 0.04499999999999998,
+        "p50": 0,
+        "p95": 0.1,
+        "p99": 0.1
+      },
+      "trajectory_upload": {
+        "count": 120,
+        "latest": 0,
+        "mean": 0.03500000000000002,
+        "p50": 0,
+        "p95": 0.1,
+        "p99": 0.2
+      }
+    },
+    "target_fps": 60,
+    "transition_reason": "cpu_recovered",
+    "transition_seconds": 20.397,
+    "visible": true,
+    "worst_one_second_frames": 7
+  },
+  "trajectoryErrors": {
+    "sc_aura": "Error: Trail unavailable",
+    "sc_aqua": "Error: Trail unavailable",
+    "sc_cygnss_3": "Error: Trail unavailable",
+    "sc_cygnss_5": "Error: Trail unavailable",
+    "sc_acs3": "Error: Outside trajectory coverage",
+    "sc_landsat_9": "Error: Trail unavailable",
+    "sc_mms_1": "Error: Trail unavailable",
+    "sc_prefire_2": "Error: Trail unavailable",
+    "sc_starling_3": "Error: Trail unavailable",
+    "sc_spherex": "Error: Trail unavailable"
+  }
+}
