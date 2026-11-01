@@ -1,5 +1,6 @@
 import {TrailHistory, type PreparedHistory} from "./trail-history.ts";
 import {eyesTrailDuration, eyesTrailNextBoundary} from "./eyes-trail-policy.ts";
+import {eyesOrbAutoLength} from "./eyes-trail-auto.ts";
 import {adaptiveTrailTimes} from "./adaptive-trail.ts";
 import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
@@ -1458,6 +1459,17 @@ export class SolarSystemData {
       if (Number.isFinite(measured)) rate = Math.max(rate, measured);
     } catch {
       /* Coverage gaps remain explicit breaks below. */
+    }
+    if (d?.kind === "inline" && d.type === "orb" && this.#positionSource(id,epoch) === "dyn") {
+      try {
+        const at=this.position(id,epoch);
+        const parent=origin ? this.position(origin,epoch) : [0,0,0];
+        const local=at.map((x,i)=>x-parent[i]) as [number,number,number];
+        const autoLength=eyesOrbAutoLength(d,epoch,local,this.sourceVelocity(id,epoch));
+        if (autoLength !== undefined) inferredPeriod=autoLength;
+      } catch {
+        /* Unsupported rotating frames retain the existing finite fallback. */
+      }
     }
     const authoredDuration = eyesTrailDuration(id, epoch);
     if (authoredDuration === 0) throw Error("Trail disabled by source policy");

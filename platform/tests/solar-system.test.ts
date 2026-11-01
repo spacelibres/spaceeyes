@@ -479,8 +479,11 @@ test("trail uses a full past period against a moving parent and caches future", 
   const { ctx } = context();
   const source = new SolarSystemData(ctx, {
     fetch: async (input) => {
-      const b = orb(String(input).includes("/moon?") ? 2 : 10000);
+      const radius=String(input).includes("/moon?") ? 2 : 10000;
+      const b = orb(radius);
       const v = new DataView(b.buffer);
+      v.setFloat64(7,radius**3*((2*Math.PI)/100)**2,true);
+      v.setFloat64(15,0,true);
       for (let i = 0; i < 2; i++) {
         v.setFloat64(28 + i * 72, i * 1000, true);
         v.setFloat64(28 + i * 72 + 24, (2 * Math.PI) / 100, true);
@@ -1335,6 +1338,8 @@ test("automatic deep-space spacecraft history is not truncated to 30 days or by 
   const epoch = 880000000;
   const source = new SolarSystemData(ctx, {fetch: async () => {
     const bytes = orb(1e8), view = new DataView(bytes.buffer);
+    view.setFloat64(7, 1e24 * (2*Math.PI/period)**2, true);
+    view.setFloat64(15, 0, true);
     for (let i=0; i<2; i++) {
       view.setFloat64(28+i*72, epoch - period*2 + i*period*4, true);
       view.setFloat64(28+i*72+24, 2*Math.PI/period, true);
@@ -1351,6 +1356,38 @@ test("automatic deep-space spacecraft history is not truncated to 30 days or by 
       assert.ok(trail.points.length <= count);
     }
   } finally { source.dispose(); }
+});
+
+test("orb automatic history uses interpolated eccentricity, combined mu and local state rather than mean motion", async () => {
+ const {ctx}=context();
+ const epoch=880000000, span=100000;
+ const original=eyesDefinitions.sc_psyche.trail;
+ eyesDefinitions.sc_psyche.trail=undefined;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{
+   const bytes=orb(100),view=new DataView(bytes.buffer);
+   view.setFloat64(7,200,true);view.setFloat64(15,100,true);
+   for(let i=0;i<2;i++) {
+     const p=28+i*72;
+     [epoch-span+i*2*span,100,0.2+i*0.4,0.02,-span*0.02+i*2*span*0.02,1,0,0,0]
+       .forEach((x,j)=>view.setFloat64(p+j*8,x,true));
+   }
+   return new Response(bytes);
+ }});
+ try {
+   await source.load(["sc_psyche"],epoch,[]);
+   for(const t of [epoch-100,epoch,epoch+100]) {
+     const r=source.position("sc_psyche",t),v=source.sourceVelocity("sc_psyche",t);
+     const h2=Math.hypot(r[1]*v[2]-r[2]*v[1],r[2]*v[0]-r[0]*v[2],r[0]*v[1]-r[1]*v[0])**2;
+     const e=0.2+0.4*((t-(epoch-span))/(2*span));
+     const energy=-(300**2)*(1-e*e)/(2*h2);
+     const expected=2*Math.PI*300/Math.sqrt(8*Math.abs(Math.min(1,energy**3)));
+     const trail=source.trailSamples("sc_psyche",t,32);
+     assert.ok(Math.abs(trail.durationSeconds-expected)<expected*1e-12,`${trail.durationSeconds} != ${expected}`);
+     assert.ok(trail.points.length<=32);
+   }
+   eyesDefinitions.sc_psyche.trail={length:500};
+   assert.equal(source.trailSamples("sc_psyche",epoch,32).durationSeconds,500,"authored duration remains authoritative");
+ }finally{source.dispose();eyesDefinitions.sc_psyche.trail=original;}
 });
 
 test("automatic spacecraft histories remain publishable for radial and stationary limits", async () => {
