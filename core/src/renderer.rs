@@ -1899,8 +1899,9 @@ fn maintain_labels(
             if text.0 != value {
                 text.0 = value;
             }
-            node.left = Val::Px(pixel.x + 8.0);
-            node.top = Val::Px(pixel.y - 8.0);
+            let origin = crate::screen_layout::label_origin(&label.object, pixel);
+            node.left = Val::Px(origin.x);
+            node.top = Val::Px(origin.y);
             commands.entity(entity).insert(Visibility::Inherited);
             commands.entity(entity).insert(TextColor(Color::srgba(
                 1.,
@@ -1918,6 +1919,7 @@ fn maintain_labels(
     }
     for (object, (text, pixel)) in desired {
         let alpha = opacity.get(&object).copied().unwrap_or(1.);
+        let origin = crate::screen_layout::label_origin(&object, pixel);
         commands.spawn((
             AnnotationLabel { object },
             Text::new(text),
@@ -1930,8 +1932,8 @@ fn maintain_labels(
             TextColor(Color::srgba(1., 1., 1., alpha)),
             Node {
                 position_type: PositionType::Absolute,
-                left: Val::Px(pixel.x + 8.0),
-                top: Val::Px(pixel.y - 8.0),
+                left: Val::Px(origin.x),
+                top: Val::Px(origin.y),
                 ..default()
             },
         ));
@@ -2407,10 +2409,12 @@ fn draw_annotations(
         .annotations()
         .filter_map(|(id, label, _)| label.filter(|text| !text.is_empty()).map(|_| id.to_owned()))
         .collect();
+    label_layout.delta_secs = time.delta_secs();
+    label_layout.hovered = hovered.clone();
     let desired_labels =
         label_layout.place(desired_labels, viewport, priority, &measured, &alive_labels);
     for (id, text, anchor) in &desired_labels {
-        if opacity.get(id).copied().unwrap_or(0.) < 0.5 {
+        if !label_layout.interactive(id) || opacity.get(id).copied().unwrap_or(0.) < 0.5 {
             continue;
         }
         if let Some(&depth) = depths.get(id) {
@@ -2418,7 +2422,7 @@ fn draw_annotations(
                 id: id.clone(),
                 depth,
                 shape: PickShape::Label {
-                    min: (*anchor + Vec2::new(8., -8.)).to_array(),
+                    min: crate::screen_layout::label_origin(id, *anchor).to_array(),
                     size: measured
                         .get(id)
                         .copied()
@@ -2430,6 +2434,11 @@ fn draw_annotations(
     }
     if let Ok(mut frame) = picks.0.lock() {
         *frame = pick_frame;
+    }
+    for (id, _, _) in &desired_labels {
+        if let Some(alpha) = opacity.get_mut(id) {
+            *alpha *= label_layout.opacity(id);
+        }
     }
     let font = if desired_labels.is_empty() {
         label_font.clone().unwrap_or_default()
@@ -2615,7 +2624,7 @@ mod label_persistence_tests {
         assert!(app.world().get::<AnnotationLabel>(entity).is_some());
         assert!((app.world().get::<TextColor>(entity).unwrap().0.alpha() - 0.2).abs() < 1e-5);
         assert_eq!(app.world().get::<Text>(entity).unwrap().0, "EARTH updated");
-        assert_eq!(app.world().get::<Node>(entity).unwrap().left, Val::Px(18.));
+        assert_eq!(app.world().get::<Node>(entity).unwrap().left, Val::Px(28.));
         app.world_mut().resource_mut::<AliveLabels>().0 =
             Some(["earth".to_owned()].into_iter().collect());
         app.world_mut().resource_mut::<DesiredLabels>().0.clear();
