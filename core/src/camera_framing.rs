@@ -9,6 +9,24 @@ pub(crate) struct FramingBody {
     pub radius_km: f64,
 }
 
+/// One-time external composition. This is not an instrument boresight or body attitude.
+pub(crate) fn initial_look_angles(
+    target: [f64; 3],
+    reference: [f64; 3],
+    sky: bool,
+) -> Option<(f32, f32)> {
+    let offset = DVec3::from_array(target) - DVec3::from_array(reference);
+    let world = if sky { -offset } else { offset };
+    let direction = DVec3::new(world.x, world.z, -world.y).try_normalize()?;
+    if !direction.is_finite() {
+        return None;
+    }
+    Some((
+        direction.x.atan2(direction.z) as f32,
+        (-direction.y.asin() as f32).clamp(-1.5, 1.5),
+    ))
+}
+
 pub(crate) fn fit_distance(
     bodies: &[FramingBody],
     camera_rotation: DQuat,
@@ -179,5 +197,32 @@ mod tests {
             assert_eq!(system_min_distance_km(id), Some(value));
         }
         assert_eq!(system_min_distance_km("moon"), None);
+    }
+}
+
+#[cfg(test)]
+mod initial_look_tests {
+    use super::*;
+    #[test]
+    fn target_and_sky_use_opposite_external_viewing_sides_in_display_basis() {
+        for reference in [[50., 0., 0.], [0., 50., 0.], [0., 0., 50.], [20., 30., 40.]] {
+            let offset = |sky| {
+                let (yaw, pitch) = initial_look_angles([0.; 3], reference, sky).unwrap();
+                bevy::math::Quat::from_rotation_y(yaw)
+                    * bevy::math::Quat::from_rotation_x(pitch)
+                    * bevy::math::Vec3::Z
+            };
+            assert!(offset(false).dot(offset(true)) < -0.98);
+            let to_reference = bevy::math::Vec3::new(
+                reference[0] as f32,
+                reference[2] as f32,
+                -reference[1] as f32,
+            )
+            .normalize();
+            assert!(offset(false).dot(to_reference) < -0.99);
+            assert!(offset(true).dot(to_reference) > 0.99);
+        }
+        assert!(initial_look_angles([0.; 3], [0.; 3], false).is_none());
+        assert!(initial_look_angles([f64::NAN; 3], [0.; 3], false).is_none());
     }
 }

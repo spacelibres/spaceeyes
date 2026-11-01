@@ -4,6 +4,7 @@ export interface CameraObservationOptions {
   readonly members?: readonly string[];
   readonly followId?: string;
   readonly systemId?: string;
+  readonly initialLook?: Readonly<{kind:"target"|"sky";referenceId:string}>;
 }
 export interface CameraObservation extends CameraObservationOptions {
   readonly targetId: string;
@@ -32,18 +33,28 @@ export function snapshotObservation(
       typeof options !== "object" ||
       Array.isArray(options) ||
       Reflect.ownKeys(options).some(
-        (key) => key !== "members" && key !== "followId" && key !== "systemId",
+        (key) => key !== "members" && key !== "followId" && key !== "systemId" && key !== "initialLook",
       ))
   )
     throw Error("invalid camera observation options");
   const context = options && Object.hasOwn(options, "systemId")
     ? { systemId: validateTargetId(options.systemId) } : {};
+  let initialLook: CameraObservationOptions["initialLook"];
+  if (options && Object.hasOwn(options,"initialLook")) {
+    const value=options.initialLook;
+    if(mode!=="nearby" || !value || typeof value!=="object" || Array.isArray(value) ||
+      Reflect.ownKeys(value).some(key=>key!=="kind"&&key!=="referenceId") ||
+      !["target","sky"].includes(value.kind))throw Error("invalid initial camera composition");
+    const referenceId=validateTargetId(value.referenceId);
+    if(referenceId===targetId)throw Error("invalid initial camera reference");
+    initialLook=Object.freeze({kind:value.kind,referenceId});
+  }
   const members = options?.members,
     followId = options?.followId;
   if (mode === "nearby") {
-    if (options && Reflect.ownKeys(options).some(key => key !== "systemId"))
+    if (options && Reflect.ownKeys(options).some(key => key !== "systemId" && key !== "initialLook"))
       throw Error("invalid nearby observation");
-    return Object.freeze({ targetId, mode, ...context });
+    return Object.freeze({ targetId, mode, ...context, ...(initialLook ? {initialLook} : {}) });
   }
   if (mode === "system") {
     if (

@@ -254,3 +254,13 @@ Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transve
 ORI只在已确认root覆盖外时跳过此姿态控制器并保留先前有效机身align。HTTP/解码失败不冒充覆盖外，多track未知范围不推断。派生来源必须明确；只有joint align不能生成机身姿态，不能使用单位四元数假装真实姿态。进入已知ORI覆盖后非阻塞补载，覆盖内DYN按NASA目录顺序覆盖派生结果。未新增平台插件任意Bevy访问能力。
 
 合法NASA wire quat按40字节记录归一现有ori结构并保留sourceType=quat，每样本角速度置零使求值为纯slerp。路径ori不能决定二进制type或头长度；未知type继续拒绝。有效ORI缓存段到期也应补载，不仅在known-outside转入有效覆盖时。NASA源若有矛盾重复时间，严格decoder不放宽，仅对登记精确SHA可选择包含请求时刻的连续原记录块，冲突时刻拒绝并明确来源，不跨冲突插值。示例真实样本属于测试资源，不嵌入WASM。
+
+## 任务初始构图（0.0.42）
+
+`camera.observe(targetId, "nearby", {initialLook: {kind: "target" | "sky", referenceId}})`沿用camera.control。这是外部近景初始构图，保留卫星在前景：target令参考体位于背景方向，sky朝其反方向深空；不声明真实仪器光轴。initialLook只允许nearby、严格两个字段和合法ID、referenceId不能等于targetId；SDK复制冻结嵌套对象。Rust复核权限、当前有效状态和不同位置后原子设置，失败不改变焦点；注销参考体清理意图，会话/焦点释放沿用旧清理。systemId仍是所属系统显示上下文，不与构图reference混用。
+
+首次focus revision且自由环绕预设时应用一次，之后手动拖动/缩放不被每帧拉回，明确top/front/side优先。宿主任务表独立于机身DYN和太阳翼：Chandra/Hubble/JWST等登记朝深空，LRO/MRO等行星轨道构图朝当前主星，SDO/SOHO等明确朝Sun，日心巡航不指向未来目的地。缺少有效参考时保持普通近景，不猜仪器轴。
+
+时间倍率仅修改rate时不得清空上一帧基线，否则连续输入会每帧elapsed=0；暂停/恢复等playing状态变化才重置，避免累计暂停墙钟时间。可见工作区控制面板焦点与画布焦点采用相同30fps目标reactive等待节奏，不使用无界Continuous；浏览器隐藏/设备实际帧率另外验证，不把设置值当实测FPS。
+
+当所选航天器的真实直接父体为moon类时，也应按需升级已登记表面资源；不能只允许planet类型导致LRO背景为无纹理球。资源仍外置，不升级无关卫星或伪造地形LOD。

@@ -1,3 +1,4 @@
+import {missionInitialLook} from "./mission-view.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
 import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
 import {
@@ -373,7 +374,9 @@ export async function createWorkspace(
   const observe: PluginContext["camera"]["observe"] = (target, mode, options) => {
     const parent = data.parentAt(target, core.epoch());
     const systemId = parent && parent !== "sun" && data.status(parent)?.status === "ready" ? parent : undefined;
-    sdk.camera.observe(target, mode, { ...options, ...(systemId ? { systemId } : {}) });
+    const framing = mode === "nearby" ? missionInitialLook(target, parent) : undefined;
+    const initialLook = framing && data.status(framing.referenceId)?.status === "ready" ? framing : undefined;
+    sdk.camera.observe(target, mode, { ...options, ...(systemId ? { systemId } : {}), ...(initialLook ? {initialLook} : {}) });
     observationContext = { target, mode, options, systemId };
   };
   let galaxySdk!: PluginContext;
@@ -777,7 +780,7 @@ export async function createWorkspace(
       try {
         const upgrade =
           (state.selected === body.id ||
-            (body.kind === "planet" &&
+            ((body.kind === "planet" || body.kind === "moon") &&
               parentAt(state.selected, core.epoch()) === body.id)) &&
           !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
@@ -1485,10 +1488,11 @@ export async function createWorkspace(
     play(playing, rate) {
       assertLive();
       if (state.busy && playing) throw new Error("数据加载中，请稍后调整播放");
+      const wasPlaying = core.playing();
       sdk.time.setPlayback(playing, rate);
       desiredPlaying = playing;
       state.rate = rate;
-      lastFrame = undefined;
+      if (wasPlaying !== playing) lastFrame = undefined;
       emit();
     },
     seek: reload,

@@ -67,6 +67,15 @@ impl Default for OrbitView {
     }
 }
 
+fn visible_workspace_winit_settings() -> bevy::winit::WinitSettings {
+    let mode =
+        bevy::winit::UpdateMode::reactive_low_power(std::time::Duration::from_secs_f64(1. / 30.));
+    bevy::winit::WinitSettings {
+        focused_mode: mode,
+        unfocused_mode: mode,
+    }
+}
+
 pub(crate) fn create_browser_app(
     core: SharedCore,
     stop: Arc<AtomicBool>,
@@ -99,15 +108,7 @@ pub(crate) fn create_browser_app(
                 ..default()
             }),
     )
-    .insert_resource(bevy::winit::WinitSettings {
-        // Animation needs a bounded cadence; do not saturate high-refresh displays.
-        focused_mode: bevy::winit::UpdateMode::reactive_low_power(
-            std::time::Duration::from_secs_f64(1. / 30.),
-        ),
-        unfocused_mode: bevy::winit::UpdateMode::reactive_low_power(
-            std::time::Duration::from_secs_f64(1. / 5.),
-        ),
-    })
+    .insert_resource(visible_workspace_winit_settings())
     .add_plugins(CoreScenePlugin(core))
     .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
     .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
@@ -504,6 +505,20 @@ fn update_focus(
             focus_revision: core.focus_revision(),
             ..default()
         };
+        if core.camera_view() == "orbit"
+            && let Some(look) = core
+                .camera_observation()
+                .and_then(|observation| observation.initial_look.as_ref())
+            && let Ok(reference) = core.object_state_at(&look.reference_id, core.clock().epoch())
+            && let Some((yaw, pitch)) = crate::camera_framing::initial_look_angles(
+                state.position_km,
+                reference.position_km,
+                look.kind == "sky",
+            )
+        {
+            orbit.yaw = yaw;
+            orbit.pitch = pitch;
+        }
     }
     apply_controlled_input(&mut core, &mut orbit, delta.unwrap_or(1. / 60.));
     let mut center = Vec3::ZERO;
@@ -3158,5 +3173,103 @@ mod nasa_framing_system_tests {
             [2000., 0., 0.]
         );
         assert_eq!(c.object_state_at("moon", 0.).unwrap().radius_km, 10.);
+    }
+}
+
+#[cfg(test)]
+mod task_composition_tests {
+    use super::*;
+    #[test]
+    fn ui_focus_keeps_bounded_visible_animation_cadence() {
+        let settings = visible_workspace_winit_settings();
+        assert_eq!(settings.focused_mode, settings.unfocused_mode);
+        let expected = bevy::winit::UpdateMode::reactive_low_power(
+            std::time::Duration::from_secs_f64(1. / 30.),
+        );
+        assert_eq!(settings.unfocused_mode, expected);
+        assert_ne!(settings.unfocused_mode, bevy::winit::UpdateMode::Continuous);
+    }
+    #[test]
+    fn initial_task_view_is_applied_once_and_never_overwrites_manual_or_preset_views() {
+        let mut core = crate::Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        for (id, x) in [("craft", 0.), ("parent", 50.)] {
+            core.register_object("s", id).unwrap();
+            core.set_object_state(
+                "s",
+                id,
+                crate::ObjectState {
+                    position_km: [x, 0., 0.],
+                    radius_km: 1.,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 1.],
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                    orientation_wxyz: None,
+                },
+            )
+            .unwrap();
+        }
+        let request = |kind: &str| crate::CameraObservation {
+            target_id: "craft".into(),
+            mode: "nearby".into(),
+            members: vec![],
+            follow_id: None,
+            system_id: None,
+            initial_look: Some(crate::InitialLook {
+                kind: kind.into(),
+                reference_id: "parent".into(),
+            }),
+        };
+        core.set_camera_observation_with_context("s", "p", request("target"))
+            .unwrap();
+        core.set_camera_view("s", "p", "orbit").unwrap();
+        let shared = Arc::new(std::sync::Mutex::new(core));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, update_focus);
+        app.world_mut()
+            .spawn((DisplayCamera, Transform::default(), Projection::default()));
+        app.update();
+        let initial = app.world().resource::<OrbitView>().yaw;
+        assert!((initial + std::f32::consts::FRAC_PI_2).abs() < 1e-5);
+        shared
+            .lock()
+            .unwrap()
+            .camera_orbit("s", "p", 0.2, 0.1)
+            .unwrap();
+        app.update();
+        let dragged = app.world().resource::<OrbitView>().yaw;
+        assert!((dragged - initial).abs() > 0.01);
+        app.update();
+        assert!((app.world().resource::<OrbitView>().yaw - initial).abs() > 0.01);
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_observation_with_context("s", "p", request("sky"))
+            .unwrap();
+        app.update();
+        assert!(
+            (app.world().resource::<OrbitView>().yaw - std::f32::consts::FRAC_PI_2).abs() < 1e-5
+        );
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_view("s", "p", "front")
+            .unwrap();
+        app.update();
+        assert_eq!(app.world().resource::<OrbitView>().yaw, 0.);
+        app.update();
+        assert_eq!(app.world().resource::<OrbitView>().yaw, 0.);
     }
 }

@@ -46,7 +46,7 @@ pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app}
 mod camera_intent;
 #[cfg(feature = "browser-render")]
 mod camera_motion;
-pub use camera_intent::{CameraObservation, CameraRenderStatus};
+pub use camera_intent::{CameraObservation, CameraRenderStatus, InitialLook};
 mod clock;
 mod deep_space;
 #[cfg(feature = "browser-render")]
@@ -268,6 +268,14 @@ impl Core {
             && observation.system_id.as_deref() == Some(object_id)
         {
             observation.system_id = None;
+        }
+        if let Some((_, observation)) = self.observation.as_mut()
+            && observation
+                .initial_look
+                .as_ref()
+                .is_some_and(|look| look.reference_id == object_id)
+        {
+            observation.initial_look = None;
         }
         self.objects.remove(object_id);
         self.trajectories.remove(object_id);

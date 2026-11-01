@@ -99,11 +99,11 @@ export class WasmCorePort implements CorePort {
   ): void {
     if (!this.#binding.camera_observe)
       throw Error("camera observation unavailable");
-    const { targetId, mode, members, followId, systemId } = request;
+    const { targetId, mode, members, followId, systemId, initialLook } = request;
     this.#binding.camera_observe(
       request.sessionId,
       request.pluginId,
-      JSON.stringify({ targetId, mode, members, followId, systemId }),
+      JSON.stringify({ targetId, mode, members, followId, systemId, initialLook }),
     );
   }
   cameraOrbit(

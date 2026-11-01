@@ -11,6 +11,12 @@ pub struct CameraRenderStatus {
 use crate::{Core, CoreError};
 #[derive(Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InitialLook {
+    pub kind: String,
+    pub reference_id: String,
+}
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CameraObservation {
     pub target_id: String,
     pub mode: String,
@@ -19,6 +25,8 @@ pub struct CameraObservation {
     pub follow_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub system_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_look: Option<InitialLook>,
 }
 impl Core {
     pub fn camera_render_status(&self) -> Option<CameraRenderStatus> {
@@ -68,6 +76,20 @@ impl Core {
         if let Some(id) = observation.system_id.as_deref() {
             self.object_state_at(id, self.clock().epoch())?;
         }
+        if let Some(look) = &observation.initial_look {
+            if observation.mode != "nearby"
+                || !["target", "sky"].contains(&look.kind.as_str())
+                || look.reference_id == observation.target_id
+            {
+                return Err(CoreError::InvalidState);
+            }
+            let epoch = self.clock().epoch();
+            let target = self.object_state_at(&observation.target_id, epoch)?;
+            let reference = self.object_state_at(&look.reference_id, epoch)?;
+            if target.position_km == reference.position_km {
+                return Err(CoreError::InvalidState);
+            }
+        }
         self.set_camera_observation(
             s,
             p,
@@ -78,6 +100,7 @@ impl Core {
         )?;
         if let Some((_, current)) = self.observation.as_mut() {
             current.system_id = observation.system_id;
+            current.initial_look = observation.initial_look;
         }
         Ok(())
     }
@@ -135,6 +158,7 @@ impl Core {
                 members,
                 follow_id: follow,
                 system_id: None,
+                initial_look: None,
             },
         ));
         Ok(())
@@ -214,6 +238,7 @@ mod tests {
             members: vec![],
             follow_id: None,
             system_id: Some(system.into()),
+            initial_look: None,
         };
         c.set_camera_observation_with_context("s", "p", request("b"))
             .unwrap();
@@ -337,5 +362,84 @@ mod tests {
             )
             .is_err()
         );
+    }
+}
+
+#[cfg(test)]
+mod initial_look_tests {
+    use super::*;
+    #[test]
+    fn invalid_initial_composition_is_atomic_and_reference_cleanup_is_independent() {
+        let mut c = Core::default();
+        c.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                camera_control: true,
+                data_publish: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        for (id, x) in [("a", 0.), ("b", 50.), ("coincident", 0.)] {
+            c.register_object("s", id).unwrap();
+            c.set_object_state(
+                "s",
+                id,
+                crate::ObjectState {
+                    position_km: [x, 0., 0.],
+                    radius_km: 1.,
+                    epoch_tdb_seconds: 0.,
+                    coverage_tdb_seconds: [0., 1.],
+                    frame: "ICRF".into(),
+                    source: "test".into(),
+                    orientation_wxyz: None,
+                },
+            )
+            .unwrap();
+        }
+        let request = |kind: &str, reference: &str, mode: &str| CameraObservation {
+            target_id: "a".into(),
+            mode: mode.into(),
+            members: vec![],
+            follow_id: None,
+            system_id: None,
+            initial_look: Some(InitialLook {
+                kind: kind.into(),
+                reference_id: reference.into(),
+            }),
+        };
+        c.set_camera_observation_with_context("s", "p", request("target", "b", "nearby"))
+            .unwrap();
+        let revision = c.focus_revision();
+        for (kind, reference, mode) in [
+            ("wrong", "b", "nearby"),
+            ("sky", "a", "nearby"),
+            ("sky", "missing", "nearby"),
+            ("sky", "coincident", "nearby"),
+            ("sky", "b", "system"),
+        ] {
+            assert!(
+                c.set_camera_observation_with_context("s", "p", request(kind, reference, mode))
+                    .is_err()
+            );
+            assert_eq!(c.focus_revision(), revision);
+            assert_eq!(
+                c.camera_observation()
+                    .unwrap()
+                    .initial_look
+                    .as_ref()
+                    .unwrap()
+                    .kind,
+                "target"
+            );
+        }
+        assert!(
+            c.set_camera_observation_with_context("s", "wrong", request("sky", "b", "nearby"))
+                .is_err()
+        );
+        c.remove_object("s", "p", "b").unwrap();
+        assert!(c.camera_observation().unwrap().initial_look.is_none());
+        assert_eq!(c.focused_object(), Some("a"));
     }
 }

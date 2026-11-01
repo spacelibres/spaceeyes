@@ -2063,3 +2063,47 @@ test("solar spacecraft populate startup and survive automatic zoom-out without p
    assert.doesNotThrow(()=>fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch()));
  } finally {await app.dispose();}
 });
+
+test("continuous playback rate changes never discard every animation interval", async () => {
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+   app.play(true,1);fixtures.step(0);const start=fixtures.core().epoch();
+   const rates=[1,2,3,5,10,20,60];let expected=0;
+   for(let i=0;i<rates.length;i++){app.play(true,rates[i]);fixtures.step((i+1)*16);expected+=rates[i]*.016;}
+   assert.ok(Math.abs(fixtures.core().epoch()-start-expected)<1e-6,"continuous slider changes must retain frame time");
+   app.play(false,60);fixtures.step(10000);const paused=fixtures.core().epoch();
+   app.play(true,2);fixtures.step(20000);fixtures.step(20016);
+   assert.ok(Math.abs(fixtures.core().epoch()-paused-.032)<1e-6,"resume must exclude paused wall time");
+ } finally {await app.dispose();}
+});
+
+test("selection initializes sky surveys and host-observation missions with independent framing", async () => {
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+  await app.seek(846724000);
+  for(const [id,kind,referenceId] of [
+    ["sc_lunar_reconnaissance_orbiter","target","moon"],
+    ["sc_mars_reconnaissance_orbiter","target","mars"],
+    ["sc_chandra","sky","earth"],
+    ["sc_hubble_space_telescope","sky","earth"],
+    ["sc_sdo","target","sun"],
+  ]) {
+    await app.select(id);
+    assert.deepEqual(JSON.parse(fixtures.core().camera_observation!()).initialLook,{kind,referenceId},id);
+  }
+  await app.select("sc_psyche");
+  assert.equal(JSON.parse(fixtures.core().camera_observation!()).initialLook,undefined,"cruise is not future asteroid observation");
+ } finally {await app.dispose();}
+});
+
+test("first LRO selection upgrades the observed Moon surface without visiting Moon first", async () => {
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+   await app.seek(846724000);
+   await app.select("sc_lunar_reconnaissance_orbiter");
+   assert.ok(fixtures.visuals().some(({id,spec})=>id==="moon" && Array.isArray(spec.faceAssets) && spec.faceAssets.length===6));
+ } finally {await app.dispose();}
+});

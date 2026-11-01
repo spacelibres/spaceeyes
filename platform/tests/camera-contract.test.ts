@@ -67,6 +67,8 @@ test("camera intents enforce permission and disposal, preserve actual WASM wire 
   assert.deepEqual(calls[3].slice(2), [-1]);
   assert.throws(() => sdk.camera.zoom(1.01));
   assert.throws(() => sdk.camera.orbit(0, NaN));
+  sdk.camera.observe("lro","nearby",{initialLook:{kind:"target",referenceId:"moon"}});
+  assert.deepEqual(JSON.parse(calls[4][2] as string),{targetId:"lro",mode:"nearby",initialLook:{kind:"target",referenceId:"moon"}});
   await host.disable("test.camera");
   assert.throws(() => sdk.camera.zoom(0), /inactive/);
   assert.throws(() => sdk.camera.observe("earth", "nearby"), /inactive/);
@@ -90,4 +92,16 @@ test("invalid observation system identifiers are rejected", () => {
   for (const systemId of [undefined, null, "", "bad id", "x".repeat(257), 1]) {
     assert.throws(() => snapshotObservation("moon", "nearby", { systemId } as never));
   }
+});
+
+test("initial task composition is a frozen nearby-only intent",()=>{
+ const look={kind:"target" as const,referenceId:"moon"};
+ const snapshot=snapshotObservation("lro","nearby",{initialLook:look});
+ look.referenceId="mars";
+ assert.deepEqual(snapshot.initialLook,{kind:"target",referenceId:"moon"});
+ assert.ok(Object.isFrozen(snapshot.initialLook));
+ for(const initialLook of [undefined,null,[],{kind:"other",referenceId:"moon"},{kind:"target",referenceId:"lro"},{kind:"sky",referenceId:"bad id"},{kind:"sky",referenceId:"moon",extra:1}])
+  assert.throws(()=>snapshotObservation("lro","nearby",{initialLook} as never));
+ assert.throws(()=>snapshotObservation("lro","follow",{followId:"moon",initialLook:{kind:"target",referenceId:"moon"}}));
+ assert.throws(()=>snapshotObservation("lro","system",{members:["lro"],initialLook:{kind:"sky",referenceId:"moon"}}));
 });
