@@ -9,6 +9,7 @@ use std::{
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct FrameBudgetSnapshot {
     pub noncritical_pending: u32,
+    /// Compatibility telemetry: full resolution is invariant; cadence never changes quality.
     pub resolution_scale: f64,
     pub target_fps: u32,
     pub rendered_frames: u64,
@@ -187,55 +188,11 @@ impl FrameBudget {
                 self.overload = None;
             }
         } else {
-            let overloaded = p95 > 25.
-                || self
-                    .snapshot
-                    .present_interval_p95_ms
-                    .is_some_and(|ms| ms > 40.);
-            if overloaded {
-                self.recovery = None;
-                let start = *self.overload.get_or_insert(now);
-                if now - start >= 2. {
-                    self.snapshot.resolution_scale = if self.snapshot.resolution_scale > 0.85 {
-                        0.85
-                    } else if self.snapshot.resolution_scale > 0.7 {
-                        0.7
-                    } else {
-                        0.5
-                    };
-                    self.snapshot.transition_reason =
-                        Some("sustained_30hz_quality_overload".into());
-                    self.snapshot.transition_seconds = Some(now);
-                    self.overload = None;
-                }
-            } else {
-                self.overload = None;
-            }
-            let recovering = if self.snapshot.resolution_scale < 1. {
-                p95 < 20.
-                    && self
-                        .snapshot
-                        .present_interval_p95_ms
-                        .is_some_and(|ms| ms < 38.)
-            } else {
-                p95 < 8.
-            };
-            if recovering && self.snapshot.noncritical_pending <= 2 {
+            // Overload may change cadence, never resource precision or render quality.
+            self.overload = None;
+            if p95 < 8. && self.snapshot.noncritical_pending <= 2 {
                 let start = *self.recovery.get_or_insert(now);
                 if now - start >= 10. {
-                    if self.snapshot.resolution_scale < 1. {
-                        self.snapshot.resolution_scale = if self.snapshot.resolution_scale < 0.7 {
-                            0.7
-                        } else if self.snapshot.resolution_scale < 0.85 {
-                            0.85
-                        } else {
-                            1.
-                        };
-                        self.snapshot.transition_seconds = Some(now);
-                        self.snapshot.transition_reason = Some("quality_recovered".into());
-                        self.recovery = None;
-                        return;
-                    }
                     self.intervals.clear();
                     self.snapshot.present_interval_p50_ms = None;
                     self.snapshot.present_interval_p99_ms = None;
@@ -300,9 +257,6 @@ pub(crate) fn install(app: &mut App, shared: SharedFrameBudget) {
                     .get_resource::<crate::render_timings::RenderTimings>()
                     .map(|t| t.scope(crate::render_timings::Stage::Extract));
                 extract(main, render);
-                if let Ok(budget) = shared.lock() {
-                    apply_resolution_scale(render, budget.snapshot.resolution_scale);
-                }
             }
             render.insert_resource(CpuSample {
                 start,
@@ -341,78 +295,28 @@ struct CpuSample {
 mod tests {
     use super::*;
     #[test]
-    fn frame_budget_thirty_cpu_thirteen_preserves_and_restores_quality() {
-        let mut b = FrameBudget::default();
-        b.snapshot.target_fps = 30;
-        b.snapshot.present_interval_p95_ms = Some(35.);
-        for i in 0..=1200 {
-            b.record_cpu(i as f64 / 30., 13.);
+    fn frame_budget_sustained_overload_keeps_full_resolution() {
+        let mut budget = FrameBudget::default();
+        for i in 0..=3600 {
+            budget.record_cpu(i as f64 / 30., 60.);
+            assert_eq!(
+                budget.snapshot().resolution_scale,
+                1.,
+                "overload must not reduce visual fidelity"
+            );
         }
-        assert_eq!(b.snapshot.resolution_scale, 1.);
-        assert_eq!(b.snapshot.target_fps, 30);
-        b.snapshot.resolution_scale = 0.5;
-        for i in 1201..=2400 {
-            b.record_cpu(i as f64 / 30., 13.);
-        }
-        assert_eq!(b.snapshot.resolution_scale, 1.);
-        assert_eq!(b.snapshot.target_fps, 30);
+        assert_eq!(budget.snapshot().target_fps, 30);
     }
+
     #[test]
-    fn frame_budget_degrades_quality_then_recovers_before_sixty() {
-        let mut b = FrameBudget::default();
-        b.snapshot.target_fps = 30;
-        b.snapshot.present_interval_p95_ms = Some(35.);
-        for i in 0..=240 {
-            b.record_cpu(i as f64 / 30., 30.);
+    fn frame_budget_thirty_stays_full_quality_until_cpu_recovery() {
+        let mut budget = FrameBudget::default();
+        budget.snapshot.target_fps = 30;
+        for i in 0..=2400 {
+            budget.record_cpu(i as f64 / 30., 13.);
+            assert_eq!(budget.snapshot().resolution_scale, 1.);
+            assert_eq!(budget.snapshot().target_fps, 30);
         }
-        assert_eq!(b.snapshot.resolution_scale, 0.5);
-        assert_eq!(b.snapshot.target_fps, 30);
-        for i in 0..450 {
-            b.record_cpu(9. + i as f64 / 30., 7.);
-        }
-        assert_eq!(b.snapshot.resolution_scale, 0.7);
-        assert_eq!(b.snapshot.target_fps, 30);
-        for i in 450..1600 {
-            b.record_cpu(9. + i as f64 / 30., 7.);
-        }
-        assert_eq!(b.snapshot.resolution_scale, 1.);
-        assert_eq!(b.snapshot.target_fps, 60);
-    }
-    #[test]
-    fn frame_budget_resolution_override_preserves_logical_camera_viewport() {
-        use bevy::{camera::MainPassResolutionOverride, render::camera::ExtractedCamera};
-        let mut world = World::new();
-        let id = world
-            .spawn(ExtractedCamera {
-                physical_viewport_size: Some(UVec2::new(800, 600)),
-                target: None,
-                physical_target_size: Some(UVec2::new(800, 600)),
-                viewport: None,
-                schedule: Main.intern(),
-                order: 0,
-                output_mode: Default::default(),
-                msaa_writeback: Default::default(),
-                clear_color: Default::default(),
-                sorted_camera_index_for_target: 0,
-                exposure: 1.,
-                hdr: false,
-                compositing_space: None,
-            })
-            .id();
-        apply_resolution_scale(&mut world, 0.5);
-        assert_eq!(
-            world.get::<MainPassResolutionOverride>(id).unwrap().0,
-            UVec2::new(400, 300)
-        );
-        assert_eq!(
-            world
-                .get::<ExtractedCamera>(id)
-                .unwrap()
-                .physical_viewport_size,
-            Some(UVec2::new(800, 600))
-        );
-        apply_resolution_scale(&mut world, 1.);
-        assert!(world.get::<MainPassResolutionOverride>(id).is_none());
     }
     #[test]
     fn frame_budget_30hz_quantizes_on_144hz_without_losing_rate() {
@@ -614,25 +518,5 @@ fn resync_window_lifecycle(main: &mut World, render: &mut World) {
         // The supported browser renderer has one window. The per-surface removal
         // API is private; resetting this public resource releases orphaned surfaces.
         render.insert_resource(WindowSurfaces::default());
-    }
-}
-fn apply_resolution_scale(render: &mut World, scale: f64) {
-    use bevy::{camera::MainPassResolutionOverride, render::camera::ExtractedCamera};
-    let cameras: Vec<_> = render
-        .query::<(Entity, &ExtractedCamera)>()
-        .iter(render)
-        .filter_map(|(id, c)| c.physical_viewport_size.map(|size| (id, size)))
-        .collect();
-    for (id, size) in cameras {
-        if scale >= 1. {
-            render.entity_mut(id).remove::<MainPassResolutionOverride>();
-        } else {
-            render
-                .entity_mut(id)
-                .insert(MainPassResolutionOverride(UVec2::new(
-                    ((size.x as f64 * scale).round() as u32).max(1),
-                    ((size.y as f64 * scale).round() as u32).max(1),
-                )));
-        }
     }
 }
