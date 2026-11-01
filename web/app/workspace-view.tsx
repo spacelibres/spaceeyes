@@ -361,17 +361,19 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         }
       }}
     >
-      {workbenchEnabled && (
-        <header>
-          <div>
-            <picture>
-              <source media="(max-width: 600px)" srcSet="/icon.svg" />
-              <img src="/spacelibre.svg" alt="spacelibre" width="240" />
-            </picture>
+      <header>
+        <div>
+          <picture>
+            <source media="(max-width: 600px)" srcSet="/icon.svg" />
+            <img src="/spacelibre.svg" alt="spacelibre" width="240" />
+          </picture>
+          {workbenchEnabled && (
             <h1>
               太空之眼 <small>SPACE EYES</small>
             </h1>
-          </div>
+          )}
+        </div>
+        {workbenchEnabled && (
           <div className="header-actions">
             <button
               data-panel="catalog"
@@ -419,8 +421,8 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               设置
             </button>
           </div>
-        </header>
-      )}
+        )}
+      </header>
       {workbenchEnabled && sharing && (
         <section className="share-panel" aria-label="分享场景">
           <button onClick={() => setSharing(false)} aria-label="关闭分享">
