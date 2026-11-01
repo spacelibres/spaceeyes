@@ -114,7 +114,7 @@ pub(crate) fn create_browser_app(
             })
             .set(WindowPlugin {
                 primary_window: Some(Window {
-                    title: "SpaceEyes — Solar System".into(),
+                    title: "太空之眼".into(),
                     canvas: Some(canvas.into()),
                     fit_canvas_to_parent: true,
                     ..default()
