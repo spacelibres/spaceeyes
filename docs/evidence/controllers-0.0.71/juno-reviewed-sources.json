@@ -1,0 +1,253 @@
+{
+  "recordConvention": "zero-based half-open [start,end); contiguous original records, no sorting or record edits; only header count rewritten for decode verification",
+  "sources": [
+    {
+      "track": "sc_juno/io/2/orb",
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/io/2/orb/def.dyn",
+      "fixture": "web/lib/fixtures/sc_juno__io__2__orb__def-source.dyn",
+      "sha256": "197d58b823830e7adccca327758a182e27e9f02ac62e99221e90e5448c899127",
+      "bytes": 964,
+      "version": 2,
+      "base": 28,
+      "stride": 72,
+      "flag": 1,
+      "count": 13,
+      "rawDecodeError": "DYN sample times must increase",
+      "windows": [
+        {
+          "records": [
+            0,
+            11
+          ],
+          "coverage": [
+            760247560,
+            760262808
+          ],
+          "decoded": true
+        }
+      ],
+      "boundaries": [
+        {
+          "records": [
+            10,
+            11
+          ],
+          "times": [
+            760262808,
+            760262808
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        },
+        {
+          "records": [
+            11,
+            12
+          ],
+          "times": [
+            760262808,
+            760262808
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        }
+      ],
+      "singletonRuns": [
+        [
+          11,
+          12
+        ],
+        [
+          12,
+          13
+        ]
+      ]
+    },
+    {
+      "track": "sc_juno/io/1/orb",
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/io/1/orb/def.dyn",
+      "fixture": "web/lib/fixtures/sc_juno__io__1__orb__def-source.dyn",
+      "sha256": "f3457602ba35b26bcc4cbea875ac5e113a0c7c83e7ef861dd35aeaf82b458c8b",
+      "bytes": 820,
+      "version": 2,
+      "base": 28,
+      "stride": 72,
+      "flag": 1,
+      "count": 11,
+      "rawDecodeError": "DYN sample times must increase",
+      "windows": [
+        {
+          "records": [
+            0,
+            9
+          ],
+          "coverage": [
+            757191924,
+            757203571
+          ],
+          "decoded": true
+        }
+      ],
+      "boundaries": [
+        {
+          "records": [
+            8,
+            9
+          ],
+          "times": [
+            757203571,
+            757203571
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        },
+        {
+          "records": [
+            9,
+            10
+          ],
+          "times": [
+            757203571,
+            757203571
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        }
+      ],
+      "singletonRuns": [
+        [
+          9,
+          10
+        ],
+        [
+          10,
+          11
+        ]
+      ]
+    },
+    {
+      "track": "sc_juno/europa/orb",
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/europa/orb/def.dyn",
+      "fixture": "web/lib/fixtures/sc_juno__europa__orb__def-source.dyn",
+      "sha256": "cab43545e0477f30d726425dba045952c0a2db3df26f88041161f3a5b125c3f4",
+      "bytes": 892,
+      "version": 2,
+      "base": 28,
+      "stride": 72,
+      "flag": 1,
+      "count": 12,
+      "rawDecodeError": "DYN sample times must increase",
+      "windows": [
+        {
+          "records": [
+            0,
+            10
+          ],
+          "coverage": [
+            717700360,
+            717727733
+          ],
+          "decoded": true
+        }
+      ],
+      "boundaries": [
+        {
+          "records": [
+            9,
+            10
+          ],
+          "times": [
+            717727733,
+            717727733
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        },
+        {
+          "records": [
+            10,
+            11
+          ],
+          "times": [
+            717727733,
+            717727733
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        }
+      ],
+      "singletonRuns": [
+        [
+          10,
+          11
+        ],
+        [
+          11,
+          12
+        ]
+      ]
+    },
+    {
+      "track": "sc_juno/ganymede/orb",
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/ganymede/orb/def.dyn",
+      "fixture": "web/lib/fixtures/sc_juno__ganymede__orb__def-source.dyn",
+      "sha256": "67484fa11ffd4e123a70b1ac1a33f39b0bb96a614d1a944a262beb0388c12463",
+      "bytes": 748,
+      "version": 2,
+      "base": 28,
+      "stride": 72,
+      "flag": 1,
+      "count": 10,
+      "rawDecodeError": "DYN sample times must increase",
+      "windows": [
+        {
+          "records": [
+            0,
+            8
+          ],
+          "coverage": [
+            676339597,
+            676381521
+          ],
+          "decoded": true
+        }
+      ],
+      "boundaries": [
+        {
+          "records": [
+            7,
+            8
+          ],
+          "times": [
+            676381521,
+            676381521
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        },
+        {
+          "records": [
+            8,
+            9
+          ],
+          "times": [
+            676381521,
+            676381521
+          ],
+          "kind": "duplicate",
+          "byteIdentical": true
+        }
+      ],
+      "singletonRuns": [
+        [
+          8,
+          9
+        ],
+        [
+          9,
+          10
+        ]
+      ]
+    }
+  ]
+}

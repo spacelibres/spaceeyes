@@ -23,17 +23,42 @@ export function parentAt(id: string, epoch: number): string | null {
 export function declaredTracks(
   id: string,
   type: "orb" | "ori" = "orb",
+  epoch?: number,
 ): string[] {
   return (eyesDefinitions[id]?.controllers ?? [])
     .filter(
       (c) =>
         c.type === "dynamo" &&
         typeof c.url === "string" &&
+        (epoch === undefined || (Number.isFinite(epoch) && (!c.coverage ||
+          (epoch >= Number(c.coverage[0]) && epoch <= Number(c.coverage[1]))))) &&
         (type === "ori"
           ? /\/(ori|quat|quat_v2)$/.test(c.url)
           : !/\/(ori|quat|quat_v2)$/.test(c.url)),
     )
     .map((c) => c.url);
+}
+/** Cache identity includes all covered position tracks in source declaration order. */
+export function positionTrackKey(id:string,epoch:number):string {
+  return JSON.stringify(declaredTracks(id,"orb",epoch));
+}
+export function positionTrackBoundaries(id:string):number[] {
+  return (eyesDefinitions[id]?.controllers??[])
+    .filter(c=>c.type==="dynamo"&&typeof c.url==="string"&&!/\/(ori|quat|quat_v2)$/.test(c.url))
+    .flatMap(c=>(c.coverage??[]).map(Number)).filter(Number.isFinite);
+}
+export function positionFrameKey(id:string,epoch:number,referenceId?:string):string {
+  const seen=new Set<string>(),parts:unknown[]=[];
+  const pending=[id,...(referenceId?[referenceId]:[])];
+  while(pending.length) {
+    const target=pending.pop()!;
+    if(seen.has(target)||target==="sun")continue;
+    seen.add(target);
+    const parent=parentAt(target,epoch);
+    parts.push([target,parent,positionTrackKey(target,epoch)]);
+    if(parent)pending.push(parent);
+  }
+  return JSON.stringify(parts);
 }
 /** Source-defined missions omitted by the captured discovery target list.
  * Keep the raw NASA catalog capture unchanged and expand only reviewed definitions. */

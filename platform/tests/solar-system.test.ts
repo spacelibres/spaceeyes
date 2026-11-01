@@ -41,6 +41,92 @@ function context() {
     ctx: PluginContext;
   };
 }
+
+test("overlapping position controllers invalidate same-parent cached data and rollback restores track identity",async()=>{
+ const {ctx,states}=context(),old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a",coverage:[0,10]},{type:"dynamo",url:"moon/earth/b",coverage:[5,8]}];
+ let requests=0;
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+   const url=new URL(String(input),"http://localhost"),epoch=Number(url.searchParams.get("epoch"));
+   if(url.pathname.endsWith("/moon"))requests++;
+   return new Response(orb(url.pathname.endsWith("/moon")?(epoch>=5&&epoch<=8?20:2):10000));
+ }});
+ try {
+   await source.load(["moon"],4,[]);source.publishAt(4);
+   const restore=source.checkpoint();
+   assert.equal(source.needsPositionRefresh("moon",5),true);
+   assert.throws(()=>source.position("moon",5),/Outside source controller coverage/);
+   await source.load(["moon"],5,[]);source.publishAt(5);
+   assert.equal(requests,2,"new overlapping controller needs its own payload despite broad cached DYN coverage");
+   assert.deepEqual(source.position("moon",5),[10020,0,0]);
+   restore();source.publishAt(4);
+   assert.deepEqual(source.position("moon",4),[10002,0,0]);
+   await source.load(["moon"],5,[]);source.publishAt(5);
+   assert.equal(requests,3);
+   await source.load(["moon"],9,[]);source.publishAt(9);
+   assert.equal(requests,4);
+   assert.deepEqual(source.position("moon",9),[10002,0,0]);
+   assert.equal((states.get("moon") as any).epochTdbSeconds,9);
+ }finally{source.dispose();eyesDefinitions.moon.controllers=old;}
+});
+
+test("resolved controller metadata invalidates broad data when undeclared root coverage starts",async()=>{
+ const {ctx}=context(),old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a"},{type:"dynamo",url:"moon/other/b"}];
+ let requests=0;
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+   const url=new URL(String(input),"http://localhost"),t=Number(url.searchParams.get("epoch"));
+   if(!url.pathname.endsWith("/moon"))return new Response(orb(10000));
+   requests++;
+   const later=t>=5&&t<=8;
+   return new Response(orb(later?20:2),{headers:{"x-dyn-controller-selection":JSON.stringify(later?{track:"moon/other/b"}:
+     {track:"moon/earth/a",...(t<5?{upperExclusive:5}:{lowerExclusive:8})})}});
+ }});
+ try {
+   await source.load(["moon"],4,[]);
+   assert.equal(source.needsPositionRefresh("moon",4.99),false);
+   assert.equal(source.needsPositionRefresh("moon",5),true);
+   const restore=source.checkpoint();
+   await source.load(["moon"],5,[]);
+   assert.equal(requests,2);
+   assert.deepEqual(source.position("moon",5),[10020,0,0]);
+   restore();
+   assert.equal(source.needsPositionRefresh("moon",5),true,"rollback restores open-boundary eligibility");
+   await source.load(["moon"],9,[]);
+   assert.equal(requests,3);
+   assert.equal(source.needsPositionRefresh("moon",8),true);
+   assert.equal(source.needsPositionRefresh("moon",8.01),false);
+ }finally{source.dispose();eyesDefinitions.moon.controllers=old;}
+});
+
+test("private history preserves inclusive endpoints across same-parent root-controller switches",async()=>{
+ const {ctx,states}=context(),id="sc_psyche",epoch=880000000;
+ const oldControllers=eyesDefinitions[id].controllers,oldTrail=eyesDefinitions[id].trail;
+ eyesDefinitions[id].controllers=[{type:"dynamo",url:"sc_psyche/sun/a"},{type:"dynamo",url:"sc_psyche/sun/b"}];
+ eyesDefinitions[id].trail={length:6};
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+   const t=Number(new URL(String(input),"http://localhost").searchParams.get("epoch"));
+   const later=t>=epoch-3&&t<=epoch+1;
+   const bytes=new Uint8Array(76),v=new DataView(bytes.buffer);
+   v.setInt16(0,2,true);bytes.set([108,105,110,0,3,1],2);v.setInt32(8,2,true);
+   for(let i=0;i<2;i++){v.setFloat64(12+i*32,later?epoch-3+i*4:epoch-1000+i*2000,true);v.setFloat64(20+i*32,later?20:2,true);}
+   return new Response(bytes,{headers:{"x-dyn-controller-selection":JSON.stringify(later?{track:"sc_psyche/sun/b"}:
+     {track:"sc_psyche/sun/a",...(t<epoch-3?{upperExclusive:epoch-3}:{lowerExclusive:epoch+1})})}});
+ }});
+ try {
+   await source.load([id],epoch+2,[]);source.publishAt(epoch+2);
+   const published=JSON.stringify([...states]);
+   assert.equal(await source.prepareTrailHistory(id,epoch+2),true);
+   const trail=source.trailSamples(id,epoch+2,64);
+   for(const t of [epoch-3,epoch+1]) {
+     const index=trail.epochsTdbSeconds.indexOf(t);
+     assert.ok(index>=0,`exact controller boundary ${t} is sampled: ${trail.epochsTdbSeconds.join(",")}`);
+     assert.deepEqual(trail.points[index],[20,0,0]);
+   }
+   assert.ok(trail.breakIndices.length>0,"real controller discontinuities remain explicit breaks");
+   assert.equal(JSON.stringify([...states]),published);
+ }finally{source.dispose();eyesDefinitions[id].controllers=oldControllers;eyesDefinitions[id].trail=oldTrail;}
+});
 test("moon positions compose the true loaded parent and all publishes share epoch", async () => {
   const { ctx, states } = context();
   const source = new SolarSystemData(ctx, {
@@ -1523,8 +1609,10 @@ test("private mission history crosses parent phases in the current frame without
    }
    assert.equal(JSON.stringify([...states]),published);
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch+100),true,"leaving the reuse band prepares a new history");
+   await source.load(["sc_cassini"],boundary-20,[]);
    assert.equal(await source.prepareTrailHistory("sc_cassini",boundary-20),true,"changing the current parent invalidates the history frame");
    assert.equal(source.trailSamples("sc_cassini",boundary-20,32).originId,"sun");
+   await source.load(["sc_cassini"],epoch,[]);
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true);
    eyesDefinitions.sc_cassini.trail={length:2000,lengthCoverages:[[1800,epoch-10,epoch+10]]};
    assert.equal(await source.prepareTrailHistory("sc_cassini",epoch),true,"changed authored duration invalidates history even at the same epoch");

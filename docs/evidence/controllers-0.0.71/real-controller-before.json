@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sc_juno",
+    "epoch": 676350000,
+    "status": 502,
+    "error": "{\"error\":\"Error: DYN sample times must increase\"}",
+    "wallMs": 561
+  },
+  {
+    "id": "sc_themis_b",
+    "epoch": 264427264,
+    "status": 200,
+    "wallMs": 1001,
+    "selection": {
+      "track": "sc_themis_b/earth",
+      "upperExclusive": 362424822
+    },
+    "type": "orb",
+    "coverage": {
+      "start": 263900555.01935536,
+      "end": 266200205.91097483
+    },
+    "sha256": "f0fb8447e012fea33fe80cada7acaf033f26842ace06c15cad7cc47dcb865bbf"
+  },
+  {
+    "id": "sc_osiris_rex",
+    "epoch": 748838793,
+    "status": 502,
+    "error": "{\"error\":\"Error: Outside source coverage: no reviewed ordered mission interval\"}",
+    "wallMs": 719
+  }
+]

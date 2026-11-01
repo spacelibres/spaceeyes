@@ -1,4 +1,5 @@
 import {missionInitialLook} from "./mission-view.ts";
+import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
 import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
 import {
@@ -611,6 +612,18 @@ export async function createWorkspace(
       )
       .map((body) => body.id),
   );
+  const labelTexts=new Map<string,string>();
+  const coverageLabelIds=[...new Set(EYES_COVERAGE_LABEL_MANIFEST.map(slot=>slot.entity))];
+  const refreshLabel=(id:string) => {
+    if (data.status(id)?.status !== "ready" || !sdk.visual.status(id)) {
+      labelTexts.delete(id);
+      return;
+    }
+    const text=eyesCoverageLabel(id,core.epoch(),getEyesDefinition(id)?.label??id).toUpperCase();
+    if (labelTexts.get(id)===text) return;
+    sdk.visual.label(id,text);
+    labelTexts.set(id,text);
+  };
   const trajectoryWindows = new Map<string, [number, number]>();
   const pendingTrajectories = new Set<string>();
   const trajectoryCounts = new Map<string, number>();
@@ -784,7 +797,8 @@ export async function createWorkspace(
               parentAt(state.selected, core.epoch()) === body.id)) &&
           !detailedBodies.has(body.id);
         const detailed = detailedBodies.has(body.id) || upgrade;
-        if (restore || !sdk.visual.status(body.id) || upgrade) {
+        const hadVisual=Boolean(sdk.visual.status(body.id));
+        if (restore || !hadVisual || upgrade) {
           const model = getEyesDefinition(body.id)?.model;
           const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius;
           if (detailed && model) {
@@ -839,11 +853,9 @@ export async function createWorkspace(
           if (body.id === "sun" && stellarSettings)
             sdk.visual.stellar(body.id, buildStellarTuning(stellarSettings));
           if (upgrade) detailedBodies.add(body.id);
-          sdk.visual.label(
-            body.id,
-            (getEyesDefinition(body.id)?.label ?? body.id).toUpperCase(),
-          );
+          if (!hadVisual) labelTexts.delete(body.id);
         }
+        refreshLabel(body.id);
         if (
           (body.kind === "spacecraft" ? state.trails : state.trajectories) &&
           body.id !== "sun" &&
@@ -1675,7 +1687,7 @@ export async function createWorkspace(
           const required = criticalDependencies(epoch);
           const expired = data.status().filter((item) => item.id !== "sun" &&
             item.coverage && item.status !== "failed" && item.status !== "loading" &&
-            (epoch < item.coverage[0] || epoch > item.coverage[1]));
+            (epoch < item.coverage[0] || epoch > item.coverage[1] || data.needsPositionRefresh(item.id,epoch)));
           const missing = expired.some((item) => required.has(item.id));
           if (missing) {
             sdk.time.seek(lastPublishedEpoch);
@@ -1686,6 +1698,7 @@ export async function createWorkspace(
           } else {
             refreshSelectedOrientation(epoch);
             data.publishAt(epoch);
+            for(const id of coverageLabelIds) refreshLabel(id);
             refreshObservationContext();
             // Publish first so expired secondary objects disappear before loading.
             // Secondary cache work never seeks time or changes playback/selection.

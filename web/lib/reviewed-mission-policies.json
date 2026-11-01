@@ -1,4 +1,68 @@
 {
+  "sc_juno/io/2/orb/def": {
+    "hash": "197d58b823830e7adccca327758a182e27e9f02ac62e99221e90e5448c899127",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        11
+      ]
+    ],
+    "fixture": "sc_juno__io__2__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/io/2/orb/def.dyn",
+    "sourceSha256": "197d58b823830e7adccca327758a182e27e9f02ac62e99221e90e5448c899127",
+    "layout": "Exact upstream def payload; byte-identical duplicate terminators outside contiguous ordered window"
+  },
+  "sc_juno/io/1/orb/def": {
+    "hash": "f3457602ba35b26bcc4cbea875ac5e113a0c7c83e7ef861dd35aeaf82b458c8b",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        9
+      ]
+    ],
+    "fixture": "sc_juno__io__1__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/io/1/orb/def.dyn",
+    "sourceSha256": "f3457602ba35b26bcc4cbea875ac5e113a0c7c83e7ef861dd35aeaf82b458c8b",
+    "layout": "Exact upstream def payload; byte-identical duplicate terminators outside contiguous ordered window"
+  },
+  "sc_juno/europa/orb/def": {
+    "hash": "cab43545e0477f30d726425dba045952c0a2db3df26f88041161f3a5b125c3f4",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        10
+      ]
+    ],
+    "fixture": "sc_juno__europa__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/europa/orb/def.dyn",
+    "sourceSha256": "cab43545e0477f30d726425dba045952c0a2db3df26f88041161f3a5b125c3f4",
+    "layout": "Exact upstream def payload; byte-identical duplicate terminators outside contiguous ordered window"
+  },
+  "sc_juno/ganymede/orb/def": {
+    "hash": "67484fa11ffd4e123a70b1ac1a33f39b0bb96a614d1a944a262beb0388c12463",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        8
+      ]
+    ],
+    "fixture": "sc_juno__ganymede__orb__def-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_juno/ganymede/orb/def.dyn",
+    "sourceSha256": "67484fa11ffd4e123a70b1ac1a33f39b0bb96a614d1a944a262beb0388c12463",
+    "layout": "Exact upstream def payload; byte-identical duplicate terminators outside contiguous ordered window"
+  },
   "sc_biosentinel/sun/orb/def": {
     "hash": "0464de2f4e3c2d469980e3addf7d379aa4b4cc70e2f142be12615f277267e0f2",
     "base": 28,

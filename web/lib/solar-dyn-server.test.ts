@@ -5,6 +5,7 @@ import { decodeDyn } from "../../platform/dyn-decoder.ts";
 import { readFile } from "node:fs/promises";
 import { evaluateOrb } from "../../platform/dyn-evaluator.ts";
 import type { DynSelection } from "./reviewed-dyn-window.ts";
+import {eyesDefinitions} from "../../platform/eyes-catalog.ts";
 
 // v2 definition contains an index, while its child starts at flag/count, not version.
 function fixtures() {
@@ -29,6 +30,30 @@ function fixtures() {
   return { definition, child };
 }
 const signal = () => new AbortController().signal;
+
+test("last declared covered position track wins overlaps and excluded phases are never fetched",async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[
+   {type:"dynamo",url:"moon/earth/first",coverage:[0,10]},
+   {type:"dynamo",url:"moon/earth/second",coverage:[5,8]},
+ ];
+ const {definition,child}=fixtures();
+ const requests:string[]=[];
+ const fetcher=async(input:RequestInfo|URL)=>{
+   requests.push(String(input));
+   return new Response(String(input).endsWith("def.dyn")?definition:child);
+ };
+ try {
+   for(const epoch of [4,5,8,9,5]) {
+     requests.length=0;
+     await fetchSolarDyn("moon",epoch,signal(),fetcher);
+     assert.ok(requests.every(url=>url.includes(epoch>=5&&epoch<=8?"/second/":"/first/")),requests.join("\n"));
+   }
+   requests.length=0;
+   await assert.rejects(fetchSolarDyn("moon",11,signal(),fetcher),/Outside source controller coverage/);
+   assert.equal(requests.length,0);
+ }finally{eyesDefinitions.moon.controllers=old;}
+});
 
 test("reviewed Venus and Mars source windows load modern states without weakening the decoder", async () => {
   for (const id of ["venus", "mars"]) {
@@ -214,21 +239,113 @@ test("reviewed Voyager positions preserve raw source and exclude exact duplicate
   }
 });
 
-test("Juno flyby source must match its temporal parent", async () => {
+test("Juno flyby chooses the last data-covered track instead of inferring coverage from URL parent", async () => {
   const urls: string[] = [];
-  await assert.rejects(() =>
-    fetchSolarDyn(
+  const epoch=676350000;
+  const {definition,child}=fixtures();
+  await fetchSolarDyn(
       "sc_juno",
-      676350000,
+      epoch,
       new AbortController().signal,
       async (input) => {
         urls.push(String(input));
-        return new Response("", { status: 404 });
+        const bytes=new Uint8Array(172),v=new DataView(bytes.buffer);
+        bytes.set(definition.slice(0,23));bytes.set(child,23);
+        const covered=String(input).includes("/ganymede/");
+        for(let i=0;i<2;i++)v.setFloat64(28+i*72,epoch+(covered?-5:100)+i*10,true);
+        return new Response(bytes);
       },
-    ),
   );
-  assert.equal(urls.length, 1);
-  assert.match(urls[0], /sc_juno\/ganymede\/orb/);
+  assert.equal(urls.length,4);
+  assert.match(urls[0], /sc_juno\/io\/2\/orb/);
+  assert.match(urls.at(-1)!, /sc_juno\/ganymede\/orb/);
+});
+
+test("a later position track failure is not silently replaced with an earlier orbit",async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a"},{type:"dynamo",url:"moon/other/b"}];
+ const requests:string[]=[];
+ try {
+   await assert.rejects(fetchSolarDyn("moon",5,signal(),async input=>{
+     requests.push(String(input));return new Response("",{status:503});
+   }),/HTTP 503/);
+   assert.equal(requests.length,1);
+   assert.match(requests[0],/moon\/other\/b/);
+ }finally{eyesDefinitions.moon.controllers=old;}
+});
+
+test("resolved root coverage exposes cache expiry when a later track overlaps an earlier broad payload",async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a"},{type:"dynamo",url:"moon/other/b"}];
+ const {definition,child}=fixtures();
+ const fetcher=async(input:RequestInfo|URL)=>{
+   const later=String(input).includes("/other/b/"),bytes=new Uint8Array(172);
+   bytes.set(definition.slice(0,23));bytes.set(child,23);
+   const v=new DataView(bytes.buffer);
+   for(let i=0;i<2;i++)v.setFloat64(28+i*72,(later?5:0)+i*(later?3:10),true);
+   return new Response(bytes);
+ };
+ try {
+   for(const epoch of [4,5,8,9]) {
+     let selection:any;
+     await fetchSolarDyn("moon",epoch,signal(),fetcher,"orb",undefined,value=>{selection=value;});
+     assert.equal(selection.track,epoch>=5&&epoch<=8?"moon/other/b":"moon/earth/a");
+     if(epoch===4)assert.equal(selection.upperExclusive,5);
+     if(epoch===9)assert.equal(selection.lowerExclusive,8);
+   }
+ }finally{eyesDefinitions.moon.controllers=old;}
+});
+
+test("an internal index-gap start remains inclusive for the fallback cache domain",async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a"},{type:"dynamo",url:"moon/earth/b"}];
+ const {definition,child}=fixtures();
+ const gap=new Uint8Array(59),v=new DataView(gap.buffer);
+ v.setInt16(0,1,true);gap.set([111,114,98,0],2);v.setFloat64(6,4902,true);v.setFloat64(14,398600,true);v.setInt32(23,2,true);
+ [0,5,7,10].forEach((x,i)=>v.setFloat64(27+i*8,x,true));
+ try {
+   let selection:any;
+   await fetchSolarDyn("moon",5,signal(),async input=>{
+     if(String(input).includes("/b/"))return new Response(gap);
+     const bytes=new Uint8Array(172);bytes.set(definition.slice(0,23));bytes.set(child,23);return new Response(bytes);
+   },"orb",undefined,value=>{selection=value;});
+   assert.equal(selection.lowerInclusive,5);
+   assert.equal(selection.upperExclusive,7);
+ }finally{eyesDefinitions.moon.controllers=old;}
+});
+
+test("real hash-pinned Juno flyby resolves after later duplicate-terminator sources prove outside coverage",async()=>{
+ const sources=JSON.parse(await readFile(new URL('../../docs/evidence/controllers-0.0.71/juno-reviewed-sources.json',import.meta.url),'utf8')).sources;
+ const fixturesByTrack=new Map<string,Uint8Array<ArrayBuffer>>();
+ for(const source of sources)fixturesByTrack.set(source.track,new Uint8Array(await readFile(new URL(`./fixtures/${source.fixture.split('/').at(-1)}`,import.meta.url))));
+ const tracks:string[]=[];
+ let selection:DynSelection|undefined,controller:any;
+ const bytes=await fetchSolarDyn("sc_juno",676350000,signal(),async input=>{
+   const track=String(input).split('/dynamo/')[1].replace('/def.dyn','');tracks.push(track);
+   assert.ok(fixturesByTrack.has(track),track);return new Response(fixturesByTrack.get(track)!);
+ },"orb",value=>{selection=value;},value=>{controller=value;});
+ assert.deepEqual(tracks,["sc_juno/io/2/orb","sc_juno/io/1/orb","sc_juno/europa/orb","sc_juno/ganymede/orb"]);
+ assert.equal(controller.track,"sc_juno/ganymede/orb");
+ assert.equal(controller.upperExclusive,717700360);
+ assert.deepEqual(selection?.records,[0,8]);
+ assert.deepEqual(decodeDyn(bytes).coverage,{start:676339597,end:676381521});
+});
+
+test("known reviewed mission coverage outside is distinct from malformed or ambiguous payload failure",async()=>{
+ const old=eyesDefinitions.moon.controllers;
+ eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a"},{type:"dynamo",url:"sc_osiris_rex/sun/4/orb"}];
+ const raw=new Uint8Array(await readFile(new URL('./fixtures/sc_osiris_rex__sun__4__orb__def-source.dyn',import.meta.url)));
+ const epoch=748838793,{definition,child}=fixtures();let controller:any;
+ try {
+   await fetchSolarDyn("moon",epoch,signal(),async input=>{
+     if(String(input).includes("/sc_osiris_rex/"))return new Response(raw);
+     const bytes=new Uint8Array(172);bytes.set(definition.slice(0,23));bytes.set(child,23);
+     const v=new DataView(bytes.buffer);for(let i=0;i<2;i++)v.setFloat64(28+i*72,epoch-10+i*20,true);
+     return new Response(bytes);
+   },"orb",undefined,value=>{controller=value;});
+   assert.equal(controller.track,"moon/earth/a");
+   assert.ok(controller.upperExclusive>epoch);
+ }finally{eyesDefinitions.moon.controllers=old;}
 });
 import missionPolicies from "./reviewed-mission-policies.json" with { type: "json" };
 test("all hash-pinned mission windows preserve contiguous original records and strict decoding", async () => {

@@ -1,4 +1,5 @@
 "use client";
+import {eyesCoverageLabel} from "../../platform/eyes-coverage";
 import {
   useEffect,
   useRef,
@@ -281,6 +282,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
     setPanel(panel === next ? null : next);
   };
   const object = p.catalog.find((o) => o.id === p.selected);
+  const displayName=(entry:CatalogEntry)=>eyesCoverageLabel(entry.id,p.epoch,entry.name);
   const [category, setCategory] = useState("all");
   const canObserve =
     p.active && Boolean(object) && p.dataStatus.startsWith("ready");
@@ -290,7 +292,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
         (category === "major"
           ? o.kind === "star" || o.kind === "planet"
           : o.kind === category)) &&
-      `${o.name} ${o.id} ${o.keywords?.join(" ") ?? ""}`
+      `${o.name} ${displayName(o)} ${o.id} ${o.keywords?.join(" ") ?? ""}`
         .toLowerCase()
         .includes(p.search.toLowerCase()),
   );
@@ -478,7 +480,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                 }
                 onClick={() => select(o.id)}
               >
-                <span>{o.name}</span>
+                <span>{displayName(o)}</span>
                 <small>{o.id}</small>
               </button>
             ))}
@@ -585,8 +587,8 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
               object &&
               !p.busy &&
               !p.dataStatus.startsWith("ready")
-                ? `${object.name} · 无可用数据，当前显示太阳系总览`
-                : (object?.name ?? "太阳系总览")}
+                ? `${displayName(object)} · 无可用数据，当前显示太阳系总览`
+                : (object ? displayName(object) : "太阳系总览")}
             </span>
             <span>ICRF · {object ? "km" : "AU"}</span>
           </div>
@@ -680,7 +682,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                     .filter((o) => o.id !== p.selected)
                     .map((o) => (
                       <option key={o.id} value={o.id}>
-                        {o.name}
+                        {displayName(o)}
                       </option>
                     ))}
                 </select>
@@ -756,7 +758,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
             ×
           </button>
           <p className="eyebrow">对象信息</p>
-          <h2>{object?.name ?? "太阳系"}</h2>
+          <h2>{object ? displayName(object) : "太阳系"}</h2>
           <p className="metadata">{object?.id ?? "SOLAR SYSTEM"}</p>
           <div className="target-actions">
             <button disabled={!canObserve || p.busy} onClick={p.onFocus}>
@@ -827,7 +829,7 @@ export default function WorkspaceView(p: WorkspaceViewProps) {
                     disabled={!p.active}
                     onClick={() => select(o.id)}
                   >
-                    {o.name} →
+                    {displayName(o)} →
                   </button>
                 ))}
             </section>

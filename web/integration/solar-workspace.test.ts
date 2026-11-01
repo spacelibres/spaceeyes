@@ -44,6 +44,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 }
 
 function harness(initialNullEnvironmentStatus = false) {
+  const labelCalls:{id:string;text:string}[]=[];
   const visuals: { id: string; spec: Record<string, any> }[] = [];
   const focusCalls: string[] = [];
   const solar: Record<string, number>[] = [];
@@ -84,6 +85,10 @@ function harness(initialNullEnvironmentStatus = false) {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if (property === "label") return (...args:any[]) => {
+            labelCalls.push({id:args[2],text:args[3]});
+            return Reflect.apply(value,target,args);
+          };
           if (property === "seek") return (...args: [string, string, number]) => {
             timeSession = [args[0], args[1]];
             return Reflect.apply(value, target, args);
@@ -163,6 +168,7 @@ function harness(initialNullEnvironmentStatus = false) {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    labelCalls: () => labelCalls,
     solar: () => solar,
     focusCalls: () => focusCalls,
     trails: () => trails,
@@ -183,6 +189,34 @@ function harness(initialNullEnvironmentStatus = false) {
       }),
   };
 }
+
+test("coverage names update at scene entry, direct seek and reverse ticks without repeated label writes",async()=>{
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{
+   ...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori"))),
+ });
+ const last=(id:string)=>fixtures.labelCalls().filter(c=>c.id===id).at(-1)?.text;
+ try {
+   app.play(false,1);
+   const boundary=264427265;
+   await app.seek(boundary-1);await app.select("sc_themis_b");
+   assert.equal(last("sc_themis_b"),"THEMIS B");
+   await app.seek(boundary+1);
+   assert.equal(last("sc_themis_b"),"ARTEMIS P1");
+   fixtures.seekEpoch(boundary);fixtures.step(0);
+   assert.equal(last("sc_themis_b"),"THEMIS B");
+   await app.seek(boundary); // Settle the controller-boundary reload before checking idle writes.
+   const count=fixtures.labelCalls().filter(c=>c.id==="sc_themis_b").length;
+   fixtures.step(100);fixtures.step(200);
+   assert.equal(fixtures.labelCalls().filter(c=>c.id==="sc_themis_b").length,count,"stable phase does not rewrite labels each frame");
+   await app.seek(748838792);await app.select("sc_osiris_rex");
+   assert.equal(last("sc_osiris_rex"),"OSIRIS-REX");
+   await app.seek(748838793);
+   assert.equal(last("sc_osiris_rex"),"OSIRIS-APEX");
+   await app.seek(748838792);
+   assert.equal(last("sc_osiris_rex"),"OSIRIS-REX");
+ }finally{await app.dispose();}
+});
 
 test("scene hit reuses real WASM selection while empty hits do not load and stale hits do not refocus", async () => {
   const fixtures = harness();

@@ -9,11 +9,13 @@ export interface HistorySource {
   coverage(id: string): readonly number[] | undefined;
   dispose(): void;
   cacheStats?(): { records: number };
+  needsPositionRefresh?(id:string,epoch:number):boolean;
 }
 export type HistoryOptions = {
   createSource(signal: AbortSignal, remainingRecords: number): HistorySource;
   parentAt(id: string, epoch: number): string | null;
   boundaries(id: string): readonly number[];
+  phaseAt?(id:string,epoch:number):string;
   maxSegments?: number;
   maxRecords?: number;
 };
@@ -21,6 +23,7 @@ type Segment = {
   start: number;
   end: number;
   parent: string | null;
+  phase?: string;
   source: HistorySource;
 };
 export interface PreparedHistory {
@@ -80,16 +83,17 @@ export class TrailHistory {
       abort.removeEventListener("abort", dispose);
     };
     abort.addEventListener("abort", dispose, { once: true });
-    const phases = [
+    const phases = [...new Set([
       start,
       ...this.#options
         .boundaries(id)
         .filter((t) => Number.isFinite(t) && t > start && t < end),
       end,
-    ].sort((a, b) => a - b);
+    ])].sort((a, b) => a - b);
     const pending = phases
       .slice(1)
       .map((b, i) => [phases[i], b] as [number, number]);
+    if(this.#options.phaseAt) for(const boundary of phases.slice(1,-1))pending.push([boundary,boundary]);
     const segments: Segment[] = [];
     const gaps: [number, number][] = [];
     let attempts = 0,
@@ -97,10 +101,15 @@ export class TrailHistory {
     try {
       while (pending.length) {
         abort.throwIfAborted();
+        const [a, b] = pending.shift()!;
+        const t = a===b ? a : epoch >= a && epoch < b ? epoch : a + (b - a) / 2;
+        const phase=this.#options.phaseAt?.(id,t);
+        // Shared inclusive endpoints can have a controller combination that
+        // exists only at that instant. Reuse a matching source or prepare it.
+        if(a===b&&segments.some(s=>t>=s.start&&t<=s.end&&s.parent===this.#options.parentAt(id,t)&&s.phase===phase&&
+          !s.source.needsPositionRefresh?.(id,t)&&(!currentOrigin||!s.source.needsPositionRefresh?.(currentOrigin,t))))continue;
         if (++attempts > (this.#options.maxSegments ?? 32))
           throw Error("History segment budget");
-        const [a, b] = pending.shift()!;
-        const t = epoch >= a && epoch < b ? epoch : a + (b - a) / 2;
         const remainingRecords =
           (this.#options.maxRecords ?? 1000000) - records;
         if (remainingRecords < 1) throw Error("History record budget");
@@ -153,7 +162,7 @@ export class TrailHistory {
         }
         const lo = Math.max(a, ...ranges.map((r) => r![0]));
         const hi = Math.min(b, ...ranges.map((r) => r![1]));
-        if (lo >= hi) {
+        if (lo > hi || (lo === hi && a!==b)) {
           releaseSource(source);
           gaps.push([a, b]);
           continue;
@@ -162,6 +171,7 @@ export class TrailHistory {
           start: lo,
           end: hi,
           parent: this.#options.parentAt(id, t),
+          phase,
           source,
         });
         if (lo > a) pending.push([a, lo]);
@@ -190,7 +200,10 @@ export class TrailHistory {
             (s) =>
               t >= s.start &&
               t <= s.end &&
-              s.parent === this.#options.parentAt(id, t),
+              s.parent === this.#options.parentAt(id, t) &&
+              s.phase === this.#options.phaseAt?.(id,t) &&
+              !s.source.needsPositionRefresh?.(id,t) &&
+              (!currentOrigin||!s.source.needsPositionRefresh?.(currentOrigin,t)),
           );
           if (!segment) throw Error("History source gap");
           const p = segment.source.position(id, t),

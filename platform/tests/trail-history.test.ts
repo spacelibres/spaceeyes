@@ -1,6 +1,40 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { TrailHistory } from "../trail-history.ts";
+
+test("inclusive controller end uses its matching phase source instead of the next interval",async()=>{
+ const phase=(t:number)=>t>=3&&t<=5?"overlap":"base";
+ const history=new TrailHistory({
+   parentAt:()=>"sun",boundaries:()=>[3,5],phaseAt:(_id,t)=>phase(t),
+   createSource:()=>{
+     let at=0;
+     return {async load(_ids:readonly string[],t:number){at=t;},coverage:()=>[0,10],
+       position:(_id:string,t:number)=>{assert.equal(phase(t),phase(at));return [phase(at)==="overlap"?20:2,0,0];},dispose(){}};
+   },
+ });
+ try {
+   const prepared=await history.prepare("craft",7,0,10);
+   assert.deepEqual(prepared.position(3),[20,0,0]);
+   assert.deepEqual(prepared.position(5),[20,0,0]);
+   assert.deepEqual(prepared.position(5.01),[2,0,0]);
+ }finally{history.dispose();}
+});
+
+test("an isolated combination at an inclusive shared boundary gets a bounded private source",async()=>{
+ const phase=(t:number)=>t===5?"both":t<5?"before":"after";
+ let count=0;
+ const history=new TrailHistory({parentAt:()=>"sun",boundaries:()=>[5],phaseAt:(_id,t)=>phase(t),
+   createSource:()=>{
+     let at=0;count++;
+     return {async load(_ids:readonly string[],t:number){at=t;},coverage:()=>[0,10],
+       position:(_id:string,t:number)=>{assert.equal(phase(t),phase(at));return [at,0,0];},dispose(){}};
+   }});
+ try {
+   const prepared=await history.prepare("craft",7,0,10);
+   assert.deepEqual(prepared.position(5),[5,0,0]);
+   assert.equal(count,3);
+ }finally{history.dispose();}
+});
 test("history converts changing parents into one current reference without publishing", async () => {
   let disposed = 0;
   const h = new TrailHistory({

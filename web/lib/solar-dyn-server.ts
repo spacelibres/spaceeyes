@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
-import { reviewedMissionWindow } from "./reviewed-mission-window.ts";
+import { reviewedMissionWindow,ReviewedMissionOutsideCoverage } from "./reviewed-mission-window.ts";
+import type {PositionSelection} from "../../platform/position-selection.ts";
 import {
   declaredTracks,
   getEyesDefinition,
-  parentAt,
 } from "../../platform/eyes-catalog.ts";
 import { decodeDyn } from "../../platform/dyn-decoder.ts";
 import { solarCatalog } from "../../platform/solar-system.ts";
@@ -33,6 +33,14 @@ function reviewedQuatWindow(raw: Uint8Array, epoch: number): {bytes:Uint8Array;s
 export class OrientationOutsideCoverage extends Error {
   readonly coverage: readonly [number,number];
   constructor(coverage: readonly [number, number]) { super("Outside source coverage");this.coverage=coverage; }
+}
+class PositionOutsideCoverage extends Error {
+  readonly lowerExclusive?:number;
+  readonly upperExclusive?:number;
+  readonly lowerInclusive?:number;
+  constructor(message:string,lowerExclusive?:number,upperExclusive?:number,lowerInclusive?:number){
+    super(message);this.lowerExclusive=lowerExclusive;this.upperExclusive=upperExclusive;this.lowerInclusive=lowerInclusive;
+  }
 }
 async function fetchTrack(
   id: string,
@@ -116,9 +124,15 @@ async function fetchTrack(
       if (selected.selection) onSelection?.(selected.selection);
     }
     if (track) {
-      const selected = reviewedMissionWindow(track, bytes, epoch, name);
-      bytes = selected.bytes;
-      if (selected.selection) onSelection?.(selected.selection);
+      try {
+        const selected = reviewedMissionWindow(track, bytes, epoch, name);
+        bytes = selected.bytes;
+        if (selected.selection) onSelection?.(selected.selection);
+      }catch(error){
+        if(type==="orb"&&error instanceof ReviewedMissionOutsideCoverage)
+          throw new PositionOutsideCoverage(error.message,error.lowerExclusive,error.upperExclusive);
+        throw error;
+      }
     }
     if (type === "ori") {
       const selected = reviewedQuatWindow(bytes,epoch);bytes=selected.bytes;
@@ -128,6 +142,8 @@ async function fetchTrack(
     if (epoch < d.coverage.start || epoch > d.coverage.end) {
       if (type === "ori" && name === "def")
         throw new OrientationOutsideCoverage([d.coverage.start, d.coverage.end]);
+      if (type === "orb") throw new PositionOutsideCoverage("Outside source coverage",
+        epoch>d.coverage.end?d.coverage.end:undefined,epoch<d.coverage.start?d.coverage.start:undefined);
       throw Error("Outside source coverage");
     }
     if (d.kind === "inline") return bytes;
@@ -136,7 +152,12 @@ async function fetchTrack(
         epoch >= s.start &&
         (epoch < s.end || (i === d.segments.length - 1 && epoch === s.end)),
     );
-    if (index < 0) throw Error("DYN index gap");
+    if (index < 0) {
+      if (type === "orb") throw new PositionOutsideCoverage("DYN index gap",
+        undefined,Math.min(...d.segments.filter(s=>s.start>epoch).map(s=>s.start)),
+        Math.max(...d.segments.filter(s=>s.end<=epoch).map(s=>s.end)));
+      throw Error("DYN index gap");
+    }
     const child = String(index).padStart(d.paddingWidth, "0");
     name = name === "def" ? child : `${name}_${child}`;
   }
@@ -150,33 +171,48 @@ export async function fetchSolarDyn(
   fetcher: typeof fetch = fetch,
   type: "orb" | "ori" = "orb",
   onSelection?: (selection: DynSelection) => void,
+  onController?: (selection:PositionSelection)=>void,
 ): Promise<Uint8Array> {
-  const declared = declaredTracks(id, type);
-  const parent = parentAt(id, epoch);
-  const matching =
-    type === "orb" && parent
-      ? declared.filter(
-          (track) =>
-            track.startsWith(`${id}/${parent}/`) || track === `${id}/${parent}`,
-        )
-      : [];
-  const tracks = matching.length ? matching : declared;
+  if (!Number.isFinite(epoch)) throw Error("Invalid solar resource");
+  const allDeclared = declaredTracks(id, type);
+  const declared = declaredTracks(id, type, type === "orb" ? epoch : undefined);
+  if (type === "orb" && allDeclared.length && !declared.length)
+    throw Error("Outside source controller coverage");
+  // Entity evaluates position controllers in declaration order: later covered
+  // tracks override earlier tracks, regardless of the URL's parent-looking path.
+  const tracks = type === "orb" ? [...declared].reverse() : declared;
   if (!getEyesDefinition(id) || !tracks.length)
     return fetchTrack(id, epoch, signal, fetcher, type, onSelection);
   let failure: unknown;
+  let lowerExclusive=-Infinity,lowerInclusive=-Infinity,upperExclusive=Infinity;
   for (const track of tracks) {
     try {
-      return await fetchTrack(
+      let selection: DynSelection | undefined;
+      const result = await fetchTrack(
         id,
         epoch,
         signal,
         fetcher,
         type,
-        onSelection,
+        value => { selection=value; },
         track,
       );
+      if (selection) onSelection?.(selection);
+      if(type==="orb")onController?.({track,
+        ...(Number.isFinite(lowerExclusive)?{lowerExclusive}:{}),
+        ...(Number.isFinite(lowerInclusive)?{lowerInclusive}:{}),
+        ...(Number.isFinite(upperExclusive)?{upperExclusive}:{})});
+      return result;
     } catch (e) {
       signal.throwIfAborted();
+      // Only proven source absence of this epoch permits trying an earlier
+      // position controller. Transport/decode failures are not coverage facts.
+      if (type === "orb" && !(e instanceof PositionOutsideCoverage)) throw e;
+      if(e instanceof PositionOutsideCoverage){
+        lowerExclusive=Math.max(lowerExclusive,e.lowerExclusive??-Infinity);
+        lowerInclusive=Math.max(lowerInclusive,e.lowerInclusive??-Infinity);
+        upperExclusive=Math.min(upperExclusive,e.upperExclusive??Infinity);
+      }
       failure = e;
     }
   }

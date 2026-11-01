@@ -27,6 +27,17 @@ const policies: Record<string, Policy> = {
     windows: [[0, 4]],
   },
 };
+export class ReviewedMissionOutsideCoverage extends Error {
+  readonly lowerExclusive?:number;
+  readonly upperExclusive?:number;
+  constructor(epoch:number,intervals:readonly (readonly number[])[]) {
+    super("Outside source coverage: no reviewed ordered mission interval");
+    const lower=Math.max(...intervals.filter(r=>r[1]<epoch).map(r=>r[1]));
+    const upper=Math.min(...intervals.filter(r=>r[0]>epoch).map(r=>r[0]));
+    if(Number.isFinite(lower))this.lowerExclusive=lower;
+    if(Number.isFinite(upper))this.upperExclusive=upper;
+  }
+}
 /** Hash-pinned, contiguous source runs only. No sorting, changed samples or extrapolation. */
 export function reviewedMissionWindow(
   track: string,
@@ -45,9 +56,9 @@ export function reviewedMissionWindow(
       epoch <= view.getFloat64(p.base + (end - 1) * p.stride, true),
   );
   if (!candidates.length)
-    throw Error(
-      "Outside source coverage: no reviewed ordered mission interval",
-    );
+    throw new ReviewedMissionOutsideCoverage(epoch,p.windows.map(([start,end])=>[
+      view.getFloat64(p.base+start*p.stride,true),view.getFloat64(p.base+(end-1)*p.stride,true),
+    ]));
   if (candidates.length > 1) {
     // A shared epoch is permitted only when the endpoint records are byte identical.
     const endpoints = candidates.map(([start, end]) => {
