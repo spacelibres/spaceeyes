@@ -401,8 +401,10 @@ export async function createWorkspace(
     );
   }
   let sdk!: PluginContext, data!: SolarSystemData;
+  const autoOverviewIds = new Set<string>();
   let observationContext: { target: string; mode: Parameters<PluginContext["camera"]["observe"]>[1]; options: Parameters<PluginContext["camera"]["observe"]>[2]; systemId: string | undefined } | undefined;
   const observe: PluginContext["camera"]["observe"] = (target, mode, options) => {
+    autoOverviewIds.clear();
     const parent = data.parentAt(target, core.epoch());
     const systemId = parent && parent !== "sun" && data.status(parent)?.status === "ready" ? parent : undefined;
     const framing = mode === "nearby" ? missionInitialLook(target, parent) : undefined;
@@ -683,6 +685,7 @@ export async function createWorkspace(
   };
   const sceneIds = (epoch: number) => {
     const ids = new Set(baseSolarIds);
+    if(!state.selected) for(const id of autoOverviewIds) ids.add(id);
     if (state.selected) {
       let id: string | null = state.selected;
       const visited = new Set<string>();
@@ -1549,6 +1552,7 @@ export async function createWorkspace(
     },
     overview() {
       assertLive();
+      autoOverviewIds.clear();
       cancelRestore?.();
       observationToken++;
       const ownedRevision = ++revision;
@@ -1793,6 +1797,8 @@ export async function createWorkspace(
             core.focused_object() === undefined &&
             !state.busy
           ) {
+            autoOverviewIds.clear();
+            for(const item of data.status()) if(item.status==="ready") autoOverviewIds.add(item.id);
             state.selected = "";
             data.retain(sceneIds(core.epoch()));
             configure();
