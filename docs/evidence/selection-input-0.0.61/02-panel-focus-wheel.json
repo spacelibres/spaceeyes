@@ -1,0 +1,38 @@
+{
+  "before": {
+    "focusedId": "mercury",
+    "positionKm": [
+      47153086.87968629,
+      16344855.694407523,
+      3852128.7348578204
+    ],
+    "desiredKm": [
+      47153086.87968629,
+      16344855.694407523,
+      3852128.7348578204
+    ],
+    "framingRadiusKm": 2439.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "mercury",
+    "positionKm": [
+      47153086.87968629,
+      16330119.750371993,
+      3852128.7348578204
+    ],
+    "desiredKm": [
+      47153086.87968629,
+      16330119.750371993,
+      3852128.7348578204
+    ],
+    "framingRadiusKm": 2439.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "focus": {
+    "label": "关闭对象信息",
+    "tag": "BUTTON"
+  }
+}

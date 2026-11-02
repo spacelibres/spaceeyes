@@ -1,0 +1,72 @@
+[
+  {
+    "id": "sc_juno",
+    "epoch": 676350000,
+    "success": true,
+    "wallMs": 1829,
+    "controller": {
+      "track": "sc_juno/ganymede/orb",
+      "upperExclusive": 717700360
+    },
+    "selection": {
+      "sourceSha256": "67484fa11ffd4e123a70b1ac1a33f39b0bb96a614d1a944a262beb0388c12463",
+      "records": [
+        0,
+        8
+      ],
+      "coverage": [
+        676339597,
+        676381521
+      ]
+    },
+    "type": "orb",
+    "coverage": {
+      "start": 676339597,
+      "end": 676381521
+    },
+    "sha256": "0f541bc7ce075f18309c16c22b1d29fdc3c8a2d74d6f91abbe6728c076f91b15"
+  },
+  {
+    "id": "sc_themis_b",
+    "epoch": 264427264,
+    "success": true,
+    "wallMs": 1854,
+    "controller": {
+      "track": "sc_themis_b/earth",
+      "upperExclusive": 362424822
+    },
+    "type": "orb",
+    "coverage": {
+      "start": 263900555.01935536,
+      "end": 266200205.91097483
+    },
+    "sha256": "f0fb8447e012fea33fe80cada7acaf033f26842ace06c15cad7cc47dcb865bbf"
+  },
+  {
+    "id": "sc_osiris_rex",
+    "epoch": 748838793,
+    "success": true,
+    "wallMs": 1110,
+    "controller": {
+      "track": "sc_osiris_rex/earth/sample_return/orb",
+      "upperExclusive": 749140122
+    },
+    "selection": {
+      "sourceSha256": "bf6010ce5add0da08c6eafc7c5fc046d4cad1f5f14c3f37c02277771f88e01e6",
+      "records": [
+        0,
+        7
+      ],
+      "coverage": [
+        748358886,
+        749140122
+      ]
+    },
+    "type": "orb",
+    "coverage": {
+      "start": 748358886,
+      "end": 749140122
+    },
+    "sha256": "b037ee530cc097612afaa8de00a1af1db8556c54ed880cb90b9ffe460f855eda"
+  }
+]

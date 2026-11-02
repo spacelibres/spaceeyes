@@ -1,0 +1,20 @@
+✖ automatic spacecraft histories remain publishable for radial and stationary limits (24.1139ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 233.1982
+
+✖ failing tests:
+
+test at platform\tests\solar-system.test.ts:1356:1
+✖ automatic spacecraft histories remain publishable for radial and stationary limits (24.1139ms)
+  Error: Invalid adaptive trail window
+      at adaptiveTrailTimes (file:///C:/Users/stone/Documents/SPACEEYES/platform/adaptive-trail.ts:20:11)
+      at SolarSystemData.trailSamples (file:///C:/Users/stone/Documents/SPACEEYES/platform/solar-system.ts:1377:30)
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1368:26)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)

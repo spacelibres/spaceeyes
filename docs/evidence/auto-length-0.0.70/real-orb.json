@@ -1,0 +1,125 @@
+[
+  {
+    "id": "sc_iss",
+    "evidence": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=846724000",
+        "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580",
+        "type": "orb"
+      },
+      {
+        "path": "/api/solar-dyn/sc_iss?epoch=846724000",
+        "sha256": "bb12a132c5466ef405bec21524661eda9a6f37229134c22d37e7ebbb1609e168",
+        "type": "orb"
+      }
+    ],
+    "samples": [
+      {
+        "epoch": 846723900,
+        "durationSeconds": 5573,
+        "authoredSeconds": 5573,
+        "points": 128,
+        "breaks": 0,
+        "origin": "earth"
+      },
+      {
+        "epoch": 846724000,
+        "durationSeconds": 5573,
+        "authoredSeconds": 5573,
+        "points": 128,
+        "breaks": 0,
+        "origin": "earth"
+      },
+      {
+        "epoch": 846724100,
+        "durationSeconds": 5573,
+        "authoredSeconds": 5573,
+        "points": 128,
+        "breaks": 0,
+        "origin": "earth"
+      }
+    ]
+  },
+  {
+    "id": "sc_lunar_reconnaissance_orbiter",
+    "evidence": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=846724000",
+        "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580",
+        "type": "orb"
+      },
+      {
+        "path": "/api/solar-dyn/moon?epoch=846724000",
+        "sha256": "786200b9fa5d19a9315f40dd8c946cb172edf7d58f9129b8c99d113e45777706",
+        "type": "orb"
+      },
+      {
+        "path": "/api/solar-dyn/sc_lunar_reconnaissance_orbiter?epoch=846724000",
+        "sha256": "8039731faf108f3a6346831af3f7ab1a1754f539bf9125e5c5f41cb6a804a56d",
+        "type": "orb"
+      }
+    ],
+    "samples": [
+      {
+        "epoch": 846723900,
+        "durationSeconds": 7106.66,
+        "authoredSeconds": 7106.66,
+        "points": 128,
+        "breaks": 0,
+        "origin": "moon"
+      },
+      {
+        "epoch": 846724000,
+        "durationSeconds": 7106.66,
+        "authoredSeconds": 7106.66,
+        "points": 128,
+        "breaks": 0,
+        "origin": "moon"
+      },
+      {
+        "epoch": 846724100,
+        "durationSeconds": 7106.66,
+        "authoredSeconds": 7106.66,
+        "points": 128,
+        "breaks": 0,
+        "origin": "moon"
+      }
+    ]
+  },
+  {
+    "id": "sc_psyche",
+    "evidence": [
+      {
+        "path": "/api/solar-dyn/sc_psyche?epoch=846724000",
+        "sha256": "faf35932c4c6d4820e71f2fa1cffdc2c54ac49ca2273e1eef8c0396a6ee4bc1b",
+        "type": "orb"
+      }
+    ],
+    "samples": [
+      {
+        "epoch": 846723900,
+        "durationSeconds": 96747450.88113597,
+        "authoredSeconds": null,
+        "points": 47,
+        "breaks": 0,
+        "origin": "sun"
+      },
+      {
+        "epoch": 846724000,
+        "durationSeconds": 96747534.76152034,
+        "authoredSeconds": null,
+        "points": 47,
+        "breaks": 0,
+        "origin": "sun"
+      },
+      {
+        "epoch": 846724100,
+        "durationSeconds": 96747618.6419552,
+        "authoredSeconds": null,
+        "points": 47,
+        "breaks": 0,
+        "origin": "sun"
+      }
+    ]
+  }
+]

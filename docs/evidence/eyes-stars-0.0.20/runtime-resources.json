@@ -1,0 +1,13 @@
+{
+  "wasmBytes": 29232964,
+  "wasmSha256": "620ef14512f7497cc9b8a80243e5e8a5a8a6f84f54bbe0cdff6cea4a2fa20117",
+  "localGzip9Bytes": 6877351,
+  "previousWasmBytes": 29099442,
+  "wasmCodeDeltaBytes": 133522,
+  "rawStarfieldBytes": 1009222,
+  "sourceFilesCheckedAbsent": 7,
+  "embeddedSourceFiles": [],
+  "externalShaderBytes": 1477,
+  "shaderEmbedded": false,
+  "note": "Local gzip measurement, not a browser transfer measurement"
+}

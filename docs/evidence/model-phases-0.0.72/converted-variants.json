@@ -1,0 +1,910 @@
+[
+  {
+    "id": "sc_cassini",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_cassini/Cassini.gltf",
+    "success": true,
+    "bytes": 4314880,
+    "sha256": "5542db7c7f144671ed58efd78a11548776665d7acdbd09da152af27286ff8507",
+    "wallMs": 82,
+    "geometry": 10,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -6.123233601181349e-17,
+          0,
+          0.9999999403953552,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_cassini",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_cassini/Cassini.gltf",
+    "success": true,
+    "bytes": 4314872,
+    "sha256": "072a49efec3e4eeed4fc25a85b16556de32a6e971048642db9e628c9308eef4e",
+    "wallMs": 108,
+    "geometry": 9,
+    "hidden": [
+      {
+        "name": "huygens_probe",
+        "matched": true
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          -6.123233601181349e-17,
+          0,
+          0.9999999403953552,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_clementine",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_clementine/clementine_isas.gltf",
+    "success": true,
+    "bytes": 3382332,
+    "sha256": "c780a67d39631e68e93a6f406be3c32dade7d1e5e745422a7121301b42cee3fc",
+    "wallMs": 71,
+    "geometry": 7,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          -0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_clementine",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_clementine/clementine.gltf",
+    "success": true,
+    "bytes": 3268980,
+    "sha256": "37d2989c33523b25d0bc0d61ebc9e5bde77c90e1f01e889150b4e5960f8d69af",
+    "wallMs": 65,
+    "geometry": 8,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          -0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_insight/lander/insight.gltf",
+    "success": true,
+    "bytes": 18112488,
+    "sha256": "9a672f6067a46d85bb729619aec0820d1c74bf4e77c7918fedb8495921dc5aa6",
+    "wallMs": 256,
+    "geometry": 1,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_insight/cruise/model.gltf",
+    "success": true,
+    "bytes": 3555316,
+    "sha256": "7e098e2b17557a6ed839321027423ce980c54b5e96589ce1e1f716c31c71d2d5",
+    "wallMs": 205,
+    "geometry": 10,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "phase": "phase-2",
+    "source": "$STATIC_ASSETS_URL/models/sc_insight/lander/insight.gltf",
+    "success": true,
+    "bytes": 18112424,
+    "sha256": "aef0003ec2a680d4b6b59993519b2076958404c9b34869e4718a70b5a90d4fe8",
+    "wallMs": 277,
+    "geometry": 1,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0.00085,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_jwst",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_jwst/webb_stowed.gltf",
+    "success": true,
+    "bytes": 2586308,
+    "sha256": "14d3d396af77221db5c204ec4a674d3353530065ff049b28f9445194d2f0bd18",
+    "wallMs": 241,
+    "geometry": 59,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          0,
+          0.7071067690849304
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_jwst",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_jwst/webb_deployed.gltf",
+    "success": true,
+    "bytes": 3856012,
+    "sha256": "e0f5551a21b38e18976eaf66fe164d9a5f67bde5bda229d75bad578745345a16",
+    "wallMs": 218,
+    "geometry": 86,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          0,
+          0.7071067690849304
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf",
+    "success": true,
+    "bytes": 7544524,
+    "sha256": "6d1860b7e9c7f7fcedb5569c8173ed5ea422a044b07c2b22d3cb700b20cd7a83",
+    "wallMs": 100,
+    "geometry": 11,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.9999999403953552,
+          0,
+          0,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf",
+    "success": true,
+    "bytes": 7544508,
+    "sha256": "e17143da4bc0757a1b97af87c4da790904c98681816378b378b330066d0f7395",
+    "wallMs": 103,
+    "geometry": 9,
+    "hidden": [
+      {
+        "name": "frame_etc",
+        "matched": true
+      },
+      {
+        "name": "solar_panels",
+        "matched": true
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          -0.9999999403953552,
+          0,
+          0,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "phase": "phase-2",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_2020/rover/perseverance.gltf",
+    "success": true,
+    "bytes": 11989628,
+    "sha256": "16e4c818fb59ca05cae2cb0213d1e13bb3ce36ce1ce5d29a72b41fcb7c8c6bee",
+    "wallMs": 275,
+    "geometry": 68,
+    "hidden": [
+      {
+        "name": "frame_etc",
+        "matched": false
+      },
+      {
+        "name": "solar_panels",
+        "matched": false
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          -0.7071067690849304,
+          0
+        ],
+        "translation": [
+          0,
+          0.001,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "phase": "phase-3",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_2020/rover/perseverance.gltf",
+    "success": true,
+    "bytes": 11989628,
+    "sha256": "16e4c818fb59ca05cae2cb0213d1e13bb3ce36ce1ce5d29a72b41fcb7c8c6bee",
+    "wallMs": 293,
+    "geometry": 68,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          -0.7071067690849304,
+          0
+        ],
+        "translation": [
+          0,
+          0.001,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_1",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf",
+    "success": true,
+    "bytes": 4456300,
+    "sha256": "681c002408c4c7c5fcc27d0744430bd7e7069d7df2c16cd04e56c3b947d58d78",
+    "wallMs": 100,
+    "geometry": 16,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_1",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf",
+    "success": true,
+    "bytes": 7980376,
+    "sha256": "58a507af7496be73d55fde56458951f8817b935752424401fd4659b7fe431f95",
+    "wallMs": 119,
+    "geometry": 1,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_2",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf",
+    "success": true,
+    "bytes": 4456300,
+    "sha256": "681c002408c4c7c5fcc27d0744430bd7e7069d7df2c16cd04e56c3b947d58d78",
+    "wallMs": 12,
+    "geometry": 16,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_2",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf",
+    "success": true,
+    "bytes": 7980376,
+    "sha256": "58a507af7496be73d55fde56458951f8817b935752424401fd4659b7fe431f95",
+    "wallMs": 27,
+    "geometry": 1,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf",
+    "success": true,
+    "bytes": 6979872,
+    "sha256": "8db3f66053022932ced8f53fa57eb435e0904463b00ae044055575ce69d7ec93",
+    "wallMs": 143,
+    "geometry": 7,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.9999999403953552,
+          0,
+          0,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf",
+    "success": true,
+    "bytes": 6979852,
+    "sha256": "5b60becb91193e7e1467afae959c23f8e1bd3a19214c5b1aa33cf89922d85d2a",
+    "wallMs": 89,
+    "geometry": 5,
+    "hidden": [
+      {
+        "name": "frame_etc",
+        "matched": true
+      },
+      {
+        "name": "solar_panels",
+        "matched": true
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          -0.9999999403953552,
+          0,
+          0,
+          0
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "phase": "phase-2",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/rover/curiosity_static.gltf",
+    "success": true,
+    "bytes": 12480660,
+    "sha256": "f6348d045a1dbead47bb0afc0497ddcff062154eabbfd18d6f547781adb1190d",
+    "wallMs": 162,
+    "geometry": 1,
+    "hidden": [
+      {
+        "name": "frame_etc",
+        "matched": false
+      },
+      {
+        "name": "solar_panels",
+        "matched": false
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          -0.7071067690849304,
+          0
+        ],
+        "translation": [
+          0,
+          0.001,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "phase": "phase-3",
+    "source": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/rover/curiosity_static.gltf",
+    "success": true,
+    "bytes": 12480660,
+    "sha256": "f6348d045a1dbead47bb0afc0497ddcff062154eabbfd18d6f547781adb1190d",
+    "wallMs": 165,
+    "geometry": 1,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.7071067690849304,
+          0,
+          -0.7071067690849304,
+          0
+        ],
+        "translation": [
+          0,
+          0.001,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_phoenix",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_phoenix/cruise/phoenix_cruise.gltf",
+    "success": true,
+    "bytes": 4314616,
+    "sha256": "9af5b218f3c58dbcc49888dc152ebd910d4885afb0c87ce49bcd7a826d996ce3",
+    "wallMs": 191,
+    "geometry": 16,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          0.4999999701976776,
+          0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_phoenix",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_phoenix/edl/phoenix_edl.gltf",
+    "success": true,
+    "bytes": 580616,
+    "sha256": "ff359cec49e6cead27485d33b7d572613605cc57129d37d798a524a714a65a14",
+    "wallMs": 97,
+    "geometry": 6,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          -0.4999999701976776,
+          0.4999999701976776,
+          0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_rosetta",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_rosetta/rosettaPhilae.gltf",
+    "success": true,
+    "bytes": 3137016,
+    "sha256": "35c2eaa0db9606b282a1f199895f45c07ff65c2f147a03ba27825d647bdd4997",
+    "wallMs": 102,
+    "geometry": 14,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0.4999999701976776,
+          0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_rosetta",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_rosetta/rosettaPhilae.gltf",
+    "success": true,
+    "bytes": 3136964,
+    "sha256": "cb347a16c09dd248412c7cce1677b472331c25fff7327a6e878883d890e13d15",
+    "wallMs": 87,
+    "geometry": 9,
+    "hidden": [
+      {
+        "name": "Philae",
+        "matched": true
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          0.4999999701976776,
+          0.4999999701976776,
+          -0.4999999701976776,
+          0.4999999701976776
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_stardust",
+    "phase": "phase-0",
+    "source": "$STATIC_ASSETS_URL/models/sc_stardust/stardust_articulated.gltf",
+    "success": true,
+    "bytes": 4934148,
+    "sha256": "615671fb14372f1ef7509d0b5405ed083051ac9164c2f5297b435a69494b17bc",
+    "wallMs": 90,
+    "geometry": 14,
+    "hidden": [],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0.7071067094802856,
+          0,
+          0.7071067094802856
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sc_stardust",
+    "phase": "phase-1",
+    "source": "$STATIC_ASSETS_URL/models/sc_stardust/stardust_articulated.gltf",
+    "success": true,
+    "bytes": 4934084,
+    "sha256": "99c0cd261889ef9c129f79919d3edab252a42e8dade5370a48d64cde90683683",
+    "wallMs": 64,
+    "geometry": 7,
+    "hidden": [
+      {
+        "name": "Stardust_Sample_Collection1",
+        "matched": true
+      },
+      {
+        "name": "Stardust_capsule",
+        "matched": true
+      },
+      {
+        "name": "Stardust_tex_01_c",
+        "matched": true
+      },
+      {
+        "name": "Stardust_tex_02_c",
+        "matched": true
+      },
+      {
+        "name": "Stardust_tex_02_c2",
+        "matched": true
+      },
+      {
+        "name": "Stardust_tex_03_c",
+        "matched": true
+      }
+    ],
+    "frame": [
+      {
+        "rotation": [
+          0,
+          0.7071067094802856,
+          0,
+          0.7071067094802856
+        ],
+        "translation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.001,
+          0.001,
+          0.001
+        ]
+      }
+    ]
+  }
+]

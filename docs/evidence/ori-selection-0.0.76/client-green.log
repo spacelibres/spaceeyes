@@ -1,0 +1,11 @@
+✔ ORI cache identity and source ordering survive forward/reverse covered-stage switches (37.7248ms)
+✔ ORI effective cache domain refreshes an overlapping source despite unchanged declared set (2.287ms)
+✔ ORI proven multi-source absence retains fixed attitude only inside its open domain (2.1805ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 275.8951

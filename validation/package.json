@@ -1,0 +1,14 @@
+{
+  "name": "@spaceeyes/resource-validation",
+  "version": "0.0.13",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "verify": "node verify.ts"
+  }
+}

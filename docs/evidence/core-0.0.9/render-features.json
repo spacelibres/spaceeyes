@@ -1,0 +1,25 @@
+[
+  {
+    "name": "bevy_anti_alias",
+    "features": [
+      "webgl"
+    ]
+  },
+  {
+    "name": "bevy_core_pipeline",
+    "features": [
+      "webgl"
+    ]
+  },
+  {
+    "name": "bevy_pbr",
+    "features": [
+      "bevy_gltf",
+      "webgl"
+    ]
+  },
+  {
+    "name": "bevy_text",
+    "features": []
+  }
+]

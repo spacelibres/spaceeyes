@@ -1,0 +1,13 @@
+{
+  "distanceKm": 0.02177005324719822,
+  "nasaFormulaDistanceKm": 0.021770052561353826,
+  "distanceErrorMeters": 6.858443951651694e-07,
+  "radialCosine": 0.9999999999999101,
+  "threeClickOutRatio": 1.866064898886752,
+  "nasaExpectedRatio": 1.8660659830736148,
+  "collisionAdjusted": false,
+  "viewport": [
+    1280,
+    720
+  ]
+}

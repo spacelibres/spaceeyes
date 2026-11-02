@@ -1,0 +1,110 @@
+[
+  {
+    "priority": "P1",
+    "capability": "A42",
+    "title": "自动降画质仍在代码中",
+    "path": "core/src/frame_budget.rs",
+    "line": 199,
+    "evidence": "30档过载后降低到0.85/0.7/0.5；apply_resolution_scale实际写入MainPassResolutionOverride。与最新用户原则直接冲突，不能以已通过旧测试为由继续授权。",
+    "next": "独立撤除自动分辨率降级，保留60/30调度，在相同画质下重跑八场景；本轮不改代码。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A03",
+    "title": "三个飞船位置不可用可复现",
+    "path": "web/lib/solar-dyn-server.ts",
+    "line": 141,
+    "evidence": "Europa Clipper地球飞掠、Juice地球flyby3、Lucy Patroclus轨道先发生重复时间解码错误，无法继续确认该轨是否覆盖当前epoch，较早日心轨也因此未返回。source-probes.json保留实际URL/字节/SHA。",
+    "next": "逐包审查控制器覆盖和NASA选择规则，仅对已证明结构建立受控处理；禁止全局排序去重、吞错回退或伪造有效状态。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A04",
+    "title": "ORI未完整按有效控制器覆盖",
+    "path": "web/lib/solar-dyn-server.ts",
+    "line": 183,
+    "evidence": "位置走逆序、ORI走正序首个成功；declaredTracks对ORI未传epoch；每对象一份ORI被多个控制器复用。Mars2020/MSL/InSight均有多ORI声明。",
+    "next": "单独设计ORI控制器选择、身份缓存、闭端点及固定姿态覆盖，增加各任务前/中/后和反向跳时回归。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A33",
+    "title": "全场景共用一束平行光",
+    "path": "core/src/renderer.rs",
+    "line": 2715,
+    "evidence": "光向量由当前显示原点决定；太阳总览origin为0时直接return，保留上个方向。不同位置行星同屏不能各自获得真实Sun方向；阴影贴图全局关闭。",
+    "next": "保持自然光/补光功能，按NASA光源/遮挡效果核对每对象入射方向、衰减与阴影；不能靠整体提亮替代。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A30",
+    "title": "行星完整材质通道缺失",
+    "path": "core/src/render_assets.rs",
+    "line": 15,
+    "evidence": "当前球体以baseColor为主，roughness0.9/metallic0；未贯通NASA正常/高光/夜面/云层/大气完整通道。银河IBL和航天器PBR不能替代这些能力。",
+    "next": "分通道建立资源/SDK/渲染/释放闭环，固定地球昼夜、金星、土星与自然光对照；不得降纹理精度。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A37",
+    "title": "模型加载不等于连续动画已运行",
+    "path": "core/src/render_assets.rs",
+    "line": 188,
+    "evidence": "有模型场景加载、离散变体和太阳翼约束，但生产核心未找到AnimationPlayer/AnimationGraph播放接线；NASA Keyframe/关节动作未全消费。",
+    "next": "区分GLTF动画、控制器关键帧、连续关节和离散部件显隐，按真实存在资源逐个验证，不能无条件播放猜测动作。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A19",
+    "title": "相机入场仍是统一短过渡",
+    "path": "core/src/renderer.rs",
+    "line": 343,
+    "evidence": "本地固定0.35秒smoothstep；NASA典型1.5秒两段构图、Sun向量和目标up/offset，完整仪器/表面/比较/自由飞行入口缺失。",
+    "next": "先统一相机上下文和投影/目标责任，再逐入口对照；保留用户确认的外部任务构图，不随意撤销。"
+  },
+  {
+    "priority": "P1",
+    "capability": "A11",
+    "title": "时间覆盖端点策略不同",
+    "path": "web/lib/solar-workspace.ts",
+    "line": 1109,
+    "evidence": "关键覆盖失效先回退已发布时刻再reload；NASA到端点内移1ms并暂停。高倍速跨段与真实任务结束必须区别。",
+    "next": "覆盖边界、暂时加载、任务结束分别测试正倒播，不能让非关键轨迹错误停止主时间。"
+  },
+  {
+    "priority": "P2",
+    "capability": "A27",
+    "title": "标签仍是简化权重和碰撞规则",
+    "path": "core/src/renderer.rs",
+    "line": 2031,
+    "evidence": "只区分Sun/八大行星/sc/其它；NASA包含矮行星、彗星、小行星、着陆点等类别，焦点矩形和例外集也未完全映射。",
+    "next": "稳定锚点/对象可见性保留；先建立类别和上下文权重，再以密集卫星群录像验证无闪烁，不恢复跳来跳去避让。"
+  },
+  {
+    "priority": "P2",
+    "capability": "A31",
+    "title": "表面纹理固定输出限制近景精度",
+    "path": "core/src/face_texture.rs",
+    "line": 103,
+    "evidence": "六面图在CPU转换为固定2048×1024，代替不了NASA近景表面瓦片LOD；同时保留原六面和生成图的句柄会有额外驻留成本。",
+    "next": "测量精度/内存并评估GPU直采或等精度预处理；不简单取消八行星预载或把缩图当优化。"
+  },
+  {
+    "priority": "P2",
+    "capability": "A18",
+    "title": "轨迹着色还缺连接与样式语义",
+    "path": "web/resources/shaders/trajectory.wgsl",
+    "line": 38,
+    "evidence": "独立线段颜色输出缺NASA prev/curr/next连接、dash和edgeGlow通道；悬停已实现不能代表所有轨迹样式相同。",
+    "next": "保持天然轨道和完整历史拖尾，补样式/接头后验证近裁剪、屏幕边缘、粗细与遮挡。"
+  },
+  {
+    "priority": "P2",
+    "capability": "A47",
+    "title": "缺少全链路内存/显存总账",
+    "path": "core/src/runtime.rs",
+    "line": 95,
+    "evidence": "存在逐帧集合分配、JSON复制、CPU纹理展开及mesh整体重传的候选开销；多个缓存预算并非进程或显存总上限。本轮没有分配器或GPU内存剖析，不能宣称泄漏已证实。",
+    "next": "先按资源归属测量冷启动/八行星预载/切换/退出的峰值和回收，再分别优化CPU/Worker/GPU职责。"
+  }
+]

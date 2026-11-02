@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.51 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.34s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-2eef4d4fc5f44e3d.exe)
+
+running 1 test
+test orbit_lines::trail_tests::parent_inspection_keeps_natural_satellite_orbits_at_every_zoom ... FAILED
+
+failures:
+
+---- orbit_lines::trail_tests::parent_inspection_keeps_natural_satellite_orbits_at_every_zoom stdout ----
+
+thread 'orbit_lines::trail_tests::parent_inspection_keeps_natural_satellite_orbits_at_every_zoom' (12216) panicked at src\orbit_lines.rs:267:17:
+assertion `left == right` failed
+  left: 0.0
+ right: 1.0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    orbit_lines::trail_tests::parent_inspection_keeps_natural_satellite_orbits_at_every_zoom
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 32 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

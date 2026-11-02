@@ -1,0 +1,7 @@
+{
+  "profile": "wasm-release",
+  "bytes": 28891934,
+  "sha256": "add8b4adff213e43463d500f55f35c6039df58329c56d19b1206db29dd0d85b2",
+  "gzipLevel6Bytes": 6971313,
+  "previousDebugBytes": 164197457
+}

@@ -1,0 +1,93 @@
+{
+  "samples": [
+    {
+      "label": "1x-start",
+      "wallMs": 1793495044320,
+      "tdb": 846724000,
+      "rate": "real rate",
+      "playing": true
+    },
+    {
+      "label": "1x-running",
+      "wallMs": 1793495092759,
+      "tdb": 846724048.411,
+      "rate": "real rate",
+      "playing": true
+    },
+    {
+      "label": "rate3-start",
+      "wallMs": 1793495092990,
+      "tdb": 846724048.689,
+      "rate": "3 sec/s",
+      "playing": true
+    },
+    {
+      "label": "rate3-running",
+      "wallMs": 1793495132649,
+      "tdb": 846724167.597,
+      "rate": "3 sec/s",
+      "playing": true
+    },
+    {
+      "label": "higher-rate-start",
+      "wallMs": 1793495133116,
+      "tdb": 846724169.554,
+      "rate": "8 sec/s",
+      "playing": true
+    },
+    {
+      "label": "higher-rate-running",
+      "wallMs": 1793495189462,
+      "tdb": 846724620.386,
+      "rate": "8 sec/s",
+      "playing": true
+    },
+    {
+      "label": "2x-sky-start",
+      "wallMs": 1793495246703,
+      "tdb": 846724096.99,
+      "rate": "2 sec/s",
+      "playing": true
+    },
+    {
+      "label": "2x-ui-focused",
+      "wallMs": 1793495305195,
+      "tdb": 846724213.863,
+      "rate": "2 sec/s",
+      "playing": true
+    },
+    {
+      "label": "2x-ui-running",
+      "wallMs": 1793495391742,
+      "tdb": 846724387.015,
+      "rate": "2 sec/s",
+      "playing": true
+    }
+  ],
+  "pairs": [
+    {
+      "expected": 1,
+      "wallSeconds": 48.439,
+      "simulationSeconds": 48.41100001335144,
+      "measuredRate": 0.9994219536603035
+    },
+    {
+      "expected": 3,
+      "wallSeconds": 39.659,
+      "simulationSeconds": 118.9079999923706,
+      "measuredRate": 2.998260167739242
+    },
+    {
+      "expected": 8,
+      "wallSeconds": 56.346,
+      "simulationSeconds": 450.83200001716614,
+      "measuredRate": 8.001135839583398
+    },
+    {
+      "expected": 2,
+      "wallSeconds": 145.039,
+      "simulationSeconds": 290.02499997615814,
+      "measuredRate": 1.999634580879337
+    }
+  ]
+}

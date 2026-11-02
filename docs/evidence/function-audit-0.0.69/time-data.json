@@ -1,0 +1,175 @@
+{
+  "baseline": "36b6cac55",
+  "scope": "time-data",
+  "method": "read-only function-level source comparison; statuses are not whole-platform certification",
+  "entries": [
+    {
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.constructor frame callback",
+      "ours": "core/src/clock.rs SimulationClock.advance; web/lib/solar-workspace.ts tick",
+      "status": "source-compared",
+      "evidence": "NASA engine time advances with rate; ours advances elapsed_seconds*rate. Negative rates supported; host owns per-RAF advance.",
+      "crossFeatureRisk": "Wall-time discontinuity and coverage reload must not reset accumulated clock on rate-only changes."
+    },
+    {
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.play / pause / setTimeRate",
+      "ours": "web/lib/solar-workspace.ts runtime.play",
+      "status": "verified",
+      "evidence": "Current play preserves lastFrame for rate-only changes and resets only playing transition; prior rate-change regression was repaired. Busy+playing still rejects; pause remains allowed.",
+      "crossFeatureRisk": "Review current simultaneous coverage loading separately."
+    },
+    {
+      "nasaFile": "engine/managers/TimeManager-922.js",
+      "nasaSymbol": "TimeManager._onLimitReach",
+      "ours": "web/lib/solar-workspace.ts reload/tick critical coverage",
+      "status": "different",
+      "evidence": "NASA predicts next-frame crossing and routes to boundary interior +/-1ms with rate0/message; ours rolls back lastPublishedEpoch and reloads target coverage, preserving desiredPlaying when possible.",
+      "crossFeatureRisk": "End-of-mission behavior, reverse boundaries and error messages are not identical."
+    },
+    {
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.isNow / getNow / setToNow",
+      "ours": "web/lib/time-controls.ts isLive; solar-workspace currentTime",
+      "status": "source-compared",
+      "evidence": "NASA isNow rate1 and UTC error<1000ms; ours exposes live logic plus authoritative TDB conversion.",
+      "crossFeatureRisk": "Not a full leap-second scientific certification."
+    },
+    {
+      "nasaFile": "engine/core/TimeUtils.js",
+      "nasaSymbol": "TimeUtils.etToUnix / unixToET",
+      "ours": "core/src/time_conversion.rs UTC/TDB conversion",
+      "status": "different",
+      "evidence": "Our Rust explicit UTC/TDB implementation is distinct from recovered NASA TimeUtils; unit/frame intent explicit.",
+      "crossFeatureRisk": "Compare numerical golden epochs across leap-second boundaries before exact equivalence."
+    },
+    {
+      "nasaFile": "ui/components/TimeControls.js",
+      "nasaSymbol": "TimeControls._createRatesMap / _roundRate / decreaseRate / increaseRate / _getValueFromRate",
+      "ours": "web/lib/time-controls.ts TIME_RATES,adjacentRate,rateToSliderIndex",
+      "status": "verified",
+      "evidence": "Existing source golden table and 101 rates tests; preserves signed reverse rates and real-rate formatting.",
+      "crossFeatureRisk": "Complete pointer/touch behavioral equivalence still requires actual UI comparison."
+    },
+    {
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.parseTime / momentToET / etToMoment",
+      "ours": "web/lib/scene-link.ts parseSceneLink/formatSceneLink; solar-workspace seekUtc",
+      "status": "source-compared",
+      "evidence": "Our route intentionally stores TDB semantic state, validates finite rates and target IDs; dates pass controlled Rust conversion.",
+      "crossFeatureRisk": "Exact NASA URL syntax and complete camera-angle route state are different."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoController._loadDef / DynamoPointSet.getPointSet",
+      "ours": "web/lib/solar-dyn-server.ts fetchSolarDyn; platform/dyn-decoder.ts decodeDyn",
+      "status": "source-compared",
+      "evidence": "Type-specific strict decoder, indexed fetch and source coverage checks replace NASA mutable download classes.",
+      "crossFeatureRisk": "Unsupported formats must remain explicit; no extrapolated ready state."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "OrbPoint.calculate / apply",
+      "ours": "platform/dyn-evaluator.ts propagateState/evaluateOrb/evaluateOrbVelocity",
+      "status": "source-compared",
+      "evidence": "Our orb interpolates propagated endpoint positions and endpoint velocities, and barycenter scales by mu1/mu2.",
+      "crossFeatureRisk": "Interpolated state is not the same as propagating interpolated elements; preserve this distinction."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "LinPoint.calculate / PosPoint.calculate",
+      "ours": "platform/dyn-evaluator.ts evaluateOrb pos/lin branches",
+      "status": "source-compared",
+      "evidence": "Lin interpolates positions; pos uses cubic Hermite position+velocity; strict source coverage.",
+      "crossFeatureRisk": "Pos/lin currently linear-search sample index, potential large-source frame cost."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "OriPoint._project / calculate",
+      "ours": "platform/dyn-evaluator.ts evaluateOri",
+      "status": "source-compared",
+      "evidence": "Projects endpoint orientation with angular velocity, shortest-arc quaternion interpolation then normalization.",
+      "crossFeatureRisk": "Sample lookup is linear scan; huge ori payloads can add per-frame cost; no measured freeze conclusion."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoController.__updateOrientationAtTime / _getPointsAtTime",
+      "ours": "platform/solar-system.ts #prepareOrientation/#orientationAt",
+      "status": "source-compared",
+      "evidence": "ORI unavailable outside known coverage now permits preceding declared align result; transient transport failures are distinguished. Controller array order is preserved.",
+      "crossFeatureRisk": "ORI precedence and outside coverage must remain coupled to actual source coverage; never silently turn failure into measured attitude."
+    },
+    {
+      "nasaFile": "engine/controllers/AlignController.js",
+      "nasaSymbol": "AlignController.__updateOrientationAtTime",
+      "ours": "platform/eyes-orientation.ts applyEntityAlign; solar-system #orientationAt",
+      "status": "source-compared",
+      "evidence": "Source point/velocity/align axes are applied in declared controller order; dependencies fetched before solve.",
+      "crossFeatureRisk": "Unimplemented axis/controller types and reference-only frames must surface errors rather than invented orientation."
+    },
+    {
+      "nasaFile": "engine/controllers/CoverageController.js",
+      "nasaSymbol": "CoverageController.__update",
+      "ours": "platform/solar-system.ts active-controller filters; eyes-controllers.ts activeController",
+      "status": "missing",
+      "evidence": "NASA first same-class controller runs all exits before any enters/updates and throttles callbacks using Date.now. Our filters choose active declarations but do not implement callback lifecycle. Captured definitions contain 41 coverage controllers (JWST,Clementine,GRACE,etc).",
+      "crossFeatureRisk": "P1: visibility/model deployment and mission-phase callbacks can differ even with correct DYN positions. Recover and explicitly implement whitelisted callbacks; never eval captured expressions."
+    },
+    {
+      "nasaFile": "engine/core/Entity-567.js",
+      "nasaSymbol": "Entity parent selection / controller ordering",
+      "ours": "platform/eyes-catalog.ts parentAt; solar-system #positionAt/#phaseCoverage",
+      "status": "source-compared",
+      "evidence": "parentAt follows time-ordered boundaries; current state applies historical parent recursively; current source loading is keyed by data parent.",
+      "crossFeatureRisk": "Do not reuse a DYN payload from another parent phase based only on overlapping time coverage."
+    },
+    {
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getIntervalForUpdate",
+      "ours": "platform/solar-system.ts trailSamples/prepareTrailHistory",
+      "status": "different",
+      "evidence": "NASA intersects configured/automatic interval with entity position coverage; ours uses current phase fallback plus optional independently prepared historical segments.",
+      "crossFeatureRisk": "History currently selected-target only and finite 32-segment/record budgets; fallback remains shorter when preparation unavailable."
+    },
+    {
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getAutoLength",
+      "ours": "platform/solar-system.ts trailSamples inferredPeriod",
+      "status": "different",
+      "evidence": "NASA orb branch uses interpolated eccentricity, mu1+mu2 and h: E=-mu^2(1-e^2)/(2h^2), duration=2pi*mu/sqrt(8*abs(min(1,E^3))). Ours orb uses current record 2pi/abs(meanAngularMotion); nonorb uses finite-difference 2pi*h/v^2.",
+      "crossFeatureRisk": "P1 for strict matching: interpolated elements, hyperbolic/near-parabolic and blended source states need numerical golden cases; circular consistent data alone does not establish equivalence."
+    },
+    {
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getPositionAndVelocity",
+      "ours": "platform/trail-history.ts TrailHistory.prepare result.position",
+      "status": "source-compared",
+      "evidence": "Independent historical evaluator composes historical body parent into world then subtracts same-time current reference body. Main data/clock never restored through checkpoint.",
+      "crossFeatureRisk": "Explicit relativeToEntity and relativeToEntityOrientation options are not fully represented by current SDK history style."
+    },
+    {
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent.__update / interval maintenance reverse playback",
+      "ours": "platform/solar-system.ts prepareTrailHistory existing cache gate and trailSamples history gate",
+      "status": "different",
+      "evidence": "Both history reuse gates require epoch>=history.epoch, despite prepared interval covering earlier samples. In reverse playback each refresh discards valid cached history and creates sources again.",
+      "crossFeatureRisk": "P1 performance: use actual prepared start/end and safe refresh margin in both directions, test reverse ticks do not repeat network preparation inside existing window."
+    },
+    {
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoPointSet.unloadOldPointSet / unload",
+      "ours": "platform/solar-system.ts retain/checkpoint/dispose; trail-history dispose",
+      "status": "source-compared",
+      "evidence": "Bounded caches, abort and disposal isolate late histories from current source publication. checkpoint restore cancels loads and is not used for history.",
+      "crossFeatureRisk": "Prepared source counts and record totals must remain global-budgeted across historical chunks."
+    },
+    {
+      "nasaFile": "engine/controllers/TimeController.js",
+      "nasaSymbol": "TimeController.setRate / togglePlayPause / getRateDisplay",
+      "ours": "web/lib/time-controls.ts formatRate/adjacentRate; web/lib/solar-workspace.ts runtime.play",
+      "status": "source-compared",
+      "evidence": "This recovered file is a UI BaseComponent despite its engine/controllers directory; rate changes route to TimeManager, using fixed 365-day years/30-day months. Our host routes controlled time intents and retains saved rate separately from playing.",
+      "crossFeatureRisk": "Do not mistake this UI component for an unimplemented generic mission callback controller. Older compact +/- rates and new TimeControls 101-map are separate NASA surfaces."
+    }
+  ]
+}

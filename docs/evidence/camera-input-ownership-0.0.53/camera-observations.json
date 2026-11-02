@@ -1,0 +1,13 @@
+{
+  "before": [
+    "    - term: 有效覆盖 · J2000 TDB 秒",
+    "    - generic: \"{ \\\"focusedId\\\": \\\"earth\\\", \\\"positionKm\\\": [ 118081287.41602808, 81659593.75415862, 35848842.43020178 ], \\\"desiredKm\\\": [ 118081287.41602808, 81659593.75415862, 35848842.43020178 ], \\\"framingRadiusKm\\\": 181579.8676563263, \\\"collisionAdjusted\\\": false, \\\"desiredInside\\\": [] }\"",
+    "    - generic: 846690000.000 J2000 TDB s"
+  ],
+  "after": [
+    "    - term: 有效覆盖 · J2000 TDB 秒",
+    "    - generic: \"{ \\\"focusedId\\\": \\\"earth\\\", \\\"positionKm\\\": [ 118081287.41602808, 80804373.13167785, 35848842.43020178 ], \\\"desiredKm\\\": [ 118081287.41602808, 80804373.13167785, 35848842.43020178 ], \\\"framingRadiusKm\\\": 181579.8676563263, \\\"collisionAdjusted\\\": false, \\\"desiredInside\\\": [] }\"",
+    "    - generic: 846690000.000 J2000 TDB s"
+  ],
+  "actions": "Three host zoom-out clicks, canvas not clicked"
+}

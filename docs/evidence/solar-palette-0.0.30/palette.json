@@ -1,0 +1,8 @@
+{
+  "surfaceGain": 1.05,
+  "surfaceColor": "#FF4400",
+  "coolColor": "#650400",
+  "hotColor": "#FF7A0A",
+  "archCoolColor": "#930A00",
+  "archHotColor": "#FFD05A"
+}

@@ -1,0 +1,34 @@
+{
+  "before": {
+    "focusedId": "mercury",
+    "positionKm": [
+      47153086.87968629,
+      16323483.320815528,
+      3852128.7348578204
+    ],
+    "desiredKm": [
+      47153086.87968629,
+      16323483.320815528,
+      3852128.7348578204
+    ],
+    "framingRadiusKm": 2439.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "mercury",
+    "positionKm": [
+      47136330.628393486,
+      16328158.810340941,
+      3857411.014013075
+    ],
+    "desiredKm": [
+      47136330.628393486,
+      16328158.810340941,
+      3857411.014013075
+    ],
+    "framingRadiusKm": 2439.4,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}

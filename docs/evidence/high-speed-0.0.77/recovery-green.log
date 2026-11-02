@@ -1,0 +1,19 @@
+   Compiling spaceeyes-core v0.0.56 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.48s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-cd6fae59cf1b1d1d.exe)
+
+running 12 tests
+test frame_budget::tests::frame_budget_late_frame_cannot_burst ... ok
+test frame_budget::tests::frame_budget_event_flood_and_visibility ... ok
+test frame_budget::tests::frame_budget_telemetry_percentiles_and_stalled_second ... ok
+test frame_budget::tests::bounded_background_work_does_not_lock_recovered_renderer_at_thirty ... ok
+test frame_budget::tests::frame_budget_window_lifecycle_reconciles_after_removal_trackers_expire ... ok
+test frame_budget::tests::frame_budget_30hz_quantizes_on_144hz_without_losing_rate ... ok
+test frame_budget::tests::frame_budget_hysteresis ... ok
+test frame_budget::tests::frame_budget_thirty_stays_full_quality_until_cpu_recovery ... ok
+test frame_budget::tests::frame_budget_sustained_overload_keeps_full_resolution ... ok
+test frame_budget::tests::frame_budget_phase_jitter_keeps_cadence_and_no_burst_after_gap ... ok
+test frame_budget::tests::frame_budget_gates_real_subapp_extraction_and_schedule ... ok
+test frame_budget::tests::frame_budget_preserves_pending_asset_messages_while_skipped ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 133 filtered out; finished in 0.02s

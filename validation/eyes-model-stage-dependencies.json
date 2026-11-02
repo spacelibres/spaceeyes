@@ -1,0 +1,349 @@
+{
+  "source": "NASA Eyes referenced buffers and selected material images; 2026-11-01",
+  "files": {
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_shiny_panel_albedo.jpg": {
+      "sha256": "a013a3cf8e69044603ff05fc3dd08f19be1dd598f6fa08aa803e24778c3ea11e",
+      "bytes": 351556
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_shiny_panel_normal.png": {
+      "sha256": "01fcdea114084c8f9d0157dbdbd5ca7c17f656da771f2c516b45d5242435dfa1",
+      "bytes": 490985
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_shiny_panel_pbr.jpg": {
+      "sha256": "c4d00586d209ae9fd19ab78b56cb40d4d10e1746f6e38f0089f658104a57b97a",
+      "bytes": 453073
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_tex_01_albedo.jpg": {
+      "sha256": "6af3ef2e6dfda2aa3b495ac0105079b20ea944e6e8615ce228fa457c5cf6d3c9",
+      "bytes": 166776
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_tex_01_normal.png": {
+      "sha256": "65a7921c8c5cda172c85d5a3e5e274bf000bde5f7238b5bf7ca84219d6eb2bc3",
+      "bytes": 286502
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clem_tex_01_pbr.jpg": {
+      "sha256": "dd8fe511a3267076217eb95dcd6624c9765d8a1bd49e00c21f520d183d41ade8",
+      "bytes": 261117
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine_dish_ao.jpg": {
+      "sha256": "ef176128fe60136df5383f15ff7f356679fe29fc4acfa8be9007b8569ad42115",
+      "bytes": 200793
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine_foil_ao.jpg": {
+      "sha256": "466331c74f5a7d923fed0dc0d444dd34b9e7bdd5b0cc7b00af57a210307f32ee",
+      "bytes": 143359
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine_hinges_ao.jpg": {
+      "sha256": "8ba76d4e63d578d5744e612dca732fd5c34e909573a115213421cf246f12b928",
+      "bytes": 243607
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine_isas.bin": {
+      "sha256": "a4da7331dbfae9252c1ab662cc4211478d22927332dfcc29dc91c74ebd6030b4",
+      "bytes": 466668
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_clementine/foil_normal.png": {
+      "sha256": "2ac7f687a8d7c334158a9dc9934fb7be27bd524967eb1cd9a9451204123cee87",
+      "bytes": 309641
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/foil_gold_ramp.png": {
+      "sha256": "fb58fcd71c70b6714e2c06e3d0ebc3f5e77b4e4c91b78c807927be0c2d619d26",
+      "bytes": 3627
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/foil_n.png": {
+      "sha256": "2ac7f687a8d7c334158a9dc9934fb7be27bd524967eb1cd9a9451204123cee87",
+      "bytes": 309641
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_4_bolt_circle_hatch_AO.png": {
+      "sha256": "8a2702ebb146cbfb8f67460d97144551723412e223e8d822062b1e59d62f5986",
+      "bytes": 15497
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_4_bolt_circle_hatch_NORM.png": {
+      "sha256": "060431d92fb8d688e41e70abf168d99eec01cb767695e250898af0af92809a7f",
+      "bytes": 13141
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_6_bolt_circle_hatch_AO.png": {
+      "sha256": "6dbad616a938de4592cd29ff62062528c7ec67797ec48ed5377f7d5182fd1f85",
+      "bytes": 22558
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_6_bolt_circle_hatch_NORM.png": {
+      "sha256": "6235e67996254c4c15fb0d08cf14fc97ad472804ff7809a863ab1f273cbf52d1",
+      "bytes": 8580
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_array_diffuse.jpg": {
+      "sha256": "f8ddfe8268fb43c559488bc63d76f73a77ac24f9a72dbadc85586ca9fd7b19d6",
+      "bytes": 401806
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_array_normal.png": {
+      "sha256": "e84668c5b4f561eb1d7680b37e49c4ffd602f069097e702c4c6b523b5d6df5bd",
+      "bytes": 122917
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_capsule_diffuse.png": {
+      "sha256": "d7a79674842c4fe4d18aee937f3f1a3706adc71d4639a3c0a4eb41f54a62ae76",
+      "bytes": 1631297
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_capsule_normal.png": {
+      "sha256": "7072b4b6f79ee1360ddaf3233bd299f09a1e29d5bc38a3ca58cec6d0d88f35ca",
+      "bytes": 288292
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_square_hatch_AO.png": {
+      "sha256": "2a9137cfd38d987171bda3590f72d30c1d8309a66244701bed3f0cbcc9517009",
+      "bytes": 28908
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/insight_square_hatch_NORM.png": {
+      "sha256": "c9c32108f7edf8898fc0fcad026169303eab8994350a3a96feb9dd35ce04485a",
+      "bytes": 6208
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/model.bin": {
+      "sha256": "c4f55f2b5c65c996b8c782c446f8fe89da062e66fa329431bdb74cbef4736d67",
+      "bytes": 687312
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_jwst/foil_normal.jpg": {
+      "sha256": "be922b7ea550409b042aaf666a70af1f32175a6ac732030812c2bac04595c578",
+      "bytes": 43058
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_jwst/webb_stowed.bin": {
+      "sha256": "b3e110821f18c9e2f64367aa92b236b1a3f7175f63600479b217b2f92029c2a8",
+      "bytes": 2483756
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/arm_graphics.jpg": {
+      "sha256": "a5c95fda5591ddd89ae742b377232ca1da21b2033fd8ee6fa3423f9a9b313a45",
+      "bytes": 63541
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/blade.jpg": {
+      "sha256": "6904656ecfc5434d93e76cab94fb85bafb1070efa9f2a2bfa65c646875324da1",
+      "bytes": 172954
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/clear_png.png": {
+      "sha256": "ffaa1621fee1989cd7487f42702600ce0559ea86804dd0b990cd0675a7b50cb9",
+      "bytes": 250
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/cvoidPlaque.jpg": {
+      "sha256": "81306ad5b5fbe5f138fe243b7f2f945faa08e1e6bfc7edd673e6f99ab4ce6166",
+      "bytes": 148743
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/foil_n.jpg": {
+      "sha256": "be922b7ea550409b042aaf666a70af1f32175a6ac732030812c2bac04595c578",
+      "bytes": 43058
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/foil_n_jpg.jpg": {
+      "sha256": "be922b7ea550409b042aaf666a70af1f32175a6ac732030812c2bac04595c578",
+      "bytes": 43058
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/glass.png": {
+      "sha256": "d881400fda91cf5e13ab72d858e3b7133d5e65b63bdeeb1588cabda3c6f56648",
+      "bytes": 391
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_01.jpg": {
+      "sha256": "a38ee60b787fda5bea77381c34c1de96649fcc786e914866a1009d90dc3ca859",
+      "bytes": 168008
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_01_n.jpg": {
+      "sha256": "688eee39989fdd858c68df7a324fa2551ceee826ae44363bf0cc3c9bf48984ff",
+      "bytes": 59350
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_02.jpg": {
+      "sha256": "95ff75ac88f5b6511b973aa26cde7d9f810bfd2446cec6e146a2c65d9414ad58",
+      "bytes": 158781
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_02_n.jpg": {
+      "sha256": "0e3be914c382ec71842829a1cec6aa703cc5befbb08d6878c8d0b348085f7587",
+      "bytes": 100277
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_03.jpg": {
+      "sha256": "454e0fe55561af5472a569b9a30288191647ea87b5e8dbe3236e2c3e9c469d2b",
+      "bytes": 122603
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_04.jpg": {
+      "sha256": "eaec5f90c0749176a2e462d66777c2af866f0847226a6f2631f0528bf7db613e",
+      "bytes": 162513
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_05.jpg": {
+      "sha256": "1a3e079a072efe60f27e89e4ae726902b44b1918114f7380ca352a616e1e0261",
+      "bytes": 253378
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_05_n.png": {
+      "sha256": "ae90d32ef091a4bbf41b18b291bd4ff2f2849e89926373615dfec1d164e8362c",
+      "bytes": 743375
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_05_r.png": {
+      "sha256": "6cb33264fca168d57a22be24cd9a7694e94df637f7e96f2ed8a725ea4ce01b82",
+      "bytes": 458145
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_06.jpg": {
+      "sha256": "33af93441c6aa004089176aab90b551abb04c26888a898a43cfd84d5ed4bb628",
+      "bytes": 209407
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_06_n.jpg": {
+      "sha256": "e2ef092ce7b273fa651f5bb3793702b2e32694ea6f74949e5d384b892d4e3d1c",
+      "bytes": 97272
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_07.jpg": {
+      "sha256": "f17c9f54686bacadb5bac287019f3491c3bcafb8f68982539a642f0921fa4210",
+      "bytes": 79348
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_hub.jpg": {
+      "sha256": "215351e543a950c4c04099a2943b8e98203de8b1e078d6aac4abd08378e67211",
+      "bytes": 17511
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_hub_n.jpg": {
+      "sha256": "f289d4bf60dc524ab8db5bccaf145897e38509bba067bb548961bd05b9a368df",
+      "bytes": 7560
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/mars_2020_spring_n.jpg": {
+      "sha256": "24fdce4207a96ed013aca89c66a0d812a93d050707da581e679dc78447ff3c38",
+      "bytes": 4460
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/nameplate.jpg": {
+      "sha256": "4df1b79be6e71ad5e34edd51fb568c4ccabf87c7dad4ad5c84e45f1dc2dfa574",
+      "bytes": 129094
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/perseverance.bin": {
+      "sha256": "097456e0ef0590bd06bbfc02b9ef5f3435e17b88a05ff5908f10807aae5f1c39",
+      "bytes": 8505556
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/sample_handling_door.jpg": {
+      "sha256": "6bdf4d5be7ad1369bd0099c8a809999ca06fc4da18cfbd3afcec4b41ca443a5d",
+      "bytes": 33643
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/foil_normal.png": {
+      "sha256": "2ac7f687a8d7c334158a9dc9934fb7be27bd524967eb1cd9a9451204123cee87",
+      "bytes": 309641
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_static.bin": {
+      "sha256": "aad830a3122ddb3af39d63a741fa830318e04a56fc302f5882005e8c45d0ceb6",
+      "bytes": 1928300
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_arm_albedo.jpg": {
+      "sha256": "a621c75ac5ea475a8557eae738796eb2f2c7352cce9ffa961607e294d60605ee",
+      "bytes": 274999
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_arm_normal.png": {
+      "sha256": "bc33a1d97e8b0fee933e6b56781b7542c79a60830bb2229a172a79f5349e7cef",
+      "bytes": 864226
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_arm_pbr.jpg": {
+      "sha256": "a5b9cb1c6286183868b618535187cdf264afac15fd6503608156e14dc7e5303b",
+      "bytes": 323484
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_body_albedo.jpg": {
+      "sha256": "f345c5aeaec13f851fb10b33b85129d4f73ecae2cca01600348264869eccdc75",
+      "bytes": 325770
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_body_normal.png": {
+      "sha256": "2015aac4c72b2414b9f0b78df7020b055863dcbf4fd0ffc614665b641366e7db",
+      "bytes": 1108503
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_body_pbr.jpg": {
+      "sha256": "122dadaf87e059591251a2a69a963b5e054df6627c00aaebd58c88c1ec142bb0",
+      "bytes": 281159
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_instruments_albedo.jpg": {
+      "sha256": "d48f78f6d2fdc6bbce534d266ae8fceadaf5a9827225be37e04027bd47306bf9",
+      "bytes": 287897
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_mast_albedo.jpg": {
+      "sha256": "51d60481d2e9d40d64b5caad7ec195564de0abb462b0b2d7409ba563b5044718",
+      "bytes": 272248
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_mast_pbr.jpg": {
+      "sha256": "0deeac5a5a731e5e13b5b735d31716fa37f460dc4a99cfb1bd8a801fe52f15b5",
+      "bytes": 235635
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels2_albedo.jpg": {
+      "sha256": "c03ae9cd42443593b3c806019e5286fb9df2a4c871f7395e854a2605096a147f",
+      "bytes": 200614
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels2_normal.png": {
+      "sha256": "9093ca5f36e5de319315d2d5540c327206c3f9890a5b9e9ddf94eda9b5134231",
+      "bytes": 68405
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels2_pbr.jpg": {
+      "sha256": "4cf1fd2254214dc402324ab3365a2bf1a1ebf89a72949bd60b6aca96754adc5c",
+      "bytes": 169198
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels_albedo.jpg": {
+      "sha256": "0d5b68e1f0087870153cfbf005b5d8edecb35d96d37108c512d2349a65dc7fb9",
+      "bytes": 282061
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels_normal.png": {
+      "sha256": "94f24358ec862e7373ff1a96630bf70c38f4a0f963d824dfadf2cb2cacd8b792",
+      "bytes": 182604
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_panels_pbr.jpg": {
+      "sha256": "17ddf89ed70f27f0b5893c3ef0aa06a0b454dfe572c7ff19a0000980b5c304fb",
+      "bytes": 229749
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_suspension_albedo.jpg": {
+      "sha256": "d3ed550370d8fc2e164272fad742ae74c152c16e02a72a2278ba907de35ab5d6",
+      "bytes": 213785
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_suspension_normal.png": {
+      "sha256": "a2d3a99a2f5803d100fcdb21be6aaecce1f175fb70ef712f04a0c5615ce1a1c2",
+      "bytes": 188758
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_tex_suspension_pbr.jpg": {
+      "sha256": "1fcca40f9fabff945932270737bed05e7cf8c4520e9826bf7cd47f6f53394da8",
+      "bytes": 221961
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_0.png": {
+      "sha256": "63abc5718dffd12619b993cbd2e727957225859c3fb8acc731c4ec2371948bf2",
+      "bytes": 847788
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_1.png": {
+      "sha256": "e98d524bf44fca0dd4f4ada677ed1149a282e817f851d7690244b7148c1e07fd",
+      "bytes": 1041389
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_2.png": {
+      "sha256": "f3eda5efec03c4b7bb601b1fa77f69ce3b75cc1cc71afd0c96730c93e26f5af2",
+      "bytes": 996636
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_3.png": {
+      "sha256": "4a190fbb56ed8650eb8b3911ec9b372751c6f0d7b5ef62b0b9ebe369fd17402c",
+      "bytes": 1184128
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_4.png": {
+      "sha256": "312000c3efa97cb8ea70764dd0fe364ec0724522d77d395161e241a14d3225b1",
+      "bytes": 904427
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_5.png": {
+      "sha256": "e98d524bf44fca0dd4f4ada677ed1149a282e817f851d7690244b7148c1e07fd",
+      "bytes": 1041389
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_6.png": {
+      "sha256": "3dda6ffb5fcf2a79230d518eb9fffce693c879d7fc77a7c78560924b3b4201e4",
+      "bytes": 382717
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_7.png": {
+      "sha256": "960d377974c123bddd8b9b7f1e2d8761a58f7570398a68bc273548de9fc67c12",
+      "bytes": 1052007
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/Image_8.png": {
+      "sha256": "e98d524bf44fca0dd4f4ada677ed1149a282e817f851d7690244b7148c1e07fd",
+      "bytes": 1041389
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/curiosity_static.bin": {
+      "sha256": "ea971d025da449217f4c7a6e04a17c83f04048fcf64a1de7b4529830d027eaff",
+      "bytes": 3978204
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/mpl_phx_backshell_ao.jpg": {
+      "sha256": "f2fe7f98d96f1e14c230c097e9967ed2220ce7ea589dfd3facd16db5fb8feff6",
+      "bytes": 117990
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/mpl_phx_heat_shield_inside_albedo.jpg": {
+      "sha256": "a1d2aea511b0b8e20e22557c09e14b3e552ba6344e4d666dd05434c9f1d9641c",
+      "bytes": 35884
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/mpl_phx_heatshield_albedo.jpg": {
+      "sha256": "c191889689a2ccdc7c52bfbb8006113c3c23984d92801b5a0dd2c3dd057006cd",
+      "bytes": 129859
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/mpl_phx_top_pieces_ao.jpg": {
+      "sha256": "2ade505b667d023f1d43674144062e77800708baa778b631fb869cd36340df8b",
+      "bytes": 81397
+    },
+    "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/phoenix_edl.bin": {
+      "sha256": "beaa9c9da6bb8b418879de861a46a64d90ec86bb532eae855002e83e753fe192",
+      "bytes": 209144
+    }
+  }
+}

@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.50 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 46.58s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-bec7c7d57a39ee00.exe)
+
+running 1 test
+test trajectory_render::tests::nasa_additive_lines_do_not_punch_dark_holes_in_bright_sky ... FAILED
+
+failures:
+
+---- trajectory_render::tests::nasa_additive_lines_do_not_punch_dark_holes_in_bright_sky stdout ----
+
+thread 'trajectory_render::tests::nasa_additive_lines_do_not_punch_dark_holes_in_bright_sky' (50372) panicked at src\trajectory_render.rs:11:9:
+assertion `left == right` failed
+  left: OneMinusSrcAlpha
+ right: One
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    trajectory_render::tests::nasa_additive_lines_do_not_punch_dark_holes_in_bright_sky
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 114 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

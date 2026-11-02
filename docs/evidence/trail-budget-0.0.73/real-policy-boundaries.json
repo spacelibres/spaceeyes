@@ -1,0 +1,1529 @@
+[
+  {
+    "id": "sc_mars_2020",
+    "epoch": 666953097.003,
+    "status": {
+      "id": "sc_mars_2020",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        666952859,
+        666953098.003
+      ]
+    },
+    "policy": {
+      "startTime": 3000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_mars_2020\",{\"startTime\":3000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        666950097.003,
+        666953097.003
+      ],
+      "sourceRange": [
+        666952859,
+        666953098.003
+      ],
+      "origin": "sc_mars_2020_landing_site",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 3000,
+      "work": 3483,
+      "wallMs": 26.44820000000027
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953097.003",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953097.003&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953097.003",
+        "status": 200,
+        "sha256": "65729aec23a6e2b39a7b8bdb4c811eec2ca88207699d3e3f668dd76e753037eb"
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953097.003&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "epoch": 666953098.003,
+    "status": {
+      "id": "sc_mars_2020",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        666952859,
+        666953098.003
+      ]
+    },
+    "policy": {
+      "startTime": 666953098.003,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_2020\",{\"startTime\":666953098.003,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953098.003",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953098.003&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953098.003",
+        "status": 200,
+        "sha256": "65729aec23a6e2b39a7b8bdb4c811eec2ca88207699d3e3f668dd76e753037eb"
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953098.003&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_2020",
+    "epoch": 666953099.003,
+    "status": {
+      "id": "sc_mars_2020",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        666953098.003,
+        668187729.6785161
+      ]
+    },
+    "policy": {
+      "startTime": 666953098.003,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_2020\",{\"startTime\":666953098.003,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 50,
+      "drawRange": [
+        666953098.003,
+        666953099.003
+      ],
+      "sourceRange": [
+        666953098.003,
+        666953099.0039766
+      ],
+      "origin": "sc_mars_2020_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 1,
+      "work": 2217,
+      "wallMs": 13.72400000000016
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953099.003",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=666953099.003&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953099.003",
+        "status": 200,
+        "sha256": "65729aec23a6e2b39a7b8bdb4c811eec2ca88207699d3e3f668dd76e753037eb"
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_2020?epoch=666953099.003&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "epoch": 397502385.832,
+    "status": {
+      "id": "sc_mars_science_laboratory",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        397501373,
+        397502386.8311096
+      ]
+    },
+    "policy": {
+      "startTime": 3000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_mars_science_laboratory\",{\"startTime\":3000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        397499385.832,
+        397502385.832
+      ],
+      "sourceRange": [
+        397501373,
+        397502386.8311096
+      ],
+      "origin": "mars",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 3000,
+      "work": 3161,
+      "wallMs": 9.816600000000108
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502385.832",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502385.832&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502385.832",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502385.832&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "epoch": 397502386.832,
+    "status": {
+      "id": "sc_mars_science_laboratory",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        397502386.832,
+        427856198.5165641
+      ]
+    },
+    "policy": {
+      "startTime": 3000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_science_laboratory\",{\"startTime\":3000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502386.832",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502386.832&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502386.832",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502386.832&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_science_laboratory",
+    "epoch": 397502387.832,
+    "status": {
+      "id": "sc_mars_science_laboratory",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        397502386.832,
+        427856198.5165641
+      ]
+    },
+    "policy": {
+      "startTime": 3000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_science_laboratory\",{\"startTime\":3000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 10,
+      "drawRange": [
+        397499387.832,
+        397502387.832
+      ],
+      "sourceRange": [
+        397502386.832,
+        397502390.7616875
+      ],
+      "origin": "sc_mars_science_laboratory_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 3000,
+      "work": 119,
+      "wallMs": 6.598200000000361
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502387.832",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=397502387.832&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502387.832",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_science_laboratory?epoch=397502387.832&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_1",
+    "epoch": 128278522,
+    "status": {
+      "id": "sc_mars_exploration_rover_1",
+      "status": "ready",
+      "orientationStatus": "unavailable",
+      "positionSource": "dyn",
+      "orientationError": "Error: Rotating reference world velocity unavailable",
+      "coverage": [
+        128278419,
+        128278523.336
+      ]
+    },
+    "policy": {
+      "startTime": 6720,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_1\",{\"startTime\":6720,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        128271802,
+        128278522
+      ],
+      "sourceRange": [
+        128278419,
+        128278523
+      ],
+      "origin": "sc_mars_exploration_rover_1_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 6720,
+      "work": 3196,
+      "wallMs": 21.761900000001333
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278522",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278522&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_1?epoch=128278522",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_1",
+    "epoch": 128278523,
+    "status": {
+      "id": "sc_mars_exploration_rover_1",
+      "status": "ready",
+      "orientationStatus": "unavailable",
+      "positionSource": "dyn",
+      "orientationError": "Error: Rotating reference world velocity unavailable",
+      "coverage": [
+        128278419,
+        128278523.336
+      ]
+    },
+    "policy": {
+      "startTime": 128278523,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_1\",{\"startTime\":128278523,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278523",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278523&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_1?epoch=128278523",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_1",
+    "epoch": 128278524,
+    "status": {
+      "id": "sc_mars_exploration_rover_1",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        128278523.336,
+        132809432.30839382
+      ]
+    },
+    "policy": {
+      "startTime": 128278523,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_1\",{\"startTime\":128278523,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 24,
+      "drawRange": [
+        128278523,
+        128278524
+      ],
+      "sourceRange": [
+        128278523.336,
+        128278524.00097656
+      ],
+      "origin": "sc_mars_exploration_rover_1_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 1,
+      "work": 644,
+      "wallMs": 14.669600000001083
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278524",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=128278524&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_1?epoch=128278524",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_2",
+    "epoch": 126462395,
+    "status": {
+      "id": "sc_mars_exploration_rover_2",
+      "status": "ready",
+      "orientationStatus": "unavailable",
+      "positionSource": "dyn",
+      "orientationError": "Error: Rotating reference world velocity unavailable",
+      "coverage": [
+        126462105,
+        126462396.1058
+      ]
+    },
+    "policy": {
+      "startTime": 6720,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_2\",{\"startTime\":6720,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        126455675,
+        126462395
+      ],
+      "sourceRange": [
+        126462105,
+        126462396
+      ],
+      "origin": "sc_mars_exploration_rover_2_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 6720,
+      "work": 3196,
+      "wallMs": 17.075700000001234
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462395",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462395&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_2?epoch=126462395",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_2",
+    "epoch": 126462396,
+    "status": {
+      "id": "sc_mars_exploration_rover_2",
+      "status": "ready",
+      "orientationStatus": "unavailable",
+      "positionSource": "dyn",
+      "orientationError": "Error: Rotating reference world velocity unavailable",
+      "coverage": [
+        126462105,
+        126462396.1058
+      ]
+    },
+    "policy": {
+      "startTime": 126462396,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_2\",{\"startTime\":126462396,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462396",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462396&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_2?epoch=126462396",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_exploration_rover_2",
+    "epoch": 126462397,
+    "status": {
+      "id": "sc_mars_exploration_rover_2",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        126462396.1058,
+        130174330.65651575
+      ]
+    },
+    "policy": {
+      "startTime": 126462396,
+      "endTime": 0,
+      "relativeStartTime": false,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "AlwaysVisible",
+      "key": "[\"sc_mars_exploration_rover_2\",{\"startTime\":126462396,\"endTime\":0,\"relativeStartTime\":false,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"AlwaysVisible\"}]"
+    },
+    "result": {
+      "points": 10,
+      "drawRange": [
+        126462396,
+        126462397
+      ],
+      "sourceRange": [
+        126462396.1058,
+        126462397.00097656
+      ],
+      "origin": "sc_mars_exploration_rover_2_landing_site",
+      "orientation": true,
+      "visibility": "AlwaysVisible",
+      "breaks": 0,
+      "duration": 1,
+      "work": 119,
+      "wallMs": 2.567699999999604
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462397",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=126462397&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_mars_exploration_rover_2?epoch=126462397",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "epoch": 596533601,
+    "status": {
+      "id": "sc_insight",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        596532613.3905,
+        596533602
+      ]
+    },
+    "policy": {
+      "startTime": 3600,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_insight\",{\"startTime\":3600,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        596530001,
+        596533601
+      ],
+      "sourceRange": [
+        596532613.3905,
+        596533602
+      ],
+      "origin": "mars",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 3600,
+      "work": 3161,
+      "wallMs": 12.735899999999674
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533601",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533601&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_insight?epoch=596533601",
+        "status": 200,
+        "sha256": "f14361da2a1b454201c476c1bf0b57b1efd0e83f598f76e3d0879714698a9dfc"
+      },
+      {
+        "path": "/api/solar-dyn/sc_insight?epoch=596533601&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "epoch": 596533602,
+    "status": {
+      "id": "sc_insight",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "fixed",
+      "coverage": [
+        596533602,
+        1000000000000
+      ]
+    },
+    "policy": {
+      "startTime": 0,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_insight\",{\"startTime\":0,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533602",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533602&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_insight",
+    "epoch": 596533603,
+    "status": {
+      "id": "sc_insight",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "fixed",
+      "coverage": [
+        596533602,
+        1000000000000
+      ]
+    },
+    "policy": {
+      "startTime": 0,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_insight\",{\"startTime\":0,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533603",
+        "status": 200,
+        "sha256": "613a4de052a743ba7e6090584edeea8c90c87ab971d56ce3dfbf52f3acba7e22"
+      },
+      {
+        "path": "/api/solar-dyn/mars?epoch=596533603&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_juno",
+    "epoch": 519652867.184,
+    "status": {
+      "id": "sc_juno",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        434793667.182,
+        519652868.184
+      ]
+    },
+    "policy": {
+      "startTime": 63072000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_juno\",{\"startTime\":63072000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 38,
+      "drawRange": [
+        456580867.184,
+        519652867.184
+      ],
+      "sourceRange": [
+        456519273.434,
+        519652867.184
+      ],
+      "origin": "sun",
+      "orientation": false,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 63072000,
+      "work": 1406,
+      "wallMs": 5.225299999998242
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652867.184",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652867.184&type=ori",
+        "status": 502,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_juno",
+    "epoch": 519652868.184,
+    "status": {
+      "id": "sc_juno",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        519652868.184,
+        525574308.58274156
+      ]
+    },
+    "policy": {
+      "startTime": 5184000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "jupiter",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_juno\",{\"startTime\":5184000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"jupiter\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/jupiter?epoch=519652868.184",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652868.184",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652868.184&type=ori",
+        "status": 502,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_juno",
+    "epoch": 519652869.184,
+    "status": {
+      "id": "sc_juno",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        519652868.184,
+        525574308.58274156
+      ]
+    },
+    "policy": {
+      "startTime": 5184000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "jupiter",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_juno\",{\"startTime\":5184000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"jupiter\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 10,
+      "drawRange": [
+        514468869.184,
+        519652869.184
+      ],
+      "sourceRange": [
+        519652868.184,
+        519657931.684
+      ],
+      "origin": "jupiter",
+      "orientation": false,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 5184000,
+      "work": 119,
+      "wallMs": 2.084999999999127
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/jupiter?epoch=519652869.184",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652869.184",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_juno?epoch=519652869.184&type=ori",
+        "status": 502,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_huygens",
+    "epoch": 158965615.707,
+    "status": {
+      "id": "sc_huygens",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        158945582,
+        158965616.70699
+      ]
+    },
+    "policy": {
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_huygens\",{\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 64,
+      "drawRange": [
+        158945671.29705387,
+        158965615.707
+      ],
+      "sourceRange": [
+        158945651.82009104,
+        158965616.70699
+      ],
+      "origin": "titan",
+      "orientation": false,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 19944.409946116495,
+      "work": 758,
+      "wallMs": 11.533799999997427
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/saturn?epoch=158965615.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/titan?epoch=158965615.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_huygens?epoch=158965615.707",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_huygens",
+    "epoch": 158965616.707,
+    "status": {
+      "id": "sc_huygens",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "fixed",
+      "coverage": [
+        158965616.707,
+        158965894.184
+      ]
+    },
+    "policy": {
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_huygens\",{\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": "no trajectory in phase",
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/saturn?epoch=158965616.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/titan?epoch=158965616.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/titan?epoch=158965616.707&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_huygens",
+    "epoch": 158965617.707,
+    "status": {
+      "id": "sc_huygens",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "fixed",
+      "coverage": [
+        158965616.707,
+        158965894.184
+      ]
+    },
+    "policy": {
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_huygens\",{\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 10,
+      "drawRange": [
+        158965340.23,
+        158965617.707
+      ],
+      "sourceRange": [
+        158965616.707,
+        158965617.9779736
+      ],
+      "origin": "titan",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 277.47699999809265,
+      "work": 119,
+      "wallMs": 2.800100000000384
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/saturn?epoch=158965617.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/titan?epoch=158965617.707",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/titan?epoch=158965617.707&type=ori",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_osiris_rex_src",
+    "epoch": 748838641,
+    "status": {
+      "id": "sc_osiris_rex_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        748832190,
+        748839215
+      ]
+    },
+    "policy": {
+      "startTime": 360,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_osiris_rex_src\",{\"startTime\":360,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 13,
+      "drawRange": [
+        748838281,
+        748838641
+      ],
+      "sourceRange": [
+        748838280.6484375,
+        748838641.3515625
+      ],
+      "origin": "earth",
+      "orientation": false,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 360,
+      "work": 197,
+      "wallMs": 1.6116000000001804
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=748838641",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_osiris_rex_src?epoch=748838641",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_osiris_rex_src",
+    "epoch": 748838642,
+    "status": {
+      "id": "sc_osiris_rex_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        748832190,
+        748839215
+      ]
+    },
+    "policy": {
+      "startTime": 360,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_osiris_rex_src\",{\"startTime\":360,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 12,
+      "drawRange": [
+        748838282,
+        748838642
+      ],
+      "sourceRange": [
+        748838281.6484375,
+        748838642
+      ],
+      "origin": "earth",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 360,
+      "work": 182,
+      "wallMs": 2.1376000000018394
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=748838642",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/earth?epoch=748838642&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_osiris_rex_src?epoch=748838642",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_osiris_rex_src",
+    "epoch": 748838643,
+    "status": {
+      "id": "sc_osiris_rex_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        748832190,
+        748839215
+      ]
+    },
+    "policy": {
+      "startTime": 360,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_osiris_rex_src\",{\"startTime\":360,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 13,
+      "drawRange": [
+        748838283,
+        748838643
+      ],
+      "sourceRange": [
+        748838282.6484375,
+        748838643.3515625
+      ],
+      "origin": "earth",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 360,
+      "work": 197,
+      "wallMs": 2.045400000002701
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=748838643",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/earth?epoch=748838643&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_osiris_rex_src?epoch=748838643",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_stardust_src",
+    "epoch": 190591099,
+    "status": {
+      "id": "sc_stardust_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        190576755.185,
+        190591500
+      ]
+    },
+    "policy": {
+      "startTime": 18000,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": false,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_stardust_src\",{\"startTime\":18000,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":false,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 32,
+      "drawRange": [
+        190573099,
+        190591099
+      ],
+      "sourceRange": [
+        190576755.185,
+        190591100
+      ],
+      "origin": "earth",
+      "orientation": false,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 18000,
+      "work": 1032,
+      "wallMs": 3.3013999999966472
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591099",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591099&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_stardust_src?epoch=190591099",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_stardust_src",
+    "epoch": 190591100,
+    "status": {
+      "id": "sc_stardust_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        190576755.185,
+        190591500
+      ]
+    },
+    "policy": {
+      "startTime": 1600,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_stardust_src\",{\"startTime\":1600,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 18,
+      "drawRange": [
+        190589500,
+        190591100
+      ],
+      "sourceRange": [
+        190589498.4375,
+        190591100
+      ],
+      "origin": "earth",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 1600,
+      "work": 395,
+      "wallMs": 2.645600000003469
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591100",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591100&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_stardust_src?epoch=190591100",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  },
+  {
+    "id": "sc_stardust_src",
+    "epoch": 190591101,
+    "status": {
+      "id": "sc_stardust_src",
+      "status": "ready",
+      "orientationStatus": "ready",
+      "positionSource": "dyn",
+      "coverage": [
+        190576755.185,
+        190591500
+      ]
+    },
+    "policy": {
+      "startTime": 1600,
+      "endTime": 0,
+      "relativeStartTime": true,
+      "relativeEndTime": true,
+      "startTimeMultiplier": 1,
+      "endTimeMultiplier": 1,
+      "relativeToEntity": "",
+      "relativeToEntityOrientation": true,
+      "visibleInterval": "DefaultVisibleFar",
+      "key": "[\"sc_stardust_src\",{\"startTime\":1600,\"endTime\":0,\"relativeStartTime\":true,\"relativeEndTime\":true,\"startTimeMultiplier\":1,\"endTimeMultiplier\":1,\"relativeToEntity\":\"\",\"relativeToEntityOrientation\":true,\"visibleInterval\":\"DefaultVisibleFar\"}]"
+    },
+    "result": {
+      "points": 19,
+      "drawRange": [
+        190589501,
+        190591101
+      ],
+      "sourceRange": [
+        190589499.4375,
+        190591102.5625
+      ],
+      "origin": "earth",
+      "orientation": true,
+      "visibility": "DefaultVisibleFar",
+      "breaks": 0,
+      "duration": 1600,
+      "work": 416,
+      "wallMs": 2.6759000000020023
+    },
+    "fetched": [
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591101",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/earth?epoch=190591101&type=ori",
+        "status": 200,
+        "sha256": null
+      },
+      {
+        "path": "/api/solar-dyn/sc_stardust_src?epoch=190591101",
+        "status": 200,
+        "sha256": null
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+✔ ORI chooses the last covered controller and respects closed declared endpoints (17.5837ms)
+✔ ORI root coverage fallback exports cache boundary but transport or decode failures never fall back (2.9633ms)
+✔ ORI multi-track absence describes only the proven open gap (0.8784ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 235.9894

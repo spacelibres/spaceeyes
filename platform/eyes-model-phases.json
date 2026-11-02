@@ -1,0 +1,526 @@
+{
+  "actions": [
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        694937889.184
+      ],
+      "phase": "enter",
+      "sourceSha256": "24dc831c46ea2fa3ef68d2fcc1d28f80745c692d59c5fd964e6160dc0682b82f",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_jwst/webb_stowed.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        694937889.184
+      ],
+      "phase": "exit",
+      "sourceSha256": "b82617fb2c6f92715da03942c5dfa0543600766e2034b4975d54fdd6a96de1d3",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_jwst/webb_deployed.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        -186451139
+      ],
+      "phase": "enter",
+      "sourceSha256": "e57e3c9d88842b4bf0d57eeed44c069b1d40622e334fd8b195bfaca068447ef2",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_clementine/clementine_isas.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        -186451139
+      ],
+      "phase": "exit",
+      "sourceSha256": "0284c246f53167d0fc08faa33910bd32216886e2e176a34c6760c42bee433395",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_clementine/clementine.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "5f595f571e3097a736f74ca738f6372e7c6f8aa8a8581362aabbea10b79aea5d",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_2020/rover/perseverance.gltf",
+        "rotationWxyz": [
+          0.5,
+          -0.5,
+          0.5,
+          -0.5
+        ],
+        "translate": [
+          0.0,
+          0.0,
+          0.001
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "434a9ed71edf1abdfdff676a2583571f36776f0f87af458c06cd81581b2b0820",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf",
+        "rotationWxyz": [
+          0.7071067811865478,
+          -0.7071067811865472,
+          0.0,
+          0.0
+        ],
+        "translate": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "coverage": [
+        666952458,
+        666953086.614
+      ],
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "model": {},
+      "hidden": [
+        [
+          "solar_panels",
+          true
+        ],
+        [
+          "frame_etc",
+          true
+        ]
+      ]
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "coverage": [
+        666952458,
+        666953086.614
+      ],
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "model": {},
+      "hidden": [
+        [
+          "solar_panels",
+          false
+        ],
+        [
+          "frame_etc",
+          false
+        ]
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "coverage": [
+        397502324,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "fae57df2c378fcc8d8daf16094c50d2e636a2d004b3740b8172b51b06263729a",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/rover/curiosity_static.gltf",
+        "rotationWxyz": [
+          0.5,
+          -0.5,
+          0.5,
+          -0.5
+        ],
+        "translate": [
+          0.0,
+          0.0,
+          0.001
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "coverage": [
+        397502324,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "2cfc19bde7ab21373dd25c0d1633056eea3247104e0eac3dd03dc07c2d6e2d1b",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf",
+        "rotationWxyz": [
+          0.7071067811865478,
+          -0.7071067811865472,
+          0.0,
+          0.0
+        ],
+        "translate": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "coverage": [
+        397501758,
+        397502386.832
+      ],
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "model": {},
+      "hidden": [
+        [
+          "solar_panels",
+          true
+        ],
+        [
+          "frame_etc",
+          true
+        ]
+      ]
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "coverage": [
+        397501758,
+        397502386.832
+      ],
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "model": {},
+      "hidden": [
+        [
+          "solar_panels",
+          false
+        ],
+        [
+          "frame_etc",
+          false
+        ]
+      ]
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "coverage": [
+        128278523,
+        581920316.856
+      ],
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "coverage": [
+        128278523,
+        581920316.856
+      ],
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "coverage": [
+        126462396,
+        322567479.38962
+      ],
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "coverage": [
+        126462396,
+        322567479.38962
+      ],
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 9,
+      "coverage": [
+        578795968.9654216,
+        596533602
+      ],
+      "phase": "enter",
+      "sourceSha256": "4bcf06611b9726386c77e437e7d6bb6c3fbde0ba249e113cc385bbefa6972df8",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_insight/cruise/model.gltf",
+        "rotationWxyz": [
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476,
+          0.0
+        ],
+        "translate": [
+          0,
+          0,
+          0
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 10,
+      "coverage": [
+        596533602,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "89f4bee0d82b317ecd9bc93ff977798f9775d51b76c51b35c436e74eb863a79b",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_insight/lander/insight.gltf",
+        "rotationWxyz": [
+          0.7071067811865476,
+          0.7071067811865476,
+          0.0,
+          0.0
+        ],
+        "translate": [
+          0.0,
+          0.0,
+          0.00085
+        ]
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "coverage": [
+        265029904,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "983f33feadc06bfa233dbb372a7f74bd3d2a3b6a8165075bc6170e53d60d161a",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_phoenix/edl/phoenix_edl.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "coverage": [
+        265029904,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "390d9497c174d986f8351d68852030f1f3b4c82785e97f5e084bd243bfb8a5d8",
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/sc_phoenix/cruise/phoenix_cruise.gltf"
+      },
+      "hidden": []
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "coverage": [
+        157212064.184,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "cb802876a4021db648705a128a4e37e47ac9112cbbcc99788df24fad367b5392",
+      "model": {},
+      "hidden": [
+        [
+          "huygens_probe",
+          true
+        ]
+      ]
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "coverage": [
+        157212064.184,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "063defc0f61531ff3cea5d3336b4eeb1788526052e2cfbc33ad4274ed5b4e0fb",
+      "model": {},
+      "hidden": [
+        [
+          "huygens_probe",
+          false
+        ]
+      ]
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "coverage": [
+        469053367.183,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "556c0934dc1f5335fb3f62ccc85fb1e8fc842a98ad58b31afaaac97fb02e6d36",
+      "model": {},
+      "hidden": [
+        [
+          "Philae",
+          true
+        ]
+      ]
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "coverage": [
+        469053367.183,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "4ac436fe485fef783d2a6f40a43a12ea78134d9eb6a088235047efc3339a6073",
+      "model": {},
+      "hidden": [
+        [
+          "Philae",
+          false
+        ]
+      ]
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "coverage": [
+        190576690.7833838,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "60678dd4002fdba931490136fd76adb88c45eb225b597b4af95b645ab17f4e01",
+      "model": {},
+      "hidden": [
+        [
+          "Stardust_capsule",
+          true
+        ],
+        [
+          "Stardust_tex_01_c",
+          true
+        ],
+        [
+          "Stardust_tex_02_c",
+          true
+        ],
+        [
+          "Stardust_tex_03_c",
+          true
+        ],
+        [
+          "Stardust_tex_02_c2",
+          true
+        ],
+        [
+          "Stardust_Sample_Collection1",
+          true
+        ]
+      ]
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "coverage": [
+        190576690.7833838,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "0f0900485c9dcea312d6c38620b9d57612ffe339958219f2c1ab63d6a5e9e9b0",
+      "model": {},
+      "hidden": [
+        [
+          "Stardust_capsule",
+          false
+        ],
+        [
+          "Stardust_tex_01_c",
+          false
+        ],
+        [
+          "Stardust_tex_02_c",
+          false
+        ],
+        [
+          "Stardust_tex_03_c",
+          false
+        ],
+        [
+          "Stardust_tex_02_c2",
+          false
+        ],
+        [
+          "Stardust_Sample_Collection1",
+          false
+        ]
+      ]
+    }
+  ],
+  "stardustEvidence": {
+    "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+    "line": 1025,
+    "source": "const stardustModelParts = [\"Stardust_capsule\", \"Stardust_tex_01_c\", \"Stardust_tex_02_c\", \"Stardust_tex_03_c\", \"Stardust_tex_02_c2\", \"Stardust_Sample_Collection1\"];",
+    "sha256": "3cfc515c72cd4265752758b23aba750d9b88d593e36d869c16151ae1c753edbd"
+  }
+}

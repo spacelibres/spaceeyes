@@ -1,0 +1,1169 @@
+{
+  "baseline": "36b6cac55",
+  "scope": "Read-only source comparison; no complete NASA parity or runtime verification claim",
+  "functions": [
+    {
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.toggleLayer",
+      "ours": "web/lib/solar-workspace.ts:sceneIds/groups/configure",
+      "status": "different",
+      "evidence": "NASA owns visibility callbacks and parent-scoped child layers; host uses scene retention and two category booleans. sceneIds always retains selected object and ancestors before applying moons/spacecraft discovery filters.",
+      "impact": "Turning moons off cannot imply literal removal of selected Moon or required Moon ancestor. UI semantics must distinguish discovery layer from dependency visibility.",
+      "validation": "Select LRO, disable moons; inspect Moon mesh, label, orbit and spacecraft state separately. Repeat selected Moon.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.changeSpheroidMap",
+      "ours": "core/src/render_assets.rs:attach_visuals",
+      "status": "missing",
+      "evidence": "NASA iterates mapInfo.textures by textureRole and configures atmosphere feature; sphere host currently supplies faceAssets/base color rather than selectable channel maps.",
+      "impact": "Earth normal/specular/night/decal and alternative surface layers are not implemented by shared sphere material policy.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/components/SpheroidLODComponent.js",
+      "nasaSymbol": "SpheroidLODComponent.setTexture",
+      "ours": "core/src/face_texture.rs:resolve_faces",
+      "status": "different",
+      "evidence": "NASA assigns per-role texture uniforms and normal-map defines; ours converts six color images into one sRGB UV-sphere image with shared base/emissive bindings.",
+      "impact": "Cube-face orientation support does not establish NASA texture-channel or LOD equivalence.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "ours": "core/src/trajectory_render.rs:opacity/widths",
+      "status": "source-compared",
+      "evidence": "Recovered hover policy has explicit width/alpha transitions; ours applies hovered opacity and trail width endpoints in one material batch.",
+      "impact": "Static endpoints compared; transition timing and visual equivalence require runtime verification.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleTrails",
+      "ours": "web/lib/solar-workspace.ts:trails/configure",
+      "status": "different",
+      "evidence": "NASA manager controls per-entity trails; host globally toggles spacecraft trail publication and clears historical evaluators.",
+      "impact": "Per-entity/contextual toggle semantics are not equivalent to one global switch.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/components/OrbitLineComponent.js",
+      "nasaSymbol": "OrbitLineComponent",
+      "ours": "core/src/orbit_lines.rs:visit_styled_segments; core/src/trajectory_render.rs:upload",
+      "status": "source-compared",
+      "evidence": "Current path supports sampled/conic segments and a shared additive depth-tested material without depth writes.",
+      "impact": "Implementation differs; blend contract tests do not prove all orbit generation semantics.",
+      "scope": "class"
+    },
+    {
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.constructor",
+      "ours": "core/src/screen_layout.rs:LabelLayout.place; core/src/renderer.rs:draw_annotations",
+      "status": "different",
+      "evidence": "NASA uses label quadtree, category weights and clickable exception collections; ours uses weighted screen rectangles, occlusion and ready-state gates.",
+      "impact": "Dense layouts and interactive label exception behavior need comparative scene testing.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/LabelManager-924.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "ours": "core/src/renderer.rs:draw_annotations",
+      "status": "missing",
+      "evidence": "Separate recovered wrapper contains entity link handling; native renderer label picking supplies object selection rather than equivalent link behavior.",
+      "impact": "Do not count wrapper and scene label manager as one fully implemented function.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/ResourceManager.js",
+      "nasaSymbol": "ResourceManager.acquire/releaseAllForEntityItem",
+      "ours": "core/src/render_assets.rs:attach_visuals/poll_visuals; core/src/face_texture.rs:FaceCache",
+      "status": "different",
+      "evidence": "NASA owner-to-resource references and release functions differ from Bevy strong handles, revision replacement and bounded generated-face cache.",
+      "impact": "Need selection churn and close-during-load tests; resource quantity tests alone do not establish network cancellation or peak decode memory bounds.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/managers/MaterialManager.js",
+      "nasaSymbol": "MaterialManager.get/release",
+      "ours": "core/src/render_assets.rs:sphere_material",
+      "status": "different",
+      "evidence": "NASA clones cached shader materials; ours builds StandardMaterial for spheres and leaves imported glTF material ownership separate.",
+      "impact": "No generalized NASA shader-material channel translation exists.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/components/ModelComponent.js",
+      "nasaSymbol": "ModelComponent.setUrl",
+      "ours": "core/src/render_assets.rs:attach_visuals",
+      "status": "different",
+      "evidence": "NASA resets referenced resources when URL changes and maintains animation clip/hidden-object maps; ours replaces visual roots by revision and loads glTF scene with cameras/lights disabled.",
+      "impact": "Joint control support must not be described as complete animation-clip/hidden-object parity.",
+      "scope": "prior-summary"
+    },
+    {
+      "nasaFile": "engine/components/RingsComponent.js",
+      "nasaSymbol": "RingsComponent",
+      "ours": "core/src/ring_texture.rs:resolve_rings/ring_pixel",
+      "status": "source-compared",
+      "evidence": "Ours performs top-opacity reuse and bottom color handling; separate custom material exists.",
+      "impact": "Ring opacity tests do not establish all ring shadows, lighting and atmospheric interactions.",
+      "scope": "class"
+    },
+    {
+      "nasaFile": "engine/components/AtmosphereComponent.js",
+      "nasaSymbol": "AtmosphereComponent",
+      "ours": "core/src/solar_surface.rs:sync_solar_surface",
+      "status": "missing",
+      "evidence": "solar_surface implements stellar solar rendering, not a planet atmosphere component. No equivalence inferred from similarly named surface module.",
+      "impact": "Planet atmosphere behavior needs an explicit implementation/mapping and separate verification.",
+      "scope": "class"
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.constructor",
+      "nasaLine": 7,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "constructor(app, scene) { super(app); this._scene = scene; this._ids = []; this._hiddenIds = []; this._opacity = { primary: .75, secondary: .35, hover: 1 }; this._width = { default: [0, 2], hover: [2, 4] }; this._orbitLinesOpts = { lineWidth: { default: 1.2, hover: 2 }, glowWidth: { default: 0, hover: 0 }, visibleInterval: Pioneer.VisibleInterval.DefaultVisibleFar }; this._orbitLineEntityNames = SolarSystemSceneExports.Entity.getEntityNamesInGroup(\"planets\").add(\"moon\"); this._colors = { default: new Pioneer.Color(1, 1, 1, this._opacity.secondary), mercury: new Pioneer.Color(151 / 255, 104 / 255, 172 / 255, this._opacity.primary), venus: new Pioneer.Color(176 / 255, 121 / 255, 25 / 255, this._opacity.primary), earth: new Pioneer.Color(0, .6, .8, this._opacity.primary), mars: new Pioneer.Color(154 / 255, 78 / 255, 25 / 255, this._opacity.primary), jupiter: new Pioneer.Color(218 / 255, 139 / 255, 114 / 255, this._opacity.primary), saturn: new Pioneer.Color(213 / 255, 193 / 255, 135 / 255, this._opacity.primary), uranus: new Pioneer.Color(104 / 255, .8, 218 / 255, this._opacity.primary), neptune: new Pioneer.Color(112 / 255, 140 / 255, 227 / 255, this._opacity.primary) }; this.bindFunctions([\"onHoverChange\", \"setUpTrail\", \"toggleTrails\", \"toggleOrbits\"]); }",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setScene",
+      "nasaLine": 46,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "setScene(scene) { this._scene = scene; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.create",
+      "nasaLine": 49,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "create(entityId) { if (this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent)) return void console.warn(\"Trail already exists for\", entityId); const trailComponent = this._scene.getEntity(entityId).addComponent(Pioneer.TrailComponent); this._ids.push(entityId); return trailComponent; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setStartTime",
+      "nasaLine": 55,
+      "ours": {
+        "path": "platform/eyes-trail-policy.ts",
+        "function": "export function eyesTrailDuration",
+        "line": 4
+      },
+      "status": "different",
+      "evidence": "setStartTime(entityIds, startTime) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setStartTime(startTime); } }",
+      "impact": "Source-defined history length supported; explicit manager start/end setters are absent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setEndTime",
+      "nasaLine": 62,
+      "ours": {
+        "path": "platform/eyes-trail-policy.ts",
+        "function": "export function eyesTrailDuration",
+        "line": 4
+      },
+      "status": "different",
+      "evidence": "setEndTime(entityIds, endTime) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setEndTime(endTime); } }",
+      "impact": "Source-defined history length supported; explicit manager start/end setters are absent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "nasaLine": 69,
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "status": "different",
+      "evidence": "onHoverChange(entityId, isHovered, updateFade = false) { const entity = this._scene.getEntity(entityId); const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); const orbitLineComponent = entity?.getComponent(SolarSystemSceneExports.OrbitLineComponent); if (!entity || !trailComponent && !orbitLineComponent) return; const color = new Pioneer.Color(); const lineComponent = trailComponent ?? orbitLineComponent; const hoverState = isHovered ? \"hover\" : \"default\"; if (orbitLineComponent) { const { lineWidth: lineWidth, glowWidth: glowWidth } = this._orbitLinesOpts; orbitLineComponent.setLineWidth(lineWidth[hoverState]); orbitLineComponent.setGlowWidth(glowWidth[hoverState]); } else if (trailComponent) { const widths = entity.trailHover?.width?.[hoverState] ?? this._width[hoverState]; trailComponent.setWidths(...widths); } const { primary: primary, secondary: secondary, hover: hover } = this._opacity; const opacity = isHovered ? hover : this._colors[entityId] ? primary : secondary; color.copy(lineComponent.getColor()); color.a = opacity; lineComponent.setColor(color); updateFade && trailComponent.setAlphaFade(color.a); }",
+      "impact": "Fixed renderer hover/width/opacity policy exists; no equivalent per-entity manager mutation API.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setFade",
+      "nasaLine": 99,
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "status": "different",
+      "evidence": "setFade(entityIds, alphaFade) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setAlphaFade(alphaFade); } }",
+      "impact": "Fixed renderer hover/width/opacity policy exists; no equivalent per-entity manager mutation API.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setWidths",
+      "nasaLine": 106,
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "status": "different",
+      "evidence": "setWidths(entityIds, startWidth, endWidth) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setWidths(startWidth, endWidth); } }",
+      "impact": "Fixed renderer hover/width/opacity policy exists; no equivalent per-entity manager mutation API.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setMultipleWidths",
+      "nasaLine": 113,
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "status": "different",
+      "evidence": "setMultipleWidths(entityIds, startWidth, endWidth) { for (const entityId of entityIds) { const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setWidths(startWidth, endWidth); } }",
+      "impact": "Fixed renderer hover/width/opacity policy exists; no equivalent per-entity manager mutation API.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.getColor",
+      "nasaLine": 119,
+      "ours": {
+        "path": "platform/eyes-line-style.ts",
+        "function": "export function",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "getColor(entityId) { const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); return trailComponent ? trailComponent.getColor() : null; }",
+      "impact": "Source color lookup exists; mutable TrailManager color state/getter parity is absent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setColor",
+      "nasaLine": 123,
+      "ours": {
+        "path": "platform/eyes-line-style.ts",
+        "function": "export function",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "setColor(entityIds, suppliedColor = null) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); if (trailComponent) { const trailColor = suppliedColor instanceof Pioneer.Color ? suppliedColor : this._colors[entityId] || this._colors.default; trailComponent.setColor(trailColor); } } }",
+      "impact": "Source color lookup exists; mutable TrailManager color state/getter parity is absent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setUpTrail",
+      "nasaLine": 134,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "status": "different",
+      "evidence": "setUpTrail(entity) { const layerManager = this._app.getManager(\"layer\"); const sceneManager = this._app.getManager(\"scene\"); const entityId = entity.getName(); const trailsLayer = layerManager.getLayer(\"trails\"); const useOrbitLine = this._orbitLineEntityNames.has(entityId); useOrbitLine && this.createOrbitLine(entity); (null !== trailsLayer && !trailsLayer.visible || useOrbitLine) && sceneManager.setVisibility(false, entityId); }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.show",
+      "nasaLine": 143,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "status": "different",
+      "evidence": "show(entityIds = null) { null === entityIds ? entityIds = this._hiddenIds.length > 0 ? this._hiddenIds : this._ids : Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); if (trailComponent) { const hiddenIndex = this._hiddenIds.indexOf(entityId); -1 !== hiddenIndex && this._hiddenIds.splice(hiddenIndex, 1); trailComponent.setEnabled(true); } else console.warn(\"TrailManager.show: Trail does not exist - \", entityId); } }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.hide",
+      "nasaLine": 155,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "status": "different",
+      "evidence": "hide(hiddenIds = null) { null === hiddenIds ? hiddenIds = this._ids : Array.isArray(hiddenIds) || (hiddenIds = [hiddenIds]); this._hiddenIds = hiddenIds; for (let entityIndex = 0; entityIndex < hiddenIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(hiddenIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setEnabled(false); } }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleTrails",
+      "nasaLine": 163,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "status": "different",
+      "evidence": "toggleTrails(isVisible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) { const entity = scene.getEntityAt(entityIndex); const trailComponent = entity.getComponent(Pioneer.TrailComponent); if (null !== trailComponent) { const entityInfo = this._app.getManager(\"content\").getEntityInfo(entity.getName()); if (entityInfo) { const category = entityInfo.category; const subcategory = entityInfo.subcategory; const categoryLayer = this._app.getManager(\"layer\").getLayerFromCategory(subcategory) || this._app.getManager(\"layer\").getLayerFromCategory(category); const { forceVisible = false } = this.app.getManager(\"scene\").getEntityStatus(entity.getName()) || {}; null === categoryLayer || categoryLayer.visible || forceVisible ? trailComponent.setEnabled(isVisible) : trailComponent.setEnabled(false); } else trailComponent.setEnabled(isVisible); } } }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.createOrbitLine",
+      "nasaLine": 184,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "status": "different",
+      "evidence": "createOrbitLine(entity) { const trailComponent = entity.getComponent(Pioneer.TrailComponent); trailComponent && entity.removeComponent(trailComponent); const orbitLineComponent = entity.addComponent(SolarSystemSceneExports.OrbitLineComponent); const { lineWidth: lineWidth, glowWidth: glowWidth, visibleInterval: visibleInterval } = this._orbitLinesOpts; const lineColor = this._colors[entity.getName()] ?? this._colors.default; orbitLineComponent.setColor(lineColor); orbitLineComponent.setVisibleInterval(visibleInterval); orbitLineComponent.setLineWidth(lineWidth.default); orbitLineComponent.setGlowWidth(glowWidth.default); const isVisible = this._app.getManager(\"layer\").getLayer(\"orbits\").visible; orbitLineComponent.setEnabled(isVisible); }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleOrbits",
+      "nasaLine": 201,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "different",
+      "evidence": "toggleOrbits(isVisible) { this._orbitLineEntityNames.forEach(entityId => { const orbitLineComponent = this._scene.getEntity(entityId)?.getComponent(SolarSystemSceneExports.OrbitLineComponent); orbitLineComponent?.setEnabled(isVisible); }); }",
+      "impact": "Global host switches and sampled/conic publication differ from per-entity component enable state and forceVisible exception.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.ids",
+      "nasaLine": 207,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "get ids() { return this._ids; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.ids",
+      "nasaLine": 210,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "set ids(entityIds) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; if (this._ids.includes(entityId)) continue; this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent) && this._ids.push(entityId); } } } export { TrailManager };",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.constructor",
+      "nasaLine": 7,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "constructor(app) { super(app); this._sceneManager = app.getManager(\"scene\"); this._contentManager = app.getManager(\"content\"); this._layers = {}; this._contextualLayersList = [\"majorMoons\", \"minorMoons\", \"landers\", \"orbiters\", \"satelliteGroup\", \"heliosphere\"]; this._targetId = \"\"; this._previousTarget = []; this._dependencies = new Set(); this._previousDependencies = new Set(); this._currentSurfaceLayer = \"default\"; this.bindFunctions([\"resetContextualVisibility\", \"toggleLayer\", \"changeSpheroidMap\", \"resetContextualLayers\"]); this._eventNames.push(\"toggleLayer\"); this._initCallbacks(); }",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.addLayer",
+      "nasaLine": 22,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "addLayer(layerId, { name: displayName = \"\", group: groupName = \"\", categories = [], defaultVisibility = true, toggleCallback: toggleCallbacks = [], sublayers: sublayerIds = [] }) { void 0 === this._layers[layerId] && (this._layers[layerId] = {}); this._layers[layerId].name = displayName; this._layers[layerId].group = groupName; this._layers[layerId].defaultVisibility = defaultVisibility; this._layers[layerId].visible = defaultVisibility; Array.isArray(categories) || (categories = [categories]); this._layers[layerId].categories = categories; Array.isArray(sublayerIds) || (sublayerIds = [sublayerIds]); this._layers[layerId].sublayers = sublayerIds; for (let sublayerIndex = 0; sublayerIndex < sublayerIds.length; sublayerIndex++) { const sublayerId = sublayerIds[sublayerIndex]; void 0 === this._layers[sublayerId] && (this._layers[sublayerId] = {}); this._layers[sublayerId].parent = layerId; } Array.isArray(toggleCallbacks) || (toggleCallbacks = [toggleCallbacks]); this._layers[layerId].toggleCallback = toggleCallbacks; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.addCallback",
+      "nasaLine": 47,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "addCallback(layerId, callback) { const layer = this.getLayer(layerId); null !== layer && layer.toggleCallback.push(callback); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.removeCallback",
+      "nasaLine": 51,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "removeCallback(layerId, callback) { const layer = this.getLayer(layerId); if (null === layer) return; const callbackIndex = layer.toggleCallback.indexOf(callback); layer.toggleCallback.splice(callbackIndex, 1); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayer",
+      "nasaLine": 57,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getLayer(layerId) { return void 0 === this._layers[layerId] ? null : this._layers[layerId]; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getCurrentSurfaceLayer",
+      "nasaLine": 60,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getCurrentSurfaceLayer() { return this._currentSurfaceLayer; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.changeSpheroidMap",
+      "nasaLine": 63,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "async changeSpheroidMap(entityId, mapInfo, options = {}) { if (\"cmts\" === mapInfo.type) return void console.error(\"This function does not yet handle CMTS texture\"); const sceneManager = this.app.getManager(\"scene\"); const wmtsManager = this.app.getManager(\"wmts\"); const lodComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(Pioneer.SpheroidLODComponent); const atmosphereComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(Pioneer.AtmosphereComponent); const wmtsComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(SolarSystemSceneExports.WMTSComponent); this._currentSurfaceLayer = mapInfo.id; lodComponent && \"texture\" === mapInfo.type ? (false === wmtsManager.getWMTSComponentState(entityId) && sceneManager.isEntityHD(entityId) && (await sceneManager.toggleHDTextureForEntity(entityId, false)), lodComponent.setEnabled(true), sceneManager.addLoading(entityId, \"spheroidLOD\"), Object.keys(mapInfo.textures).forEach(textureRole => { const textureUrl = \"$STATIC_ASSETS_URL/maps/\" + mapInfo.textures[textureRole].url; lodComponent.setTexture(textureRole, textureUrl, mapInfo.textures[textureRole].sizes); }), await lodComponent.getLoadedPromise(), null !== wmtsComponent && wmtsComponent.setEnabled(false), sceneManager.removeLoading(entityId, \"spheroidLOD\")) : \"wmts\" === mapInfo.type && (null === wmtsComponent || wmtsComponent.getName() !== mapInfo.id ? await sceneManager.addWMTSComponent(entityId, mapInfo) : false === wmtsComponent.isEnabled() && (await sceneManager.enableWMTSComponent(entityId, wmtsComponent))); null != atmosphereComponent && false !== options.atmosphere && atmosphereComponent.setEnabled(mapInfo.features.includes(\"atmosphere\")); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetSpheroidMap",
+      "nasaLine": 77,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "async resetSpheroidMap(entityId) { const atmosphereComponent = this._app.pioneer.getScene(\"main\").getEntity(entityId)?.getComponent(Pioneer.AtmosphereComponent); let preservedFeatures = [\"shadowEntities\"]; atmosphereComponent?.isEnabled() && (preservedFeatures = [\"shadowEntities\", \"atmosphere\"]); const defaultTexture = this._app.getManager(\"content\").getSpheroidDefaultTextureInformation(entityId, preservedFeatures); \"default\" !== defaultTexture?.id && (await this.changeSpheroidMap(entityId, defaultTexture)); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.toggleLayer",
+      "nasaLine": 84,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "status": "different",
+      "evidence": "async toggleLayer(layerId, options = {}, requestedVisibility) { const { spout: spout, spoutFontSize: spoutFontSize } = this.app.getManager(\"router\").configs; if (void 0 === this._layers[layerId]) return; const { configs: configs } = this._app.getManager(\"router\"); if (options.layerId = layerId, void 0 !== requestedVisibility && this._layers[layerId].visible === requestedVisibility && true !== configs[layerId]) return; this._layers[layerId].visible = !this._layers[layerId].visible; for (let callbackIndex = 0; callbackIndex < this._layers[layerId].toggleCallback.length; callbackIndex++) { (0, this._layers[layerId].toggleCallback[callbackIndex])(this._layers[layerId].visible, options); } for (let sublayerIndex = 0; sublayerIndex < this._layers[layerId].sublayers.length; sublayerIndex++) { this.getLayer(this._layers[layerId].sublayers[sublayerIndex]).visible = this._layers[layerId].visible; this.triggerCallbacks(\"toggleLayer\", [this._layers[layerId].sublayers[sublayerIndex], this._layers[layerId].visible, options]); } this.triggerCallbacks(\"toggleLayer\", [layerId, this._layers[layerId].visible, options]); const sceneManager = this.app.getManager(\"scene\"); if (null !== options.parentId && void 0 !== options.parentId ? sceneManager.updateEntityLayerVisibilityForChildren(options) : sceneManager.updateEntityLayerVisibility(options), true === spout && this._layers[layerId].visible) { const constellationLabels = []; if (await this.pioneer.waitUntilNextFrame(), layerId.toLowerCase().includes(\"constellations\")) { this.app.pioneer.getScene(\"main\").getEntity(\"sun\").getComponent(SolarSystemSceneExports.ConstellationsComponent).getNames().forEach(constellationName => { constellationLabels.push(this.app.pioneer.getScene(\"main\").getEntity(`constellation_label_${constellationName}`)); });",
+      "impact": "Host has discovery retention filters, not NASA category/sublayer visibility registry. Required ancestors are retained independently of layer visibility.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.syncLayerVisibilityWithQueries",
+      "nasaLine": 114,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "syncLayerVisibilityWithQueries() { const routeConfigs = this.app.getManager(\"router\").configs; this._contextualLayersList.forEach(layerId => { const requestedVisibility = routeConfigs[layerId] ?? this._app.getManager(\"layer\").getLayer(layerId).defaultVisibility; this.toggleLayer(layerId, {}, requestedVisibility); }); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.setTarget",
+      "nasaLine": 121,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "async select(id)",
+        "line": 1321
+      },
+      "status": "different",
+      "evidence": "setTarget(targetId) { if (this._previousTarget.push(this._targetId), this._previousDependencies = new Set([...this._previousDependencies, ...this._dependencies]), this._targetId = targetId, this._dependencies.clear(), \"\" !== this._targetId) { const dependencies = this._sceneManager.getDependencies(this._targetId); this._dependencies = new Set(dependencies); } }",
+      "impact": "Host selection state exists; contextual layer reset stack is not replicated.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetTarget",
+      "nasaLine": 127,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "state.selected",
+        "line": 483
+      },
+      "status": "different",
+      "evidence": "resetTarget() { for (let targetIndex = 0; targetIndex < this._previousTarget.length; targetIndex++) { const previousTarget = this._previousTarget[targetIndex]; const cameraEntity = this.app.getManager(\"camera\").cameraEntity; if (null === cameraEntity || null === cameraEntity.getParent()) return; if (cameraEntity.getParent().getName() === previousTarget) return; } for (let targetIndex = 0; targetIndex < this._previousTarget.length; targetIndex++) { const previousTarget = this._previousTarget[targetIndex]; this.resetContextualVisibility(previousTarget); } this._previousTarget = []; this._previousDependencies.clear(); }",
+      "impact": "Host selection state exists; contextual layer reset stack is not replicated.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetContextualVisibility",
+      "nasaLine": 141,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "status": "different",
+      "evidence": "resetContextualVisibility(contextId) { const currentTime = this._sceneManager.main.getEngine().getTime(); let contextualLayers = this.getContextualLayers(contextId); for (; \"\" !== contextId && 0 === contextualLayers.length;) { contextId = SolarSystemSceneExports.Parenting.getParentOfEntity(contextId, currentTime); contextualLayers = this.getContextualLayers(contextId); } let targetId = this._targetId; for (contextualLayers = this.getContextualLayers(targetId); \"\" !== targetId && 0 === contextualLayers.length;) { targetId = SolarSystemSceneExports.Parenting.getParentOfEntity(targetId, currentTime); contextualLayers = this.getContextualLayers(targetId); } if (targetId !== contextId) { this._contextId = contextId; for (let layerIndex = 0; layerIndex < contextualLayers.length; layerIndex++) { const layerId = contextualLayers[layerIndex]; const layer = this.getLayer(layerId); if (void 0 !== layer.parent) { this.getLayer(layer.parent).visible !== layer.visible && this.toggleLayer(layerId, { parentId: contextId, group: layer.group }); } else layer.visible !== layer.defaultVisibility && this.toggleLayer(layerId, { parentId: contextId, group: layer.group }); } } }",
+      "impact": "Host has discovery retention filters, not NASA category/sublayer visibility registry. Required ancestors are retained independently of layer visibility.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getTarget",
+      "nasaLine": 170,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "state.selected",
+        "line": 483
+      },
+      "status": "different",
+      "evidence": "getTarget() { return this._targetId; }",
+      "impact": "Host selection state exists; contextual layer reset stack is not replicated.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getEntityLayer",
+      "nasaLine": 173,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getEntityLayer(entityId) { const entityInfo = this._contentManager.getEntityInfo(entityId); if (null === entityInfo) return null; const category = entityInfo.category; const subcategory = entityInfo.subcategory; return this.getLayerFromCategory(subcategory) || this.getLayerFromCategory(category); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayerFromCategory",
+      "nasaLine": 180,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getLayerFromCategory(category) { if (!category) return null; for (const [layerId, layer] of Object.entries(this._layers)) if (layer.categories.includes(category)) return this._layers[layerId]; return null; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayerFromSatelliteGroup",
+      "nasaLine": 185,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getLayerFromSatelliteGroup(satelliteGroup) { if (!satelliteGroup) return null; for (const [layerId, layer] of Object.entries(this._layers)) if (layer.categories.includes(satelliteGroup)) return this._layers[layerId]; return null; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getAllContextualLayerOptions",
+      "nasaLine": 190,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "getAllContextualLayerOptions() { return this._contextualLayersList; }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getContextualLayers",
+      "nasaLine": 193,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "status": "different",
+      "evidence": "getContextualLayers(entityId) { const contextualLayers = []; if (\"\" === entityId) return contextualLayers; const contentManager = this.app.getManager(\"content\"); const entityInfo = contentManager.getEntityInfo(entityId); const moonIds = entityInfo?.hasMoons ? SolarSystemSceneExports.Entity.getEntityNamesInGroup(entityId + \", moons\") : new Set(); const spacecraftIds = SolarSystemSceneExports.Entity.getEntityNamesInGroup(entityId + \", spacecraft\"); \"sun\" === entityId && false === contextualLayers.includes(\"heliosphere\") && contextualLayers.push(\"heliosphere\"); moonIds.forEach(moonId => { const moonInfo = contentManager.getEntityInfo(moonId); if (null !== moonInfo) { switch (moonInfo.subcategory || moonInfo.category) { case \"Major Moon\": false === contextualLayers.includes(\"majorMoons\") && contextualLayers.push(\"majorMoons\"); break; case \"Minor Moon\": false === contextualLayers.includes(\"minorMoons\") && contextualLayers.push(\"minorMoons\"); } } }); const currentTime = this._app.pioneer.getTime(); spacecraftIds.forEach(spacecraftId => { const spacecraftInfo = contentManager.getEntityInfo(spacecraftId); if (null !== spacecraftInfo) { switch (spacecraftInfo.subcategory || spacecraftInfo.category) { case \"Orbiter\": false === contextualLayers.includes(\"orbiters\") && SolarSystemSceneExports.Parenting.getParentOfEntity(spacecraftId, currentTime) === entityId && contextualLayers.push(\"orbiters\"); break; case \"Landing Site\": case \"Lander\": case \"Rover\": false === contextualLayers.includes(\"landers\") && SolarSystemSceneExports.Parenting.getParentOfEntity(spacecraftId, currentTime) === entityId && contextualLayers.push(\"landers\"); } } }); entityInfo?.constellation && contextualLayers.push(\"satelliteGroup\"); contextualLayers.sort((leftLayerId, rightLayerId) => { const layerOrder = Obje",
+      "impact": "Host has discovery retention filters, not NASA category/sublayer visibility registry. Required ancestors are retained independently of layer visibility.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetContextualLayers",
+      "nasaLine": 235,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "status": "different",
+      "evidence": "resetContextualLayers(newParentId, oldParentId) { const availableLayers = this.getContextualLayers(newParentId); this._contextualLayersList.forEach(layerId => { false === availableLayers.includes(layerId) && (\"heliosphere\" === layerId ? this.toggleLayer(layerId, { parentId: void 0 }, this.getLayer(layerId).defaultVisibility || false) : this.toggleLayer(layerId, { parentId: oldParentId }, this.getLayer(layerId).defaultVisibility || false)); }); }",
+      "impact": "Host has discovery retention filters, not NASA category/sublayer visibility registry. Required ancestors are retained independently of layer visibility.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.isEntityVisibleWithCurrentLayers",
+      "nasaLine": 245,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "status": "different",
+      "evidence": "isEntityVisibleWithCurrentLayers(entityId, options = {}) { const { satelliteGroup: satelliteGroup, allowSublayer: allowSublayer } = options ?? {}; const entityInfo = this._contentManager.getEntityInfo(entityId); if (null !== entityInfo) { const categoryLayer = this.getLayerFromCategory(entityInfo.category); const subcategoryLayer = this.getLayerFromCategory(entityInfo.subcategory); const satelliteLayer = this.getLayerFromSatelliteGroup(entityInfo.constellation); return null !== satelliteLayer && entityInfo.constellation === satelliteGroup ? satelliteLayer.visible : null !== subcategoryLayer ? !(subcategoryLayer.parent && !this.getLayer(subcategoryLayer.parent)?.visible && !allowSublayer) && subcategoryLayer.visible : null !== categoryLayer ? categoryLayer.visible : null === categoryLayer && null === subcategoryLayer; } return true; } } export { LayerManager };",
+      "impact": "Host has discovery retention filters, not NASA category/sublayer visibility registry. Required ancestors are retained independently of layer visibility.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-924.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "nasaLine": 5,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "_getLink(entityId) { const baseLink = super._getLink(entityId); return this._app.getManager(\"link\")?.getParsedLink?.(baseLink) || baseLink; } } export { LabelManager };",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.constructor",
+      "nasaLine": 7,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "constructor(app, scene, viewport) { super(app); this._scene = scene; this._eventNames.push(\"hoverchange\", \"labelclicked\"); this._initCallbacks(); this._viewport = viewport; this._labelQuadtree = new SolarSystemSceneExports.LabelQuadtree(viewport); this._focusRect = new Pioneer.Rect(); this._focusSize = .05; this._focusIntersectionRects = new Pioneer.FastMap(); this._iconMap = { Universe: \"no-icon\", Galaxy: \"no-icon\", Star: \"no-icon\", Barycenter: \"icon-circle-white-small\", \"Landing site\": \"icon-hexagon\", Moon: \"icon-circle-white-small\", Asteroid: \"icon-circle-white-small\", \"Dwarf Planet\": \"icon-circle-white-small\", Comet: \"icon-circle-white-small\", Spacecraft: \"icon-hexagon\", Planet: \"icon-circle-\", Default: \"icon-circle-white-small\" }; this._weightMap = { Universe: 100, Galaxy: 100, Star: 100, Barycenter: 0, \"Landing site\": 5, Asteroid: 15, Comet: 15, Moon: 25, \"Dwarf Planet\": 28, Spacecraft: 30, Planet: 50, Constellation: 10 }; this._weights = {}; this._labels = {}; this._isClickable = true; this._exceptions = new Set(); this.bindFunctions([\"update\", \"addLabel\", \"removeLabel\", \"toggleLabels\", \"toggleLabelForEntity\", \"toggleIcons\", \"toggleIconForEntity\", \"_clickCallback\", \"setUpLabel\", \"setUpIcon\"]); }",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.update",
+      "nasaLine": 51,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "update() { const viewportSize = this._viewport.getBounds().size; const focusDiameter = Math.max(viewportSize.x, viewportSize.y) * this._focusSize; this._focusRect.set((viewportSize.x - focusDiameter) / 2, (viewportSize.y - focusDiameter) / 2, focusDiameter, focusDiameter); this._labelQuadtree.setBounds(\"__focus\", this._focusRect); this._labelQuadtree.update(); }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.initLabelWeights",
+      "nasaLine": 58,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "initLabelWeights(weightDefinitions, resetExisting = true) { resetExisting && (this._weights = {}); const labelManager = this._app.getManager(\"label\"); for (const weightId of Object.keys(weightDefinitions)) { const category = weightDefinitions[weightId].category; this._weights[weightId] = {}; void 0 !== this._weightMap[category] ? this._weights[weightId].weight = this._weightMap[category] : this._weights[weightId].weight = 1; resetExisting && labelManager._labels[weightId] && labelManager.setWeight(weightId, this._weights[weightId].weight); } }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setWeight",
+      "nasaLine": 68,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "setWeight(entityId, weight) { try { this._labelQuadtree.setWeight(entityId, weight); return true; } catch (missingLabelError) { return false; } }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.resetWeight",
+      "nasaLine": 76,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "resetWeight(entityId) { const contentManager = this._app.getManager(\"content\"); const category = contentManager?.getEntityInfo(entityId)?.category; const defaultWeight = this.getDefaultWeight(entityId, category); this._labelQuadtree.setWeight(entityId, defaultWeight); }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.getDefaultWeight",
+      "nasaLine": 82,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "getDefaultWeight(entityId, category = void 0) { return entityId.startsWith(\"constellation_\") ? this._weightMap.Constellation : Object.keys(this._weights).length > 0 && void 0 !== this._weights[entityId] ? this._weights[entityId].weight : void 0 !== this._weightMap[category] ? this._weightMap[category] : 0; }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.getWeightMap",
+      "nasaLine": 85,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "getWeightMap() { return this._weightMap; }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setWeightMap",
+      "nasaLine": 88,
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "status": "different",
+      "evidence": "setWeightMap(weightMap) { this._weightMap = weightMap; }",
+      "impact": "Weighted rectangle collision placement differs from source quadtree and configurable weight map.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setUpLabel",
+      "nasaLine": 91,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "setUpLabel(entity) { const contentManager = this._app.getManager(\"content\"); const layerManager = this._app.getManager(\"layer\"); const category = contentManager.getEntityInfo(entity.getName())?.category; const defaultWeight = this.getDefaultWeight(entity.getName(), category); this.addLabel(entity, defaultWeight); this.setLabelProps({ getLabelClass: labelEntityId => `no-select ${contentManager.getClassName(labelEntityId) ?? \"\"}` }, [entity.getName()]); const entityId = entity.getName(); const labelsLayer = layerManager.getLayer(\"labels\"); null === labelsLayer || labelsLayer.visible || this.toggleLabelForEntity(false, entityId); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addLabel",
+      "nasaLine": 104,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "addLabel(entity, weight) { entity.getComponent(Pioneer.DivComponent) && (this._labels[entity.getName()] = { name: entity.getName(), el: entity.getComponent(Pioneer.DivComponent).getDiv(), isClickable: true }, this._labelQuadtree.addEntity(entity, weight)); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeLabel",
+      "nasaLine": 111,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "removeLabel(entityId) { entityId.getComponent(Pioneer.DivComponent) && (delete this._labels[entityId.getName()], this._labelQuadtree.removeEntity(entityId.getName())); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setUpIcon",
+      "nasaLine": 114,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "setUpIcon(entity) { const layerManager = this._app.getManager(\"layer\"); const entityId = entity.getName(); const iconsLayer = layerManager.getLayer(\"icons\"); null === iconsLayer || iconsLayer.visible || this.toggleIconForEntity(false, entityId); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setLabelClickable",
+      "nasaLine": 120,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "setLabelClickable(entityId, isClickable) { this._labels[entityId] && (this._labels[entityId].isClickable = isClickable, this._labels[entityId].el.classList.toggle(\"clickable\", isClickable)); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setClickable",
+      "nasaLine": 123,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "setClickable(isClickable) { this._isClickable = isClickable; for (let entityIndex = 0, entityCount = this._scene.getNumEntities(); entityIndex < entityCount; entityIndex++) { const divComponent = this._scene.getEntityAt(entityIndex).getComponent(Pioneer.DivComponent); if (null !== divComponent) { const labelElement = divComponent.getDiv(); isClickable ? labelElement.classList.remove(\"unclickable\") : labelElement.classList.add(\"unclickable\"); } } }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addException",
+      "nasaLine": 133,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "addException(entityId) { this._exceptions.add(entityId); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeException",
+      "nasaLine": 136,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "removeException(entityId) { this._exceptions.delete(entityId); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addExceptions",
+      "nasaLine": 139,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "addExceptions(entityIds) { entityIds.forEach(entityId => this._exceptions.add(entityId)); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeExceptions",
+      "nasaLine": 142,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "removeExceptions(entityIds) { entityIds.forEach(entityId => this._exceptions.delete(entityId)); }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleLabels",
+      "nasaLine": 145,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "toggleLabels(visible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) this.toggleLabelForEntity(visible, scene.getEntityAt(entityIndex).getName(), { scene: scene }); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleLabelForEntity",
+      "nasaLine": 153,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "toggleLabelForEntity(visible, entityId, { scene: scene } = {}) { let targetScene = scene; void 0 === targetScene && (targetScene = this._scene); const entity = targetScene.getEntity(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); this._exceptions.has(entity.getName()) || null !== divComponent && (visible ? divComponent.getDiv().lastElementChild?.classList.remove(\"hidden\") : divComponent.getDiv().lastElementChild?.classList.add(\"hidden\")); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleIcons",
+      "nasaLine": 162,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "toggleIcons(visible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) this.toggleIconForEntity(visible, scene.getEntityAt(entityIndex).getName(), { scene: scene }); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleIconForEntity",
+      "nasaLine": 170,
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "status": "different",
+      "evidence": "toggleIconForEntity(visible, entityId, { scene: scene } = {}) { let targetScene = scene; void 0 === targetScene && (targetScene = this._scene); const entity = targetScene.getEntity(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); this._exceptions.has(entity.getName()) || null !== divComponent && (visible ? divComponent.getDiv().firstElementChild?.classList.remove(\"hidden\") : divComponent.getDiv().firstElementChild?.classList.add(\"hidden\")); }",
+      "impact": "Native label/marker lifecycle and picking exist; per-label DOM/icon/clickability manager API is not equivalent.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "nasaLine": 179,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "_getLink(entityId) { return `/${entityId}`; }",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager._clickCallback",
+      "nasaLine": 182,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "source-compared",
+      "evidence": "_clickCallback(entity) { const routerManager = this._app.getManager(\"router\"); const link = this._getLink(entity.getName()); const routePath = \"string\" == typeof link ? link : link.path ?? \"\"; const { options: navigationOptions = { keepTime: true }, query: queryParams = {} } = \"object\" == typeof link && link; routerManager.navigate(queryParams, routePath, navigationOptions); }",
+      "impact": "Internal source behavior only; not counted as implemented equivalence.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setLabelProps",
+      "nasaLine": 194,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "setLabelProps({ getLabelClass: getLabelClass, getIconClass: getIconClass, getTextClass: getTextClass, handleClick: handleClick, handleTouch: handleTouch, handleMouseEnter: handleMouseEnter, handleMouseLeave: handleMouseLeave } = {}, entityIds = Object.keys(this._labels), sceneOverride, cameraOverride) { let targetScene = sceneOverride; targetScene || (targetScene = this._scene); let cameraEntity = cameraOverride; cameraEntity || (cameraEntity = targetScene.getEntity(\"camera\")); const cameraComponent = cameraEntity.getComponent(Pioneer.CameraComponent); for (const entityId of entityIds) { const entity = targetScene.getEntity(entityId); const entityInfo = this._app.getManager(\"content\").getEntityInfo(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); if (null === divComponent) continue; divComponent.setActiveCamera(cameraComponent); const labelElement = divComponent.getDiv(); const labelClass = \"function\" == typeof getLabelClass ? getLabelClass(entityId) : \"\"; labelElement.className += ` ${labelClass} clickable`; const iconElement = document.createElement(\"span\"); const textElement = document.createElement(\"span\"); const categoryIconClass = this._iconMap[entityInfo?.category] ?? this._iconMap.Default; const planetIconSuffix = \"Planet\" === entityInfo?.category ? entityId : \"\"; const customIconClass = \"function\" == typeof getIconClass ? getIconClass(entityId) : \"\"; iconElement.className = `icon ${categoryIconClass}${planetIconSuffix} ${customIconClass}`; textElement.className = `text ${\"function\" == typeof getTextClass ? getTextClass(entityId) : \"\"}`; textElement.innerHTML = entityInfo?.displayName || entityInfo?.iauName || labelElement.innerHTML; labelElement.innerHTML = \"\"; labelElement.appendChild(iconElement); labelElement.appendChild(textElement",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addClassToLabels",
+      "nasaLine": 257,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "addClassToLabels(className, entityIds) { for (const entityId of entityIds) { const entity = this._scene.getEntity(entityId); const labelElement = entity?.getComponent(Pioneer.DivComponent)?.getDiv(); labelElement?.classList.add(className); } }",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    },
+    {
+      "scope": "function",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeClassFromLabels",
+      "nasaLine": 264,
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "status": "missing",
+      "evidence": "removeClassFromLabels(className, entityIds) { for (const entityId of entityIds) { const entity = this._scene.getEntity(entityId); const labelElement = entity?.getComponent(Pioneer.DivComponent)?.getDiv(); labelElement?.classList.remove(className); } } } export { LabelManager };",
+      "impact": "No equivalent per-method public operation found in reviewed host/core surface.",
+      "validation": "Source comparison only. Add targeted runtime comparison for this operation; no parity test claimed."
+    }
+  ],
+  "priority": [
+    "Define layer visibility versus required-parent retention before implementing literal Moon hiding; preserve scientific reference dependencies independently.",
+    "Inventory actual source texture roles before material channel work; color-face conversion is insufficient.",
+    "Verify resource churn/cancellation and peak decode budgets before claiming ResourceManager lifecycle parity.",
+    "Compare dense label scenes and per-entity trail/layer behavior after lifecycle semantics are fixed."
+  ],
+  "layerFinding": {
+    "nasaFile": "engine/managers/LayerManager.js",
+    "nasaLine": 245,
+    "symbol": "LayerManager.isEntityVisibleWithCurrentLayers",
+    "conclusion": "Not a confirmed Moon ancestor visibility bug: LayerManager category test has no exemption, but SceneManager.updateVisibility line166 explicitly preserves ancestors of camera and entitiesForcingThisVisible; line136 also loads camera parent independently of layer. NASA separates dependency loading and render visibility. Our retention is a different implementation; retaining Moon for LRO is consistent with ancestor protection, while unrelated moons should disappear. Selected Moon outcome additionally depends on camera ancestry and forceVisible.",
+    "ours": "web/lib/solar-workspace.ts sceneIds retains selected/ancestors unconditionally before category filters.",
+    "support": [
+      {
+        "nasaFile": "engine/managers/SceneManager.js",
+        "nasaLine": 136,
+        "evidence": "shouldLoad includes cameraEntity.getParent name equals entityId"
+      },
+      {
+        "nasaFile": "engine/managers/SceneManager.js",
+        "nasaLine": 166,
+        "evidence": "shouldBeVisible includes _isAncestorOfCamera(cameraEntity, entityId) or entitiesForcingThisVisible.size > 0"
+      }
+    ]
+  }
+}

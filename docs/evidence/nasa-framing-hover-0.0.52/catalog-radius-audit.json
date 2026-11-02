@@ -1,0 +1,54 @@
+{
+  "note": "Project catalog values retained unchanged; not an independent astronomical accuracy certification",
+  "rows": [
+    {
+      "parent": "earth",
+      "child": "moon",
+      "parentRadiusKm": 6378.1,
+      "childRadiusKm": 1737.4,
+      "radiusRatio": 0.27240087173296124
+    },
+    {
+      "parent": "mars",
+      "child": "phobos",
+      "parentRadiusKm": 3396.2,
+      "childRadiusKm": 14,
+      "radiusRatio": 0.004122254284199989
+    },
+    {
+      "parent": "jupiter",
+      "child": "io",
+      "parentRadiusKm": 71492,
+      "childRadiusKm": 1821.3,
+      "radiusRatio": 0.02547557768701393
+    },
+    {
+      "parent": "jupiter",
+      "child": "europa",
+      "parentRadiusKm": 71492,
+      "childRadiusKm": 1569,
+      "radiusRatio": 0.021946511497789964
+    },
+    {
+      "parent": "saturn",
+      "child": "titan",
+      "parentRadiusKm": 60268,
+      "childRadiusKm": 2575,
+      "radiusRatio": 0.042725824649897125
+    },
+    {
+      "parent": "uranus",
+      "child": "titania",
+      "parentRadiusKm": 25559,
+      "childRadiusKm": 788.4,
+      "radiusRatio": 0.03084627724089362
+    },
+    {
+      "parent": "neptune",
+      "child": "triton",
+      "parentRadiusKm": 24764,
+      "childRadiusKm": 1353.4,
+      "radiusRatio": 0.054651914068809565
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "726bb7e6b2b26f4f",
+    "kind": "script",
+    "name": "spaceeyes_core.js",
+    "sources": [
+      {
+        "kind": "resource",
+        "property": "script"
+      }
+    ],
+    "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+  },
+  {
+    "id": "baaf21da20efd1d1",
+    "kind": "other",
+    "name": "spaceeyes_core_bg.wasm",
+    "sources": [
+      {
+        "kind": "resource",
+        "property": "fetch"
+      }
+    ],
+    "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm"
+  },
+  {
+    "id": "79ccdcbf4f54fa16",
+    "kind": "other",
+    "name": "trajectory.wgsl",
+    "sources": [
+      {
+        "kind": "resource",
+        "property": "fetch"
+      }
+    ],
+    "url": "http://127.0.0.1:3006/assets/shaders/trajectory.wgsl"
+  }
+]

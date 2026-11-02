@@ -1,0 +1,441 @@
+/* NASA-inspired observation controls, using the existing spacelibre palette. */
+.immersive .scene-loading {
+  --loading-accent: color-mix(
+    in srgb,
+    var(--primaryOnDark) 75%,
+    var(--surface)
+  );
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 48px;
+  color: var(--surface);
+  text-align: center;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    color-mix(in srgb, var(--primaryOnDark) 9%, var(--deep)),
+    var(--deep) 65%
+  );
+}
+.loading-emblem {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  margin-bottom: 24px;
+}
+.loading-emblem img {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+}
+.loading-emblem svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.8;
+}
+.loading-emblem .loading-orbit {
+  stroke: var(--primaryOnDark);
+  stroke-width: 2;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dasharray 0.4s ease;
+}
+.scene-loading .loading-kicker {
+  color: var(--loading-accent);
+  letter-spacing: 0.35em;
+  font-size: 11px;
+  margin: 0 0 12px;
+}
+.scene-loading h2 {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 400;
+  margin: 0 0 16px;
+}
+.scene-loading .loading-detail {
+  color: var(--line);
+  min-height: 22px;
+  font-size: 13px;
+  margin: 0 0 24px;
+}
+.loading-progress {
+  width: min(460px, 100%);
+  height: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface) 12%, transparent);
+  border-radius: 4px;
+}
+.loading-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--primaryOnDark);
+  box-shadow: 0 0 12px var(--primaryOnDark);
+  transition: width 0.4s ease;
+}
+.loading-caption {
+  width: min(460px, 100%);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  color: var(--line);
+  font-size: 11px;
+}
+.loading-stages {
+  display: flex;
+  width: min(460px, 100%);
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 16px;
+  gap: 16px;
+  justify-content: space-between;
+}
+.loading-stages li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--muted) 70%, var(--line));
+}
+.loading-stages li > span {
+  font-family: Consolas, monospace;
+  font-size: 10px;
+}
+.loading-stages .is-complete {
+  color: var(--line);
+}
+.loading-stages .is-current {
+  color: var(--loading-accent);
+}
+.loading-stages .is-current > span {
+  animation: loading-breathe 1.5s ease-in-out infinite alternate;
+}
+.scene-loading .loading-resources {
+  font-size: 11px;
+  color: var(--line);
+  margin: 0 0 8px;
+}
+.immersive .loading-cancel {
+  margin-top: 16px;
+  background: transparent;
+  color: var(--line);
+  border-color: transparent;
+}
+.immersive .loading-cancel:hover {
+  color: var(--surface);
+  border-color: color-mix(in srgb, var(--muted) 70%, var(--line));
+}
+@keyframes loading-breathe {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.immersive .nasa-timeline {
+  --time-glow: var(--surface);
+  position: absolute;
+  z-index: 4;
+  bottom: 16px;
+  left: 24px;
+  right: 24px;
+  height: 126px;
+  color: var(--surface);
+  pointer-events: none;
+  background: linear-gradient(
+    transparent,
+    color-mix(in srgb, var(--deep) 55%, transparent)
+  );
+}
+.immersive .nasa-timeline.is-live {
+  --time-glow: color-mix(in srgb, var(--success) 55%, var(--surface));
+}
+.immersive .nasa-timeline.is-paused {
+  --time-glow: color-mix(in srgb, var(--warning) 50%, var(--surface));
+}
+.immersive .nasa-timeline .time-panel {
+  pointer-events: auto;
+}
+.timeline-instrument {
+  width: min(680px, calc(100% - 180px));
+  margin: 0 auto;
+  position: relative;
+  pointer-events: auto;
+}
+.timeline-readout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  min-height: 36px;
+  gap: 8px;
+}
+.immersive .nasa-timeline button {
+  background: transparent;
+  color: var(--surface);
+  border: 0;
+  border-radius: 4px;
+  pointer-events: auto;
+}
+.immersive .nasa-timeline .timeline-date,
+.immersive .nasa-timeline .timeline-clock {
+  font-size: 17px;
+  font-weight: 400;
+  padding: 4px 0;
+  white-space: nowrap;
+}
+.timeline-date {
+  text-align: left;
+}
+.timeline-clock {
+  text-align: right;
+}
+.timeline-clock small {
+  font-size: 9px;
+  color: var(--line);
+  margin-left: 6px;
+}
+.timeline-rate {
+  display: block;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--time-glow);
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--time-glow) 40%, transparent);
+}
+.timeline-playback {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.immersive .nasa-timeline .timeline-playback button {
+  font-size: 13px;
+  width: 36px;
+  height: 30px;
+  padding: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--deep) 80%, transparent);
+  border: 1px solid var(--muted);
+}
+.timeline-instrument:hover .timeline-playback,
+.timeline-instrument:focus-within .timeline-playback {
+  opacity: 1;
+  pointer-events: auto;
+}
+.immersive .timeline-instrument:hover .timeline-playback button,
+.immersive .timeline-instrument:focus-within .timeline-playback button {
+  pointer-events: auto;
+}
+.timeline-curve {
+  height: 50px;
+  position: relative;
+  color: var(--surface);
+}
+.timeline-curve svg {
+  width: 100%;
+  height: 50px;
+  overflow: visible;
+}
+.immersive .timeline-rate-input {
+  appearance: none;
+  -webkit-appearance: none;
+  position: absolute;
+  left: -21px;
+  top: 0;
+  width: calc(100% + 42px);
+  height: 50px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+.timeline-rate-input::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 50px;
+}
+.timeline-rate-input::-moz-range-track {
+  background: transparent;
+  height: 50px;
+}
+.timeline-rate-input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 42px;
+  height: 42px;
+  background: transparent;
+  border: 0;
+  margin-top: 4px;
+  transform: translateY(var(--thumb-offset));
+  cursor: grab;
+  pointer-events: auto;
+}
+.timeline-rate-input::-moz-range-thumb {
+  width: 42px;
+  height: 42px;
+  border: 0;
+  background: transparent;
+  transform: translateY(var(--thumb-offset));
+  cursor: grab;
+  pointer-events: auto;
+}
+.timeline-rate-input:disabled::-webkit-slider-thumb {
+  pointer-events: none;
+}
+.timeline-rate-input:disabled::-moz-range-thumb {
+  pointer-events: none;
+}
+.timeline-knob {
+  pointer-events: none;
+  position: absolute;
+  left: var(--knob-x);
+  top: var(--knob-y);
+  width: 36px;
+  height: 36px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  background: radial-gradient(
+    circle,
+    var(--time-glow) 0 22%,
+    color-mix(in srgb, var(--time-glow) 35%, var(--deep)) 27%,
+    var(--deep) 43%,
+    var(--muted) 49%,
+    var(--deep) 54%,
+    color-mix(in srgb, var(--surface) 12%, var(--deep)) 70%
+  );
+  box-shadow: 0 0 16px color-mix(in srgb, var(--time-glow) 22%, transparent);
+}
+.timeline-rate-input:focus-visible ~ .timeline-knob {
+  outline: 2px solid var(--primaryOnDark);
+  outline-offset: 4px;
+}
+.immersive .nasa-timeline .timeline-realtime {
+  position: absolute;
+  left: 50%;
+  top: 37.5px;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--deep);
+  z-index: 3;
+}
+.immersive .nasa-timeline .timeline-now {
+  position: absolute;
+  left: 0;
+  bottom: 42px;
+  color: var(--line);
+  padding: 4px 0;
+  font-size: 14px;
+}
+.nasa-timeline .timeline-now > span {
+  margin-right: 5px;
+}
+.immersive .nasa-timeline.is-live .timeline-now {
+  color: var(--time-glow);
+}
+.immersive .nasa-timeline button:focus-visible {
+  outline: 2px solid var(--primaryOnDark);
+  outline-offset: 3px;
+}
+.immersive .nasa-timeline button:hover {
+  color: var(--primaryOnDark);
+}
+.immersive .nasa-timeline button:disabled {
+  opacity: 0.4;
+}
+@media (hover: none) {
+  .timeline-playback {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .immersive .nasa-timeline .timeline-playback button {
+    pointer-events: auto;
+  }
+}
+@media (max-width: 760px) {
+  .immersive .nasa-timeline {
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
+    height: 132px;
+  }
+  .timeline-instrument {
+    width: calc(100% - 32px);
+  }
+  .immersive .nasa-timeline .timeline-date,
+  .immersive .nasa-timeline .timeline-clock {
+    font-size: 12px;
+  }
+  .timeline-rate {
+    font-size: 13px;
+  }
+  .timeline-clock small {
+    display: block;
+    margin: 0;
+  }
+  .immersive .nasa-timeline .timeline-now {
+    bottom: -4px;
+    font-size: 11px;
+  }
+  .loading-stages {
+    gap: 8px;
+  }
+  .loading-stages li {
+    font-size: 10px;
+  }
+}
+@media (max-height: 440px) {
+  .loading-emblem {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+  }
+  .loading-emblem img {
+    width: 40px;
+    height: 40px;
+    left: 12px;
+    top: 12px;
+  }
+  .scene-loading .loading-kicker {
+    display: none;
+  }
+  .loading-stages {
+    margin: 12px 0 4px;
+  }
+  .scene-loading h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .scene-loading .loading-detail {
+    margin-bottom: 12px;
+  }
+  .scene-loading {
+    padding-top: 100px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-orbit,
+  .loading-progress > span,
+  .timeline-playback {
+    transition: none !important;
+  }
+  .loading-stages .is-current > span {
+    animation: none;
+  }
+}

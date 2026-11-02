@@ -1,0 +1,1164 @@
+[
+  {
+    "id": "sc_europa_clipper",
+    "track": "sc_europa_clipper/earth/launch",
+    "file": "sc_europa_clipper__earth__launch__def-source.dyn",
+    "bytes": 964,
+    "hash": "061536faa8e13d45486d30fff81bbe3983fcca0f36dcc9fe0c3aa87bdc8a347d",
+    "base": 28,
+    "stride": 72,
+    "count": 13,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ]
+    ]
+  },
+  {
+    "id": "sc_europa_clipper",
+    "track": "sc_europa_clipper/sun",
+    "file": "sc_europa_clipper__sun__def-source.dyn",
+    "bytes": 1036,
+    "hash": "595c82836fe15c3669419459bd37d773b1f31d40961fa70bc12ee6668f3ecfa0",
+    "base": 28,
+    "stride": 72,
+    "count": 14,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ]
+    ]
+  },
+  {
+    "id": "sc_europa_clipper",
+    "track": "sc_europa_clipper/mars/flyby",
+    "file": "sc_europa_clipper__mars__flyby__def-source.dyn",
+    "bytes": 388,
+    "hash": "0ba453a6211ce1059c573a5d1f9ac16a50a8bba6df075d105f828257ce9ae880",
+    "base": 28,
+    "stride": 72,
+    "count": 5,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ]
+  },
+  {
+    "id": "sc_europa_clipper",
+    "track": "sc_europa_clipper/earth/flyby",
+    "file": "sc_europa_clipper__earth__flyby__def-source.dyn",
+    "bytes": 388,
+    "hash": "90845dad212f9526308a8adc0ed03afcdd404f0d2fc74fffcddd836843249dcc",
+    "base": 28,
+    "stride": 72,
+    "count": 5,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ]
+  },
+  {
+    "id": "sc_europa_clipper",
+    "track": "sc_europa_clipper/jupiter",
+    "file": "sc_europa_clipper__jupiter__def-source.dyn",
+    "bytes": 468,
+    "hash": "8e340c0460586f608186881c90b8d74fae7e4db760101ad082d0abd583737181",
+    "base": 28,
+    "stride": 72,
+    "count": 55,
+    "flag": 0,
+    "groups": []
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/earth/launch",
+    "file": "sc_juice__earth__launch__def-source.dyn",
+    "bytes": 2044,
+    "hash": "baef214a80835b65402680182f8c85138ca9b74506825b286a04ac5259988967",
+    "base": 28,
+    "stride": 72,
+    "count": 28,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        27,
+        28
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/sun",
+    "file": "sc_juice__sun__def-source.dyn",
+    "bytes": 3340,
+    "hash": "c03036e15002b10ff9733df3e721ce3f5b7b8c4749da65b7c08244ba89ff5544",
+    "base": 28,
+    "stride": 72,
+    "count": 46,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        27,
+        28
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        29,
+        30
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        31,
+        32
+      ],
+      [
+        32,
+        33
+      ],
+      [
+        33,
+        34
+      ],
+      [
+        34,
+        35
+      ],
+      [
+        35,
+        36
+      ],
+      [
+        36,
+        37
+      ],
+      [
+        37,
+        38
+      ],
+      [
+        38,
+        39
+      ],
+      [
+        39,
+        40
+      ],
+      [
+        40,
+        41
+      ],
+      [
+        41,
+        42
+      ],
+      [
+        42,
+        43
+      ],
+      [
+        43,
+        44
+      ],
+      [
+        44,
+        45
+      ],
+      [
+        45,
+        46
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/earth/flyby1",
+    "file": "sc_juice__earth__flyby1__def-source.dyn",
+    "bytes": 2332,
+    "hash": "d51ec5e56a0daf1e1c4958cbfa621aeab13241a89e2d7888dfefcbe0bd002e16",
+    "base": 28,
+    "stride": 72,
+    "count": 32,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        27,
+        28
+      ],
+      [
+        28,
+        29
+      ],
+      [
+        29,
+        30
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        31,
+        32
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/venus/flyby",
+    "file": "sc_juice__venus__flyby__def-source.dyn",
+    "bytes": 2044,
+    "hash": "107fdf28551223eb445af82d3510c18290afc9a74c086ce76fe723bc781144ff",
+    "base": 28,
+    "stride": 72,
+    "count": 28,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        27,
+        28
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/earth/flyby2",
+    "file": "sc_juice__earth__flyby2__def-source.dyn",
+    "bytes": 1900,
+    "hash": "c23677987c0c2fdca20fd44c7da3bda2ab018264743355fc268d821dd2deac8d",
+    "base": 28,
+    "stride": 72,
+    "count": 26,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/earth/flyby3",
+    "file": "sc_juice__earth__flyby3__def-source.dyn",
+    "bytes": 1900,
+    "hash": "8de3a54fc5150f1cc4ed317a7561702f65f99a1a6232f280ef59588b973c1470",
+    "base": 28,
+    "stride": 72,
+    "count": 26,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ],
+      [
+        9,
+        10
+      ],
+      [
+        10,
+        11
+      ],
+      [
+        11,
+        12
+      ],
+      [
+        12,
+        13
+      ],
+      [
+        13,
+        14
+      ],
+      [
+        14,
+        15
+      ],
+      [
+        15,
+        16
+      ],
+      [
+        16,
+        17
+      ],
+      [
+        17,
+        18
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        19,
+        20
+      ],
+      [
+        20,
+        21
+      ],
+      [
+        21,
+        22
+      ],
+      [
+        22,
+        23
+      ],
+      [
+        23,
+        24
+      ],
+      [
+        24,
+        25
+      ],
+      [
+        25,
+        26
+      ]
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/jupiter",
+    "file": "sc_juice__jupiter__def-source.dyn",
+    "bytes": 660,
+    "hash": "470785ada4c3527ea0d2ba63b3040a9bd9d3c8e7d00083a7239a08ea8e1d0807",
+    "base": 28,
+    "stride": 72,
+    "count": 79,
+    "flag": 0,
+    "groups": []
+  },
+  {
+    "id": "sc_juice",
+    "track": "sc_juice/ganymede",
+    "file": "sc_juice__ganymede__def-source.dyn",
+    "bytes": 1228,
+    "hash": "a91d5e11c0603a770f5358a6f8bf269a6ccc9888061c58321da90b15781930fc",
+    "base": 28,
+    "stride": 72,
+    "count": 150,
+    "flag": 0,
+    "groups": []
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/earth/launch/orb",
+    "file": "sc_lucy__earth__launch__orb__def-source.dyn",
+    "bytes": 460,
+    "hash": "188f6d6318678663ec7c66a1d7b41f0b65d44a5a74061336a7a6a8f47467526e",
+    "base": 28,
+    "stride": 72,
+    "count": 6,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/sun/orb",
+    "file": "sc_lucy__sun__orb__def-source.dyn",
+    "bytes": 2908,
+    "hash": "2b6bb1b987131e6f544bcd8ab988053492424514a737cfaa5e863a417d61f621",
+    "base": 28,
+    "stride": 72,
+    "count": 40,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        22
+      ],
+      [
+        22,
+        37
+      ],
+      [
+        37,
+        39
+      ],
+      [
+        39,
+        40
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/earth/flyby1/orb",
+    "file": "sc_lucy__earth__flyby1__orb__def-source.dyn",
+    "bytes": 676,
+    "hash": "73f030feacf27f8a91219e3480ab097002d454a916f1edd7dfa5df2423299b6f",
+    "base": 28,
+    "stride": 72,
+    "count": 9,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ],
+      [
+        8,
+        9
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/earth/flyby2/orb",
+    "file": "sc_lucy__earth__flyby2__orb__def-source.dyn",
+    "bytes": 532,
+    "hash": "7b9065fbde89788ee9368effa33f0bb3ffafa33c2b4ff01c69e29578740e8397",
+    "base": 28,
+    "stride": 72,
+    "count": 7,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/52246_donaldjohanson/pos",
+    "file": "sc_lucy__52246_donaldjohanson__pos__def-source.dyn",
+    "bytes": 348,
+    "hash": "42fe9f7db445314a74b8bd33bc7929bb9682037daaf8512adc79e7ef1c10142c",
+    "base": 12,
+    "stride": 56,
+    "count": 6,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/3548_eurybates/pos",
+    "file": "sc_lucy__3548_eurybates__pos__def-source.dyn",
+    "bytes": 292,
+    "hash": "4df4b674e4ccb7bad354efaf53a6808710cd3cfe8f8370f03c061a3a2b7c50d3",
+    "base": 12,
+    "stride": 56,
+    "count": 5,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/15094_polymele/pos",
+    "file": "sc_lucy__15094_polymele__pos__def-source.dyn",
+    "bytes": 348,
+    "hash": "40b7015837c28e17f458d7cd883dcd6f91b6d11375e836fae79674363368b54f",
+    "base": 12,
+    "stride": 56,
+    "count": 6,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/11351_leucus/pos",
+    "file": "sc_lucy__11351_leucus__pos__def-source.dyn",
+    "bytes": 348,
+    "hash": "88432e73102a4d9b8c94a7c17f7403ee9dba3820549f39768b9208dc479fa99a",
+    "base": 12,
+    "stride": 56,
+    "count": 6,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/21900_orus/pos",
+    "file": "sc_lucy__21900_orus__pos__def-source.dyn",
+    "bytes": 404,
+    "hash": "92b76ae52eebe4a8e4bb80dedd2f98f12834e9a88b753f625b68bb12abcf4eac",
+    "base": 12,
+    "stride": 56,
+    "count": 7,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/earth/flyby3/orb",
+    "file": "sc_lucy__earth__flyby3__orb__def-source.dyn",
+    "bytes": 604,
+    "hash": "20c9a1906adaff5f3f4a7b68523021f73b2c6eb641009bc888e184c7a17f38ce",
+    "base": 28,
+    "stride": 72,
+    "count": 8,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        4
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ]
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "track": "sc_lucy/617_patroclus/pos",
+    "file": "sc_lucy__617_patroclus__pos__def-source.dyn",
+    "bytes": 460,
+    "hash": "e04e7d0260cda2d6d113a29b2b812045428cca38befeb65aeafe44cc1fda4e7c",
+    "base": 12,
+    "stride": 56,
+    "count": 8,
+    "flag": 1,
+    "error": "Error: DYN sample times must increase",
+    "groups": [
+      [
+        0,
+        5
+      ],
+      [
+        5,
+        6
+      ],
+      [
+        6,
+        7
+      ],
+      [
+        7,
+        8
+      ]
+    ]
+  }
+]

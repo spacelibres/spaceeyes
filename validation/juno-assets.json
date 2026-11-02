@@ -1,0 +1,72 @@
+{
+  "scope": "NASA Juno model asset pack only; no orbital or attitude validation",
+  "files": [
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf",
+      "file": "Juno.gltf",
+      "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9",
+      "bytes": 56278
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin",
+      "file": "juno_closed.bin",
+      "sha256": "ecb0f34d8cdcd961e0e4e6ddf1aafc402be4d2a9071a41ec4829b1a667cebee0",
+      "bytes": 1779752
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/foil_normal.png",
+      "file": "foil_normal.png",
+      "sha256": "2ac7f687a8d7c334158a9dc9934fb7be27bd524967eb1cd9a9451204123cee87",
+      "bytes": 309641
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_transparent_crosses.png",
+      "file": "juno_transparent_crosses.png",
+      "sha256": "08a6a3aa92b2bbdc07598e2ae86d15215720effdaa7011f7fee717fd620b1f60",
+      "bytes": 12472
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/foil_dish_normal.png",
+      "file": "foil_dish_normal.png",
+      "sha256": "1e980faf7c3af1dbffedaea7cb924ceddc1354b855fbf3efada78509eb94059b",
+      "bytes": 174577
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_normal.png",
+      "file": "juno_tex_01_normal.png",
+      "sha256": "d9607e761bbf5388ae55582074656a9862d72a62b0086c01c2144ecd186dc382",
+      "bytes": 910296
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_albedo.jpg",
+      "file": "juno_tex_01_albedo.jpg",
+      "sha256": "3c17f636e3451cfc6424090eb819cfba31cd80af75b64d224a84eb569ef0693e",
+      "bytes": 308049
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_tex_01_pbr.jpg",
+      "file": "juno_tex_01_pbr.jpg",
+      "sha256": "858828c517a62d15c977594d3f3e97bacf713a988428f66313135b02d3c77e42",
+      "bytes": 152691
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_normal.png",
+      "file": "juno_array_normal.png",
+      "sha256": "07dcd4d40f3f05ab969f6ec60a7c3b726a70876854970aea445bde04901f1b87",
+      "bytes": 1421533
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_albedo.jpg",
+      "file": "juno_array_albedo.jpg",
+      "sha256": "ec410730cbb76707245c6a9793f6b96285784897ff8e058c2f888b89aaaf9ee8",
+      "bytes": 1309073
+    },
+    {
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_array_pbr.jpg",
+      "file": "juno_array_pbr.jpg",
+      "sha256": "06654cb2738d001fb0a99a4d37e84e7cf3358d87a1e649e377a55fe017cf26eb",
+      "bytes": 1202326
+    }
+  ],
+  "capturedAt": "2026-10-28T09:19:10.2665811Z"
+}

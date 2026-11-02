@@ -1,0 +1,524 @@
+{
+  "source": "NASA Eyes fixed original stage glTF sources; 2026-11-01",
+  "total": 7,
+  "rows": [
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_clementine/clementine_isas.gltf",
+      "ok": true,
+      "sha256": "941d52e2b2ea79bd2e6399dc957b2fbf8d401725501afdcfed25468be45f6168",
+      "bytes": 19647,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 7,
+      "buffers": [
+        {
+          "uri": "clementine_isas.bin",
+          "bytes": 466668
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/jpeg",
+          "name": "clementine_dish_ao",
+          "uri": "clementine_dish_ao.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clementine_hinges_ao",
+          "uri": "clementine_hinges_ao.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "foil_normal",
+          "uri": "foil_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clementine_foil_ao",
+          "uri": "clementine_foil_ao.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "clem_shiny_panel_normal",
+          "uri": "clem_shiny_panel_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clem_shiny_panel_albedo",
+          "uri": "clem_shiny_panel_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clem_shiny_panel_pbr",
+          "uri": "clem_shiny_panel_pbr.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "clem_tex_01_normal",
+          "uri": "clem_tex_01_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clem_tex_01_albedo",
+          "uri": "clem_tex_01_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "clem_tex_01_pbr",
+          "uri": "clem_tex_01_pbr.jpg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_insight/cruise/model.gltf",
+      "ok": true,
+      "sha256": "13dba9490ef3e22445250260e6b87f0c25b5b5e3a829f2259265b3137dcfa1df",
+      "bytes": 45277,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 12,
+      "buffers": [
+        {
+          "uri": "model.bin",
+          "bytes": 687312
+        }
+      ],
+      "images": [
+        {
+          "name": "insight_4_bolt_circle_hatch_AO",
+          "uri": "insight_4_bolt_circle_hatch_AO.png"
+        },
+        {
+          "name": "insight_4_bolt_circle_hatch_NORM",
+          "uri": "insight_4_bolt_circle_hatch_NORM.png"
+        },
+        {
+          "name": "insight_6_bolt_circle_hatch_AO",
+          "uri": "insight_6_bolt_circle_hatch_AO.png"
+        },
+        {
+          "name": "insight_6_bolt_circle_hatch_NORM",
+          "uri": "insight_6_bolt_circle_hatch_NORM.png"
+        },
+        {
+          "name": "insight_capsule_normal",
+          "uri": "insight_capsule_normal.png"
+        },
+        {
+          "name": "insight_capsule_diffuse",
+          "uri": "insight_capsule_diffuse.png"
+        },
+        {
+          "name": "foil_n",
+          "uri": "foil_n.png"
+        },
+        {
+          "name": "foil_gold_ramp",
+          "uri": "foil_gold_ramp.png"
+        },
+        {
+          "name": "insight_array_normal",
+          "uri": "insight_array_normal.png"
+        },
+        {
+          "name": "insight_array_diffuse",
+          "uri": "insight_array_diffuse.jpg"
+        },
+        {
+          "name": "insight_square_hatch_AO",
+          "uri": "insight_square_hatch_AO.png"
+        },
+        {
+          "name": "insight_square_hatch_NORM",
+          "uri": "insight_square_hatch_NORM.png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_jwst/webb_stowed.gltf",
+      "ok": true,
+      "sha256": "fe2a1d4ee46cbd6946c7a1ed5debe8f0e6d6927380d81898770672e45a164614",
+      "bytes": 150363,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 60,
+      "buffers": [
+        {
+          "uri": "webb_stowed.bin",
+          "bytes": 2483756
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/jpeg",
+          "name": "foil_normal",
+          "uri": "foil_normal.jpg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_2020/rover/perseverance.gltf",
+      "ok": true,
+      "sha256": "177dbd5b4fc5056fc65ed15b6efe984e789c01235008e6ee876f3cf630be9ca8",
+      "bytes": 518509,
+      "required": [],
+      "used": [
+        "KHR_materials_transmission"
+      ],
+      "scenes": 1,
+      "nodes": 88,
+      "buffers": [
+        {
+          "uri": "perseverance.bin",
+          "bytes": 8505556
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_03",
+          "uri": "mars_2020_03.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_01_n",
+          "uri": "mars_2020_01_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_01",
+          "uri": "mars_2020_01.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "clear.png",
+          "uri": "clear_png.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_02",
+          "uri": "mars_2020_02.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "glass",
+          "uri": "glass.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_06_n",
+          "uri": "mars_2020_06_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_06",
+          "uri": "mars_2020_06.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_05",
+          "uri": "mars_2020_05.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_02_n",
+          "uri": "mars_2020_02_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "blade",
+          "uri": "blade.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_04",
+          "uri": "mars_2020_04.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_spring_n",
+          "uri": "mars_2020_spring_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_hub_n",
+          "uri": "mars_2020_hub_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_hub",
+          "uri": "mars_2020_hub.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mars_2020_05_n",
+          "uri": "mars_2020_05_n.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "foil_n.jpg",
+          "uri": "foil_n_jpg.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mars_2020_07",
+          "uri": "mars_2020_07.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "arm_graphics",
+          "uri": "arm_graphics.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mars_2020_05_r",
+          "uri": "mars_2020_05_r.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "foil_n",
+          "uri": "foil_n.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "nameplate",
+          "uri": "nameplate.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "cvoidPlaque",
+          "uri": "cvoidPlaque.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "sample_handling_door",
+          "uri": "sample_handling_door.jpg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_exploration_rover/rover/mer_static.gltf",
+      "ok": true,
+      "sha256": "664c45f21a655b39202c18926ef83f11798f40736881b28920f0607ee5ecd758",
+      "bytes": 26174,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "mer_static.bin",
+          "bytes": 1928300
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/png",
+          "name": "mer_tex_panels_normal",
+          "uri": "mer_tex_panels_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_panels_albedo",
+          "uri": "mer_tex_panels_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_panels_pbr",
+          "uri": "mer_tex_panels_pbr.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mer_tex_panels2_normal",
+          "uri": "mer_tex_panels2_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_panels2_albedo",
+          "uri": "mer_tex_panels2_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_panels2_pbr",
+          "uri": "mer_tex_panels2_pbr.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_instruments_albedo",
+          "uri": "mer_tex_instruments_albedo.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mer_tex_body_normal",
+          "uri": "mer_tex_body_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_body_albedo",
+          "uri": "mer_tex_body_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_body_pbr",
+          "uri": "mer_tex_body_pbr.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mer_tex_suspension_normal",
+          "uri": "mer_tex_suspension_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_suspension_albedo",
+          "uri": "mer_tex_suspension_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_suspension_pbr",
+          "uri": "mer_tex_suspension_pbr.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_mast_albedo",
+          "uri": "mer_tex_mast_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_mast_pbr",
+          "uri": "mer_tex_mast_pbr.jpg"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "foil_normal",
+          "uri": "foil_normal.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "mer_tex_arm_normal",
+          "uri": "mer_tex_arm_normal.png"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_arm_albedo",
+          "uri": "mer_tex_arm_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mer_tex_arm_pbr",
+          "uri": "mer_tex_arm_pbr.jpg"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_mars_science_laboratory/rover/curiosity_static.gltf",
+      "ok": true,
+      "sha256": "e157b26fb44cb67114224ac6d797d5c96ac05a97f900cd813a24749db8e7a534",
+      "bytes": 25345,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 1,
+      "buffers": [
+        {
+          "uri": "curiosity_static.bin",
+          "bytes": 3978204
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/png",
+          "name": "Image_0",
+          "uri": "Image_0.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_1",
+          "uri": "Image_1.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_2",
+          "uri": "Image_2.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_3",
+          "uri": "Image_3.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_4",
+          "uri": "Image_4.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_5",
+          "uri": "Image_5.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_6",
+          "uri": "Image_6.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_7",
+          "uri": "Image_7.png"
+        },
+        {
+          "mimeType": "image/png",
+          "name": "Image_8",
+          "uri": "Image_8.png"
+        }
+      ],
+      "animations": 0
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/models/sc_phoenix/edl/phoenix_edl.gltf",
+      "ok": true,
+      "sha256": "0f5069ee8c2c78690a1906bf316ec09dd624d810a549a9c3ff4390fd08dd3a78",
+      "bytes": 15061,
+      "required": [],
+      "used": [],
+      "scenes": 1,
+      "nodes": 6,
+      "buffers": [
+        {
+          "uri": "phoenix_edl.bin",
+          "bytes": 209144
+        }
+      ],
+      "images": [
+        {
+          "mimeType": "image/jpeg",
+          "name": "mpl_phx_heat_shield_inside_albedo",
+          "uri": "mpl_phx_heat_shield_inside_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mpl_phx_top_pieces_ao",
+          "uri": "mpl_phx_top_pieces_ao.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mpl_phx_heatshield_albedo",
+          "uri": "mpl_phx_heatshield_albedo.jpg"
+        },
+        {
+          "mimeType": "image/jpeg",
+          "name": "mpl_phx_backshell_ao",
+          "uri": "mpl_phx_backshell_ao.jpg"
+        }
+      ],
+      "animations": 0
+    }
+  ]
+}

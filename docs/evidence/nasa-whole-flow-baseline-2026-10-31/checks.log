@@ -1,0 +1,686 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.40s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-40f7ec7a2d11cc18.exe)
+
+running 31 tests
+test camera_intent::tests::input_authorization_bounds_consumption_and_release ... ok
+test camera_intent::tests::lighting_requires_permission_validates_and_releases_owner ... ok
+test camera_intent::tests::observation_json_rejects_unknown_fields ... ok
+test camera_intent::tests::observation_contract_and_focus_lifecycle ... ok
+test annotation_tests::annotations_enforce_owner_budget_layers_and_cleanup ... ok
+test fov_tests::fov_is_authorized_bounded_and_released_without_refocus ... ok
+test camera_intent::tests::render_status_is_finite_read_only_and_clearable ... ok
+test deep_space::tests::environment_ownership_validation_and_release_are_atomic ... ok
+test orbit_lines::scale_tests::local_system_hides_solar_orbit_but_keeps_trail_and_recovers ... ok
+test orbit_lines::trail_tests::clips_past_window_and_never_bridges_breaks_or_uncovered_future ... ok
+test orbit_lines::tests::exact_vertex_is_updated_without_closing_uncovered_endpoints ... ok
+test orbit_lines::conic_tests::off_plane_current_does_not_deform_ring ... ok
+test orbit_lines::conic_tests::rejects_invalid_basis_and_wire_fields ... ok
+test orbit_lines::tests::close_inspection_hides_orbits_and_zooming_out_restores_them_continuously ... ok
+test orbit_lines::conic_tests::closed_degree_ring_attaches_exact_current_without_epoch_dependence ... ok
+test orbit_lines::tests::current_epoch_splits_its_own_interval_in_both_playback_directions ... ok
+test orbit_lines::trail_tests::parent_inspection_keeps_child_trails_but_craft_inspection_hides_them ... ok
+test picking::tests::depth_ties_are_stable_and_invalid_targets_are_ignored ... ok
+test picking::tests::hover_clears_on_leave_drag_and_no_hit ... ok
+test picking::tests::invalid_coordinates_and_cleared_frames_never_hit ... ok
+test picking::tests::overlapping_discs_select_nearest_visible_body ... ok
+test picking::tests::placed_label_is_pickable_but_does_not_select_through_nearer_body ... ok
+test picking::tests::ring_ray_handles_perspective_holes_and_offscreen_centers ... ok
+test starfield::tests::validation ... ok
+test state::orientation_tests::rejects_non_unit_orientation_and_preserves_absence ... ok
+test stellar_tuning::tests::wire_rejects_unknown_fields ... ok
+test wasm::picking_tests::host_pick_revalidates_failed_removed_objects_and_stopped_renderer ... ok
+test stellar_tuning::tests::metadata_and_strict_legacy_migration_match ... ok
+test stellar_tuning::tests::snapshot_bounds_and_cross_constraints ... ok
+test stellar_tuning::tests::owned_tuning_preserves_revision_and_cleans_lifecycle ... ok
+test starfield::tests::permissions_budget_replace_cleanup ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\bevy_runtime.rs (core\target\debug\deps\bevy_runtime-6759b17207abaf21.exe)
+
+running 3 tests
+test stale_samples_are_reported_and_do_not_remain_in_the_scene ... ok
+test real_bevy_entities_follow_core_and_use_double_precision_local_origin ... ok
+test clock_epoch_survives_json_publication_without_respawning_scene ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests\boundary.rs (core\target\debug\deps\boundary-6c51f83de405841c.exe)
+
+running 3 tests
+test identities_cannot_be_overwritten_or_reused ... ok
+test core_validates_session_permission_and_target_before_focus ... ok
+test release_removes_owned_objects_and_focus_but_preserves_other_sessions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\budget.rs (core\target\debug\deps\budget-fc3d941fa12c6cbe.exe)
+
+running 1 test
+test bounded_lifecycle_rejects_growth_without_overwriting_existing_state ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\commands.rs (core\target\debug\deps\commands-a8d2c59047f6b398.exe)
+
+running 2 tests
+test time_commands_require_explicit_authority_and_do_not_mutate_on_failure ... ok
+test publishing_and_removal_enforce_permissions_and_ownership_atomically ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\eyes_time_reference.rs (core\target\debug\deps\eyes_time_reference-0055ec13e2d603e6.exe)
+
+running 2 tests
+test ordinary_unix_roundtrips_across_leap_boundaries_and_true_leaps_remain_finite ... ok
+test recovered_eyes_ui_et_is_tt_like_with_documented_tdb_residual ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\model_joints.rs (core\target\debug\deps\model_joints-07491a4d982c6e84.exe)
+
+running 2 tests
+test unknown_fields_rejected ... ok
+test joints_are_atomic_owned_and_lifecycle_bound ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\scene.rs (core\target\debug\deps\scene-be4a80a94f2b0932.exe)
+
+running 2 tests
+test clock_pause_rate_and_seek_are_explicit_and_reject_invalid_updates ... ok
+test scientific_state_is_owned_validated_and_not_silently_extrapolated ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\trajectory.rs (core\target\debug\deps\trajectory-ef44264777d5a85e.exe)
+
+running 3 tests
+test legacy_style_json_keeps_default_orbit_and_no_breaks ... ok
+test timed_annotations_validate_atomically_and_follow_object_lifecycle ... ok
+test analytic_expansion_has_a_global_replaceable_budget ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\visuals.rs (core\target\debug\deps\visuals-3d5ed750d21bd5d2.exe)
+
+running 8 tests
+test rings_require_registered_textures_and_ordered_physical_ratios ... ok
+test stale_load_completions_cannot_resurrect_replaced_or_removed_visuals ... ok
+test stellar_effect_bounds_preserve_previous_visual_on_rejection ... ok
+test trusted_host_registers_external_hdr_without_allowing_urls ... ok
+test visual_changes_require_ownership_permission_and_registered_assets ... ok
+test multipart_visual_ready_waits_for_both_rings_and_failure_is_terminal ... ok
+test model_framing_hint_is_optional_strict_and_bounded ... ok
+test catalog_rejects_remote_escaping_and_incompatible_resource_paths ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests spaceeyes_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.63s
+✔ observation validates mode-specific fields and copies members (4.1603ms)
+✔ camera intents enforce permission and disposal, preserve actual WASM wire fields (7.4113ms)
+✔ lighting validates capability, enum, live session and exact WASM wire (11.5312ms)
+✔ lighting reports unavailable and forwards core failure (2.4249ms)
+✔ conic snapshot validates and isolates nested caller arrays (0.9148ms)
+✔ conic rejects invalid geometry, fields and incompatible paths (0.4627ms)
+✔ seven levels snapshot all tiles and reject missing parents and coordinates (6.595ms)
+✔ FOV uses capability, range and correct WASM session order (6.7599ms)
+✔ ori fields preserve wxyz and immutable owned values (2.4271ms)
+✔ v1 inline and offset Uint8Array views decode (0.2226ms)
+✔ v2 boundaries close segments without sentinel child (0.1774ms)
+✔ v1 explicit intervals preserve gaps and inferred padding (0.1776ms)
+✔ all truncated prefixes and trailing bytes rejected (5.6926ms)
+✔ unknown versions types flags and invalid counts rejected (2.0722ms)
+✔ nonfinite records, duplicate times and bad interval boundaries rejected (0.5427ms)
+✔ budgets reject before record allocation (0.3223ms)
+✔ orb endpoints, segment middle and body scaling remain deterministic (11.2738ms)
+✔ orientation advances angular velocity with recovered inverse sign (1.0068ms)
+✔ Eyes velocity blends analytic endpoint velocities and rejects uncovered epochs (2.4792ms)
+✔ stellar visual is immutable and bounded without changing object radius (1.3093ms)
+✔ environment requires visual permission, snapshots approved descriptors and revokes on disposal (3.141ms)
+✔ complete source catalog and temporal parents (3.249ms)
+✔ catalog preserves descriptive names and original search keywords (0.408ms)
+✔ reviewed NOAA definitions expand discovery without invented entity data (0.6222ms)
+✔ hyperbolic source elements stay nonperiodic and finite (2.6528ms)
+✔ declared orbital elements and landing coordinates evaluate without source execution (1.3745ms)
+✔ pos source records interpolate only in coverage (1.076ms)
+✔ lin source records interpolate only in coverage (0.3172ms)
+✔ Mars landing coordinates follow declared planetocentric latitude (0.2164ms)
+✔ all real source joint controllers compile in declaration order (8.4417ms)
+✔ joint compiler rejects duplicate names and unsupported expressions (1.0292ms)
+✔ alignment rotates primary and normalizes fixed source (2.6731ms)
+✔ dual axes, velocity, target orientation and stable antiparallel are deterministic (0.6536ms)
+✔ all source axis forms resolve without expression execution (2.1562ms)
+✔ degenerate references, collinear secondary and joints explicitly fail (0.5812ms)
+✔ real catalog entity align schema and axis compatibility (not attitude accuracy) (9.2576ms)
+ℹ source shape coverage: 169 entity controllers; synthetic degeneracies: none
+✔ source spin absolute phase, signed rate and local versus world composition (0.3792ms)
+✔ source spin without phase uses retained anchor and reproduces seek and pause (0.2466ms)
+✔ fixture server streams exact lengths, supports HEAD and exposes no workspace paths (404.9225ms)
+✔ canonical joint aliases cannot bind the same node twice (1.7053ms)
+✔ inclined retrograde ellipse closes, includes the current point and retains eccentric geometry (17.6064ms)
+✔ unbound, radial, nonfinite and invalid-gravity states cannot become closed display ellipses (0.9623ms)
+✔ 24 source points retain an analytic ellipse at every intermediate display angle (2.4543ms)
+✔ registration is unique and enable/disable owns a fresh lifecycle (4.6065ms)
+✔ capabilities require declaration, host approval and a live generation (0.6097ms)
+✔ activation failure aborts work and cleans resources in reverse order (0.9121ms)
+✔ cleanup failure does not skip remaining cleanup or permit SDK calls (0.442ms)
+✔ overlapping lifecycle operations fail explicitly (0.3059ms)
+✔ invalid and incompatible manifests never activate (0.1887ms)
+✔ camera SDK routes approved intent with host-owned identity and releases its session (1.1337ms)
+✔ camera SDK refuses undeclared authority and absent core adapters (0.3707ms)
+✔ host shutdown cleans all plugins, continues after failures and closes registration (0.7538ms)
+✔ shutdown invalidates and drains pending activation before releasing its core session (0.5156ms)
+✔ default browser fetch keeps its global receiver (66.6663ms)
+✔ resource catalog constrains fetches and cache copies cannot mutate stored bytes (1.6852ms)
+✔ cancelled late response is rejected and never cached; HTTP failures are explicit (1.0486ms)
+✔ streamed size limits, redirect rejection and cache budget are enforced (1.2617ms)
+✔ clearing resources invalidates in-flight results instead of repopulating cache (0.6078ms)
+✔ aborted cache reads fail and LRU eviction stays inside the total budget (1.209ms)
+✔ moon positions compose the true loaded parent and all publishes share epoch (125.0034ms)
+✔ moon displayed orbit remains parent-relative while world state includes Earth's motion (14.3386ms)
+✔ trajectory sampling contains the exact current epoch, refines locally and preserves real endpoints (14.2523ms)
+✔ instantaneous ellipse closes beyond DYN coverage without publishing extrapolated states (4.358ms)
+✔ reviewed source identity and selected coverage survive into published provenance (2.6146ms)
+✔ disposed delayed fetch cannot resurrect objects (0.7423ms)
+✔ checkpoint restores previous cache and provenance after a failed load, never after dispose (3.3539ms)
+✔ missing catalog definitions stay unsupported without source requests (0.469ms)
+✔ default load stays baseline ten and retain removes published states (7.8272ms)
+✔ retain removes only states owned by a successful publish (1.0242ms)
+✔ deferred static parent cannot resurrect landing state after retain or dispose (1.2548ms)
+✔ child-only epoch jump reloads its parent segment (3.6059ms)
+✔ checkpoint restores retention and published ownership alongside data state (0.6451ms)
+✔ source network reads are bounded and disposal never starts queued fetches (1.8507ms)
+✔ instantaneous request falls back to covered linear source history (1.6709ms)
+✔ declared orbital elements expose finite covered trajectory history (2.4412ms)
+✔ trail samples include the current epoch and covered future cache (6.4188ms)
+✔ trail uses a full past period against a moving parent and caches future (19.0946ms)
+✔ retain aborts active transport requests (0.8821ms)
+✔ retained pending planet retries immediately after scene cancellation (1.8127ms)
+✔ decoded caches and evidence are bounded by retained scene and record budget (2.1898ms)
+✔ replacement and repeated epochs retain only latest accepted evidence (3.3792ms)
+✔ rollback aborts in-flight requests without reviving cancelled results (2.1689ms)
+✔ invalid cache budgets and oversized retain reject without mutations (0.4793ms)
+✔ orientation budget and coverage failure are explicit while position remains ready (3.2193ms)
+✔ rollback removes newly published scene objects before restoring ownership (1.8425ms)
+✔ fixed and sequential entity align orientations publish with explicit provenance (2.1294ms)
+✔ fixed quaternion publishes without ORI request and invalid attitude preserves position (2.0929ms)
+✔ orientation reference cycles reject without awaiting own pending load (1.5299ms)
+✔ self velocity align uses analytic parent plus child world velocity without self await (2.8832ms)
+✔ fresh InSight surface load waits for Mars ORI and publishes finite source coverage (3.4972ms)
+✔ declared ecliptic reference is internal and retention stops at solar boundary (2.6924ms)
+✔ deferred static entity ORI cannot resurrect ready state after retain or dispose (0.7546ms)
+✔ real Rumba declaration derives attitude without requesting absent ORI (1.5163ms)
+✔ cached ORI still publishes after position-only dependency load downgrades requested status (1.422ms)
+✔ source Align velocity direction ignores fast parent translation (3.3846ms)
+✔ trajectory eligibility follows current position phase, not historical ORI or flight declarations (0.4651ms)
+✔ spin source anchor survives checkpoint and clears with retained scene (3.6549ms)
+✔ finite trail budget shortens accelerating source arcs and retains exact source states (8.0885ms)
+✔ trail never bridges interior gap after bounded refinement (2.3299ms)
+✔ trail never bridges parent interior gap after bounded refinement (1.7552ms)
+✔ trail never bridges unresolved discontinuity after bounded refinement (1.5558ms)
+✔ publication reuses parent evaluation only within its exact invocation (1.908ms)
+✔ Parker transonic branch satisfies equation and conserved mass flux (3.1041ms)
+✔ Parker rejects invalid boundaries and queries (0.6499ms)
+✔ 3D material labels follow outward radial characteristics independently of the camera (0.4682ms)
+✔ starfield snapshots clone and freeze every array (1.4152ms)
+✔ starfield rejects malformed and extra fields (0.7028ms)
+✔ starfield needs only scene.visual, validates layer budget, clears and becomes inactive (4.3889ms)
+✔ data.publish cannot authorize starfields (0.3211ms)
+✔ WASM starfield encodes set and clears with absent optional payload (0.8545ms)
+✔ starfield source loads all seven layers with two reads and reuses verified cache after toggle (143.0408ms)
+✔ disabled source does not publish delayed reads or begin queued work (2.9488ms)
+✔ hash mismatch is isolated from good layers and explicit retry recovers (4.2323ms)
+✔ LOD fetches bounded stellar prefixes, preserves raw samples and separates galaxies (4.5982ms)
+✔ versioned starfield manifest accounts for all seven exact source layouts (0.908ms)
+✔ reject malformed lengths and source (0.5228ms)
+✔ single record preserves magnitudes and applies NASA source rotation (0.9726ms)
+✔ source RGB is normalized by its maximum channel (0.1422ms)
+✔ data and time SDK forward immutable samples through host-owned sessions (6.7438ms)
+✔ declared data capability does not grant time or bypass missing adapters (0.5348ms)
+✔ sparse or nonfinite coordinates cannot pass the runtime state boundary (0.2286ms)
+✔ stellar settings validate strict fields, pairs, geometry and finite values (3.3587ms)
+✔ Parker controls rebuild physical profile and immutable transport boundary (6.9348ms)
+✔ stellar tuning SDK requires capability, freezes data and revokes old generation (12.3581ms)
+✔ reference palette preserves user switches, dynamics and physical inputs (1.2956ms)
+✔ exact legacy payload migrates with legacy appearance and validates first (2.902ms)
+✔ observation preset restores visible moving shape while preserving Parker and old wind inputs (0.5834ms)
+✔ trail style validates finite windows and discontinuities before forwarding an isolated snapshot (6.664ms)
+✔ timed trajectories validate ascending epochs and isolate caller mutation (5.982ms)
+✔ visual SDK forwards immutable asset references using its own identity (2.1131ms)
+✔ publishing data alone does not authorize visual changes (0.4694ms)
+✔ model framing hint is optional, copied and bounded without changing model scale (1.0197ms)
+✔ model framing hint reaches actual WASM visual JSON unchanged (4.4995ms)
+✔ CLI emits auditable reports and exits nonzero for a changed sample (280.2852ms)
+✔ point cloud validates exact layout, including non-finite coordinates (1.2868ms)
+✔ KTX2 checks 64-bit payload intervals rather than trusting extension (0.4837ms)
+✔ glTF validates referenced geometry and rejects absent or corrupt buffers (0.9103ms)
+✔ glTF does not let external references escape the sample directory (0.2002ms)
+✔ DYN v2 terminal boundary closes segments without adding a phantom resource (0.4061ms)
+✔ DYN sample records reject truncation, unknown type and nonfinite values (0.2883ms)
+✔ every truncated prefix of fixed-layout fixtures is rejected (2.9325ms)
+✔ malformed glTF shapes fail instead of producing a successful empty result (0.4628ms)
+ℹ tests 142
+ℹ suites 0
+ℹ pass 142
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1204.5286
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.83s
+✔ analytic orbit SDK reaches real WASM and Rust rejects malformed geometry (22.1683ms)
+✔ real WASM validates environment ownership and clears it with the session (5.1921ms)
+✔ starfield SDK publishes independent layers to real WASM and revokes all on disposal (4.8727ms)
+✔ host pick query validates normalized input and empty headless frames never select (0.6136ms)
+✔ TS plugin drives real Rust WASM state, clock, focus and session cleanup (3.1607ms)
+✔ actual WASM boundary independently rejects spoofed identity and invalid JSON (1.037ms)
+✔ real WASM visual API enforces registered resources, ownership and revisions (7.4221ms)
+✔ clock epochs survive 1000 JSON publications without stale state (60.5115ms)
+✔ real WASM stellar tuning is owned, bounded, revocable and does not reload visual revision (12.9979ms)
+✔ trail SDK reaches real WASM with strict metadata and ordinary orbit compatibility (2.6779ms)
+✔ camera observation intents reach real WASM and restore nearby on focus (5.6579ms)
+✔ lighting SDK controls real WASM and disposal restores natural lighting (2.3567ms)
+✔ rollback clears newly published object from real Rust core (43.7319ms)
+✔ render camera diagnostics remain null without a renderer (0.6666ms)
+✔ real WASM ordinary Unix UTC roundtrips across pre-leap-second fractions (1.7837ms)
+✔ real WASM model joint ownership and strict wire validation (3.6759ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 409.6444
+    Finished `wasm-release` profile [optimized] target(s) in 5.57s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.00s
+Renderer Web WASM exported. Headless Node tests retain the foundation WASM; GPU checks remain separate.
+{
+  "generatedAt": "2026-10-31T08:14:47.303Z",
+  "passed": true,
+  "scope": "offline resource contract experiment; not Bevy loading, GPU rendering or scientific certification",
+  "artifacts": [
+    {
+      "file": "juno.gltf",
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf",
+      "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9",
+      "passed": true,
+      "checks": {
+        "positions": 34637,
+        "positionAccessors": 22,
+        "bufferViews": 110,
+        "dependencies": [
+          "juno_closed.bin",
+          "foil_normal.png",
+          "juno_transparent_crosses.png",
+          "foil_dish_normal.png",
+          "juno_tex_01_normal.png",
+          "juno_tex_01_albedo.jpg",
+          "juno_tex_01_pbr.jpg",
+          "juno_array_normal.png",
+          "juno_array_albedo.jpg",
+          "juno_array_pbr.jpg"
+        ],
+        "scope": "buffer bounds and POSITION; topology, materials and rendering unverified"
+      }
+    },
+    {
+      "file": "juno_closed.bin",
+      "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin",
+      "sha256": "ecb0f34d8cdcd961e0e4e6ddf1aafc402be4d2a9071a41ec4829b1a667cebee0",
+      "passed": true,
+      "checks": {
+        "scope": "identity only; content semantics unverified"
+      }
+    },
+    {
+      "file": "galaxies.0.bin",
+      "source": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05",
+      "passed": true,
+      "checks": {
+        "records": 1211,
+        "bytes": 27857,
+        "stride": 23,
+        "scope": "layout and finite fields; scientific units unverified"
+      }
+    },
+    {
+      "file": "earth-color-face0-level-7.ktx2",
+      "source": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/color/0/-7/0/0.ktx2",
+      "sha256": "bee4dcfc2635d96bfb8266cf673ed1bba354b0189385cb97a51ecee681242c1e",
+      "passed": true,
+      "checks": {
+        "width": 20,
+        "height": 20,
+        "levels": 5,
+        "scheme": "BasisLZ",
+        "scope": "header and payload intervals; no texture transcode"
+      }
+    },
+    {
+      "file": "earth-sun-orb-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/sun/orb/def.dyn",
+      "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "orb",
+        "records": 429,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    },
+    {
+      "file": "earth-ori-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/ori/def.dyn",
+      "sha256": "bb6b0384b9b0c17f2ed49b1b458758dbd731e1b3e27477afdc6a11fe9d0bd877",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "ori",
+        "records": 3,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    },
+    {
+      "file": "jupiter-sun-orb-def.dyn",
+      "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/jupiter/sun/orb/def.dyn",
+      "sha256": "9e69166cf390e6713d6b345a9941d0f7efb7c2a42517b826005ee71574d38f43",
+      "passed": true,
+      "checks": {
+        "version": 2,
+        "type": "orb",
+        "records": 35,
+        "scope": "inline record layout and finite values; no interpolation"
+      }
+    }
+  ]
+}
+✔ fixed real orb sample fields and coverage (4.1522ms)
+✔ fixed real ori sample fields and coverage (1.3812ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 165.6109
+Verified 11 pinned Juno resources; cached bytes are not committed.
+Prepared renderer WASM runtime; external font verified absent from WASM, surfaces load on selection.
+✔ jump validates coverage and rejects empty/UTC/nonfinite input (1.2962ms)
+✔ reverse and forward limits clamp and request pause (0.9126ms)
+✔ racing cleanup invokes release once and shares completion (0.2627ms)
+✔ DYN rejects arbitrary identifiers before network (2.0365ms)
+✔ DYN pinned source fetch policy and hash failure (41.9845ms)
+✔ DYN surfaces HTTP and length failures (1.3983ms)
+✔ DYN cancellation prevents request (1.452ms)
+✔ DYN abort during streamed read discards result (2.9092ms)
+✔ independent deadline cancels after fetch and discards body (0.9211ms)
+✔ independent deadline abort during read discards bytes (0.9094ms)
+✔ asset service rejects unknown objects and paths before network and honors cancellation (7.1226ms)
+✔ changed dependency bytes are refused even when buffer lengths still match the glTF declaration (39.9285ms)
+✔ shared model fetch stays alive for another subscriber and cancels when the last leaves (3.9784ms)
+✔ model conversion keeps geometry and bakes the declared local km transform into each scene (18.7301ms)
+✔ WebP and Basis texture selection excludes unused fallback images without guessing replacement URLs (0.4153ms)
+✔ unused exporter texture slots are ignored while invalid referenced images fail explicitly (0.442ms)
+✔ linear galaxy tone mapping preserves black, monotonic brightness, color and opaque alpha (3.1192ms)
+✔ invalid EXR is rejected before any derived image can be published (0.3962ms)
+✔ cube X/Z remap preserves all cardinal faces and pixel orientation (5.1352ms)
+✔ manifest enforces NASA identity, seven grids and exact bounded resources (8.5069ms)
+✔ SEHDR preserves black and HDR and exact header (1.6764ms)
+✔ unknown galaxy assets never request the source (1.5792ms)
+✔ shared source cancellation preserves the other subscriber and rejected identity can retry (22.1162ms)
+✔ stationary primary release selects once, without conflating pointer identities (1.9025ms)
+✔ dragging out and back never turns into a click (0.2547ms)
+✔ secondary buttons, cancellation, and multi-touch cannot select (0.1967ms)
+✔ scene links default and roundtrip semantic state (4.6861ms)
+✔ scene links reject malformed unknown duplicate and inconsistent values (1.1998ms)
+✔ reviewed Venus and Mars source windows load modern states without weakening the decoder (48.1926ms)
+✔ reviewed windows preserve source records and expose their exact selection (5.5986ms)
+✔ Venus duplicate boundary is covered on both sides; ambiguous Mars history remains rejected (6.6871ms)
+✔ Moon index resolves a headerless child and preserves the definition metadata (1.243ms)
+✔ coverage rejection stops before requesting a child (0.4887ms)
+✔ request cancellation is passed to the upstream fetch (0.3121ms)
+✔ unknown objects, origin-only Sun and nonfinite epochs never fetch (0.5242ms)
+✔ reviewed Voyager positions preserve raw source and exclude exact duplicate terminator (3.8054ms)
+✔ Juno flyby source must match its temporal parent (0.5608ms)
+✔ all hash-pinned mission windows preserve contiguous original records and strict decoding (29.218ms)
+✔ startup, stored v1/v2 and panel use one appearance while retaining user values (3.4398ms)
+✔ unknown paths never fetch (3.5692ms)
+✔ untrusted bytes fail identity (31.1543ms)
+✔ immediate retry after rejected identity starts a fresh shared job (3.3483ms)
+✔ shared fetch survives one abort and valid bytes are cached (1.1484ms)
+✔ all subscribers cancel upstream, queued cancellation never fetches, concurrency stays two (9.4481ms)
+✔ NASA rate map anchors, monotonicity and independent realtime (1.6103ms)
+✔ LIVE requires playing at 1x within strictly one second (0.2361ms)
+✔ all 101 NASA recovered rates match the independent golden (1.0348ms)
+✔ touch orbit and pinch are bounded and mouse is ignored (2.1079ms)
+✔ single tap picks once; drag, pinch and cancellation never pick (0.2902ms)
+✔ pinch ratio is resolution independent and coincident fingers stay finite (0.2863ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 660.8749
+✔ scene hit reuses real WASM selection while empty hits do not load and stale hits do not refocus (223.3453ms)
+✔ timed trajectory detail switches from a late catalog object without exceeding core budget (71.7435ms)
+✔ extended catalog selection binds actual spacecraft and irregular-moon model assets (161.6659ms)
+✔ returning to overview invalidates a pending seek before it can change time or resume playback (59.7945ms)
+✔ a superseded available-time request cannot refocus the old selection (86.6377ms)
+✔ complete host flow uses real Rust WASM for selection, time, layers and release (271.7442ms)
+✔ leaving during source loading aborts requests and cannot start a late renderer (8.0476ms)
+✔ automatic coverage transition rolls back or clears unavailable focus: partial=false (85.5133ms)
+✔ automatic coverage transition rolls back or clears unavailable focus: partial=true (74.5038ms)
+✔ overview leaves surfaces external and selection requests only that body's resources once (106.1627ms)
+✔ a successful valid-time reload clears the previous unavailable-target error (118.2482ms)
+✔ cancelled module loading does not initialize WASM or start a renderer (0.4813ms)
+✔ solar configuration is published on startup and survives selection, overview and visual upgrades (165.2535ms)
+✔ shared stellar LOD keeps updating while galaxy is disabled (38.0818ms)
+✔ galaxy enable requests manifest and disabling aborts without old preview assets (44.6658ms)
+✔ observation FOV SDK updates real WASM and rejects invalid values (37.155ms)
+✔ null environment status before first frame does not prevent workspace startup (38.2259ms)
+✔ overview preserves playback and trail visibility is independent (59.5046ms)
+✔ natural satellites use orbits and artificial satellites use timed trails (70.0928ms)
+✔ observation retains selection, reference dependencies, and parent surface (392.2398ms)
+✔ latest observation intent wins for the same target and focus cancels pending observation (245.745ms)
+✔ unavailable follow reference restores nearby without changing selection or time (250.0579ms)
+✔ follow reference dependencies stop at the solar scene root (161.8865ms)
+✔ LIVE distinguishes wall time, history, pause and reverse now semantics (184.0185ms)
+✔ now catches up after loading only inside ready coverage (92.1055ms)
+✔ workspace starts at real rate with LIVE when current coverage is available (58.0576ms)
+✔ host lighting publishes validated mode and resets snapshot on disposal (61.9483ms)
+✔ scene cache diagnostics stay bounded across scene changes and failed time rollback (276.2364ms)
+✔ missing dynamic orientation keeps position ready and reports attitude unavailable (223.8703ms)
+✔ overview warnings describe retained scene failures only (278.495ms)
+✔ restore scene applies one epoch and follow state and newer selection wins (87.8752ms)
+✔ new seek and invalid restore supersede pending scene restore (113.2928ms)
+✔ invalid navigation cancels pending target without changing completed focus (101.7301ms)
+✔ selected object recovering coverage restores focus and survives next frame (406.2376ms)
+✔ entity align source is explicit and landed InSight retains parent orientation (106.4952ms)
+✔ actual L1 align reference frame is resolved without a fabricated display body (102.6038ms)
+✔ first ISS selection loads Earth orientation before upgrading parent surface (108.7645ms)
+✔ unselected coverage gaps are informational while HTTP failures and selected gaps remain errors (565.0588ms)
+✔ InSight landing clears a previously dynamic trajectory without a static-orbit error (189.6179ms)
+✔ pause during high-rate coverage reload is honored when loading finishes (65.8092ms)
+✔ selection focuses before supplementary spacecraft data completes (316.8797ms)
+✔ superseded supplementary load cannot restore the previous selection (115.3227ms)
+✔ expired orbit maintenance publishes at most one path per animation frame (82.7953ms)
+✔ selected ISS uses bounded trail geometry while covered 480x time keeps advancing (207.7339ms)
+✔ unrelated expired Moon coverage loads in background without pausing covered ISS (170.4744ms)
+✔ overview expired secondary retry is bounded without stopping time: failed=false (133.6284ms)
+✔ overview expired secondary retry is bounded without stopping time: failed=true (143.3314ms)
+✔ selected ISS coverage reload resumes before supplementary objects finish (148.6251ms)
+✔ follow Moon coverage reload preserves reference before supplementary objects finish (341.6141ms)
+✔ background coverage recovery restores only the removed object's visual (100.3698ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7851.6791
+▲ Next.js 16.4.3 (webpack)
+✓ Running next.config.ts took 44ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.8s
+  Running TypeScript ...
+  Finished TypeScript in 2.8s ...
+  Collecting page data using 13 workers ...
+  Generating static pages using 13 workers (0/5) ...
+  Generating static pages using 13 workers (1/5)
+  Generating static pages using 13 workers (2/5)
+  Generating static pages using 13 workers (3/5)
+✓ Generating static pages using 13 workers (5/5) in 3.2s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/dyn/[id]
+├ ƒ /api/galaxy-manifest
+├ ƒ /api/solar-dyn/[id]
+├ ƒ /api/starfield/[file]
+├ ƒ /assets/deep-space/[file]
+├ ƒ /assets/eyes/[id]/[...path]
+├ ƒ /assets/planet-rings/[file]
+├ ƒ /assets/planets/[body]/[file]
+└ ○ /diagnostics
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+Verified 10 complete celestial surfaces and 2 ring textures (62 pinned files).
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.88s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-50a600e415409cf0.exe)
+
+running 111 tests
+test camera_collision::tests::nearest_body_and_rebased_coordinates_are_consistent ... ok
+test camera_collision::tests::recovers_inside_and_detours_repeated_head_on_focus ... ok
+test camera_framing::tests::nasa_system_minimums_are_exact ... ok
+test camera_collision::tests::sweep_blocks_tunneling_and_allows_tangent_motion ... ok
+test annotation_tests::annotations_enforce_owner_budget_layers_and_cleanup ... ok
+test camera_framing::tests::central_sphere_uses_narrow_axis_tangent_envelope ... ok
+test camera_framing::tests::model_extent_hint_cannot_shrink_physical_sphere ... ok
+test camera_framing::tests::rejects_invalid_fit_inputs ... ok
+test camera_framing::tests::rotated_camera_uses_inverse_view_basis ... ok
+test camera_framing::tests::wide_and_portrait_preserve_asymmetric_positions ... ok
+test camera_intent::tests::input_authorization_bounds_consumption_and_release ... ok
+test camera_intent::tests::lighting_requires_permission_validates_and_releases_owner ... ok
+test camera_intent::tests::observation_contract_and_focus_lifecycle ... ok
+test camera_intent::tests::render_status_is_finite_read_only_and_clearable ... ok
+test camera_framing::tests::ring_envelope_includes_outer_radius ... ok
+test camera_intent::tests::observation_json_rejects_unknown_fields ... ok
+test camera_motion::tests::decay_is_frame_independent_and_bounded ... ok
+test camera_motion::tests::logarithmic_zoom_partition ... ok
+test camera_motion::tests::reentry_requires_fresh_press ... ok
+test camera_motion::tests::release_has_a_visible_bounded_tail_then_stops ... ok
+test camera_motion::tests::reset_stops_every_axis ... ok
+test camera_motion::tests::reversal_replaces_velocity ... ok
+test deep_lod::tests::density_hysteresis_prevents_boundary_chatter ... ok
+test deep_lod::tests::actual_vertical_fov_is_not_clamped_to_host_long_axis_limit ... ok
+test deep_render::tests::full_sky_requests_cannot_exceed_residency_budget ... ok
+test deep_render::tests::packed_cube_and_visible_panorama_share_world_directions ... ok
+test deep_render::tests::oversized_view_falls_back_to_complete_level ... ok
+test deep_space::tests::environment_ownership_validation_and_release_are_atomic ... ok
+test deep_render::tests::tile_visibility_culls_opposite_hemisphere_and_handles_poles ... ok
+test face_texture::batching_tests::rgba_source_fast_path_preserves_exact_bytes ... ok
+test deep_render::tests::tile_mesh_has_bounded_angular_coverage_and_inward_winding ... ok
+test face_texture::closed_face_tests::closed_mapping_preserves_reference_uv_and_later_face_ties ... ok
+test face_texture::tests::cardinal_face_order ... ok
+test fov_tests::fov_is_authorized_bounded_and_released_without_refocus ... ok
+test face_texture::cache_tests::fifo_budget_reuse_and_clear_preserve_material_assets ... ok
+test hdr_assets::tests::cube_face_order_and_mip_upload_are_preserved ... ok
+test hdr_assets::tests::black_hdr_and_rejection ... ok
+test joint_render::tests::solar_hinge_respects_parent_frame_and_replays_without_accumulation ... ok
+test label_visibility::raster_tests::subpixel_boundary_does_not_flap ... ok
+test label_visibility::tests::foreground_only_occludes_other_body ... ok
+test label_visibility::selection_tests::selecting_hides_immediately_and_deselecting_only_restores_at_distance ... ok
+test label_visibility::tests::near_far_hysteresis_and_interaction_threshold ... ok
+test label_visibility::regression_tests::disallowed_label_declines_and_projection_reset_restarts_fade ... ok
+test observation::tests::invalid_or_missing_viewport_never_creates_a_stale_observation ... ok
+test observation::tests::dpi_changes_texture_density_without_changing_logical_labels_or_pick_angles ... ok
+test orbit_lines::conic_tests::off_plane_current_does_not_deform_ring ... ok
+test orbit_lines::conic_tests::rejects_invalid_basis_and_wire_fields ... ok
+test orbit_lines::scale_tests::local_system_hides_solar_orbit_but_keeps_trail_and_recovers ... ok
+test orbit_lines::tests::close_inspection_hides_orbits_and_zooming_out_restores_them_continuously ... ok
+test orbit_lines::conic_tests::closed_degree_ring_attaches_exact_current_without_epoch_dependence ... ok
+test orbit_lines::tests::current_epoch_splits_its_own_interval_in_both_playback_directions ... ok
+test orbit_lines::tests::exact_vertex_is_updated_without_closing_uncovered_endpoints ... ok
+test orbit_lines::trail_tests::clips_past_window_and_never_bridges_breaks_or_uncovered_future ... ok
+test orbit_lines::trail_tests::parent_inspection_keeps_child_trails_but_craft_inspection_hides_them ... ok
+test picking::tests::depth_ties_are_stable_and_invalid_targets_are_ignored ... ok
+test picking::tests::invalid_coordinates_and_cleared_frames_never_hit ... ok
+test picking::tests::overlapping_discs_select_nearest_visible_body ... ok
+test picking::tests::hover_clears_on_leave_drag_and_no_hit ... ok
+test picking::tests::placed_label_is_pickable_but_does_not_select_through_nearer_body ... ok
+test picking::tests::ring_ray_handles_perspective_holes_and_offscreen_centers ... ok
+test renderer::blend_tests::moving_target_transition_stays_in_target_frame ... ok
+test renderer::blend_tests::switching_origin_reprojects_previous_camera_then_locks_without_follow_lag ... ok
+test renderer::camera_intent_render_tests::controlled_zoom_is_consumed_once_independent_of_frame_duration ... ok
+test renderer::camera_intent_render_tests::follow_uses_display_basis_and_changes_with_reference ... ok
+test renderer::framing_tests::transformed_bounds_include_offset_rotation_and_scale ... ok
+test renderer::camera_intent_render_tests::field_of_view_matches_eyes_long_viewport_axis ... ok
+test renderer::camera_intent_render_tests::observation_modes_frame_large_origin_and_follow_moving_reference ... ok
+test renderer::hover_line_tests::orbit_and_trail_width_groups_are_independent ... ok
+test renderer::camera_intent_render_tests::startup_reserves_webgl_directional_budget_for_sun ... ok
+test renderer::camera_intent_render_tests::follow_keeps_craft_inside_nasa_field_of_view ... ok
+test renderer::framing_tests::asymmetric_overview_keeps_scientific_origin_on_camera_axis_after_orbit_and_return ... ok
+test joint_render::tests::nested_nodes_update_in_one_frame_and_clear_restores_bind_pose ... ok
+test renderer::camera_collision_system_tests::a_noncentral_body_blocks_camera_after_floating_origin_changes ... ok
+test renderer::camera_lifecycle_tests::replacement_and_target_switch_reframe_without_changing_scientific_radius ... ok
+test renderer::camera_intent_render_tests::camera_fill_tracks_final_camera_without_rotating_solar_light ... ok
+test renderer::label_persistence_tests::label_entities_survive_frames_and_are_removed_only_when_absent ... ok
+test renderer::camera_collision_system_tests::fast_orbit_rebases_sweep_and_keeps_parent_in_clip_range ... ok
+test deep_render::tests::disabled_environment_releases_mesh_material_and_entity ... ok
+test screen_layout::priority_tests::weight_then_depth_then_name_decides_collisions ... ok
+test ring_texture::tests::gray_bottom_uses_top_opacity_including_transparent_gaps ... ok
+test renderer::solar_marker_tests::distant_marker_keeps_surface_palette_instead_of_legacy_gold ... ok
+test screen_layout::tests::rejects_offscreen_without_clamping ... ok
+test renderer::nasa_framing_system_tests::system_fit_is_view_aware_stable_during_motion_and_refits_on_resize ... ok
+test screen_layout::tests::dense_cluster_keeps_priority_and_original_anchor_across_frames ... ok
+test solar_surface::tests::app_near_far_style_and_source_lifecycle_preserve_shared_mesh ... ok
+test solar_surface::tests::surface_does_not_change_material_at_plasma_distance_thresholds ... ok
+test renderer::repeated_focus_tests::overview_distance_is_not_reinterpreted_before_new_focus_is_framed ... ok
+test starfield::tests::validation ... ok
+test sky_render::tests::session_layers_are_batched_and_assets_released ... ok
+test state::orientation_tests::rejects_non_unit_orientation_and_preserves_absence ... ok
+test solar_surface::tests::app_masks_only_original_pixels_and_rejects_ambiguous_camera ... ok
+test stellar_render::lod_tests::distance_gate_has_hysteresis_and_rejects_invalid_values ... ok
+test stellar_render::tests::hydrogen_sample_si_conversion_reference_is_not_an_mhd_solution ... ok
+test renderer::repeated_focus_tests::explicit_focus_of_same_target_restores_framing ... ok
+test stellar_render::legacy_tests::legacy_parameters_seed_untuned_settings ... ok
+test stellar_render::tests::transfer_reference_covers_transparent_thick_absorbing_and_ordered_layers ... ok
+test stellar_tuning::tests::metadata_and_strict_legacy_migration_match ... ok
+test stellar_render::tests::physical_threads_have_requested_diameter_height_and_signed_arc_distance ... ok
+test stellar_tuning::tests::snapshot_bounds_and_cross_constraints ... ok
+test wasm::picking_tests::host_pick_revalidates_failed_removed_objects_and_stopped_renderer ... ok
+test stellar_tuning::tests::wire_rejects_unknown_fields ... ok
+test stellar_tuning::tests::owned_tuning_preserves_revision_and_cleans_lifecycle ... ok
+test stellar_render::tests::legacy_geometry_ignores_new_physical_dimensions_and_uses_additive_blending ... ok
+test starfield::tests::permissions_budget_replace_cleanup ... ok
+test stellar_render::tests::arches_are_bounded_surface_anchored_and_batched ... ok
+test stellar_render::tests::repeated_activity_regions_have_distinct_bundles_within_vertex_budget ... ok
+test renderer::preset_input_tests::preset_allows_next_frame_drag_in_overview_and_focus ... ok
+test stellar_render::lod_tests::approach_departure_and_source_removal_manage_owned_assets ... ok
+test renderer::camera_intent_render_tests::host_zoom_survives_canvas_blur_without_replaying_native_motion ... ok
+test renderer::camera_collision_system_tests::rumba_seek_then_focus_converges_with_solar_and_earth_collision ... ok
+test face_texture::batching_tests::row_batches_match_full_conversion_and_publish_only_at_end ... ok
+
+test result: ok. 111 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+Core checks passed. Renderer switch checks build/export, not GPU pixels; browser evidence must be recorded separately.

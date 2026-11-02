@@ -1,0 +1,8 @@
+[
+  {
+    "level": "log",
+    "message": "%cWARN%c C:\\Users\\stone\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bevy_pbr-0.19.1\\src\\render\\light.rs:1135%c The amount of directional lights of 2 is exceeding the supported limit of 1. color: orange; background: #444 color: gray; font-style: italic color: inherit",
+    "timestamp": "2026-10-31T00:21:25.513Z",
+    "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js"
+  }
+]

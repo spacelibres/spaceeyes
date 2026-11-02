@@ -1,0 +1,28 @@
+✖ all reviewed flyby roots prove terminal ambiguity and exclude it from controller cache (21.6091ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 185.9272
+
+✖ failing tests:
+
+test at web\lib\solar-dyn-server.test.ts:479:1
+✖ all reviewed flyby roots prove terminal ambiguity and exclude it from controller cache (21.6091ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:500:10)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

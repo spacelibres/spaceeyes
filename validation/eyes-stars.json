@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "file": "galaxies.0.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "bytes": 27857,
+      "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05",
+      "count": 1211
+    },
+    {
+      "file": "stars.0.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.0.bin",
+      "bytes": 116545,
+      "sha256": "abca5a8997e52adaa4aac9121ba747071383dce182de15c08f0ffb46e46aa5a5",
+      "count": 5067
+    },
+    {
+      "file": "stars.1.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.1.bin",
+      "bytes": 170618,
+      "sha256": "4890118e7293ba2d2d76b156250dcc50a614a3218cb773219c2f13f64c7a536f",
+      "count": 7418
+    },
+    {
+      "file": "stars.2.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.2.bin",
+      "bytes": 175448,
+      "sha256": "ec8775d677e4436f5ab1591eaabd9045329ec84b2add9b3796f1e9b031d8ff8c",
+      "count": 7628
+    },
+    {
+      "file": "stars.3.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.3.bin",
+      "bytes": 178185,
+      "sha256": "268b335750935d98ad43c4ac9582f3b7dc53c896f323f71e56d51eaa4683b67c",
+      "count": 7747
+    },
+    {
+      "file": "stars.4.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.4.bin",
+      "bytes": 167398,
+      "sha256": "840bf58b5c518ae08f6e4a1d5180b7d83c4aaab3918a9e37288800cb5db5509f",
+      "count": 7278
+    },
+    {
+      "file": "stars.5.bin",
+      "url": "https://eyes.nasa.gov/assets/static/stars/stars.5.bin",
+      "bytes": 173171,
+      "sha256": "6fd37f1dcb54777162f188db815b35c12d4dffb8e4a62a53564ee71f356646c1",
+      "count": 7529
+    }
+  ]
+}

@@ -1,0 +1,2096 @@
+{
+  "config": {
+    "model": "parker-isothermal-transonic-v1",
+    "solarGmM3S2": 132712440000000000000,
+    "solarRadiusM": 695700000,
+    "boltzmannJK": 1.380649e-23,
+    "protonMassKg": 1.67262192595e-27,
+    "auM": 149597870700,
+    "temperatureK": 1500000,
+    "referenceElectronDensityM3": 5000000,
+    "boundaryStatus": "representative-assumptions-not-date-specific-observations",
+    "composition": "fully-ionized-pure-hydrogen-equal-electron-proton-temperature",
+    "visualSecondsPerSecond": 3600,
+    "sources": {
+      "solarNominal": "https://www.iau.org/static/resolutions/IAU2015_English.pdf",
+      "solarFactSheet": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html",
+      "fundamentalConstants": "https://pml.nist.gov/cuu/pdf/wall_2022.pdf",
+      "parkerEquation": "https://farside.ph.utexas.edu/teaching/plasma/lectures/node109.html",
+      "densityContext": "https://science.gsfc.nasa.gov/attic/cosmicopia.gsfc.nasa.gov/qa_sun.html"
+    }
+  },
+  "soundSpeedMS": 157363.2715620653,
+  "sonicRadiusM": 2679630340.396966,
+  "atBase": {
+    "radiusM": 695700000,
+    "speedMS": 4723.8829048868,
+    "electronDensityM3": 30737855008679.348,
+    "massDensityKgM3": 5.14128102441891e-14,
+    "temperatureK": 1500000
+  },
+  "atOneAu": {
+    "radiusM": 149597870700,
+    "speedMS": 628052.3714628046,
+    "electronDensityM3": 5000000,
+    "massDensityKgM3": 8.36310962975e-21,
+    "temperatureK": 1500000
+  },
+  "profile": [
+    {
+      "radiusM": 695700000,
+      "speedMS": 4723.8829048868,
+      "electronDensityM3": 30737855008679.348,
+      "massDensityKgM3": 5.14128102441891e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 0
+    },
+    {
+      "radiusM": 710449715.6942122,
+      "speedMS": 5316.0102182006385,
+      "electronDensityM3": 26191730389410.547,
+      "massDensityKgM3": 4.380886252789901e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 2948.47746161348
+    },
+    {
+      "radiusM": 725512143.9269612,
+      "speedMS": 5962.6910798160625,
+      "electronDensityM3": 22391593749275.516,
+      "massDensityKgM3": 3.745267066200319e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 5628.237912946321
+    },
+    {
+      "radiusM": 740893914.597683,
+      "speedMS": 6666.54371730572,
+      "electronDensityM3": 19204539660553.715,
+      "massDensityKgM3": 3.2121934114018514e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 8071.726601396866
+    },
+    {
+      "radiusM": 756601798.1680262,
+      "speedMS": 7430.068738454245,
+      "electronDensityM3": 16523008199818.4,
+      "massDensityKgM3": 2.7636745797667895e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 10306.88793090429
+    },
+    {
+      "radiusM": 772642708.6419489,
+      "speedMS": 8255.626882400647,
+      "electronDensityM3": 14259661313988.055,
+      "massDensityKgM3": 2.3851022170397407e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 12357.86079555652
+    },
+    {
+      "radiusM": 789023706.6089963,
+      "speedMS": 9145.418103633365,
+      "electronDensityM3": 12343349302690.041,
+      "massDensityKgM3": 2.0645756683339005e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 14245.55685380524
+    },
+    {
+      "radiusM": 805752002.3520985,
+      "speedMS": 10101.462357975986,
+      "electronDensityM3": 10715924658913.887,
+      "massDensityKgM3": 1.7923690541327643e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 15988.142917117351
+    },
+    {
+      "radiusM": 822834959.02126,
+      "speedMS": 11125.582423433567,
+      "electronDensityM3": 9329716839437.264,
+      "massDensityKgM3": 1.5605088948547702e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 17601.44455379794
+    },
+    {
+      "radiusM": 840280095.8745335,
+      "speedMS": 12219.38904255188,
+      "electronDensityM3": 8145524296624.947,
+      "massDensityKgM3": 1.3624382536893337e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 19099.284762596286
+    },
+    {
+      "radiusM": 858095091.5877069,
+      "speedMS": 13384.268618360129,
+      "electronDensityM3": 7131012676994.768,
+      "massDensityKgM3": 1.1927488157768852e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 20493.768975372222
+    },
+    {
+      "radiusM": 876287787.6341603,
+      "speedMS": 14621.373635014108,
+      "electronDensityM3": 6259432991816.1,
+      "massDensityKgM3": 1.0469664866126414e-14,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 21795.525566569762
+    },
+    {
+      "radiusM": 894866191.7363797,
+      "speedMS": 15931.615909231052,
+      "electronDensityM3": 5508592663472.021,
+      "massDensityKgM3": 9.213792870050613e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 23013.909372664657
+    },
+    {
+      "radiusM": 913838481.3906475,
+      "speedMS": 17315.662711983372,
+      "electronDensityM3": 4860027048913.024,
+      "massDensityKgM3": 8.128987802721998e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 24157.174373499198
+    },
+    {
+      "radiusM": 933213007.4664598,
+      "speedMS": 18773.93573421136,
+      "electronDensityM3": 4298330389417.6304,
+      "massDensityKgM3": 7.18948165431713e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 25232.620593841028
+    },
+    {
+      "radiusM": 952998297.8822584,
+      "speedMS": 20306.612807926067,
+      "electronDensityM3": 3810613925686.993,
+      "massDensityKgM3": 6.373716403434468e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 26246.719395902506
+    },
+    {
+      "radiusM": 973203061.3590896,
+      "speedMS": 21913.632237168727,
+      "electronDensityM3": 3386065747216.8306,
+      "massDensityKgM3": 5.663607811503141e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 27205.22061109235
+    },
+    {
+      "radiusM": 993836191.2538482,
+      "speedMS": 23594.699543680163,
+      "electronDensityM3": 3015592268405.9424,
+      "massDensityKgM3": 5.0439457478610765e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 28113.24436958552
+    },
+    {
+      "radiusM": 1014906769.4737892,
+      "speedMS": 25349.29639118225,
+      "electronDensityM3": 2691525385895.4185,
+      "massDensityKgM3": 4.5019043746997115e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 28975.360003673588
+    },
+    {
+      "radiusM": 1036424070.4740332,
+      "speedMS": 27176.691420769628,
+      "electronDensityM3": 2407382635360.585,
+      "massDensityKgM3": 4.026640980055408e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 29795.6540048061
+    },
+    {
+      "radiusM": 1058397565.3398232,
+      "speedMS": 29075.952708436547,
+      "electronDensityM3": 2157670232831.378,
+      "massDensityKgM3": 3.608966540403404e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 30577.788688372104
+    },
+    {
+      "radiusM": 1080836925.955331,
+      "speedMS": 31045.961544128706,
+      "electronDensityM3": 1937720910245.962,
+      "massDensityKgM3": 3.241074480849188e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 31325.05295147323
+    },
+    {
+      "radiusM": 1103752029.260847,
+      "speedMS": 33085.427229394445,
+      "electronDensityM3": 1743560056438.4976,
+      "massDensityKgM3": 2.91631677960965e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 32040.40628665435
+    },
+    {
+      "radiusM": 1127152961.6002278,
+      "speedMS": 35192.90259684265,
+      "electronDensityM3": 1571794945107.3647,
+      "massDensityKgM3": 2.6290186882839547e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 32726.517030282197
+    },
+    {
+      "radiusM": 1151050023.1605165,
+      "speedMS": 37366.79996806031,
+      "electronDensityM3": 1419522841756.0945,
+      "massDensityKgM3": 2.3743250295080957e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 33385.79567112621
+    },
+    {
+      "radiusM": 1175453732.5056853,
+      "speedMS": 39605.40728609089,
+      "electronDensityM3": 1284254587497.5186,
+      "massDensityKgM3": 2.1480723815502223e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 34020.423917133485
+    },
+    {
+      "radiusM": 1200374831.2065039,
+      "speedMS": 41906.904182640705,
+      "electronDensityM3": 1163850902082.913,
+      "massDensityKgM3": 1.9466825373605667e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 34632.38011188193
+    },
+    {
+      "radiusM": 1225824288.568562,
+      "speedMS": 44269.37776746905,
+      "electronDensityM3": 1056469165249.4048,
+      "massDensityKgM3": 1.7670734898862481e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 35223.46150306058
+    },
+    {
+      "radiusM": 1251813306.460536,
+      "speedMS": 46690.83795661797,
+      "electronDensityM3": 960518850858.02,
+      "massDensityKgM3": 1.6065848902334222e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 35795.303790562466
+    },
+    {
+      "radiusM": 1278353324.2448175,
+      "speedMS": 49169.232186046385,
+      "electronDensityM3": 874624123048.5634,
+      "massDensityKgM3": 1.4629154851758177e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 36349.398318924155
+    },
+    {
+      "radiusM": 1305456023.8126802,
+      "speedMS": 51702.45938682108,
+      "electronDensityM3": 797592374088.1466,
+      "massDensityKgM3": 1.3340704928703486e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 36887.10722589371
+    },
+    {
+      "radiusM": 1333133334.7261972,
+      "speedMS": 54288.38312642797,
+      "electronDensityM3": 728387702626.0039,
+      "massDensityKgM3": 1.2183172420046024e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 37409.67681419905
+    },
+    {
+      "radiusM": 1361397439.4691734,
+      "speedMS": 56924.84384733378,
+      "electronDensityM3": 666108508890.2064,
+      "massDensityKgM3": 1.1141476970316197e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 37918.24937575764
+    },
+    {
+      "radiusM": 1390260778.8094046,
+      "speedMS": 59609.67015816922,
+      "electronDensityM3": 609968528068.7007,
+      "massDensityKgM3": 1.0202467341871567e-15,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 38413.87366549071
+    },
+    {
+      "radiusM": 1419736057.2746234,
+      "speedMS": 62340.68915451045,
+      "electronDensityM3": 559280741149.1171,
+      "massDensityKgM3": 9.354652304075796e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 38897.51419464867
+    },
+    {
+      "radiusM": 1449836248.7445421,
+      "speedMS": 65115.7357650364,
+      "electronDensityM3": 513443698986.49084,
+      "massDensityKgM3": 8.587971886656764e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 39370.05949034803
+    },
+    {
+      "radiusM": 1480574602.1614532,
+      "speedMS": 67932.66113480701,
+      "electronDensityM3": 471929874432.46747,
+      "massDensityKgM3": 7.893602554865753e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 39832.329448221615
+    },
+    {
+      "radiusM": 1511964647.361903,
+      "speedMS": 70789.34007060499,
+      "electronDensityM3": 434275722285.1767,
+      "massDensityKgM3": 7.263790950019596e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 40285.0818881599
+    },
+    {
+      "radiusM": 1544020201.032002,
+      "speedMS": 73683.67758385623,
+      "electronDensityM3": 400073180249.6286,
+      "massDensityKgM3": 6.691711732700752e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 40729.0184086261
+    },
+    {
+      "radiusM": 1576755372.7889984,
+      "speedMS": 76613.61457479633,
+      "electronDensityM3": 368962388162.82574,
+      "massDensityKgM3": 6.171345802920171e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 41164.789622589524
+    },
+    {
+      "radiusM": 1610184571.391786,
+      "speedMS": 79577.13270751592,
+      "electronDensityM3": 340625439153.60596,
+      "massDensityKgM3": 5.697375780646689e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 41592.99984742784
+    },
+    {
+      "radiusM": 1644322511.0830836,
+      "speedMS": 82572.25852955607,
+      "electronDensityM3": 314781006563.7684,
+      "massDensityKgM3": 5.265096134511698e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 42014.21131193923
+    },
+    {
+      "radiusM": 1679184218.0660772,
+      "speedMS": 85597.06689209948,
+      "electronDensityM3": 291179715480.4225,
+      "massDensityKgM3": 4.870335765044372e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 42428.94793565825
+    },
+    {
+      "radiusM": 1714785037.1183739,
+      "speedMS": 88649.68372776755,
+      "electronDensityM3": 269600148534.5383,
+      "massDensityKgM3": 4.509391196782455e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 42837.69872880061
+    },
+    {
+      "radiusM": 1751140638.3461807,
+      "speedMS": 91728.28824283642,
+      "electronDensityM3": 249845392952.0191,
+      "massDensityKgM3": 4.178968823491407e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 43240.92085521473
+    },
+    {
+      "radiusM": 1788267024.0816805,
+      "speedMS": 94831.11457954999,
+      "electronDensityM3": 231740050308.81442,
+      "massDensityKgM3": 3.8761348926727904e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 43639.04239555999
+    },
+    {
+      "radiusM": 1826180535.9266422,
+      "speedMS": 97956.45300233814,
+      "electronDensityM3": 215127642537.2505,
+      "massDensityKgM3": 3.5982721178573904e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 44032.46484345076
+    },
+    {
+      "radiusM": 1864897861.94536,
+      "speedMS": 101102.65065932836,
+      "electronDensityM3": 199868357863.6586,
+      "massDensityKgM3": 3.3430419766637645e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 44421.565363406415
+    },
+    {
+      "radiusM": 1904436044.0100982,
+      "speedMS": 104268.11196771798,
+      "electronDensityM3": 185837088861.43884,
+      "massDensityKgM3": 3.1083518948436113e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 44806.698836049865
+    },
+    {
+      "radiusM": 1944812485.3022633,
+      "speedMS": 107451.29866849608,
+      "electronDensityM3": 172921721953.4471,
+      "massDensityKgM3": 2.892326636123651e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 45188.19971303143
+    },
+    {
+      "radiusM": 1986044957.9726133,
+      "speedMS": 110650.72959276711,
+      "electronDensityM3": 161021643719.29764,
+      "massDensityKgM3": 2.6932833183740633e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 45566.38370156256
+    },
+    {
+      "radiusM": 2028151610.9638736,
+      "speedMS": 113864.98017863857,
+      "electronDensityM3": 150046434443.55182,
+      "massDensityKgM3": 2.5097095616090407e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 45941.5492961746
+    },
+    {
+      "radiusM": 2071150977.9991987,
+      "speedMS": 117092.6817743499,
+      "electronDensityM3": 139914723634.29977,
+      "massDensityKgM3": 2.3402443451396445e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 46313.97917332802
+    },
+    {
+      "radiusM": 2115061985.7400033,
+      "speedMS": 120332.52076011286,
+      "electronDensityM3": 130553185876.25995,
+      "massDensityKgM3": 2.1836612119925824e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 46683.94146275126
+    },
+    {
+      "radiusM": 2159903962.1167474,
+      "speedMS": 123583.23751803157,
+      "electronDensityM3": 121895658464.47287,
+      "massDensityKgM3": 2.0388535102579002e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 47051.69090785253
+    },
+    {
+      "radiusM": 2205696644.836346,
+      "speedMS": 126843.62527652353,
+      "electronDensityM3": 113882364882.21623,
+      "massDensityKgM3": 1.9048214048103316e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 47417.46992619635
+    },
+    {
+      "radiusM": 2252460190.0699434,
+      "speedMS": 130112.5288528702,
+      "electronDensityM3": 106459230413.5187,
+      "massDensityKgM3": 1.7806604300941447e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 47781.5095798451
+    },
+    {
+      "radiusM": 2300215181.324885,
+      "speedMS": 133388.84331492987,
+      "electronDensityM3": 99577278077.91208,
+      "massDensityKgM3": 1.66555138639536e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 48144.03046431419
+    },
+    {
+      "radiusM": 2348982638.50478,
+      "speedMS": 136671.51258061593,
+      "electronDensityM3": 93192094694.17404,
+      "massDensityKgM3": 1.5587514091068415e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 48505.24352396006
+    },
+    {
+      "radiusM": 2398784027.161652,
+      "speedMS": 139959.52797153103,
+      "electronDensityM3": 87263358263.645,
+      "massDensityKgM3": 1.4595860636380274e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 48865.35080079789
+    },
+    {
+      "radiusM": 2449641267.9442477,
+      "speedMS": 143251.92673509597,
+      "electronDensityM3": 81754419048.30022,
+      "massDensityKgM3": 1.3674423384349126e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 49224.54612301742
+    },
+    {
+      "radiusM": 2501576746.246659,
+      "speedMS": 146547.79054765546,
+      "electronDensityM3": 76631927734.30467,
+      "massDensityKgM3": 1.281762425562139e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 49583.01573881894
+    },
+    {
+      "radiusM": 2554613322.061508,
+      "speedMS": 149846.24400936777,
+      "electronDensityM3": 71865504943.70735,
+      "massDensityKgM3": 1.2020381928831303e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 49940.938900617715
+    },
+    {
+      "radiusM": 2608774340.0420375,
+      "speedMS": 153146.4531401627,
+      "electronDensityM3": 67427447106.66564,
+      "massDensityKgM3": 1.1278062644144283e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 50298.48840415486
+    },
+    {
+      "radiusM": 2664083639.777521,
+      "speedMS": 156447.62388467148,
+      "electronDensityM3": 63292464352.19317,
+      "massDensityKgM3": 1.0586436362288705e-16,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 50655.8310865986
+    },
+    {
+      "radiusM": 2720565566.2865343,
+      "speedMS": 159749.0006328798,
+      "electronDensityM3": 59437446632.11669,
+      "massDensityKgM3": 9.941637645936136e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 51013.1282873151
+    },
+    {
+      "radiusM": 2778244980.732689,
+      "speedMS": 163049.86476204923,
+      "electronDensityM3": 55841254773.7496,
+      "massDensityKgM3": 9.340130710713368e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 51370.536274627
+    },
+    {
+      "radiusM": 2837147271.3675594,
+      "speedMS": 166349.5332046502,
+      "electronDensityM3": 52484533572.47846,
+      "massDensityKgM3": 8.778678162658635e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 51728.206641555575
+    },
+    {
+      "radiusM": 2897298364.70561,
+      "speedMS": 169647.35704606617,
+      "electronDensityM3": 49349544395.5579,
+      "massDensityKgM3": 8.254312999165307e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 52086.28667325397
+    },
+    {
+      "radiusM": 2958724736.9360447,
+      "speedMS": 172942.72015514772,
+      "electronDensityM3": 46420015080.593636,
+      "massDensityKgM3": 7.764313502673057e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 52444.91968858113
+    },
+    {
+      "radiusM": 3021453425.5766077,
+      "speedMS": 176235.0378500454,
+      "electronDensityM3": 43681005183.30697,
+      "massDensityKgM3": 7.306180701713483e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 52804.24535803502
+    },
+    {
+      "radiusM": 3085512041.374449,
+      "speedMS": 179523.7556011491,
+      "electronDensityM3": 41118784864.91659,
+      "massDensityKgM3": 6.877618113348049e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 53164.4000000562
+    },
+    {
+      "radiusM": 3150928780.4593153,
+      "speedMS": 182808.3477725,
+      "electronDensityM3": 38720725914.70654,
+      "massDensityKgM3": 6.476513515363853e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 53525.516857527226
+    },
+    {
+      "radiusM": 3217732436.7543936,
+      "speedMS": 186088.3164025847,
+      "electronDensityM3": 36475203582.28912,
+      "massDensityKgM3": 6.100922526522677e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 53887.72635612557
+    },
+    {
+      "radiusM": 3285952414.6502852,
+      "speedMS": 189363.1900250815,
+      "electronDensityM3": 34371508050.25602,
+      "massDensityKgM3": 5.749053799282515e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 54251.156346037984
+    },
+    {
+      "radiusM": 3355618741.947686,
+      "speedMS": 192632.52252978968,
+      "electronDensityM3": 32399764514.4368,
+      "massDensityKgM3": 5.419255652246374e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 54615.93232840837
+    },
+    {
+      "radiusM": 3426762083.074463,
+      "speedMS": 195895.89206372382,
+      "electronDensityM3": 30550860958.452168,
+      "massDensityKgM3": 5.1100039895756925e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 54982.177667769414
+    },
+    {
+      "radiusM": 3499413752.58295,
+      "speedMS": 199152.89997211908,
+      "electronDensityM3": 28816382813.936996,
+      "massDensityKgM3": 4.819891372115978e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 55350.013791598125
+    },
+    {
+      "radiusM": 3573605728.93341,
+      "speedMS": 202403.16977890825,
+      "electronDensityM3": 27188553789.64924,
+      "massDensityKgM3": 4.547617120343828e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 55719.560378036105
+    },
+    {
+      "radiusM": 3649370668.569713,
+      "speedMS": 205646.3462060744,
+      "electronDensityM3": 25660182233.35144,
+      "massDensityKgM3": 4.291978342737626e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 56090.935532725445
+    },
+    {
+      "radiusM": 3726741920.293445,
+      "speedMS": 208882.09423115477,
+      "electronDensityM3": 24224612461.295303,
+      "massDensityKgM3": 4.051861795040412e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 56464.25595563
+    },
+    {
+      "radiusM": 3805753539.942763,
+      "speedMS": 212110.09818206602,
+      "electronDensityM3": 22875680552.603992,
+      "massDensityKgM3": 3.8262364863313446e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 56839.63709863823
+    },
+    {
+      "radiusM": 3886440305.3824606,
+      "speedMS": 215330.06086833935,
+      "electronDensityM3": 21607674160.90755,
+      "massDensityKgM3": 3.6141469570317234e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 57217.193314677264
+    },
+    {
+      "radiusM": 3968837731.811839,
+      "speedMS": 218541.7027477905,
+      "electronDensityM3": 20415295944.179424,
+      "massDensityKgM3": 3.414707162099261e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 57597.0379990071
+    },
+    {
+      "radiusM": 4052982087.3971295,
+      "speedMS": 221744.76112760082,
+      "electronDensityM3": 19293630256.653755,
+      "massDensityKgM3": 3.22709489984514e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 57979.28372330949
+    },
+    {
+      "radiusM": 4138910409.2353396,
+      "speedMS": 224938.98939875118,
+      "electronDensityM3": 18238112784.677235,
+      "massDensityKgM3": 3.0505467331600154e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 58364.042363135835
+    },
+    {
+      "radiusM": 4226660519.656551,
+      "speedMS": 228124.15630272846,
+      "electronDensityM3": 17244502841.974483,
+      "massDensityKgM3": 2.884353355559361e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 58751.425219233315
+    },
+    {
+      "radiusM": 4316271042.871853,
+      "speedMS": 231300.04522941218,
+      "electronDensityM3": 16308858069.61339,
+      "massDensityKgM3": 2.7278553594441946e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 59141.54313322725
+    },
+    {
+      "radiusM": 4407781421.974225,
+      "speedMS": 234466.45354504467,
+      "electronDensityM3": 15427511312.408895,
+      "massDensityKgM3": 2.580439368397678e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 59534.50659810016
+    },
+    {
+      "radiusM": 4501231936.299869,
+      "speedMS": 237623.1919491895,
+      "electronDensityM3": 14597049467.002287,
+      "massDensityKgM3": 2.4415344992684786e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 59930.42586387384
+    },
+    {
+      "radiusM": 4596663719.157611,
+      "speedMS": 240770.08385959725,
+      "electronDensityM3": 13814294117.750404,
+      "massDensityKgM3": 2.3106091232871438e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 60329.41103886948
+    },
+    {
+      "radiusM": 4694118775.934203,
+      "speedMS": 243906.9648239061,
+      "electronDensityM3": 13076283795.162928,
+      "massDensityKgM3": 2.187167898573419e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 60731.572186892656
+    },
+    {
+      "radiusM": 4793640002.5834675,
+      "speedMS": 247033.6819571266,
+      "electronDensityM3": 12380257708.203423,
+      "massDensityKgM3": 2.070749049165254e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 61137.019420663695
+    },
+    {
+      "radiusM": 4895271204.5074415,
+      "speedMS": 250150.093403881,
+      "electronDensityM3": 11723640816.558474,
+      "massDensityKgM3": 1.9609218681738065e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 61545.86299179058
+    },
+    {
+      "radiusM": 4999057115.837826,
+      "speedMS": 253256.0678243915,
+      "electronDensityM3": 11104030122.183605,
+      "massDensityKgM3": 1.8572844248773555e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 61958.213377559456
+    },
+    {
+      "radiusM": 5105043419.126221,
+      "speedMS": 256351.48390323817,
+      "electronDensityM3": 10519182071.237303,
+      "massDensityKgM3": 1.7594614575411645e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 62374.18136479826
+    },
+    {
+      "radiusM": 5213276765.451822,
+      "speedMS": 259436.22987993518,
+      "electronDensityM3": 9967000968.073444,
+      "massDensityKgM3": 1.6671024355164517e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 62793.878131050646
+    },
+    {
+      "radiusM": 5323804794.955425,
+      "speedMS": 262510.2031004035,
+      "electronDensityM3": 9445528312.41856,
+      "massDensityKgM3": 1.5798797757532785e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 63217.415323280664
+    },
+    {
+      "radiusM": 5436676157.808776,
+      "speedMS": 265573.3095884481,
+      "electronDensityM3": 8952932979.33627,
+      "massDensityKgM3": 1.4974872002798703e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 63644.90513431363
+    },
+    {
+      "radiusM": 5551940535.6285,
+      "speedMS": 268625.4636363768,
+      "electronDensityM3": 8487502169.186112,
+      "massDensityKgM3": 1.419638222472888e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 64076.46037720427
+    },
+    {
+      "radiusM": 5669648663.3440275,
+      "speedMS": 271666.5874139303,
+      "electronDensityM3": 8047633061.613058,
+      "massDensityKgM3": 1.3460647510854128e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 64512.19455771063
+    },
+    {
+      "radiusM": 5789852351.529157,
+      "speedMS": 274696.6105947219,
+      "electronDensityM3": 7631825113.74238,
+      "massDensityKgM3": 1.2765158020261357e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 64952.22194504036
+    },
+    {
+      "radiusM": 5912604509.207066,
+      "speedMS": 277715.46999941644,
+      "electronDensityM3": 7238672948.276961,
+      "massDensityKgM3": 1.2107563088069175e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 65396.657641025005
+    },
+    {
+      "radiusM": 6037959167.138821,
+      "speedMS": 280723.1092549077,
+      "electronDensityM3": 6866859782.166414,
+      "massDensityKgM3": 1.1485660234075784e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 65845.61764786822
+    },
+    {
+      "radiusM": 6165971501.60563,
+      "speedMS": 283719.4784687831,
+      "electronDensityM3": 6515151350.998743,
+      "massDensityKgM3": 1.0897385000563262e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 66299.21893460439
+    },
+    {
+      "radiusM": 6296697858.695322,
+      "speedMS": 286704.5339183931,
+      "electronDensityM3": 6182390288.307151,
+      "massDensityKgM3": 1.0340801551002882e-17,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 66757.57950239592
+    },
+    {
+      "radiusM": 6430195779.103703,
+      "speedMS": 289678.23775387113,
+      "electronDensityM3": 5867490922.633658,
+      "massDensityKgM3": 9.814093967509652e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 67220.8184487895
+    },
+    {
+      "radiusM": 6566524023.461763,
+      "speedMS": 292640.55771447736,
+      "electronDensityM3": 5569434458.48767,
+      "massDensityKgM3": 9.315558190407941e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 67689.05603104476
+    },
+    {
+      "radiusM": 6705742598.199834,
+      "speedMS": 295591.4668576657,
+      "electronDensityM3": 5287264510.318952,
+      "massDensityKgM3": 8.843594548256768e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 68162.41372864174
+    },
+    {
+      "radiusM": 6847912781.960097,
+      "speedMS": 298530.94330030074,
+      "electronDensityM3": 5020082961.321954,
+      "massDensityKgM3": 8.396700831195105e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 68641.01430506815
+    },
+    {
+      "radiusM": 6993097152.569085,
+      "speedMS": 301458.9699714741,
+      "electronDensityM3": 4767046121.331918,
+      "massDensityKgM3": 7.97346586455467e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 69124.98186898114
+    },
+    {
+      "radiusM": 7141359614.582021,
+      "speedMS": 304375.5343763962,
+      "electronDensityM3": 4527361160.287622,
+      "massDensityKgM3": 7.572563543391509e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 69614.4419348336
+    },
+    {
+      "radiusM": 7292765427.411135,
+      "speedMS": 307280.6283708605,
+      "electronDensityM3": 4300282795.744691,
+      "massDensityKgM3": 7.192747291948135e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 70109.52148305012
+    },
+    {
+      "radiusM": 7447381234.050338,
+      "speedMS": 310174.2479458019,
+      "electronDensityM3": 4085110214.7468143,
+      "massDensityKgM3": 6.8328449151078345e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 70610.34901983348
+    },
+    {
+      "radiusM": 7605275090.408903,
+      "speedMS": 313056.3930214908,
+      "electronDensityM3": 3881184212.019128,
+      "massDensityKgM3": 6.4917538116741666e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 71117.0546366782
+    },
+    {
+      "radiusM": 7766516495.267039,
+      "speedMS": 315927.067250926,
+      "electronDensityM3": 3687884527.9541645,
+      "massDensityKgM3": 6.168436521827901e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 71629.7700696643
+    },
+    {
+      "radiusM": 7931176420.866577,
+      "speedMS": 318786.27783200785,
+      "electronDensityM3": 3504627371.231121,
+      "massDensityKgM3": 5.861916583405683e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 72148.62875860107
+    },
+    {
+      "radiusM": 8099327344.1502075,
+      "speedMS": 321634.03532809636,
+      "electronDensityM3": 3330863112.1569757,
+      "massDensityKgM3": 5.5712746737318116e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 72673.76590608683
+    },
+    {
+      "radiusM": 8271043278.663036,
+      "speedMS": 324470.3534965711,
+      "electronDensityM3": 3166074133.9547043,
+      "massDensityKgM3": 5.295645015635796e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 73205.3185365487
+    },
+    {
+      "radiusM": 8446399807.130485,
+      "speedMS": 327295.24912503164,
+      "electronDensityM3": 3009772830.260406,
+      "massDensityKgM3": 5.034212028022143e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 73743.42555532305
+    },
+    {
+      "radiusM": 8625474114.726898,
+      "speedMS": 330108.74187479453,
+      "electronDensityM3": 2861499738.0367393,
+      "massDensityKgM3": 4.786207202940431e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 74288.22780783496
+    },
+    {
+      "radiusM": 8808345023.049461,
+      "speedMS": 332910.8541313534,
+      "electronDensityM3": 2720821795.973613,
+      "massDensityKgM3": 4.550906192548122e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 74839.86813893302
+    },
+    {
+      "radiusM": 8995093024.812447,
+      "speedMS": 335701.61086149054,
+      "electronDensityM3": 2587330719.23572,
+      "massDensityKgM3": 4.327626090677649e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 75398.49145243342
+    },
+    {
+      "radiusM": 9185800319.27698,
+      "speedMS": 338481.0394767398,
+      "electronDensityM3": 2460641482.137882,
+      "massDensityKgM3": 4.115722894925927e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 75964.24477092554
+    },
+    {
+      "radiusM": 9380550848.431988,
+      "speedMS": 341249.16970291216,
+      "electronDensityM3": 2340390900.988761,
+      "massDensityKgM3": 3.914589136287677e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 76537.27729588935
+    },
+    {
+      "radiusM": 9579430333.942226,
+      "speedMS": 344006.0334554153,
+      "electronDensityM3": 2226236309.947474,
+      "massDensityKgM3": 3.723651664364165e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 77117.74046817361
+    },
+    {
+      "radiusM": 9782526314.879642,
+      "speedMS": 346751.66472010367,
+      "electronDensityM3": 2117854323.290894,
+      "massDensityKgM3": 3.542369577104349e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 77705.78802888196
+    },
+    {
+      "radiusM": 9989928186.254694,
+      "speedMS": 349486.0994394129,
+      "electronDensityM3": 2014939677.9963849,
+      "massDensityKgM3": 3.3702322848833857e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 78301.57608071307
+    },
+    {
+      "radiusM": 10201727238.36459,
+      "speedMS": 352209.3754035411,
+      "electronDensityM3": 1917204151.0097833,
+      "massDensityKgM3": 3.2067576995013183e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 78905.26314979955
+    },
+    {
+      "radiusM": 10418016696.97574,
+      "speedMS": 354921.532146453,
+      "electronDensityM3": 1824375545.9951775,
+      "massDensityKgM3": 3.0514905393985366e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 79517.01024808921
+    },
+    {
+      "radiusM": 10638891764.35816,
+      "speedMS": 357622.6108464903,
+      "electronDensityM3": 1736196744.7548475,
+      "massDensityKgM3": 2.9040007430399736e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 80136.98093631153
+    },
+    {
+      "radiusM": 10864449661.189808,
+      "speedMS": 360312.65423138445,
+      "electronDensityM3": 1652424818.8677974,
+      "massDensityKgM3": 2.763881983022235e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 80765.34138757075
+    },
+    {
+      "radiusM": 11094789669.349403,
+      "speedMS": 362991.7064874755,
+      "electronDensityM3": 1572830197.4262154,
+      "massDensityKgM3": 2.630750274011355e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 81402.2604516068
+    },
+    {
+      "radiusM": 11330013175.616453,
+      "speedMS": 365659.8131729514,
+      "electronDensityM3": 1497195887.0536914,
+      "massDensityKgM3": 2.504242668128164e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 82047.90971976405
+    },
+    {
+      "radiusM": 11570223716.297812,
+      "speedMS": 368317.0211349298,
+      "electronDensityM3": 1425316740.6691372,
+      "massDensityKgM3": 2.384016031866789e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 82702.46359070759
+    },
+    {
+      "radiusM": 11815527022.800364,
+      "speedMS": 370963.3784302118,
+      "electronDensityM3": 1356998771.7184281,
+      "massDensityKgM3": 2.2697458990634617e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 83366.09933692572
+    },
+    {
+      "radiusM": 12066031068.169899,
+      "speedMS": 373598.9342495466,
+      "electronDensityM3": 1292058510.8334618,
+      "massDensityKgM3": 2.1611253948303536e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 84038.99717205742
+    },
+    {
+      "radiusM": 12321846114.616697,
+      "speedMS": 376223.73884525395,
+      "electronDensityM3": 1230322402.0974808,
+      "massDensityKgM3": 2.0578642257357184e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 84721.34031908258
+    },
+    {
+      "radiusM": 12583084762.048681,
+      "speedMS": 378837.84346205473,
+      "electronDensityM3": 1171626236.2976637,
+      "massDensityKgM3": 1.959687731849748e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 85413.31507941258
+    },
+    {
+      "radiusM": 12849861997.633547,
+      "speedMS": 381441.30027097085,
+      "electronDensityM3": 1115814618.732487,
+      "massDensityKgM3": 1.866335996587497e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 86115.11090291876
+    },
+    {
+      "radiusM": 13122295246.411694,
+      "speedMS": 384034.1623061602,
+      "electronDensityM3": 1062740469.3135991,
+      "massDensityKgM3": 1.7775630105683187e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 86826.92045893561
+    },
+    {
+      "radiusM": 13400504422.982176,
+      "speedMS": 386616.4834045584,
+      "electronDensityM3": 1012264552.8610648,
+      "massDensityKgM3": 1.6931358859773898e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 87548.93970827555
+    },
+    {
+      "radiusM": 13684611984.28449,
+      "speedMS": 389188.31814820576,
+      "electronDensityM3": 964255037.6378636,
+      "massDensityKgM3": 1.6128341181608332e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 88281.36797629207
+    },
+    {
+      "radiusM": 13974742983.49939,
+      "speedMS": 391749.7218091419,
+      "electronDensityM3": 918587080.3055135,
+      "massDensityKgM3": 1.5364488914133953e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 89024.40802702769
+    },
+    {
+      "radiusM": 14271025125.092466,
+      "speedMS": 394300.7502967596,
+      "electronDensityM3": 875142435.6084877,
+      "massDensityKgM3": 1.4637824261280426e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 89778.26613848328
+    },
+    {
+      "radiusM": 14573588821.024725,
+      "speedMS": 396841.4601075068,
+      "electronDensityM3": 833809089.2115397,
+      "massDensityKgM3": 1.3946473646716208e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 90543.15217904525
+    },
+    {
+      "radiusM": 14882567248.154903,
+      "speedMS": 399371.9082768405,
+      "electronDensityM3": 794480912.2218584,
+      "massDensityKgM3": 1.3288661935310376e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 91319.27968510715
+    },
+    {
+      "radiusM": 15198096406.85877,
+      "speedMS": 401892.15233333304,
+      "electronDensityM3": 757057336.0278941,
+      "massDensityKgM3": 1.2662706994415525e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 92106.86593992199
+    },
+    {
+      "radiusM": 15520315180.891247,
+      "speedMS": 404402.25025483826,
+      "electronDensityM3": 721443046.1792834,
+      "massDensityKgM3": 1.2067014573636276e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 92906.13205372241
+    },
+    {
+      "radiusM": 15849365398.517683,
+      "speedMS": 406902.2604266303,
+      "electronDensityM3": 687547694.1181573,
+      "massDensityKgM3": 1.1500073483183937e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 93717.30304514503
+    },
+    {
+      "radiusM": 16185391894.941172,
+      "speedMS": 409392.24160142994,
+      "electronDensityM3": 655285625.6517917,
+      "massDensityKgM3": 1.0960451052250504e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 94540.60792399631
+    },
+    {
+      "radiusM": 16528542576.053417,
+      "speedMS": 411872.25286123855,
+      "electronDensityM3": 624575625.130477,
+      "massDensityKgM3": 1.0446788850071636e-18,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 95376.27977539685
+    },
+    {
+      "radiusM": 16878968483.537203,
+      "speedMS": 414342.3535809012,
+      "electronDensityM3": 595340674.3631446,
+      "massDensityKgM3": 9.957798653496547e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 96224.5558453417
+    },
+    {
+      "radiusM": 17236823861.349106,
+      "speedMS": 416802.6033933283,
+      "electronDensityM3": 567507725.3670559,
+      "massDensityKgM3": 9.492258645949487e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 97085.67762771444
+    },
+    {
+      "radiusM": 17602266223.61174,
+      "speedMS": 419253.0621563013,
+      "electronDensityM3": 541007486.1071233,
+      "massDensityKgM3": 9.049009833658644e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 97959.89095279273
+    },
+    {
+      "radiusM": 17975456423.94537,
+      "speedMS": 421693.7899207983,
+      "electronDensityM3": 515774218.4355334,
+      "massDensityKgM3": 8.626952665949979e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 98847.44607728405
+    },
+    {
+      "radiusM": 18356558726.269497,
+      "speedMS": 424124.8469007765,
+      "electronDensityM3": 491745547.4935818,
+      "massDensityKgM3": 8.225043847260519e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 99748.59777593009
+    },
+    {
+      "radiusM": 18745740877.10547,
+      "speedMS": 426546.2934443438,
+      "electronDensityM3": 468862281.88532823,
+      "massDensityKgM3": 7.842293329323495e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 100663.60543471877
+    },
+    {
+      "radiusM": 19143174179.412037,
+      "speedMS": 428958.1900062694,
+      "electronDensityM3": 447068243.97704256,
+      "massDensityKgM3": 7.477761472719654e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 101592.73314574384
+    },
+    {
+      "radiusM": 19549033567.986294,
+      "speedMS": 431360.59712176974,
+      "electronDensityM3": 426310109.7177639,
+      "massDensityKgM3": 7.13055636768082e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 102536.24980375139
+    },
+    {
+      "radiusM": 19963497686.463238,
+      "speedMS": 433753.5753815215,
+      "electronDensityM3": 406537257.4147835,
+      "massDensityKgM3": 6.79983130467546e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 103494.42920441428
+    },
+    {
+      "radiusM": 20386748965.947777,
+      "speedMS": 436137.1854078452,
+      "electronDensityM3": 387701624.9337499,
+      "massDensityKgM3": 6.484782385906333e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 104467.55014437501
+    },
+    {
+      "radiusM": 20818973705.31389,
+      "speedMS": 438511.48783201614,
+      "electronDensityM3": 369757574.8265363,
+      "massDensityKgM3": 6.184646269409624e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 105455.89652309871
+    },
+    {
+      "radiusM": 21260362153.206173,
+      "speedMS": 440876.54327264975,
+      "electronDensityM3": 352661766.9212155,
+      "massDensityKgM3": 5.898698037966934e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 106459.75744657805
+    },
+    {
+      "radiusM": 21711108591.779953,
+      "speedMS": 443232.4123151206,
+      "electronDensityM3": 336373037.9375802,
+      "massDensityKgM3": 5.626249185528079e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 107479.42733293281
+    },
+    {
+      "radiusM": 22171411422.216812,
+      "speedMS": 445579.1554919693,
+      "electronDensityM3": 320852287.718812,
+      "massDensityKgM3": 5.366645714297028e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 108515.20601994732
+    },
+    {
+      "radiusM": 22641473252.0531,
+      "speedMS": 447916.83326425846,
+      "electronDensityM3": 306062371.6952611,
+      "massDensityKgM3": 5.119266336057524e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 109567.39887458929
+    },
+    {
+      "radiusM": 23121500984.359978,
+      "speedMS": 450245.5060038353,
+      "electronDensityM3": 291967999.2199759,
+      "massDensityKgM3": 4.883520771710842e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 110636.31690455481
+    },
+    {
+      "radiusM": 23611705908.814137,
+      "speedMS": 452565.2339764662,
+      "electronDensityM3": 278535637.4377495,
+      "massDensityKgM3": 4.658848143368395e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 111722.27687188446
+    },
+    {
+      "radiusM": 24112303794.69937,
+      "speedMS": 454876.0773258041,
+      "electronDensityM3": 265733420.37012485,
+      "massDensityKgM3": 4.444715453687592e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 112825.60140869633
+    },
+    {
+      "radiusM": 24623514985.879894,
+      "speedMS": 457178.09605815675,
+      "electronDensityM3": 253531062.91812956,
+      "massDensityKgM3": 4.240616147462725e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 113946.61913508267
+    },
+    {
+      "radiusM": 25145564497.78719,
+      "speedMS": 459471.3500280203,
+      "electronDensityM3": 241899779.50259024,
+      "massDensityKgM3": 4.046068750785028e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 115085.6647792173
+    },
+    {
+      "radiusM": 25678682116.463108,
+      "speedMS": 461755.8989243478,
+      "electronDensityM3": 230812207.0787833,
+      "massDensityKgM3": 3.8606155833688474e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 116243.07929972175
+    },
+    {
+      "radiusM": 26223102499.702843,
+      "speedMS": 464031.8022575219,
+      "electronDensityM3": 220242332.2780042,
+      "massDensityKgM3": 3.683821539905552e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 117419.21001033938
+    },
+    {
+      "radiusM": 26779065280.3422,
+      "speedMS": 466299.1193470032,
+      "electronDensityM3": 210165422.44345093,
+      "massDensityKgM3": 3.5152729365546023e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 118614.41070696665
+    },
+    {
+      "radiusM": 27346815171.734753,
+      "speedMS": 468557.90930962295,
+      "electronDensityM3": 200557960.34168378,
+      "massDensityKgM3": 3.354576418913108e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 119829.04179709248
+    },
+    {
+      "radiusM": 27926602075.465176,
+      "speedMS": 470808.23104849923,
+      "electronDensityM3": 191397582.34391767,
+      "massDensityKgM3": 3.201357928022573e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 121063.47043169671
+    },
+    {
+      "radiusM": 28518681191.346317,
+      "speedMS": 473050.1432425452,
+      "electronDensityM3": 182663019.88356897,
+      "massDensityKgM3": 3.0552617211749826e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 122318.0706396604
+    },
+    {
+      "radiusM": 29123313129.74826,
+      "speedMS": 475283.704336548,
+      "electronDensityM3": 174334044.00789326,
+      "massDensityKgM3": 2.915949444471345e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 123593.22346474048
+    },
+    {
+      "radiusM": 29740764026.309002,
+      "speedMS": 477508.97253179335,
+      "electronDensityM3": 166391412.85223338,
+      "massDensityKgM3": 2.783099254264442e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 124889.31710516382
+    },
+    {
+      "radiusM": 30371305659.07702,
+      "speedMS": 479726.0057772149,
+      "electronDensityM3": 158816821.87543622,
+      "massDensityKgM3": 2.656404984785502e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 126206.74705589465
+    },
+    {
+      "radiusM": 31015215568.137543,
+      "speedMS": 481934.8617610437,
+      "electronDensityM3": 151592856.7043902,
+      "massDensityKgM3": 2.535575359411595e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 127545.91625363263
+    },
+    {
+      "radiusM": 31672777177.774933,
+      "speedMS": 484135.59790294024,
+      "electronDensityM3": 144702948.44447082,
+      "massDensityKgM3": 2.420333243178343e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 128907.23522459765
+    },
+    {
+      "radiusM": 32344279921.225147,
+      "speedMS": 486328.2713465865,
+      "electronDensityM3": 138131331.3209563,
+      "massDensityKgM3": 2.3104149342809544e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 130291.12223516015
+    },
+    {
+      "radiusM": 33030019368.07305,
+      "speedMS": 488512.9389527201,
+      "electronDensityM3": 131863002.5242551,
+      "massDensityKgM3": 2.2055694924366925e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 131698.00344537586
+    },
+    {
+      "radiusM": 33730297354.350758,
+      "speedMS": 490689.6572925937,
+      "electronDensityM3": 125883684.13908409,
+      "massDensityKgM3": 2.1055581021039628e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 133128.31306548536
+    },
+    {
+      "radiusM": 34445422115.39419,
+      "speedMS": 492858.48264183686,
+      "electronDensityM3": 120179787.04459856,
+      "massDensityKgM3": 2.010153468667973e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 134582.4935154399
+    },
+    {
+      "radiusM": 35175708421.51636,
+      "speedMS": 495019.4709747104,
+      "electronDensityM3": 114738376.67891176,
+      "massDensityKgM3": 1.9191392458105794e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 136060.99558751594
+    },
+    {
+      "radiusM": 35921477716.55714,
+      "speedMS": 497172.67795873183,
+      "electronDensityM3": 109547140.56750073,
+      "massDensityKgM3": 1.8323094923832842e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 137564.27861208215
+    },
+    {
+      "radiusM": 36683058259.37042,
+      "speedMS": 499318.15894965833,
+      "electronDensityM3": 104594357.52068415,
+      "massDensityKgM3": 1.7494681571974958e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 139092.81062658408
+    },
+    {
+      "radiusM": 37460785268.31096,
+      "speedMS": 501455.96898681234,
+      "electronDensityM3": 99868868.41070846,
+      "massDensityKgM3": 1.670428590235663e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 140647.06854781212
+    },
+    {
+      "radiusM": 38255001068.784615,
+      "speedMS": 503586.16278873465,
+      "electronDensityM3": 95360048.4440108,
+      "massDensityKgM3": 1.5950130788710664e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 142227.53834752092
+    },
+    {
+      "radiusM": 39066055243.92671,
+      "speedMS": 505708.7947491523,
+      "electronDensityM3": 91057780.84896052,
+      "massDensityKgM3": 1.5230524077632135e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 143834.715231468
+    },
+    {
+      "radiusM": 39894304788.4751,
+      "speedMS": 507823.91893324774,
+      "electronDensityM3": 86952431.90383424,
+      "massDensityKgM3": 1.4543854411702744e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 145469.1038219426
+    },
+    {
+      "radiusM": 40740114265.90539,
+      "speedMS": 509931.5890742142,
+      "electronDensityM3": 83034827.23397146,
+      "massDensityKgM3": 1.3888587264901084e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 147131.21834385535
+    },
+    {
+      "radiusM": 41603855968.897804,
+      "speedMS": 512031.8585700916,
+      "electronDensityM3": 79296229.31100072,
+      "massDensityKgM3": 1.3263261179073887e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 148821.58281446187
+    },
+    {
+      "radiusM": 42485910083.20598,
+      "speedMS": 514124.78048086097,
+      "electronDensityM3": 75728316.09074473,
+      "massDensityKgM3": 1.2666484190865183e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 150540.73123679432
+    },
+    {
+      "radiusM": 43386664855.00007,
+      "speedMS": 516210.4075257989,
+      "electronDensityM3": 72323160.72990587,
+      "massDensityKgM3": 1.2096930439084657e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 152289.20779687644
+    },
+    {
+      "radiusM": 44306516761.75775,
+      "speedMS": 518288.7920810683,
+      "electronDensityM3": 69073212.32493328,
+      "massDensityKgM3": 1.1553336943048316e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 154067.56706479925
+    },
+    {
+      "radiusM": 45245870686.77828,
+      "speedMS": 520359.98617754586,
+      "electronDensityM3": 65971277.619573876,
+      "massDensityKgM3": 1.1034500542943378e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 155876.3741997358
+    },
+    {
+      "radiusM": 46205140097.39646,
+      "speedMS": 522424.04149886925,
+      "electronDensityM3": 63010503.63053647,
+      "massDensityKgM3": 1.0539274993758737e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 157716.20515897486
+    },
+    {
+      "radiusM": 47184747226.975075,
+      "speedMS": 524481.0093796973,
+      "electronDensityM3": 60184361.14345482,
+      "massDensityKgM3": 1.0066568204783574e-19,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 159587.64691105584
+    },
+    {
+      "radiusM": 48185123260.75566,
+      "speedMS": 526530.9408041749,
+      "electronDensityM3": 57486629.03393545,
+      "massDensityKgM3": 9.61533961711143e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 161491.29765308727
+    },
+    {
+      "radiusM": 49206708525.649605,
+      "speedMS": 528573.8864045913,
+      "electronDensityM3": 54911379.37092653,
+      "massDensityKgM3": 9.184597711997023e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 163427.7670323342
+    },
+    {
+      "radiusM": 50249952684.05308,
+      "speedMS": 530609.8964602251,
+      "electronDensityM3": 52452963.261955954,
+      "massDensityKgM3": 8.773397643299736e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 165397.67637216108
+    },
+    {
+      "radiusM": 51315314931.77106,
+      "speedMS": 532639.0208963681,
+      "electronDensityM3": 50105997.40196734,
+      "massDensityKgM3": 8.38083898761243e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 167401.65890241804
+    },
+    {
+      "radiusM": 52403264200.13758,
+      "speedMS": 534661.3092835173,
+      "electronDensityM3": 47865351.289540194,
+      "massDensityKgM3": 8.006063606018403e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 169440.3599943607
+    },
+    {
+      "radiusM": 53514279362.4212,
+      "speedMS": 536676.8108367325,
+      "electronDensityM3": 45726135.07622116,
+      "massDensityKgM3": 7.648253611743889e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 171514.43740019522
+    },
+    {
+      "radiusM": 54648849444.606575,
+      "speedMS": 538685.5744151477,
+      "electronDensityM3": 43683688.01652665,
+      "massDensityKgM3": 7.306629438280174e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 173624.561497342
+    },
+    {
+      "radiusM": 55807473840.644745,
+      "speedMS": 540687.6485216308,
+      "electronDensityM3": 41733567.48790641,
+      "massDensityKgM3": 6.980448002838633e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 175771.41553751353
+    },
+    {
+      "radiusM": 56990662532.26713,
+      "speedMS": 542683.0813025878,
+      "electronDensityM3": 39871538.55159096,
+      "massDensityKgM3": 6.669000960275173e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 177955.69590070375
+    },
+    {
+      "radiusM": 58198936313.45979,
+      "speedMS": 544671.9205478996,
+      "electronDensityM3": 38093564.026788004,
+      "massDensityKgM3": 6.371613042878578e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 180178.11235418773
+    },
+    {
+      "radiusM": 59432827019.69681,
+      "speedMS": 546654.2136909892,
+      "electronDensityM3": 36395795.0521509,
+      "massDensityKgM3": 6.087640481661011e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 182439.38831663312
+    },
+    {
+      "radiusM": 60692877762.033775,
+      "speedMS": 548630.0078090145,
+      "electronDensityM3": 34774562.1098164,
+      "massDensityKgM3": 5.816469505018901e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 184740.2611274267
+    },
+    {
+      "radiusM": 61979643166.164246,
+      "speedMS": 550599.3496231766,
+      "electronDensityM3": 33226366.488612,
+      "massDensityKgM3": 5.557514910850273e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 187081.48232132065
+    },
+    {
+      "radiusM": 63293689616.54465,
+      "speedMS": 552562.2854991405,
+      "electronDensityM3": 31747872.164259717,
+      "massDensityKgM3": 5.310218708419848e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 189463.81790850667
+    },
+    {
+      "radiusM": 64635595505.69478,
+      "speedMS": 554518.861447565,
+      "electronDensityM3": 30335898.075566314,
+      "massDensityKgM3": 5.0740488264576625e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 191888.04866022646
+    },
+    {
+      "radiusM": 66005951488.7839,
+      "speedMS": 556469.1231247332,
+      "electronDensityM3": 28987410.77668713,
+      "massDensityKgM3": 4.848497884160621e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 194354.97040003102
+    },
+    {
+      "radiusM": 67405360743.61432,
+      "speedMS": 558413.1158332805,
+      "electronDensityM3": 27699517.44658918,
+      "massDensityKgM3": 4.6330820219399616e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 196865.39430080194
+    },
+    {
+      "radiusM": 68834439236.117,
+      "speedMS": 560350.8845230152,
+      "electronDensityM3": 26469459.237821117,
+      "massDensityKgM3": 4.427339788921937e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 199420.14718765146
+    },
+    {
+      "radiusM": 70293815991.47601,
+      "speedMS": 562282.473791829,
+      "electronDensityM3": 25294604.947625652,
+      "massDensityKgM3": 4.230831084364201e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 202020.07184681905
+    },
+    {
+      "radiusM": 71784133371.001,
+      "speedMS": 564207.9278866882,
+      "electronDensityM3": 24172444.99530928,
+      "massDensityKgM3": 4.043136150297464e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 204666.02734068566
+    },
+    {
+      "radiusM": 73306047354.87003,
+      "speedMS": 566127.2907047076,
+      "electronDensityM3": 23100585.69061386,
+      "massDensityKgM3": 3.863854612840756e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 207358.8893290291
+    },
+    {
+      "radiusM": 74860227830.86656,
+      "speedMS": 568040.6057942989,
+      "electronDensityM3": 22076743.77862228,
+      "massDensityKgM3": 3.692604569770388e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 210099.55039664562
+    },
+    {
+      "radiusM": 76447358889.23833,
+      "speedMS": 569947.9163563909,
+      "electronDensityM3": 21098741.24747358,
+      "massDensityKgM3": 3.529021722046996e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 212888.9203874663
+    },
+    {
+      "radiusM": 78068139123.80736,
+      "speedMS": 571849.2652457192,
+      "electronDensityM3": 20164500.385867506,
+      "massDensityKgM3": 3.3727585471229226e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 215727.92674529896
+    },
+    {
+      "radiusM": 79723281939.46405,
+      "speedMS": 573744.694972179,
+      "electronDensityM3": 19272039.078005638,
+      "massDensityKgM3": 3.223483511963745e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 218617.51486132888
+    },
+    {
+      "radiusM": 81413515866.18047,
+      "speedMS": 575634.2477022411,
+      "electronDensityM3": 18419466.324246664,
+      "massDensityKgM3": 3.080880323823262e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 221558.6484285143
+    },
+    {
+      "radiusM": 83139584879.6811,
+      "speedMS": 577517.9652604241,
+      "electronDensityM3": 17604977.97635202,
+      "massDensityKgM3": 2.944647216911325e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 224552.30980301579
+    },
+    {
+      "radiusM": 84902248728.91228,
+      "speedMS": 579395.8891308247,
+      "electronDensityM3": 16826852.67676348,
+      "massDensityKgM3": 2.814496273188504e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 227599.50037280045
+    },
+    {
+      "radiusM": 86702283270.45424,
+      "speedMS": 581268.0604586959,
+      "electronDensityM3": 16083447.991891071,
+      "massDensityKgM3": 2.6901527756113502e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 230701.24093356615
+    },
+    {
+      "radiusM": 88540480810.02339,
+      "speedMS": 583134.5200520786,
+      "electronDensityM3": 15373196.729897013,
+      "massDensityKgM3": 2.5713545922368583e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 233858.57207213237
+    },
+    {
+      "radiusM": 90417650451.21455,
+      "speedMS": 584995.3083834756,
+      "electronDensityM3": 14694603.433943346,
+      "massDensityKgM3": 2.4578515896753803e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 237072.55455744814
+    },
+    {
+      "radiusM": 92334618451.63725,
+      "speedMS": 586850.4655915733,
+      "electronDensityM3": 14046241.042326082,
+      "massDensityKgM3": 2.3494050744573386e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 240344.2697393707
+    },
+    {
+      "radiusM": 94292228586.60234,
+      "speedMS": 588700.031483001,
+      "electronDensityM3": 13426747.707351698,
+      "massDensityKgM3": 2.2457872609515342e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 243674.8199553705
+    },
+    {
+      "radiusM": 96291342520.51935,
+      "speedMS": 590544.0455341312,
+      "electronDensityM3": 12834823.765220648,
+      "massDensityKgM3": 2.146780764541219e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 247065.3289453228
+    },
+    {
+      "radiusM": 98332840186.16786,
+      "speedMS": 592382.5468929153,
+      "electronDensityM3": 12269228.849571249,
+      "massDensityKgM3": 2.0521781188291163e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 250516.94227454785
+    },
+    {
+      "radiusM": 100417620172.01001,
+      "speedMS": 594215.5743807543,
+      "electronDensityM3": 11728779.141705215,
+      "massDensityKgM3": 1.9617813157041164e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 254030.8277652663
+    },
+    {
+      "radiusM": 102546600117.71439,
+      "speedMS": 596043.1664943992,
+      "electronDensityM3": 11212344.750865156,
+      "massDensityKgM3": 1.8754013671607448e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 257608.17593663864
+    },
+    {
+      "radiusM": 104720717118.06561,
+      "speedMS": 597865.3614078842,
+      "electronDensityM3": 10718847.218265174,
+      "massDensityKgM3": 1.7928578878178495e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 261250.20045356159
+    },
+    {
+      "radiusM": 106940928135.43732,
+      "speedMS": 599682.1969744854,
+      "electronDensityM3": 10247257.138889639,
+      "massDensityKgM3": 1.7139786971354473e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 264958.13858439756
+    },
+    {
+      "radiusM": 109208210421.00996,
+      "speedMS": 601493.7107287069,
+      "electronDensityM3": 9796591.895372937,
+      "massDensityKgM3": 1.638599440378484e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 268733.2516678169
+    },
+    {
+      "radiusM": 111523561944.9191,
+      "speedMS": 603299.9398882885,
+      "electronDensityM3": 9365913.498555202,
+      "massDensityKgM3": 1.5665632274234504e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 272576.8255889364
+    },
+    {
+      "radiusM": 113888001835.52342,
+      "speedMS": 605100.9213562398,
+      "electronDensityM3": 8954326.52957704,
+      "massDensityKgM3": 1.4977202885486326e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 276490.1712649413
+    },
+    {
+      "radiusM": 116302570827.98553,
+      "speedMS": 606896.6917228906,
+      "electronDensityM3": 8560976.178630503,
+      "massDensityKgM3": 1.4319276463913022e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 280474.62514038075
+    },
+    {
+      "radiusM": 118768331722.36351,
+      "speedMS": 608687.2872679621,
+      "electronDensityM3": 8185046.375724577,
+      "massDensityKgM3": 1.3690488032954508e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 284531.5496923325
+    },
+    {
+      "radiusM": 121286369851.41447,
+      "speedMS": 610472.7439626567,
+      "electronDensityM3": 7825758.009052429,
+      "massDensityKgM3": 1.3089534433119911e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 288662.3339456348
+    },
+    {
+      "radiusM": 123857793558.31607,
+      "speedMS": 612253.0974717599,
+      "electronDensityM3": 7482367.2267650785,
+      "massDensityKgM3": 1.2515171481496966e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 292868.3939983877
+    },
+    {
+      "radiusM": 126483734684.51643,
+      "speedMS": 614028.3831557612,
+      "electronDensityM3": 7154163.818161966,
+      "massDensityKgM3": 1.1966211264095873e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 297151.17355793173
+    },
+    {
+      "radiusM": 129165349067.92708,
+      "speedMS": 615798.6360729845,
+      "electronDensityM3": 6840469.670505125,
+      "massDensityKgM3": 1.1441519554682844e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 301512.1444875135
+    },
+    {
+      "radiusM": 131903817051.6781,
+      "speedMS": 617563.8909817312,
+      "electronDensityM3": 6540637.297849217,
+      "massDensityKgM3": 1.0940013354068961e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 305952.8073638536
+    },
+    {
+      "radiusM": 134700344003.65977,
+      "speedMS": 619324.1823424348,
+      "electronDensityM3": 6254048.438456207,
+      "massDensityKgM3": 1.046065854411521e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 310474.6920458371
+    },
+    {
+      "radiusM": 137556160847.0787,
+      "speedMS": 621079.5443198222,
+      "electronDensityM3": 5980112.717531228,
+      "massDensityKgM3": 1.000246765099517e-20,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 315079.3582545488
+    },
+    {
+      "radiusM": 140472524602.26306,
+      "speedMS": 622830.0107850862,
+      "electronDensityM3": 5718266.372175062,
+      "massDensityKgM3": 9.564497712522571e-21,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 319768.39616488403
+    },
+    {
+      "radiusM": 143450718939.954,
+      "speedMS": 624575.6153180612,
+      "electronDensityM3": 5467971.035600107,
+      "massDensityKgM3": 9.145848244604266e-21,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 324543.4270089651
+    },
+    {
+      "radiusM": 146492054746.3284,
+      "speedMS": 626316.3912094092,
+      "electronDensityM3": 5228712.577800033,
+      "massDensityKgM3": 8.74565930211888e-21,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 329406.1036916041
+    },
+    {
+      "radiusM": 149597870700,
+      "speedMS": 628052.3714628046,
+      "electronDensityM3": 5000000,
+      "massDensityKgM3": 8.36310962975e-21,
+      "temperatureK": 1500000,
+      "flightTimeSeconds": 334358.11141805176
+    }
+  ]
+}

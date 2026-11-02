@@ -1,0 +1,9 @@
+{
+  "source": "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/milkyway_2020_4k.exr",
+  "sourceBytes": 36436668,
+  "sourceSha256": "2eb802d6e68d170b410f766c7fec07f7518619f6b6708fdc81e9302d93e74fdb",
+  "width": 4096,
+  "height": 2048,
+  "conversion": "reinhard-exposure1-linear-to-srgb-exr-bottom-up-flip-webp94-v1",
+  "credit": "NASA/Goddard Space Flight Center Scientific Visualization Studio, Ernie Wright, Deep Star Maps 2020"
+}

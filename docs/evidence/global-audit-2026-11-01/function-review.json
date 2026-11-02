@@ -1,0 +1,3186 @@
+{
+  "baseline": "8e97509ffc006071b95e8c78a2da3ad35a888c1f",
+  "method": "142 legacy records individually linked to current files; retained source comparison is not fresh paired runtime acceptance; changed progress explicitly annotated",
+  "entries": [
+    {
+      "id": "camera-selection:000",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToCelestialObject",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines97-147 construct entry vector relative to Sun, parent-orientation up, content customDistance, 1.3 fit, two-stage transition and cinematic option. Ours defaults OrbitView yaw/pitch or approved System selection; planetary Nearby does not derive Sun-facing entry direction. No goToPlanet symbol exists in this recovered file.",
+      "ours": "web/lib/solar-workspace.ts:select/focus; core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:001",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSpacecraft",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines173-224 use parent-relative spacecraft position, parent up/ecliptic normal, customDistance, vertical/horizontal offsets. Ours uses reviewed one-shot target/sky external composition plus fixed presets.",
+      "ours": "web/lib/mission-view.ts:missionInitialLook; core/src/renderer.rs:update_focus;core/src/camera_framing.rs:initial_look_angles",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_framing.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "204ce0d08dda412eb59f51ec49ce4fd8a82228c1628650dea7c12580b4fdd571"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/mission-view.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "08218c41426fa46bb48de8d2c032bc809777c44e4455274b0c5500a911e53847"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:002",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToInstrument",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines226-270 exposes explicit signed forward/up axes, instrument parent, instrument radius and transition. Current initialLook supplies only external composition relative to an entity.",
+      "ours": "core/src/camera_intent.rs:CameraObservation/InitialLook;web/lib/mission-view.ts:missionInitialLook",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "web/lib/mission-view.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "08218c41426fa46bb48de8d2c032bc809777c44e4455274b0c5500a911e53847"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:003",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.lookAtSurfaceLatLon",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA accepts latitude/longitude surface location and camera options; current SDK has nearby/system/follow with no geodetic surface target.",
+      "ours": "core/src/camera_intent.rs:CameraObservation;web/lib/solar-workspace.ts:observation",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:004",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._easeOutExpoTransition",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA has explicit recovered exponential transition function and parent transition coordinates. Ours uses current display/settings-aware blending; exact curve/parent transition equality has not been established.",
+      "ours": "core/src/observation.rs;core/src/renderer.rs:update_focus CameraBlend",
+      "currentRefs": [
+        {
+          "path": "core/src/observation.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "6d097e7b33719d2f57e9aef99f98e9d2bce9358061cc0182591764bc7e7879db"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:005",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._easeInOutExpoTransition",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA has a separate in/out exponential easing path; current camera has no public choice matching both functions.",
+      "ours": "core/src/observation.rs;core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/observation.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "6d097e7b33719d2f57e9aef99f98e9d2bce9358061cc0182591764bc7e7879db"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:006",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.compareObjects",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA comparison takes left/right entities and cameras with separate framing/context; no current comparison runtime or dual comparison viewport API found.",
+      "ours": "web/lib/solar-workspace.ts;core/src/renderer.rs:DisplayCamera",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:007",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocation",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA location supports plane/reference entities and planeMode; no corresponding scene-link or camera observation DTO fields.",
+      "ours": "web/lib/solar-workspace.ts;platform/camera-contract.ts",
+      "currentRefs": [
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:008",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.alignObjects",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "Current Follow provides reference-relative external placement, but recovered alignObjects is a separate script with its own focus/offset/transition options.",
+      "ours": "web/lib/solar-workspace.ts:observation;core/src/renderer.rs:follow_display_direction",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:009",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.alignSpacecraftPlanet",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines440 onward traverses to physical parent, computes surface-relative direction and radius-scaled alignment. Ours initialLook target computes opposite camera side once and retains foreground craft.",
+      "ours": "core/src/renderer.rs:update_focus;web/lib/mission-view.ts:missionInitialLook",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/mission-view.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "08218c41426fa46bb48de8d2c032bc809777c44e4455274b0c5500a911e53847"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:010",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.viewFromSide",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA side view derives orbital/reference geometry and optional signed up axis. Ours side preset assigns fixed yaw pi/2,pitch0 in display basis.",
+      "ours": "core/src/camera_intent.rs:set_camera_view;core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:011",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.spacecraftLookAtTarget",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines532-538 sets LOOK_AT context; current initialLook is a one-shot external nearby composition and Follow continuously uses reference direction.",
+      "ours": "platform/camera-contract.ts:initialLook;core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:012",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.spacecraftLockedOnTarget",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA exposes distinct LOCKED_ON context; ours has no separate locked-on mode or lifecycle.",
+      "ours": "platform/camera-contract.ts;core/src/camera_intent.rs:CameraObservation",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:013",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSystemSideway",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "NASA lines546 onward has includeChildren, named extra entities, angle, physical barycenter resolution and default exclusion of sc-prefixed craft. Ours passes ready primary moon members with budgets and fixed preset/system minimums.",
+      "ours": "web/lib/solar-workspace.ts:systemMembers;core/src/renderer.rs:update_focus system branch",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:014",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSystem",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "Both have explicit system observation rather than changing scientific positions; ours applies NASA minimum distance table and separate framing tests. Recovered goToSystem chooses script options and physical system context. NASA also has explicit inner_solar_system(7e8km) and outer_solar_system(1e10km) named entry contexts; current known-ID router lacks these dedicated camera contexts.",
+      "ours": "web/lib/solar-workspace.ts:observation/select;core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:015",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._goToSystem",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "Ours uses aspect-aware horizontal/vertical fit and freezes entry framing to avoid continuous zoom pumping. NASA also derives fit from members and options, with additional reference and timing semantics. NASA preserves previous-camera relative approach by default and computes orbit/plane-relative up and 25-degree system angle, plus a portrait-specific distance adjustment; current entry resets OrbitView and does not reproduce that whole sequence.",
+      "ours": "core/src/camera_framing.rs:fit_distance/system_min_distance_km;core/src/renderer.rs:update_focus",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_framing.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "204ce0d08dda412eb59f51ec49ce4fd8a82228c1628650dea7c12580b4fdd571"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:016",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToCenter",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "No multi-entity sampled center camera intent or link representation matching this recovered script.",
+      "ours": "platform/camera-contract.ts;web/lib/scene-link.ts",
+      "currentRefs": [
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        },
+        {
+          "path": "web/lib/scene-link.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:017",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationCenter",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "No location center + plane/reference + sampleTime API.",
+      "ours": "platform/camera-contract.ts;web/lib/solar-workspace.ts",
+      "currentRefs": [
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:018",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationInParentSystem",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "Current overview/system lacks location-preserving parent-system context.",
+      "ours": "web/lib/solar-workspace.ts:overview/observation",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:019",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationInSolarSystem",
+      "nasaSha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+      "legacyEvidence": "Overview clears selected context; no explicit location projection in solar-system coordinates.",
+      "ours": "web/lib/solar-workspace.ts:overview",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:020",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.goToEntity",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "NASA lines169-250 accepts transition parent, keyframes, duration, custom transition, destination/up, zoom/select/roll/cinematic. Ours validates controlled intent, blends in scientific floating origin and enforces solid-sphere collision, without complete keyframe/roll contract.",
+      "ours": "core/src/camera_intent.rs:set_camera_observation_with_context;core/src/renderer.rs:update_focus/enforce_camera_collision",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:021",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.followTheEntity",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "NASA lines252-313 uses 5x target extent offset, parent/orbit-derived up, target-angular-radius vertical offset, transition parent and radius clamps. Ours uses global Vec3::Y, FOV-based side offset capped1.5 radii and dynamic reference direction.",
+      "ours": "web/lib/solar-workspace.ts:observation/follow;core/src/renderer.rs:update_focus follow branch",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:022",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.goToBetweenPos",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "No equivalent between-position controlled intent.",
+      "ours": "platform/camera-contract.ts;core/src/camera_intent.rs",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "platform/camera-contract.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "2626efde32396af6d684909b72f696cce79e601a1da956bc94d671fad135edb8"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:023",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.zoom/zoomIn/zoomOut",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "Recovered zoom multiplies by powers of2 with distinct held/click sensitivity; current UI has separate held/click intention and bounded smoothing.",
+      "ours": "web/app/workspace-view.tsx:zoom controls;core/src/renderer.rs:controlled input",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "web/app/workspace-view.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7ddf7423c4f7a0294561e6f75f0d637d2d52bd88c7bddc772f754cfd8df5bce1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:024",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.setContext/resetFreeFlyCamera",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "NASA context enumerates celestial/spacecraft/instrument/alignment/location/system/look-at/locked-on/compare; current link persists only nearby/system/follow, presets, time/layers/FOV.",
+      "ours": "web/lib/scene-link.ts:SceneLinkState;core/src/camera_intent.rs:CameraObservation",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "web/lib/scene-link.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:025",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.enableFreeFly/disableFreeFly/toggleFreeFly",
+      "nasaSha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+      "legacyEvidence": "NASA explicit free-fly controller and context restoration exist; no free-fly mode/route in current controlled contract.",
+      "ours": "core/src/camera_intent.rs;web/lib/scene-link.ts",
+      "currentRefs": [
+        {
+          "path": "core/src/camera_intent.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "fde47486c1a28b406705e11f146bdf66183c8037633c24dc80879f3d5581d0f9"
+        },
+        {
+          "path": "web/lib/scene-link.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:026",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.validateTimeLimits",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA computes target/follow coverage intersection, applies event limits, may navigate to overlap start and rejects disjoint timelines. Ours validates current ready states and falls back Nearby when reference loses coverage.",
+      "ours": "web/lib/solar-workspace.ts:observation/validateFollow/reload",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:027",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.follow/unfollow/setEnabled",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA temporarily owns forced visibility, search exclusion, label weights/clickability, occlusion, time limits and DOM observers; ours stores mode/followId and performs async revision guards/cleanup but lacks that full owned-state bundle.",
+      "ours": "web/lib/solar-workspace.ts:observation/follow/select/overview/dispose",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:028",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setYawPitchLimits",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA lines372-397 uses actual horizontal and vertical FOV independently and right/up UI offsets. Ours clamps yaw and pitch against the same long-FOV value and omits panel offsets.",
+      "ours": "core/src/renderer.rs:update_focus follow branch",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:029",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setLabelWeight/setTargetNotClickable",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA gives follow reference weight201 and suppresses target label clicks, restoring prior values on exit. Ours uses selected-object global hiding and normal layout priorities; no follow-specific weight/click restoration found.",
+      "ours": "core/src/renderer.rs:draw_annotations;core/src/label_visibility.rs",
+      "currentRefs": [
+        {
+          "path": "core/src/label_visibility.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "3b86c667e0671f1e08272b62aaf875a5e0d3e81b41520fdc94bdcfb4d7cb82b3"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:030",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.updateOccludedEntities/setOcclusionProps",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA temporarily marks followed reference Div non-occludable then restores prior values. Ours applies normal solid-body label occlusion in all modes.",
+      "ours": "core/src/label_visibility.rs:occluded;core/src/renderer.rs:draw_annotations",
+      "currentRefs": [
+        {
+          "path": "core/src/label_visibility.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "3b86c667e0671f1e08272b62aaf875a5e0d3e81b41520fdc94bdcfb4d7cb82b3"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:031",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setSearchOptions",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "NASA async follow search excludes current target and followed entity and ranks suggestions; ours presents a general reference combobox with self-reference rejected by runtime.",
+      "ours": "web/app/workspace-view.tsx:follow reference combobox",
+      "currentRefs": [
+        {
+          "path": "web/app/workspace-view.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7ddf7423c4f7a0294561e6f75f0d637d2d52bd88c7bddc772f754cfd8df5bce1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:032",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager._createSumParent",
+      "nasaSha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+      "legacyEvidence": "Recovered Follow constructs an auxiliary sum-parent context; current implementation computes a direct current-reference direction without equivalent transition-parent object.",
+      "ours": "core/src/renderer.rs:update_focus follow branch",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:033",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.selectEntity",
+      "nasaSha256": "2dba3b35dcd46a821d2aecfa7683add557cbc1c4d7cc964661d5e92fd625055e",
+      "legacyEvidence": "NASA only emits selectionupdate/class swap when id changes, distinct from navigation. Ours select always reloads and reissues focus for any known id, including repeated current id.",
+      "ours": "web/lib/solar-workspace.ts:select;web/app/workspace.tsx:action",
+      "currentRefs": [
+        {
+          "path": "web/app/workspace.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "f83588143a5c644a1331f4cd102393d3c6d6537f430b93cbf102f84926999faf"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:034",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.unselect",
+      "nasaSha256": "2dba3b35dcd46a821d2aecfa7683add557cbc1c4d7cc964661d5e92fd625055e",
+      "legacyEvidence": "NASA unselect clears selection/classes and emits unselect; it is not inherently a camera jump. Ours exposed overview combines selection clear, root data retention/loading and camera overview.",
+      "ours": "web/lib/solar-workspace.ts:overview;core/src/lib.rs:camera_zoom_to_overview",
+      "currentRefs": [
+        {
+          "path": "core/src/lib.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "e98a473eb454caead5185bc1f3acc276bad6baf4f55aea7a29f3f412b60ed007"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:035",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.handle3DSelection",
+      "nasaSha256": "2dba3b35dcd46a821d2aecfa7683add557cbc1c4d7cc964661d5e92fd625055e",
+      "legacyEvidence": "Ours one canvas gesture calls current WASM hit then select; stale async selections guarded by revision/token; empty hits do nothing. NASA handles nonnull picks by parsed link navigation with keepTime default.",
+      "ours": "web/app/workspace-view.tsx:onPointerUp;web/app/workspace.tsx:onPick;web/lib/solar-workspace.ts:pick",
+      "currentRefs": [
+        {
+          "path": "web/app/workspace-view.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7ddf7423c4f7a0294561e6f75f0d637d2d52bd88c7bddc772f754cfd8df5bce1"
+        },
+        {
+          "path": "web/app/workspace.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "f83588143a5c644a1331f4cd102393d3c6d6537f430b93cbf102f84926999faf"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:036",
+      "legacyStatus": "not-applicable",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.setSuppress",
+      "nasaSha256": "2dba3b35dcd46a821d2aecfa7683add557cbc1c4d7cc964661d5e92fd625055e",
+      "legacyEvidence": "NASA separate DOM label click can suppress the following 3D pick once; our labels and objects share Bevy hit results and a single canvas pointer-up route, so copying its DOM suppression bit is not the same architecture.",
+      "ours": "web/app/workspace-view.tsx:pointer gesture routing;core/src/picking.rs:PickFrame.pick",
+      "currentRefs": [
+        {
+          "path": "core/src/picking.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "529043028a2714aab783f06268f527eca35069f0b336cf3062f18c5665f9dab4"
+        },
+        {
+          "path": "web/app/workspace-view.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7ddf7423c4f7a0294561e6f75f0d637d2d52bd88c7bddc772f754cfd8df5bce1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:037",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager._switchSelectionClass",
+      "nasaSha256": "2dba3b35dcd46a821d2aecfa7683add557cbc1c4d7cc964661d5e92fd625055e",
+      "legacyEvidence": "NASA toggles CSS selection class on label DOM; ours hides selected nearby labels per explicit user request and draws all labels in Bevy.",
+      "ours": "core/src/renderer.rs:draw_annotations;core/src/label_visibility.rs:Fade.update",
+      "currentRefs": [
+        {
+          "path": "core/src/label_visibility.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "3b86c667e0671f1e08272b62aaf875a5e0d3e81b41520fdc94bdcfb4d7cb82b3"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:038",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/SelectionManager-925.js",
+      "nasaSymbol": "SelectionManager._getLink",
+      "nasaSha256": "18454a656e12134ec0c08ce68ff9b3ab4343e56dfac4e5bd1ba485a6a5e0b2f7",
+      "legacyEvidence": "NASA application manager extends common selection and resolves content/link manager aliases; ours uses known target IDs and a strict semantic hash schema.",
+      "ours": "web/lib/scene-link.ts:parseSceneLink/formatSceneLink;web/app/workspace.tsx:action",
+      "currentRefs": [
+        {
+          "path": "web/app/workspace.tsx",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "f83588143a5c644a1331f4cd102393d3c6d6537f430b93cbf102f84926999faf"
+        },
+        {
+          "path": "web/lib/scene-link.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "camera-selection:039",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "Ours hover shares current object/label/ring picking and applies trajectory width/opacity; dragging suppresses hover. Source switches highlighted trajectory based on hovered entity.",
+      "ours": "core/src/picking.rs:PickFrame.hover;core/src/renderer.rs:draw_annotations;core/src/trajectory_render.rs:opacity/widths",
+      "currentRefs": [
+        {
+          "path": "core/src/picking.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "529043028a2714aab783f06268f527eca35069f0b336cf3062f18c5665f9dab4"
+        },
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:000",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.constructor frame callback",
+      "nasaSha256": "8185616afdb40b36091ea4e4275118575207efb6c1b1ad68441848807d6d7ce2",
+      "legacyEvidence": "NASA engine time advances with rate; ours advances elapsed_seconds*rate. Negative rates supported; host owns per-RAF advance.",
+      "ours": "core/src/clock.rs SimulationClock.advance; web/lib/solar-workspace.ts tick",
+      "currentRefs": [
+        {
+          "path": "core/src/clock.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "05ce63c38b7ee3d2b9ebf1871bd3803b4de345c56cf8c30c8d4aa2a6e01e9c8f"
+        },
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:001",
+      "legacyStatus": "verified",
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.play / pause / setTimeRate",
+      "nasaSha256": "8185616afdb40b36091ea4e4275118575207efb6c1b1ad68441848807d6d7ce2",
+      "legacyEvidence": "Current play preserves lastFrame for rate-only changes and resets only playing transition; prior rate-change regression was repaired. Busy+playing still rejects; pause remains allowed.",
+      "ours": "web/lib/solar-workspace.ts runtime.play",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:002",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TimeManager-922.js",
+      "nasaSymbol": "TimeManager._onLimitReach",
+      "nasaSha256": "d0278d6eae491d15512c34e5cb71f417802225ba8700ef897ee980a007e4a791",
+      "legacyEvidence": "NASA predicts next-frame crossing and routes to boundary interior +/-1ms with rate0/message; ours rolls back lastPublishedEpoch and reloads target coverage, preserving desiredPlaying when possible.",
+      "ours": "web/lib/solar-workspace.ts reload/tick critical coverage",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:003",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.isNow / getNow / setToNow",
+      "nasaSha256": "8185616afdb40b36091ea4e4275118575207efb6c1b1ad68441848807d6d7ce2",
+      "legacyEvidence": "NASA isNow rate1 and UTC error<1000ms; ours exposes live logic plus authoritative TDB conversion.",
+      "ours": "web/lib/time-controls.ts isLive; solar-workspace currentTime",
+      "currentRefs": [
+        {
+          "path": "web/lib/time-controls.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "c69d9a119e172fa889744be5dd9b43095048a152b3e7d918819cabdf4346bff1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:004",
+      "legacyStatus": "different",
+      "nasaFile": "engine/core/TimeUtils.js",
+      "nasaSymbol": "TimeUtils.etToUnix / unixToET",
+      "nasaSha256": "05c9a74bad19a502307f0a9a458811c45abc351800963ae60b173cbcf80745c6",
+      "legacyEvidence": "Our Rust explicit UTC/TDB implementation is distinct from recovered NASA TimeUtils; unit/frame intent explicit.",
+      "ours": "core/src/time_conversion.rs UTC/TDB conversion",
+      "currentRefs": [
+        {
+          "path": "core/src/time_conversion.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7e3a06df58503a5275e90fa66b1c18a8fa7f3e04839cd0c9a4a3ca0a268b1d84"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:005",
+      "legacyStatus": "verified",
+      "nasaFile": "ui/components/TimeControls.js",
+      "nasaSymbol": "TimeControls._createRatesMap / _roundRate / decreaseRate / increaseRate / _getValueFromRate",
+      "nasaSha256": "cf6fc5120f5f2e56ec0a190358a080739ffd29dd3332eb05844cef032fa22761",
+      "legacyEvidence": "Existing source golden table and 101 rates tests; preserves signed reverse rates and real-rate formatting.",
+      "ours": "web/lib/time-controls.ts TIME_RATES,adjacentRate,rateToSliderIndex",
+      "currentRefs": [
+        {
+          "path": "web/lib/time-controls.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "c69d9a119e172fa889744be5dd9b43095048a152b3e7d918819cabdf4346bff1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:006",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TimeManager-728.js",
+      "nasaSymbol": "TimeManager.parseTime / momentToET / etToMoment",
+      "nasaSha256": "8185616afdb40b36091ea4e4275118575207efb6c1b1ad68441848807d6d7ce2",
+      "legacyEvidence": "Our route intentionally stores TDB semantic state, validates finite rates and target IDs; dates pass controlled Rust conversion.",
+      "ours": "web/lib/scene-link.ts parseSceneLink/formatSceneLink; solar-workspace seekUtc",
+      "currentRefs": [
+        {
+          "path": "web/lib/scene-link.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7adc3cb30ac0cc0513d4476dd10d86f77625adbbedb5ab085c1cbedf1656a76d"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:007",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoController._loadDef / DynamoPointSet.getPointSet",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "Type-specific strict decoder, indexed fetch and source coverage checks replace NASA mutable download classes.",
+      "ours": "web/lib/solar-dyn-server.ts fetchSolarDyn; platform/dyn-decoder.ts decodeDyn",
+      "currentRefs": [
+        {
+          "path": "platform/dyn-decoder.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7116eefa378b04bb35ad8a5ba0fb136c10115702462099d399a88267a76db2da"
+        },
+        {
+          "path": "web/lib/solar-dyn-server.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "62b85729fec92cc987e27a790d6c1020e0a2fce1bd948cddf3897632562d1fc3"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:008",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "OrbPoint.calculate / apply",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "Our orb interpolates propagated endpoint positions and endpoint velocities, and barycenter scales by mu1/mu2.",
+      "ours": "platform/dyn-evaluator.ts propagateState/evaluateOrb/evaluateOrbVelocity",
+      "currentRefs": [
+        {
+          "path": "platform/dyn-evaluator.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "6395e3ad92de027f1e12b928183cdbb168965f135783b021f75b74bcca97a122"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:009",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "LinPoint.calculate / PosPoint.calculate",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "Lin interpolates positions; pos uses cubic Hermite position+velocity; strict source coverage.",
+      "ours": "platform/dyn-evaluator.ts evaluateOrb pos/lin branches",
+      "currentRefs": [
+        {
+          "path": "platform/dyn-evaluator.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "6395e3ad92de027f1e12b928183cdbb168965f135783b021f75b74bcca97a122"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:010",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "OriPoint._project / calculate",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "Projects endpoint orientation with angular velocity, shortest-arc quaternion interpolation then normalization.",
+      "ours": "platform/dyn-evaluator.ts evaluateOri",
+      "currentRefs": [
+        {
+          "path": "platform/dyn-evaluator.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "6395e3ad92de027f1e12b928183cdbb168965f135783b021f75b74bcca97a122"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:011",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoController.__updateOrientationAtTime / _getPointsAtTime",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "ORI unavailable outside known coverage now permits preceding declared align result; transient transport failures are distinguished. Controller array order is preserved.",
+      "ours": "platform/solar-system.ts #prepareOrientation/#orientationAt",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:012",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/AlignController.js",
+      "nasaSymbol": "AlignController.__updateOrientationAtTime",
+      "nasaSha256": "7caf0093e0c83ce12ded701df649ba8f62d01855bf14a89e98b5ac11b5f38ea9",
+      "legacyEvidence": "Source point/velocity/align axes are applied in declared controller order; dependencies fetched before solve.",
+      "ours": "platform/eyes-orientation.ts applyEntityAlign; solar-system #orientationAt",
+      "currentRefs": [
+        {
+          "path": "platform/eyes-orientation.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "9b3a0d47fce15165d933568aa82eeda146f8ee0920ceb969d9d1ca1f5512549e"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:013",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/controllers/CoverageController.js",
+      "nasaSymbol": "CoverageController.__update",
+      "nasaSha256": "23251652cd1fa9ac90e19dc123f7403ac7bf7f6a03c1225be59ca58765f808da",
+      "legacyEvidence": "NASA first same-class controller runs all exits before any enters/updates and throttles callbacks using Date.now. Our filters choose active declarations but do not implement callback lifecycle. Captured definitions contain 41 coverage controllers (JWST,Clementine,GRACE,etc).",
+      "ours": "platform/solar-system.ts active-controller filters; eyes-controllers.ts activeController",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; see Coverage/trail current review; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:014",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/core/Entity-567.js",
+      "nasaSymbol": "Entity parent selection / controller ordering",
+      "nasaSha256": "60d30d08a5f73272f0b992f99dcdafea34f6759c18a45dc7ff627ea39c66ac3d",
+      "legacyEvidence": "parentAt follows time-ordered boundaries; current state applies historical parent recursively; current source loading is keyed by data parent.",
+      "ours": "platform/eyes-catalog.ts parentAt; solar-system #positionAt/#phaseCoverage",
+      "currentRefs": [
+        {
+          "path": "platform/eyes-catalog.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "1a25e5d105bbd427bef966c95b3c1ebf26c7590964abd607448fa11241b4548f"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:015",
+      "legacyStatus": "different",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getIntervalForUpdate",
+      "nasaSha256": "f7a5eb9b9bbd3c09154d4eea9974214395502c4813d3a9da8fca0d888f4c564d",
+      "legacyEvidence": "NASA intersects configured/automatic interval with entity position coverage; ours uses current phase fallback plus optional independently prepared historical segments.",
+      "ours": "platform/solar-system.ts trailSamples/prepareTrailHistory",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; see Coverage/trail current review; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:016",
+      "legacyStatus": "different",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getAutoLength",
+      "nasaSha256": "f7a5eb9b9bbd3c09154d4eea9974214395502c4813d3a9da8fca0d888f4c564d",
+      "legacyEvidence": "NASA orb branch uses interpolated eccentricity, mu1+mu2 and h: E=-mu^2(1-e^2)/(2h^2), duration=2pi*mu/sqrt(8*abs(min(1,E^3))). Ours orb uses current record 2pi/abs(meanAngularMotion); nonorb uses finite-difference 2pi*h/v^2.",
+      "ours": "platform/solar-system.ts trailSamples inferredPeriod",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; see Coverage/trail current review; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:017",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent._getPositionAndVelocity",
+      "nasaSha256": "f7a5eb9b9bbd3c09154d4eea9974214395502c4813d3a9da8fca0d888f4c564d",
+      "legacyEvidence": "Independent historical evaluator composes historical body parent into world then subtracts same-time current reference body. Main data/clock never restored through checkpoint.",
+      "ours": "platform/trail-history.ts TrailHistory.prepare result.position",
+      "currentRefs": [
+        {
+          "path": "platform/trail-history.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "d17035c31d164d52fbaa5cd22abbfa9b0a1acec0c6534817f1c262524e3e20de"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:018",
+      "legacyStatus": "different",
+      "nasaFile": "engine/components/TrailComponent.js",
+      "nasaSymbol": "TrailComponent.__update / interval maintenance reverse playback",
+      "nasaSha256": "f7a5eb9b9bbd3c09154d4eea9974214395502c4813d3a9da8fca0d888f4c564d",
+      "legacyEvidence": "Both history reuse gates require epoch>=history.epoch, despite prepared interval covering earlier samples. In reverse playback each refresh discards valid cached history and creates sources again.",
+      "ours": "platform/solar-system.ts prepareTrailHistory existing cache gate and trailSamples history gate",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; see Coverage/trail current review; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:019",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/DynamoController.js",
+      "nasaSymbol": "DynamoPointSet.unloadOldPointSet / unload",
+      "nasaSha256": "a026264a2e6cbec9315ea7fe4aa93ebf9c41e1752592801750ff8b900c6806e6",
+      "legacyEvidence": "Bounded caches, abort and disposal isolate late histories from current source publication. checkpoint restore cancels loads and is not used for history.",
+      "ours": "platform/solar-system.ts retain/checkpoint/dispose; trail-history dispose",
+      "currentRefs": [
+        {
+          "path": "platform/solar-system.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "c598c8cd7c0c80f9686d051a9c0498b4dac4e361e8fb42927daf670096a1d043"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "time-data:020",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/controllers/TimeController.js",
+      "nasaSymbol": "TimeController.setRate / togglePlayPause / getRateDisplay",
+      "nasaSha256": "3daca99c67f7ec17f84d4a7ce3a738a22164747905b40ffeb866b5a982fb8446",
+      "legacyEvidence": "This recovered file is a UI BaseComponent despite its engine/controllers directory; rate changes route to TimeManager, using fixed 365-day years/30-day months. Our host routes controlled time intents and retains saved rate separately from playing.",
+      "ours": "web/lib/time-controls.ts formatRate/adjacentRate; web/lib/solar-workspace.ts runtime.play",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        },
+        {
+          "path": "web/lib/time-controls.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "c69d9a119e172fa889744be5dd9b43095048a152b3e7d918819cabdf4346bff1"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:000",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.toggleLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "NASA owns visibility callbacks and parent-scoped child layers; host uses scene retention and two category booleans. sceneIds always retains selected object and ancestors before applying moons/spacecraft discovery filters.",
+      "ours": "web/lib/solar-workspace.ts:sceneIds/groups/configure",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:001",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.changeSpheroidMap",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "NASA iterates mapInfo.textures by textureRole and configures atmosphere feature; sphere host currently supplies faceAssets/base color rather than selectable channel maps.",
+      "ours": "core/src/render_assets.rs:attach_visuals",
+      "currentRefs": [
+        {
+          "path": "core/src/render_assets.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "4c54cf565f3fca21bdb76cb27b1e6a37b04826706fed8373ace3f80f6149b5bc"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:002",
+      "legacyStatus": "different",
+      "nasaFile": "engine/components/SpheroidLODComponent.js",
+      "nasaSymbol": "SpheroidLODComponent.setTexture",
+      "nasaSha256": "e327994b3b2ce14a94291e1f8f16bb1056fe710785387cfd1b0f3d24db2245e3",
+      "legacyEvidence": "NASA assigns per-role texture uniforms and normal-map defines; ours converts six color images into one sRGB UV-sphere image with shared base/emissive bindings.",
+      "ours": "core/src/face_texture.rs:resolve_faces",
+      "currentRefs": [
+        {
+          "path": "core/src/face_texture.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "99a1ebc044c2d542d73a95a924eb6afc7d911439b0e96f2e4574058432a62b3a"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:003",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "Recovered hover policy has explicit width/alpha transitions; ours applies hovered opacity and trail width endpoints in one material batch.",
+      "ours": "core/src/trajectory_render.rs:opacity/widths",
+      "currentRefs": [
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:004",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleTrails",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "NASA manager controls per-entity trails; host globally toggles spacecraft trail publication and clears historical evaluators.",
+      "ours": "web/lib/solar-workspace.ts:trails/configure",
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:005",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/components/OrbitLineComponent.js",
+      "nasaSymbol": "OrbitLineComponent",
+      "nasaSha256": "7c126d3296db0eb2527ff48c659daca0a804a5e24efa2a1507803d72a175b5ec",
+      "legacyEvidence": "Current path supports sampled/conic segments and a shared additive depth-tested material without depth writes.",
+      "ours": "core/src/orbit_lines.rs:visit_styled_segments; core/src/trajectory_render.rs:upload",
+      "currentRefs": [
+        {
+          "path": "core/src/orbit_lines.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "bdd4bd3d5d383272f11cffbc253099b9d82795ef7d9fbd484c0203320a33bd81"
+        },
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:006",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.constructor",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "NASA uses label quadtree, category weights and clickable exception collections; ours uses weighted screen rectangles, occlusion and ready-state gates.",
+      "ours": "core/src/screen_layout.rs:LabelLayout.place; core/src/renderer.rs:draw_annotations",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        },
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:007",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-924.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "nasaSha256": "e1483c1b46801c82d8d66286b9452f3f6de660bbd4ec8563bb72fa69622e2208",
+      "legacyEvidence": "Separate recovered wrapper contains entity link handling; native renderer label picking supplies object selection rather than equivalent link behavior.",
+      "ours": "core/src/renderer.rs:draw_annotations",
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:008",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/ResourceManager.js",
+      "nasaSymbol": "ResourceManager.acquire/releaseAllForEntityItem",
+      "nasaSha256": "599f555d87330ae615379ff8acacb44354de201d02ea49431d279730d58776ef",
+      "legacyEvidence": "NASA owner-to-resource references and release functions differ from Bevy strong handles, revision replacement and bounded generated-face cache.",
+      "ours": "core/src/render_assets.rs:attach_visuals/poll_visuals; core/src/face_texture.rs:FaceCache",
+      "currentRefs": [
+        {
+          "path": "core/src/face_texture.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "99a1ebc044c2d542d73a95a924eb6afc7d911439b0e96f2e4574058432a62b3a"
+        },
+        {
+          "path": "core/src/render_assets.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "4c54cf565f3fca21bdb76cb27b1e6a37b04826706fed8373ace3f80f6149b5bc"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:009",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/MaterialManager.js",
+      "nasaSymbol": "MaterialManager.get/release",
+      "nasaSha256": "43cc0631426b017ee03715931909c19e62ad08b0a7505f0e1ba6e1f793ea6dbe",
+      "legacyEvidence": "NASA clones cached shader materials; ours builds StandardMaterial for spheres and leaves imported glTF material ownership separate.",
+      "ours": "core/src/render_assets.rs:sphere_material",
+      "currentRefs": [
+        {
+          "path": "core/src/render_assets.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "4c54cf565f3fca21bdb76cb27b1e6a37b04826706fed8373ace3f80f6149b5bc"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:010",
+      "legacyStatus": "different",
+      "nasaFile": "engine/components/ModelComponent.js",
+      "nasaSymbol": "ModelComponent.setUrl",
+      "nasaSha256": "a5975d2fe8e02b3c86962c7cc7f56d41448800b992b212172d20c5c015b03928",
+      "legacyEvidence": "NASA resets referenced resources when URL changes and maintains animation clip/hidden-object maps; ours replaces visual roots by revision and loads glTF scene with cameras/lights disabled.",
+      "ours": "core/src/render_assets.rs:attach_visuals",
+      "currentRefs": [
+        {
+          "path": "core/src/render_assets.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "4c54cf565f3fca21bdb76cb27b1e6a37b04826706fed8373ace3f80f6149b5bc"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; model phases or explicit trail bounds now exist; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:011",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/components/RingsComponent.js",
+      "nasaSymbol": "RingsComponent",
+      "nasaSha256": "52a98cc16f337cb59ed7b3f46d85d9b9aa9652eb5c0649c556d9766c2472dbf9",
+      "legacyEvidence": "Ours performs top-opacity reuse and bottom color handling; separate custom material exists.",
+      "ours": "core/src/ring_texture.rs:resolve_rings/ring_pixel",
+      "currentRefs": [
+        {
+          "path": "core/src/ring_texture.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "aaa5b996d78eac76c844d86c92166db3a411528b7976f24cf45ad15abb5e61ab"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:012",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/components/AtmosphereComponent.js",
+      "nasaSymbol": "AtmosphereComponent",
+      "nasaSha256": "ff70b080b293eafb54fe992f17ff9ad7549df11616780abb64709f618aac781a",
+      "legacyEvidence": "solar_surface implements stellar solar rendering, not a planet atmosphere component. No equivalence inferred from similarly named surface module.",
+      "ours": "core/src/solar_surface.rs:sync_solar_surface",
+      "currentRefs": [
+        {
+          "path": "core/src/solar_surface.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "d053e165f0e5d22c8c783cf21a609441ac7162a359a74f05deaeefbe2f73866e"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:013",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.constructor",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "constructor(app, scene) { super(app); this._scene = scene; this._ids = []; this._hiddenIds = []; this._opacity = { primary: .75, secondary: .35, hover: 1 }; this._width = { default: [0, 2], hover: [2, 4] }; this._orbitLinesOpts = { lineWidth: { default: 1.2, hover: 2 }, glowWidth: { default: 0, hover: 0 }, visibleInterval: Pioneer.VisibleInterval.DefaultVisibleFar }; this._orbitLineEntityNames = SolarSystemSceneExports.Entity.getEntityNamesInGroup(\"planets\").add(\"moon\"); this._colors = { default: new Pioneer.Color(1, 1, 1, this._opacity.secondary), mercury: new Pioneer.Color(151 / 255, 104 / 255, 172 / 255, this._opacity.primary), venus: new Pioneer.Color(176 / 255, 121 / 255, 25 / 255, this._opacity.primary), earth: new Pioneer.Color(0, .6, .8, this._opacity.primary), mars: new Pioneer.Color(154 / 255, 78 / 255, 25 / 255, this._opacity.primary), jupiter: new Pioneer.Color(218 / 255, 139 / 255, 114 / 255, this._opacity.primary), saturn: new Pioneer.Color(213 / 255, 193 / 255, 135 / 255, this._opacity.primary), uranus: new Pioneer.Color(104 / 255, .8, 218 / 255, this._opacity.primary), neptune: new Pioneer.Color(112 / 255, 140 / 255, 227 / 255, this._opacity.primary) }; this.bindFunctions([\"onHoverChange\", \"setUpTrail\", \"toggleTrails\", \"toggleOrbits\"]); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:014",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setScene",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setScene(scene) { this._scene = scene; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:015",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.create",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "create(entityId) { if (this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent)) return void console.warn(\"Trail already exists for\", entityId); const trailComponent = this._scene.getEntity(entityId).addComponent(Pioneer.TrailComponent); this._ids.push(entityId); return trailComponent; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:016",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setStartTime",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setStartTime(entityIds, startTime) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setStartTime(startTime); } }",
+      "ours": {
+        "path": "platform/eyes-trail-policy.ts",
+        "function": "export function eyesTrailDuration",
+        "line": 4
+      },
+      "currentRefs": [
+        {
+          "path": "platform/eyes-trail-policy.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7af5884dc6f64cf7767e4a4d9cc6cafd048521a6080530166b3be0203247ae65"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; model phases or explicit trail bounds now exist; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:017",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setEndTime",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setEndTime(entityIds, endTime) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setEndTime(endTime); } }",
+      "ours": {
+        "path": "platform/eyes-trail-policy.ts",
+        "function": "export function eyesTrailDuration",
+        "line": 4
+      },
+      "currentRefs": [
+        {
+          "path": "platform/eyes-trail-policy.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "7af5884dc6f64cf7767e4a4d9cc6cafd048521a6080530166b3be0203247ae65"
+        }
+      ],
+      "currentAssessment": "partial-implementation-updated; model phases or explicit trail bounds now exist; not fully equivalent",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:018",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "onHoverChange(entityId, isHovered, updateFade = false) { const entity = this._scene.getEntity(entityId); const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); const orbitLineComponent = entity?.getComponent(SolarSystemSceneExports.OrbitLineComponent); if (!entity || !trailComponent && !orbitLineComponent) return; const color = new Pioneer.Color(); const lineComponent = trailComponent ?? orbitLineComponent; const hoverState = isHovered ? \"hover\" : \"default\"; if (orbitLineComponent) { const { lineWidth: lineWidth, glowWidth: glowWidth } = this._orbitLinesOpts; orbitLineComponent.setLineWidth(lineWidth[hoverState]); orbitLineComponent.setGlowWidth(glowWidth[hoverState]); } else if (trailComponent) { const widths = entity.trailHover?.width?.[hoverState] ?? this._width[hoverState]; trailComponent.setWidths(...widths); } const { primary: primary, secondary: secondary, hover: hover } = this._opacity; const opacity = isHovered ? hover : this._colors[entityId] ? primary : secondary; color.copy(lineComponent.getColor()); color.a = opacity; lineComponent.setColor(color); updateFade && trailComponent.setAlphaFade(color.a); }",
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:019",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setFade",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setFade(entityIds, alphaFade) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setAlphaFade(alphaFade); } }",
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:020",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setWidths",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setWidths(entityIds, startWidth, endWidth) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(entityIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setWidths(startWidth, endWidth); } }",
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:021",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setMultipleWidths",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setMultipleWidths(entityIds, startWidth, endWidth) { for (const entityId of entityIds) { const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setWidths(startWidth, endWidth); } }",
+      "ours": {
+        "path": "core/src/trajectory_render.rs",
+        "function": "pub(crate) fn widths",
+        "line": 98
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/trajectory_render.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "28bd00a3182c5c70ce5d0940dfadda3a831f4f9a91265f8e913680da044c6461"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:022",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.getColor",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "getColor(entityId) { const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); return trailComponent ? trailComponent.getColor() : null; }",
+      "ours": {
+        "path": "platform/eyes-line-style.ts",
+        "function": "export function",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "platform/eyes-line-style.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "1d6cfb3f01d0aac254da3c5568ff9f2662bc781102b210d1526a2c8f1b6eb35f"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:023",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setColor",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setColor(entityIds, suppliedColor = null) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); if (trailComponent) { const trailColor = suppliedColor instanceof Pioneer.Color ? suppliedColor : this._colors[entityId] || this._colors.default; trailComponent.setColor(trailColor); } } }",
+      "ours": {
+        "path": "platform/eyes-line-style.ts",
+        "function": "export function",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "platform/eyes-line-style.ts",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "1d6cfb3f01d0aac254da3c5568ff9f2662bc781102b210d1526a2c8f1b6eb35f"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:024",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.setUpTrail",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "setUpTrail(entity) { const layerManager = this._app.getManager(\"layer\"); const sceneManager = this._app.getManager(\"scene\"); const entityId = entity.getName(); const trailsLayer = layerManager.getLayer(\"trails\"); const useOrbitLine = this._orbitLineEntityNames.has(entityId); useOrbitLine && this.createOrbitLine(entity); (null !== trailsLayer && !trailsLayer.visible || useOrbitLine) && sceneManager.setVisibility(false, entityId); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:025",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.show",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "show(entityIds = null) { null === entityIds ? entityIds = this._hiddenIds.length > 0 ? this._hiddenIds : this._ids : Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; const trailComponent = this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent); if (trailComponent) { const hiddenIndex = this._hiddenIds.indexOf(entityId); -1 !== hiddenIndex && this._hiddenIds.splice(hiddenIndex, 1); trailComponent.setEnabled(true); } else console.warn(\"TrailManager.show: Trail does not exist - \", entityId); } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:026",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.hide",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "hide(hiddenIds = null) { null === hiddenIds ? hiddenIds = this._ids : Array.isArray(hiddenIds) || (hiddenIds = [hiddenIds]); this._hiddenIds = hiddenIds; for (let entityIndex = 0; entityIndex < hiddenIds.length; entityIndex++) { const trailComponent = this._scene.getEntity(hiddenIds[entityIndex]).getComponent(Pioneer.TrailComponent); trailComponent && trailComponent.setEnabled(false); } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:027",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleTrails",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "toggleTrails(isVisible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) { const entity = scene.getEntityAt(entityIndex); const trailComponent = entity.getComponent(Pioneer.TrailComponent); if (null !== trailComponent) { const entityInfo = this._app.getManager(\"content\").getEntityInfo(entity.getName()); if (entityInfo) { const category = entityInfo.category; const subcategory = entityInfo.subcategory; const categoryLayer = this._app.getManager(\"layer\").getLayerFromCategory(subcategory) || this._app.getManager(\"layer\").getLayerFromCategory(category); const { forceVisible = false } = this.app.getManager(\"scene\").getEntityStatus(entity.getName()) || {}; null === categoryLayer || categoryLayer.visible || forceVisible ? trailComponent.setEnabled(isVisible) : trailComponent.setEnabled(false); } else trailComponent.setEnabled(isVisible); } } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:028",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.createOrbitLine",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "createOrbitLine(entity) { const trailComponent = entity.getComponent(Pioneer.TrailComponent); trailComponent && entity.removeComponent(trailComponent); const orbitLineComponent = entity.addComponent(SolarSystemSceneExports.OrbitLineComponent); const { lineWidth: lineWidth, glowWidth: glowWidth, visibleInterval: visibleInterval } = this._orbitLinesOpts; const lineColor = this._colors[entity.getName()] ?? this._colors.default; orbitLineComponent.setColor(lineColor); orbitLineComponent.setVisibleInterval(visibleInterval); orbitLineComponent.setLineWidth(lineWidth.default); orbitLineComponent.setGlowWidth(glowWidth.default); const isVisible = this._app.getManager(\"layer\").getLayer(\"orbits\").visible; orbitLineComponent.setEnabled(isVisible); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "trails(enabled)",
+        "line": 1552
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:029",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.toggleOrbits",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "toggleOrbits(isVisible) { this._orbitLineEntityNames.forEach(entityId => { const orbitLineComponent = this._scene.getEntity(entityId)?.getComponent(SolarSystemSceneExports.OrbitLineComponent); orbitLineComponent?.setEnabled(isVisible); }); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:030",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.ids",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "get ids() { return this._ids; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:031",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.ids",
+      "nasaSha256": "12fc9a0192a2512a6d7c0ee3e6507d22dd5b3166d3d0e063fb8f914f4e99ae63",
+      "legacyEvidence": "set ids(entityIds) { Array.isArray(entityIds) || (entityIds = [entityIds]); for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex++) { const entityId = entityIds[entityIndex]; if (this._ids.includes(entityId)) continue; this._scene.getEntity(entityId).getComponent(Pioneer.TrailComponent) && this._ids.push(entityId); } } } export { TrailManager };",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:032",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.constructor",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "constructor(app) { super(app); this._sceneManager = app.getManager(\"scene\"); this._contentManager = app.getManager(\"content\"); this._layers = {}; this._contextualLayersList = [\"majorMoons\", \"minorMoons\", \"landers\", \"orbiters\", \"satelliteGroup\", \"heliosphere\"]; this._targetId = \"\"; this._previousTarget = []; this._dependencies = new Set(); this._previousDependencies = new Set(); this._currentSurfaceLayer = \"default\"; this.bindFunctions([\"resetContextualVisibility\", \"toggleLayer\", \"changeSpheroidMap\", \"resetContextualLayers\"]); this._eventNames.push(\"toggleLayer\"); this._initCallbacks(); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:033",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.addLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "addLayer(layerId, { name: displayName = \"\", group: groupName = \"\", categories = [], defaultVisibility = true, toggleCallback: toggleCallbacks = [], sublayers: sublayerIds = [] }) { void 0 === this._layers[layerId] && (this._layers[layerId] = {}); this._layers[layerId].name = displayName; this._layers[layerId].group = groupName; this._layers[layerId].defaultVisibility = defaultVisibility; this._layers[layerId].visible = defaultVisibility; Array.isArray(categories) || (categories = [categories]); this._layers[layerId].categories = categories; Array.isArray(sublayerIds) || (sublayerIds = [sublayerIds]); this._layers[layerId].sublayers = sublayerIds; for (let sublayerIndex = 0; sublayerIndex < sublayerIds.length; sublayerIndex++) { const sublayerId = sublayerIds[sublayerIndex]; void 0 === this._layers[sublayerId] && (this._layers[sublayerId] = {}); this._layers[sublayerId].parent = layerId; } Array.isArray(toggleCallbacks) || (toggleCallbacks = [toggleCallbacks]); this._layers[layerId].toggleCallback = toggleCallbacks; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:034",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.addCallback",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "addCallback(layerId, callback) { const layer = this.getLayer(layerId); null !== layer && layer.toggleCallback.push(callback); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:035",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.removeCallback",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "removeCallback(layerId, callback) { const layer = this.getLayer(layerId); if (null === layer) return; const callbackIndex = layer.toggleCallback.indexOf(callback); layer.toggleCallback.splice(callbackIndex, 1); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:036",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getLayer(layerId) { return void 0 === this._layers[layerId] ? null : this._layers[layerId]; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:037",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getCurrentSurfaceLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getCurrentSurfaceLayer() { return this._currentSurfaceLayer; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:038",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.changeSpheroidMap",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "async changeSpheroidMap(entityId, mapInfo, options = {}) { if (\"cmts\" === mapInfo.type) return void console.error(\"This function does not yet handle CMTS texture\"); const sceneManager = this.app.getManager(\"scene\"); const wmtsManager = this.app.getManager(\"wmts\"); const lodComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(Pioneer.SpheroidLODComponent); const atmosphereComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(Pioneer.AtmosphereComponent); const wmtsComponent = sceneManager.get(\"main\").getEntity(entityId)?.getComponent(SolarSystemSceneExports.WMTSComponent); this._currentSurfaceLayer = mapInfo.id; lodComponent && \"texture\" === mapInfo.type ? (false === wmtsManager.getWMTSComponentState(entityId) && sceneManager.isEntityHD(entityId) && (await sceneManager.toggleHDTextureForEntity(entityId, false)), lodComponent.setEnabled(true), sceneManager.addLoading(entityId, \"spheroidLOD\"), Object.keys(mapInfo.textures).forEach(textureRole => { const textureUrl = \"$STATIC_ASSETS_URL/maps/\" + mapInfo.textures[textureRole].url; lodComponent.setTexture(textureRole, textureUrl, mapInfo.textures[textureRole].sizes); }), await lodComponent.getLoadedPromise(), null !== wmtsComponent && wmtsComponent.setEnabled(false), sceneManager.removeLoading(entityId, \"spheroidLOD\")) : \"wmts\" === mapInfo.type && (null === wmtsComponent || wmtsComponent.getName() !== mapInfo.id ? await sceneManager.addWMTSComponent(entityId, mapInfo) : false === wmtsComponent.isEnabled() && (await sceneManager.enableWMTSComponent(entityId, wmtsComponent))); null != atmosphereComponent && false !== options.atmosphere && atmosphereComponent.setEnabled(mapInfo.features.includes(\"atmosphere\")); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:039",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetSpheroidMap",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "async resetSpheroidMap(entityId) { const atmosphereComponent = this._app.pioneer.getScene(\"main\").getEntity(entityId)?.getComponent(Pioneer.AtmosphereComponent); let preservedFeatures = [\"shadowEntities\"]; atmosphereComponent?.isEnabled() && (preservedFeatures = [\"shadowEntities\", \"atmosphere\"]); const defaultTexture = this._app.getManager(\"content\").getSpheroidDefaultTextureInformation(entityId, preservedFeatures); \"default\" !== defaultTexture?.id && (await this.changeSpheroidMap(entityId, defaultTexture)); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:040",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.toggleLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "async toggleLayer(layerId, options = {}, requestedVisibility) { const { spout: spout, spoutFontSize: spoutFontSize } = this.app.getManager(\"router\").configs; if (void 0 === this._layers[layerId]) return; const { configs: configs } = this._app.getManager(\"router\"); if (options.layerId = layerId, void 0 !== requestedVisibility && this._layers[layerId].visible === requestedVisibility && true !== configs[layerId]) return; this._layers[layerId].visible = !this._layers[layerId].visible; for (let callbackIndex = 0; callbackIndex < this._layers[layerId].toggleCallback.length; callbackIndex++) { (0, this._layers[layerId].toggleCallback[callbackIndex])(this._layers[layerId].visible, options); } for (let sublayerIndex = 0; sublayerIndex < this._layers[layerId].sublayers.length; sublayerIndex++) { this.getLayer(this._layers[layerId].sublayers[sublayerIndex]).visible = this._layers[layerId].visible; this.triggerCallbacks(\"toggleLayer\", [this._layers[layerId].sublayers[sublayerIndex], this._layers[layerId].visible, options]); } this.triggerCallbacks(\"toggleLayer\", [layerId, this._layers[layerId].visible, options]); const sceneManager = this.app.getManager(\"scene\"); if (null !== options.parentId && void 0 !== options.parentId ? sceneManager.updateEntityLayerVisibilityForChildren(options) : sceneManager.updateEntityLayerVisibility(options), true === spout && this._layers[layerId].visible) { const constellationLabels = []; if (await this.pioneer.waitUntilNextFrame(), layerId.toLowerCase().includes(\"constellations\")) { this.app.pioneer.getScene(\"main\").getEntity(\"sun\").getComponent(SolarSystemSceneExports.ConstellationsComponent).getNames().forEach(constellationName => { constellationLabels.push(this.app.pioneer.getScene(\"main\").getEntity(`constellation_label_${constellationName}`)); });",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:041",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.syncLayerVisibilityWithQueries",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "syncLayerVisibilityWithQueries() { const routeConfigs = this.app.getManager(\"router\").configs; this._contextualLayersList.forEach(layerId => { const requestedVisibility = routeConfigs[layerId] ?? this._app.getManager(\"layer\").getLayer(layerId).defaultVisibility; this.toggleLayer(layerId, {}, requestedVisibility); }); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:042",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.setTarget",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "setTarget(targetId) { if (this._previousTarget.push(this._targetId), this._previousDependencies = new Set([...this._previousDependencies, ...this._dependencies]), this._targetId = targetId, this._dependencies.clear(), \"\" !== this._targetId) { const dependencies = this._sceneManager.getDependencies(this._targetId); this._dependencies = new Set(dependencies); } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "async select(id)",
+        "line": 1321
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:043",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetTarget",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "resetTarget() { for (let targetIndex = 0; targetIndex < this._previousTarget.length; targetIndex++) { const previousTarget = this._previousTarget[targetIndex]; const cameraEntity = this.app.getManager(\"camera\").cameraEntity; if (null === cameraEntity || null === cameraEntity.getParent()) return; if (cameraEntity.getParent().getName() === previousTarget) return; } for (let targetIndex = 0; targetIndex < this._previousTarget.length; targetIndex++) { const previousTarget = this._previousTarget[targetIndex]; this.resetContextualVisibility(previousTarget); } this._previousTarget = []; this._previousDependencies.clear(); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "state.selected",
+        "line": 483
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:044",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetContextualVisibility",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "resetContextualVisibility(contextId) { const currentTime = this._sceneManager.main.getEngine().getTime(); let contextualLayers = this.getContextualLayers(contextId); for (; \"\" !== contextId && 0 === contextualLayers.length;) { contextId = SolarSystemSceneExports.Parenting.getParentOfEntity(contextId, currentTime); contextualLayers = this.getContextualLayers(contextId); } let targetId = this._targetId; for (contextualLayers = this.getContextualLayers(targetId); \"\" !== targetId && 0 === contextualLayers.length;) { targetId = SolarSystemSceneExports.Parenting.getParentOfEntity(targetId, currentTime); contextualLayers = this.getContextualLayers(targetId); } if (targetId !== contextId) { this._contextId = contextId; for (let layerIndex = 0; layerIndex < contextualLayers.length; layerIndex++) { const layerId = contextualLayers[layerIndex]; const layer = this.getLayer(layerId); if (void 0 !== layer.parent) { this.getLayer(layer.parent).visible !== layer.visible && this.toggleLayer(layerId, { parentId: contextId, group: layer.group }); } else layer.visible !== layer.defaultVisibility && this.toggleLayer(layerId, { parentId: contextId, group: layer.group }); } } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:045",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getTarget",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getTarget() { return this._targetId; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "state.selected",
+        "line": 483
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:046",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getEntityLayer",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getEntityLayer(entityId) { const entityInfo = this._contentManager.getEntityInfo(entityId); if (null === entityInfo) return null; const category = entityInfo.category; const subcategory = entityInfo.subcategory; return this.getLayerFromCategory(subcategory) || this.getLayerFromCategory(category); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:047",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayerFromCategory",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getLayerFromCategory(category) { if (!category) return null; for (const [layerId, layer] of Object.entries(this._layers)) if (layer.categories.includes(category)) return this._layers[layerId]; return null; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:048",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getLayerFromSatelliteGroup",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getLayerFromSatelliteGroup(satelliteGroup) { if (!satelliteGroup) return null; for (const [layerId, layer] of Object.entries(this._layers)) if (layer.categories.includes(satelliteGroup)) return this._layers[layerId]; return null; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:049",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getAllContextualLayerOptions",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getAllContextualLayerOptions() { return this._contextualLayersList; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:050",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.getContextualLayers",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "getContextualLayers(entityId) { const contextualLayers = []; if (\"\" === entityId) return contextualLayers; const contentManager = this.app.getManager(\"content\"); const entityInfo = contentManager.getEntityInfo(entityId); const moonIds = entityInfo?.hasMoons ? SolarSystemSceneExports.Entity.getEntityNamesInGroup(entityId + \", moons\") : new Set(); const spacecraftIds = SolarSystemSceneExports.Entity.getEntityNamesInGroup(entityId + \", spacecraft\"); \"sun\" === entityId && false === contextualLayers.includes(\"heliosphere\") && contextualLayers.push(\"heliosphere\"); moonIds.forEach(moonId => { const moonInfo = contentManager.getEntityInfo(moonId); if (null !== moonInfo) { switch (moonInfo.subcategory || moonInfo.category) { case \"Major Moon\": false === contextualLayers.includes(\"majorMoons\") && contextualLayers.push(\"majorMoons\"); break; case \"Minor Moon\": false === contextualLayers.includes(\"minorMoons\") && contextualLayers.push(\"minorMoons\"); } } }); const currentTime = this._app.pioneer.getTime(); spacecraftIds.forEach(spacecraftId => { const spacecraftInfo = contentManager.getEntityInfo(spacecraftId); if (null !== spacecraftInfo) { switch (spacecraftInfo.subcategory || spacecraftInfo.category) { case \"Orbiter\": false === contextualLayers.includes(\"orbiters\") && SolarSystemSceneExports.Parenting.getParentOfEntity(spacecraftId, currentTime) === entityId && contextualLayers.push(\"orbiters\"); break; case \"Landing Site\": case \"Lander\": case \"Rover\": false === contextualLayers.includes(\"landers\") && SolarSystemSceneExports.Parenting.getParentOfEntity(spacecraftId, currentTime) === entityId && contextualLayers.push(\"landers\"); } } }); entityInfo?.constellation && contextualLayers.push(\"satelliteGroup\"); contextualLayers.sort((leftLayerId, rightLayerId) => { const layerOrder = Obje",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:051",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.resetContextualLayers",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "resetContextualLayers(newParentId, oldParentId) { const availableLayers = this.getContextualLayers(newParentId); this._contextualLayersList.forEach(layerId => { false === availableLayers.includes(layerId) && (\"heliosphere\" === layerId ? this.toggleLayer(layerId, { parentId: void 0 }, this.getLayer(layerId).defaultVisibility || false) : this.toggleLayer(layerId, { parentId: oldParentId }, this.getLayer(layerId).defaultVisibility || false)); }); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:052",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LayerManager.js",
+      "nasaSymbol": "LayerManager.isEntityVisibleWithCurrentLayers",
+      "nasaSha256": "1119d5ca27a3b951a4fd672f52fb7c7e24dfeeeae6b24f02dbe0b4c74c9c54bb",
+      "legacyEvidence": "isEntityVisibleWithCurrentLayers(entityId, options = {}) { const { satelliteGroup: satelliteGroup, allowSublayer: allowSublayer } = options ?? {}; const entityInfo = this._contentManager.getEntityInfo(entityId); if (null !== entityInfo) { const categoryLayer = this.getLayerFromCategory(entityInfo.category); const subcategoryLayer = this.getLayerFromCategory(entityInfo.subcategory); const satelliteLayer = this.getLayerFromSatelliteGroup(entityInfo.constellation); return null !== satelliteLayer && entityInfo.constellation === satelliteGroup ? satelliteLayer.visible : null !== subcategoryLayer ? !(subcategoryLayer.parent && !this.getLayer(subcategoryLayer.parent)?.visible && !allowSublayer) && subcategoryLayer.visible : null !== categoryLayer ? categoryLayer.visible : null === categoryLayer && null === subcategoryLayer; } return true; } } export { LayerManager };",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const sceneIds =",
+        "line": 618
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:053",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/LabelManager-924.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "nasaSha256": "e1483c1b46801c82d8d66286b9452f3f6de660bbd4ec8563bb72fa69622e2208",
+      "legacyEvidence": "_getLink(entityId) { const baseLink = super._getLink(entityId); return this._app.getManager(\"link\")?.getParsedLink?.(baseLink) || baseLink; } } export { LabelManager };",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:054",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.constructor",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "constructor(app, scene, viewport) { super(app); this._scene = scene; this._eventNames.push(\"hoverchange\", \"labelclicked\"); this._initCallbacks(); this._viewport = viewport; this._labelQuadtree = new SolarSystemSceneExports.LabelQuadtree(viewport); this._focusRect = new Pioneer.Rect(); this._focusSize = .05; this._focusIntersectionRects = new Pioneer.FastMap(); this._iconMap = { Universe: \"no-icon\", Galaxy: \"no-icon\", Star: \"no-icon\", Barycenter: \"icon-circle-white-small\", \"Landing site\": \"icon-hexagon\", Moon: \"icon-circle-white-small\", Asteroid: \"icon-circle-white-small\", \"Dwarf Planet\": \"icon-circle-white-small\", Comet: \"icon-circle-white-small\", Spacecraft: \"icon-hexagon\", Planet: \"icon-circle-\", Default: \"icon-circle-white-small\" }; this._weightMap = { Universe: 100, Galaxy: 100, Star: 100, Barycenter: 0, \"Landing site\": 5, Asteroid: 15, Comet: 15, Moon: 25, \"Dwarf Planet\": 28, Spacecraft: 30, Planet: 50, Constellation: 10 }; this._weights = {}; this._labels = {}; this._isClickable = true; this._exceptions = new Set(); this.bindFunctions([\"update\", \"addLabel\", \"removeLabel\", \"toggleLabels\", \"toggleLabelForEntity\", \"toggleIcons\", \"toggleIconForEntity\", \"_clickCallback\", \"setUpLabel\", \"setUpIcon\"]); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:055",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.update",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "update() { const viewportSize = this._viewport.getBounds().size; const focusDiameter = Math.max(viewportSize.x, viewportSize.y) * this._focusSize; this._focusRect.set((viewportSize.x - focusDiameter) / 2, (viewportSize.y - focusDiameter) / 2, focusDiameter, focusDiameter); this._labelQuadtree.setBounds(\"__focus\", this._focusRect); this._labelQuadtree.update(); }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:056",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.initLabelWeights",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "initLabelWeights(weightDefinitions, resetExisting = true) { resetExisting && (this._weights = {}); const labelManager = this._app.getManager(\"label\"); for (const weightId of Object.keys(weightDefinitions)) { const category = weightDefinitions[weightId].category; this._weights[weightId] = {}; void 0 !== this._weightMap[category] ? this._weights[weightId].weight = this._weightMap[category] : this._weights[weightId].weight = 1; resetExisting && labelManager._labels[weightId] && labelManager.setWeight(weightId, this._weights[weightId].weight); } }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:057",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setWeight",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setWeight(entityId, weight) { try { this._labelQuadtree.setWeight(entityId, weight); return true; } catch (missingLabelError) { return false; } }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:058",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.resetWeight",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "resetWeight(entityId) { const contentManager = this._app.getManager(\"content\"); const category = contentManager?.getEntityInfo(entityId)?.category; const defaultWeight = this.getDefaultWeight(entityId, category); this._labelQuadtree.setWeight(entityId, defaultWeight); }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:059",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.getDefaultWeight",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "getDefaultWeight(entityId, category = void 0) { return entityId.startsWith(\"constellation_\") ? this._weightMap.Constellation : Object.keys(this._weights).length > 0 && void 0 !== this._weights[entityId] ? this._weights[entityId].weight : void 0 !== this._weightMap[category] ? this._weightMap[category] : 0; }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:060",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.getWeightMap",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "getWeightMap() { return this._weightMap; }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:061",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setWeightMap",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setWeightMap(weightMap) { this._weightMap = weightMap; }",
+      "ours": {
+        "path": "core/src/screen_layout.rs",
+        "function": "pub fn place",
+        "line": 12
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/screen_layout.rs",
+          "changedSinceLegacyBaseline": false,
+          "sha256": "7413346eb54038b20856947087b51ce36d5fd60e3e515a5e695a6a1d75f595eb"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:062",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setUpLabel",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setUpLabel(entity) { const contentManager = this._app.getManager(\"content\"); const layerManager = this._app.getManager(\"layer\"); const category = contentManager.getEntityInfo(entity.getName())?.category; const defaultWeight = this.getDefaultWeight(entity.getName(), category); this.addLabel(entity, defaultWeight); this.setLabelProps({ getLabelClass: labelEntityId => `no-select ${contentManager.getClassName(labelEntityId) ?? \"\"}` }, [entity.getName()]); const entityId = entity.getName(); const labelsLayer = layerManager.getLayer(\"labels\"); null === labelsLayer || labelsLayer.visible || this.toggleLabelForEntity(false, entityId); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:063",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addLabel",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "addLabel(entity, weight) { entity.getComponent(Pioneer.DivComponent) && (this._labels[entity.getName()] = { name: entity.getName(), el: entity.getComponent(Pioneer.DivComponent).getDiv(), isClickable: true }, this._labelQuadtree.addEntity(entity, weight)); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:064",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeLabel",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "removeLabel(entityId) { entityId.getComponent(Pioneer.DivComponent) && (delete this._labels[entityId.getName()], this._labelQuadtree.removeEntity(entityId.getName())); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:065",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setUpIcon",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setUpIcon(entity) { const layerManager = this._app.getManager(\"layer\"); const entityId = entity.getName(); const iconsLayer = layerManager.getLayer(\"icons\"); null === iconsLayer || iconsLayer.visible || this.toggleIconForEntity(false, entityId); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:066",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setLabelClickable",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setLabelClickable(entityId, isClickable) { this._labels[entityId] && (this._labels[entityId].isClickable = isClickable, this._labels[entityId].el.classList.toggle(\"clickable\", isClickable)); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:067",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setClickable",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setClickable(isClickable) { this._isClickable = isClickable; for (let entityIndex = 0, entityCount = this._scene.getNumEntities(); entityIndex < entityCount; entityIndex++) { const divComponent = this._scene.getEntityAt(entityIndex).getComponent(Pioneer.DivComponent); if (null !== divComponent) { const labelElement = divComponent.getDiv(); isClickable ? labelElement.classList.remove(\"unclickable\") : labelElement.classList.add(\"unclickable\"); } } }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:068",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addException",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "addException(entityId) { this._exceptions.add(entityId); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:069",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeException",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "removeException(entityId) { this._exceptions.delete(entityId); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:070",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addExceptions",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "addExceptions(entityIds) { entityIds.forEach(entityId => this._exceptions.add(entityId)); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:071",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeExceptions",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "removeExceptions(entityIds) { entityIds.forEach(entityId => this._exceptions.delete(entityId)); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:072",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleLabels",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "toggleLabels(visible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) this.toggleLabelForEntity(visible, scene.getEntityAt(entityIndex).getName(), { scene: scene }); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:073",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleLabelForEntity",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "toggleLabelForEntity(visible, entityId, { scene: scene } = {}) { let targetScene = scene; void 0 === targetScene && (targetScene = this._scene); const entity = targetScene.getEntity(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); this._exceptions.has(entity.getName()) || null !== divComponent && (visible ? divComponent.getDiv().lastElementChild?.classList.remove(\"hidden\") : divComponent.getDiv().lastElementChild?.classList.add(\"hidden\")); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:074",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleIcons",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "toggleIcons(visible, { scene: scene } = {}) { void 0 === scene && (scene = this._scene); for (let entityIndex = 0; entityIndex < scene.getNumEntities(); entityIndex++) this.toggleIconForEntity(visible, scene.getEntityAt(entityIndex).getName(), { scene: scene }); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:075",
+      "legacyStatus": "different",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.toggleIconForEntity",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "toggleIconForEntity(visible, entityId, { scene: scene } = {}) { let targetScene = scene; void 0 === targetScene && (targetScene = this._scene); const entity = targetScene.getEntity(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); this._exceptions.has(entity.getName()) || null !== divComponent && (visible ? divComponent.getDiv().firstElementChild?.classList.remove(\"hidden\") : divComponent.getDiv().firstElementChild?.classList.add(\"hidden\")); }",
+      "ours": {
+        "path": "core/src/renderer.rs",
+        "function": "fn draw_annotations(",
+        "line": 1842
+      },
+      "currentRefs": [
+        {
+          "path": "core/src/renderer.rs",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "413556ad4fd10a085c8df5e970b74d8bbb33e896795cd68a287071afb45262ae"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:076",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager._getLink",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "_getLink(entityId) { return `/${entityId}`; }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:077",
+      "legacyStatus": "source-compared",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager._clickCallback",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "_clickCallback(entity) { const routerManager = this._app.getManager(\"router\"); const link = this._getLink(entity.getName()); const routePath = \"string\" == typeof link ? link : link.path ?? \"\"; const { options: navigationOptions = { keepTime: true }, query: queryParams = {} } = \"object\" == typeof link && link; routerManager.navigate(queryParams, routePath, navigationOptions); }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:078",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.setLabelProps",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "setLabelProps({ getLabelClass: getLabelClass, getIconClass: getIconClass, getTextClass: getTextClass, handleClick: handleClick, handleTouch: handleTouch, handleMouseEnter: handleMouseEnter, handleMouseLeave: handleMouseLeave } = {}, entityIds = Object.keys(this._labels), sceneOverride, cameraOverride) { let targetScene = sceneOverride; targetScene || (targetScene = this._scene); let cameraEntity = cameraOverride; cameraEntity || (cameraEntity = targetScene.getEntity(\"camera\")); const cameraComponent = cameraEntity.getComponent(Pioneer.CameraComponent); for (const entityId of entityIds) { const entity = targetScene.getEntity(entityId); const entityInfo = this._app.getManager(\"content\").getEntityInfo(entityId); const divComponent = entity.getComponent(Pioneer.DivComponent); if (null === divComponent) continue; divComponent.setActiveCamera(cameraComponent); const labelElement = divComponent.getDiv(); const labelClass = \"function\" == typeof getLabelClass ? getLabelClass(entityId) : \"\"; labelElement.className += ` ${labelClass} clickable`; const iconElement = document.createElement(\"span\"); const textElement = document.createElement(\"span\"); const categoryIconClass = this._iconMap[entityInfo?.category] ?? this._iconMap.Default; const planetIconSuffix = \"Planet\" === entityInfo?.category ? entityId : \"\"; const customIconClass = \"function\" == typeof getIconClass ? getIconClass(entityId) : \"\"; iconElement.className = `icon ${categoryIconClass}${planetIconSuffix} ${customIconClass}`; textElement.className = `text ${\"function\" == typeof getTextClass ? getTextClass(entityId) : \"\"}`; textElement.innerHTML = entityInfo?.displayName || entityInfo?.iauName || labelElement.innerHTML; labelElement.innerHTML = \"\"; labelElement.appendChild(iconElement); labelElement.appendChild(textElement",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:079",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.addClassToLabels",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "addClassToLabels(className, entityIds) { for (const entityId of entityIds) { const entity = this._scene.getEntity(entityId); const labelElement = entity?.getComponent(Pioneer.DivComponent)?.getDiv(); labelElement?.classList.add(className); } }",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    },
+    {
+      "id": "render-resources:080",
+      "legacyStatus": "missing",
+      "nasaFile": "engine/managers/LabelManager-563.js",
+      "nasaSymbol": "LabelManager.removeClassFromLabels",
+      "nasaSha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b",
+      "legacyEvidence": "removeClassFromLabels(className, entityIds) { for (const entityId of entityIds) { const entity = this._scene.getEntity(entityId); const labelElement = entity?.getComponent(Pioneer.DivComponent)?.getDiv(); labelElement?.classList.remove(className); } } } export { LabelManager };",
+      "ours": {
+        "path": "web/lib/solar-workspace.ts",
+        "function": "const configure =",
+        "line": 881
+      },
+      "currentRefs": [
+        {
+          "path": "web/lib/solar-workspace.ts",
+          "changedSinceLegacyBaseline": true,
+          "sha256": "651d89bbc676b54ceea74ab97f4626f63ed222a718a04520009df715fc7d7958"
+        }
+      ],
+      "currentAssessment": "legacy-source-comparison-retained; runtime parity unverified",
+      "currentEvidence": "global review matrix and source probes; changed files require feature-specific regression, no automatic promotion",
+      "pairedRuntimeParity": false
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+   Compiling spaceeyes-core v0.0.58 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 11.86s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-7f28c6af0daf8ac7.exe)
+
+running 1 test
+test renderer::camera_parity_regression_tests::nasa_tilted_system_fit_uses_actual_camera_basis ... FAILED
+
+failures:
+
+---- renderer::camera_parity_regression_tests::nasa_tilted_system_fit_uses_actual_camera_basis stdout ----
+
+thread 'renderer::camera_parity_regression_tests::nasa_tilted_system_fit_uses_actual_camera_basis' (32240) panicked at src\renderer.rs:3605:9:
+system fit used different axes: actual=350.634765625, expected=176.8836149261422
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    renderer::camera_parity_regression_tests::nasa_tilted_system_fit_uses_actual_camera_basis
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 148 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

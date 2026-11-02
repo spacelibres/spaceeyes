@@ -1,0 +1,32 @@
+{
+  "auKm": 149597870.7,
+  "reference": "https://ssd.jpl.nasa.gov/astro_par.html",
+  "epoch": 846615186.622,
+  "rows": [
+    {
+      "id": "mercury",
+      "semiMajorAxisKm": 57909022.412916474,
+      "semiMajorAxisAU": 0.38709790548453626
+    },
+    {
+      "id": "earth",
+      "semiMajorAxisKm": 149509188.8391294,
+      "semiMajorAxisAU": 0.9994071983748456
+    },
+    {
+      "id": "jupiter",
+      "semiMajorAxisKm": 778160221.3298434,
+      "semiMajorAxisAU": 5.201679794563035
+    },
+    {
+      "id": "neptune",
+      "semiMajorAxisKm": 4529409843.968092,
+      "semiMajorAxisAU": 30.277234714465038
+    },
+    {
+      "id": "moon",
+      "semiMajorAxisKm": 385744.1619827294,
+      "semiMajorAxisAU": 0.002578540457679986
+    }
+  ]
+}

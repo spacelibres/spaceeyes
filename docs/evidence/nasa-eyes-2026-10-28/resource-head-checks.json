@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-28",
+  "note": "HEAD probes only; no body decode or complete browser dependency verification",
+  "resources": [
+    {
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/moon/earth/orb/def.dyn",
+      "status": 200,
+      "length": "3116",
+      "contentType": "application/octet-stream",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/saturn/sun/orb/def.dyn",
+      "status": 200,
+      "length": "4708",
+      "contentType": "application/octet-stream",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/maps/earth/color_4_0.png",
+      "status": 403,
+      "error": "Response status code does not indicate success: 403 (Forbidden).",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_4_0.jpg",
+      "status": 403,
+      "error": "Response status code does not indicate success: 403 (Forbidden).",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/sprites/saturn_rings_top.png",
+      "status": 200,
+      "length": "3588",
+      "contentType": "image/png",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin",
+      "status": 200,
+      "length": "27857",
+      "contentType": "application/octet-stream",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/stars/constellations.bin",
+      "status": 200,
+      "length": "10952",
+      "contentType": "application/octet-stream",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/dynamic/earth/data/visibleEarth/dataset_manifest.json",
+      "status": 200,
+      "length": "539031",
+      "contentType": "application/json",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/maps/earth/color_16_0.png",
+      "status": 200,
+      "length": "699",
+      "contentType": "image/png",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD",
+      "basis": "entity-specific sizes [16,512,4096], face 0"
+    },
+    {
+      "url": "https://eyes.nasa.gov/assets/static/maps/jupiter/color_16_0.jpg",
+      "status": 200,
+      "length": "675",
+      "contentType": "image/jpeg",
+      "cors": "*",
+      "cache": "must-revalidate, max-age=3600",
+      "method": "HEAD",
+      "basis": "entity-specific sizes [16,512,4096], face 0"
+    }
+  ],
+  "sourceCommit": "4a8a83be2ff8298d7fe26fc5c9bbfe47f2fee7db"
+}
