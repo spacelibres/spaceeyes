@@ -62,6 +62,15 @@ export function* adaptiveTrailSteps(
       };
     const p = points[0]!,
       q = points[8]!;
+    // The camera can graze the interior of a chord while all nine probes are
+    // distant. Endpoint distances then underestimate its projected error.
+    let observerDistance: number | undefined;
+    if (observer) {
+      const delta=q.map((x,k)=>x-p[k]);
+      const length2=delta.reduce((sum,x)=>sum+x*x,0);
+      const u=length2>0 ? Math.max(0,Math.min(1,delta.reduce((sum,x,k)=>sum+x*(observer[k]-p[k]),0)/length2)) : 0;
+      observerDistance=Math.max(1e-6,Math.hypot(...p.map((x,k)=>x+u*delta[k]-observer[k])));
+    }
     let error = 0,
       turn = 0,
       previous: number[] | undefined;
@@ -76,10 +85,9 @@ export function* adaptiveTrailSteps(
         Math.hypot(...v.map((x, k) => x - (p[k] + ((q[k] - p[k]) * i) / 8))) /
           (radius * 0.001),
       );
-      if(observer) {
-        const distance=Math.max(1e-6,Math.min(...[p,q,v].map(point=>Math.hypot(...point.map((x,k)=>x-observer[k])))));
+      if(observerDistance !== undefined) {
         const deviation=Math.hypot(...v.map((x,k)=>x-(p[k]+((q[k]-p[k])*i)/8)));
-        error=Math.max(error,deviation/(distance*0.0005));
+        error=Math.max(error,deviation/(observerDistance*0.0005));
       }
       if (i) {
         const delta = v.map((x, k) => x - points[i - 1]![k]);
