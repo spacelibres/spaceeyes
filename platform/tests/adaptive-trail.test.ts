@@ -1,6 +1,22 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { adaptiveTrailTimes } from "../adaptive-trail.ts";
+test("near observer refines real source curvature without shortening the year-long path", () => {
+  const r=1.5e8, observer=[r,0,1000], curve=(t:number)=>[r*Math.cos(t),r*Math.sin(t),0];
+  const result=adaptiveTrailTimes(-6,0,0.1,512,curve,2*Math.PI,[],observer);
+  assert.equal(result.times[0],-6);
+  assert.equal(result.times.at(-1),0.1);
+  assert.equal(result.unresolved.size,0);
+  assert.ok(result.times.length<=512);
+  let worst=0;
+  for(let i=1;i<result.times.length;i++) {
+    const a=curve(result.times[i-1]),b=curve(result.times[i]),m=curve((result.times[i-1]+result.times[i])/2);
+    const error=Math.hypot(...m.map((x,j)=>x-(a[j]+b[j])/2));
+    const distance=Math.max(1e-6,Math.min(...[a,b,m].map(p=>Math.hypot(...p.map((x,j)=>x-observer[j])))));
+    worst=Math.max(worst,error/distance);
+  }
+  assert.ok(worst<=0.0005,`angular chord error ${worst}`);
+});
 test("adaptive history retains both temporal ends and spends points on curved portions", () => {
   const curve = (t: number) => [2 * Math.cos(t * t), 2 * Math.sin(t * t), 0];
   const result = adaptiveTrailTimes(0, 2, 2.1, 160, curve, Math.PI);

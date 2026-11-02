@@ -2305,12 +2305,21 @@ fn draw_annotations(
             let color = style
                 .and_then(|s| s.color_rgba)
                 .unwrap_or([0.35, 0.55, 0.7, 1.]);
-            crate::orbit_lines::visit_styled_segments(
+            let observer = (core.focused_object() == Some(id)).then(|| {
+                crate::orbit_lines::reference_point(
+                    std::array::from_fn(|i| scientific_camera[i] - origin[i]),
+                    [0.; 3],
+                    orientation,
+                    true,
+                )
+            });
+            crate::orbit_lines::visit_styled_segments_with_observer(
                 points,
                 core.trajectory_epochs(id),
                 core.clock().epoch(),
                 current,
                 style,
+                observer,
                 |a, b, alpha_a, alpha_b| {
                     let a = to_display(crate::orbit_lines::reference_point(
                         a,

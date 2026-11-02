@@ -193,13 +193,26 @@ mod tests {
 }
 
 /// Clip cached scientific samples to the past, preserving explicit discontinuities.
-#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+#[cfg(test)]
 pub(crate) fn visit_styled_segments(
     points: &[[f64; 3]],
     epochs: Option<&[f64]>,
     epoch: f64,
     current: [f64; 3],
     style: Option<&crate::TrajectoryStyle>,
+    draw: impl FnMut([f64; 3], [f64; 3], f32, f32),
+) {
+    visit_styled_segments_with_observer(points, epochs, epoch, current, style, None, draw);
+}
+
+#[cfg_attr(not(feature = "browser-render"), allow(dead_code))]
+pub(crate) fn visit_styled_segments_with_observer(
+    points: &[[f64; 3]],
+    epochs: Option<&[f64]>,
+    epoch: f64,
+    current: [f64; 3],
+    style: Option<&crate::TrajectoryStyle>,
+    observer: Option<[f64; 3]>,
     mut draw: impl FnMut([f64; 3], [f64; 3], f32, f32),
 ) {
     if let Some(conic) = style
@@ -227,9 +240,8 @@ pub(crate) fn visit_styled_segments(
             .sqrt();
         let radius = expected.into_iter().map(|x| x * x).sum::<f64>().sqrt();
         let replace = error.is_finite() && error <= radius * 1e-5;
-        let slot = (angle.to_degrees().round() as usize) % 360;
         let vertex = |i: usize| {
-            if replace && i % 360 == slot {
+            if replace && (i as f64 * std::f64::consts::PI / 180. - angle).abs() < 1e-12 {
                 current
             } else {
                 sample(CIRCLE[i % 360])
@@ -237,12 +249,63 @@ pub(crate) fn visit_styled_segments(
         };
         let first = vertex(0);
         let mut previous = first;
-        for i in 1..360 {
-            let next = vertex(i);
-            draw(previous, next, 1., 1.);
+        let mut remaining = 1024_usize;
+        let observer = observer.filter(|p| p.iter().all(|v| v.is_finite()));
+        let mut stack = Vec::with_capacity(if observer.is_some() { 25 } else { 0 });
+        for i in 1..=360 {
+            let next = if i == 360 { first } else { vertex(i) };
+            let lo = (i - 1) as f64 * std::f64::consts::PI / 180.;
+            let hi = i as f64 * std::f64::consts::PI / 180.;
+            if observer.is_none() {
+                if replace && angle > lo + 1e-12 && angle < hi - 1e-12 {
+                    draw(previous, current, 1., 1.);
+                    draw(current, next, 1., 1.);
+                } else {
+                    draw(previous, next, 1., 1.);
+                }
+                previous = next;
+                continue;
+            }
+            // Insert at its actual anomaly. Replacing a rounded degree vertex
+            // changes the arc parameter and creates a false near-camera kink.
+            if replace && angle > lo + 1e-12 && angle < hi - 1e-12 {
+                stack.push((angle, hi, current, next, 0_u8));
+                stack.push((lo, angle, previous, current, 0_u8));
+            } else {
+                stack.push((lo, hi, previous, next, 0_u8));
+            }
+            while let Some((lo, hi, a, b, depth)) = stack.pop() {
+                if let Some(observer) = observer
+                    && remaining > 0
+                    && depth < 24
+                {
+                    let mid = (lo + hi) * 0.5;
+                    let point = sample(mid.sin_cos());
+                    let error = (0..3)
+                        .map(|j| (point[j] - (a[j] + b[j]) * 0.5).powi(2))
+                        .sum::<f64>()
+                        .sqrt();
+                    let distance = [a, b, point]
+                        .into_iter()
+                        .map(|p| {
+                            (0..3)
+                                .map(|j| (p[j] - observer[j]).powi(2))
+                                .sum::<f64>()
+                                .sqrt()
+                        })
+                        .fold(f64::INFINITY, f64::min)
+                        .max(1e-6);
+                    if error > distance * 0.0005 {
+                        remaining -= 1;
+                        stack.push((mid, hi, point, b, depth + 1));
+                        stack.push((lo, mid, a, point, depth + 1));
+                        continue;
+                    }
+                }
+                draw(a, b, 1., 1.);
+            }
             previous = next;
         }
-        draw(previous, first, 1., 1.);
         return;
     }
     let breaks = style.map(|s| s.break_indices.as_slice()).unwrap_or(&[]);
@@ -672,6 +735,59 @@ mod trail_tests {
 mod conic_tests {
     use super::*;
     #[test]
+    fn near_conic_uses_analytic_subdivision_without_a_camera_facing_corner() {
+        let style = crate::TrajectoryStyle {
+            kind: Some("orbit".into()),
+            conic: Some(crate::ConicOrbit {
+                semi_latus_rectum_km: 100.,
+                radial_unit: [1., 0., 0.],
+                transverse_unit: [0., 1., 0.],
+                eccentricity_radial: 0.,
+                eccentricity_transverse: 0.,
+            }),
+            ..Default::default()
+        };
+        let angle = 0.123_f64;
+        let current = [100. * angle.cos(), 100. * angle.sin(), 0.];
+        let observer = [current[0], current[1], 0.0001];
+        let mut lines = vec![];
+        visit_styled_segments_with_observer(
+            &[],
+            None,
+            0.,
+            current,
+            Some(&style),
+            Some(observer),
+            |a, b, _, _| lines.push((a, b)),
+        );
+        assert!(lines.len() > 360 && lines.len() <= 1385);
+        assert_eq!(lines.last().unwrap().1, lines[0].0);
+        for (a, b) in lines {
+            let mid = [(a[0] + b[0]) / 2., (a[1] + b[1]) / 2., 0.];
+            let radius = mid[0].hypot(mid[1]);
+            let true_mid = [mid[0] * 100. / radius, mid[1] * 100. / radius, 0.];
+            let error = (0..3)
+                .map(|i| (true_mid[i] - mid[i]).powi(2))
+                .sum::<f64>()
+                .sqrt();
+            let distance = [a, b, true_mid]
+                .into_iter()
+                .map(|p| {
+                    (0..3)
+                        .map(|i| (p[i] - observer[i]).powi(2))
+                        .sum::<f64>()
+                        .sqrt()
+                })
+                .fold(f64::INFINITY, f64::min);
+            assert!(
+                error / distance <= 0.000501,
+                "angular chord error {}",
+                error / distance
+            );
+            assert!((a[0].hypot(a[1]) - 100.).abs() < 1e-10);
+        }
+    }
+    #[test]
     fn closed_degree_ring_attaches_exact_current_without_epoch_dependence() {
         let c = crate::ConicOrbit {
             semi_latus_rectum_km: 100.,
@@ -693,8 +809,8 @@ mod conic_tests {
             visit_styled_segments(&[], None, epoch, current, Some(&style), |a, b, _, _| {
                 lines.push((a, b))
             });
-            assert_eq!(lines.len(), 360);
-            assert_eq!(lines[359].1, lines[0].0);
+            assert_eq!(lines.len(), 361);
+            assert_eq!(lines.last().unwrap().1, lines[0].0);
             assert!(lines.iter().any(|(a, _)| *a == current));
             for (a, b) in lines {
                 for p in [a, b] {

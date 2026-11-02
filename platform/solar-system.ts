@@ -1554,7 +1554,7 @@ export class SolarSystemData {
     const work=this.trailSampleSteps(id,epoch,count,detailed);
     let step=work.next();while(!step.done)step=work.next();return step.value;
   }
-  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false) {
+  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false, observerWorld?: readonly number[]) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
     if (!Number.isFinite(epoch) || this.status(id)?.status !== "ready")
@@ -1605,6 +1605,17 @@ export class SolarSystemData {
       relativeCache.set(t, point);
       return point;
     };
+    // Renderer freezes the parent frame at the current epoch for this path.
+    // Measure visual error in that same frame, never against heliocentric radius.
+    let observer: number[] | undefined;
+    if(detailed && observerWorld?.length===3 && observerWorld.every(Number.isFinite)) {
+      const parent=origin ? this.position(origin,epoch) : [0,0,0];
+      observer=observerWorld.map((x,i)=>x-parent[i]);
+      if(policy.relativeToEntityOrientation && origin) {
+        const q=this.orientation(origin,epoch);
+        observer=rotateVector(observer as [number,number,number],[q[0],-q[1],-q[2],-q[3]]);
+      }
+    }
     const probe = Math.min(1, (rangeEnd - rangeStart) / 1e6);
     const lo = Math.max(rangeStart, epoch - probe);
     const hi = Math.min(rangeEnd, epoch + probe);
@@ -1686,7 +1697,7 @@ export class SolarSystemData {
       const boundaries=eyesTrailBoundaries(id);
       if(policy.relativeStartTime) start=Math.max(coveredStart,start-reuse,...boundaries.filter(t=>t<=start));
       if(policy.relativeEndTime) end=Math.min(coveredEnd,end+reuse,...boundaries.filter(t=>t>=end));
-      ({times,unresolved}=yield* adaptiveTrailSteps(start,Math.max(start,Math.min(end,epoch)),end,count,relative,period,[...(history?.boundaries??[]),...drawRangeTdbSeconds]));
+      ({times,unresolved}=yield* adaptiveTrailSteps(start,Math.max(start,Math.min(end,epoch)),end,count,relative,period,[...(history?.boundaries??[]),...drawRangeTdbSeconds],observer));
     } else for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);

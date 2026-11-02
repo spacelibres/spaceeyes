@@ -8,6 +8,7 @@ export function* adaptiveTrailSteps(
   position: (time: number) => readonly number[],
   period?: number,
   boundaries: readonly number[] = [],
+  observer?: readonly number[],
 ): Generator<void, { times: number[]; unresolved: Set<number> }> {
   if (
     !Number.isInteger(count) ||
@@ -19,6 +20,8 @@ export function* adaptiveTrailSteps(
     start === end
   )
     throw Error("Invalid adaptive trail window");
+  if(observer && (observer.length!==3 || !observer.every(Number.isFinite)))
+    throw Error("Invalid trail observer");
   const cache = new Map<number, readonly number[] | undefined>();
   const failures = new Set<number>();
   const sample = (t: number) => {
@@ -73,6 +76,11 @@ export function* adaptiveTrailSteps(
         Math.hypot(...v.map((x, k) => x - (p[k] + ((q[k] - p[k]) * i) / 8))) /
           (radius * 0.001),
       );
+      if(observer) {
+        const distance=Math.max(1e-6,Math.min(...[p,q,v].map(point=>Math.hypot(...point.map((x,k)=>x-observer[k])))));
+        const deviation=Math.hypot(...v.map((x,k)=>x-(p[k]+((q[k]-p[k])*i)/8)));
+        error=Math.max(error,deviation/(distance*0.0005));
+      }
       if (i) {
         const delta = v.map((x, k) => x - points[i - 1]![k]);
         const norm = Math.hypot(...delta);
@@ -130,7 +138,7 @@ export function* adaptiveTrailSteps(
   while (times.length < count) {
     let index = -1;
     for (let i = 0; i < segments.length; i++) {
-      yield;
+      if(i % 64 === 0) yield;
       if (
         !segments[i].terminal &&
         segments[i].score > 1 &&

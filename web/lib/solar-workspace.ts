@@ -7,6 +7,7 @@ import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eye
 import {eyesModelPhase,eyesModelVariants} from "../../platform/eyes-model-phases.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
 import { shouldRefreshTrajectory } from "./trajectory-refresh.ts";
+import { trajectoryObserverChanged, type TrajectoryObserver } from "./trajectory-observer.ts";
 import {
   entityAlignDependencies,
   isEntityAlign,
@@ -671,6 +672,15 @@ export async function createWorkspace(
   const pendingTrajectories = new Set<string>();
   const trajectoryCounts = new Map<string, number>();
   const trajectoryDetails = new Map<string, boolean>();
+  const trajectoryObservers = new Map<string, TrajectoryObserver>();
+  const currentTrajectoryObserver = (id: string): TrajectoryObserver | undefined => {
+    if(id !== state.selected) return;
+    try {
+      const camera = state.cameraDebug?.positionKm;
+      if(!Array.isArray(camera) || camera.length!==3 || !camera.every(Number.isFinite)) return;
+      return {camera:[...camera],target:data.position(id,core.epoch())};
+    } catch { return; }
+  };
   const sceneIds = (epoch: number) => {
     const ids = new Set(baseSolarIds);
     if (state.selected) {
@@ -777,6 +787,7 @@ export async function createWorkspace(
       trajectoryWindows.delete(id);
       pendingTrajectories.delete(id);
       trajectoryCounts.delete(id);
+      trajectoryObservers.delete(id);
       return;
     }
     const budget = trajectoryBudget(id);
@@ -785,12 +796,13 @@ export async function createWorkspace(
     );
     if (isTrail) {
       const ownedRevision = revision, selected = state.selected, epoch = core.epoch();
+      const observer = currentTrajectoryObserver(id);
       const key = `${ownedRevision}:${selected}:${budget}`;
       if (queuedTrails.get(id) === key) return;
       queuedTrails.set(id, key);
       trajectoryWork.enqueue({
         objectId: id, revision: ++trailJobRevision,
-        create: () => data.trailSampleSteps(id, epoch, budget, selected === id),
+        create: () => data.trailSampleSteps(id, epoch, budget, selected === id, observer?.camera),
         onError: error => {
           if(closed || signal.aborted || revision!==ownedRevision) return;
           pendingTrajectories.delete(id);
@@ -816,6 +828,10 @@ export async function createWorkspace(
           pendingTrajectories.delete(id);
           trajectoryCounts.set(id, budget);
           trajectoryDetails.set(id, selected === id);
+          if(observer) {
+            trajectoryObservers.clear();
+            trajectoryObservers.set(id,observer);
+          } else trajectoryObservers.delete(id);
           scheduleHistory(id);
         },
       });
@@ -1839,8 +1855,11 @@ export async function createWorkspace(
               // Cosmetic maintenance must not rebuild the whole scene in one RAF.
               // Rotate over current windows; no deferred work can publish a stale selection.
               const selectedWindow = trajectoryWindows.get(state.selected);
+              const observer = currentTrajectoryObserver(state.selected);
+              const viewChanged = solarCatalog.find(body=>body.id===state.selected)?.kind === "spacecraft" && observer !== undefined &&
+                trajectoryObserverChanged(trajectoryObservers.get(state.selected),observer);
               const selectedDue = selectedWindow && now - lastSelectedTrajectoryRefresh >= 100 &&
-                (epoch < selectedWindow[0] || epoch > selectedWindow[1]);
+                (viewChanged || epoch < selectedWindow[0] || epoch > selectedWindow[1]);
               const ids = [...new Set([...pendingTrajectories, ...trajectoryWindows.keys()])];
               const start = selectedDue ? ids.indexOf(state.selected) :
                 (ids.indexOf(lastTrajectoryId ?? "") + 1) % Math.max(1, ids.length);
@@ -1855,7 +1874,7 @@ export async function createWorkspace(
                 const window = trajectoryWindows.get(id);
                 if (shouldRefreshTrajectory(
                     pendingTrajectories.has(id),
-                    !window || epoch < window[0] || epoch > window[1],
+                    !window || epoch < window[0] || epoch > window[1] || (id===state.selected && viewChanged),
                     id === state.selected,
                     now - lastTrajectoryRefresh,
                     now - lastSelectedTrajectoryRefresh,
