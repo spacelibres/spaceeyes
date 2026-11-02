@@ -27,8 +27,10 @@ fn clip_near(a:vec4<f32>, b:vec4<f32>)->vec4<f32> {
  let normal=vec2<f32>(-tangent.y,tangent.x);
  var p=mix(a,b,input.corner.y);
  let width=max(mix(input.widths.x,input.widths.y,input.corner.y),0.0);
- // NASA uses the actual pixel width; the camera MSAA handles edge coverage.
- let raster_width=width;
+ // NASA LineShader scales pixel widths with the shorter viewport dimension.
+ // corner.x is +/-0.5, so raster_width is the full width, not a half-width.
+ let resolution_factor=max(1.0,min(viewport.x,viewport.y)/800.0);
+ let raster_width=width*resolution_factor;
  p.x+=normal.x*input.corner.x*raster_width*2.0/viewport.x*p.w;
  p.y+=normal.y*input.corner.x*raster_width*2.0/viewport.y*p.w;
  o.position=p; o.color=input.color;
