@@ -96,6 +96,36 @@ fn visible_workspace_winit_settings() -> bevy::winit::WinitSettings {
     }
 }
 
+fn display_plugins(canvas: &str) -> bevy::app::PluginGroupBuilder {
+    DefaultPlugins
+        .set(AssetPlugin {
+            meta_check: AssetMetaCheck::Never,
+            ..default()
+        })
+        .set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "太空之眼".into(),
+                canvas: Some(canvas.into()),
+                fit_canvas_to_parent: true,
+                ..default()
+            }),
+            ..default()
+        })
+}
+
+#[cfg(test)]
+mod display_plugin_tests {
+    use super::*;
+    #[test]
+    fn startup_group_does_not_add_an_automatic_mesh_ray_backend() {
+        // The ray API feature does not install MeshPickingPlugin in Bevy0.19.1.
+        // Trying to disable that absent plugin would panic before rendering.
+        assert!(
+            !display_plugins("#test").contains::<bevy::picking::mesh_picking::MeshPickingPlugin>()
+        );
+    }
+}
+
 pub(crate) fn create_browser_app(
     core: SharedCore,
     stop: Arc<AtomicBool>,
@@ -113,113 +143,98 @@ pub(crate) fn create_browser_app(
         23.0 / 255.0,
         33.0 / 255.0,
     )));
-    app.add_plugins(
-        DefaultPlugins
-            .set(AssetPlugin {
-                // Host catalogs contain source assets, not Bevy processor sidecars.
-                meta_check: AssetMetaCheck::Never,
-                ..default()
-            })
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "太空之眼".into(),
-                    canvas: Some(canvas.into()),
-                    fit_canvas_to_parent: true,
-                    ..default()
-                }),
-                ..default()
-            }),
-    )
-    .insert_resource(visible_workspace_winit_settings())
-    .add_plugins(CoreScenePlugin(core))
-    .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
-    .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
-    .add_plugins((
-        MaterialPlugin::<crate::deep_render::GalaxyMaterial>::default(),
-        MaterialPlugin::<crate::solar_surface::SolarSurfaceMaterial>::default(),
-        MaterialPlugin::<crate::stellar_render::StellarMaterial>::default(),
-        MaterialPlugin::<crate::stellar_render::ProminenceMaterial>::default(),
-    ))
-    .register_asset_loader(crate::hdr_assets::SeHdrLoader)
-    .init_resource::<crate::deep_lod::DeepSpaceLod>()
-    .add_systems(
-        PostUpdate,
-        crate::deep_lod::update_lod
-            .after(bevy::transform::TransformSystems::Propagate)
-            .after(bevy::camera::CameraUpdateSystems),
-    )
-    .add_systems(
-        Update,
-        crate::deep_render::sync_environment.after(update_focus),
-    )
-    .add_systems(
-        Update,
-        crate::sky_render::sync_sky
-            .after(sync_scene)
-            .after(crate::deep_render::sync_environment),
-    )
-    .add_plugins(MaterialPlugin::<crate::trajectory_render::TrajectoryMaterial>::default())
-    .init_resource::<crate::trajectory_render::TrajectoryBatch>()
-    .add_systems(
-        PostUpdate,
-        crate::trajectory_render::upload.after(draw_annotations),
-    )
-    .insert_resource(RendererStop(stop))
-    .insert_resource(RendererPicks(picks))
-    .init_resource::<crate::solar_surface::SolarSurfaceLod>()
-    .add_systems(
-        PostUpdate,
-        crate::solar_surface::sync_solar_surface
-            .after(crate::stellar_render::sync_stellar_lod)
-            .after(bevy::transform::TransformSystems::Propagate),
-    )
-    .init_resource::<crate::stellar_render::StellarLod>()
-    .add_systems(
-        PostUpdate,
-        crate::stellar_render::sync_stellar_lod.after(bevy::transform::TransformSystems::Propagate),
-    )
-    .init_resource::<crate::joint_render::JointRenderState>()
-    .add_systems(
-        PostUpdate,
-        crate::joint_render::apply_model_joints
-            .after(bevy::app::AnimationSystems)
-            .before(bevy::transform::TransformSystems::Propagate),
-    )
-    .init_resource::<OrbitView>()
-    .init_resource::<crate::face_texture::FaceCache>()
-    .add_systems(Startup, setup)
-    .add_systems(
-        Update,
-        (orbit_input, update_focus, enforce_camera_collision)
-            .chain()
-            .before(sync_scene),
-    )
-    .add_systems(
-        Update,
-        (
-            attach_visuals,
-            poll_visuals,
-            crate::face_texture::resolve_faces,
-            crate::ring_texture::resolve_rings,
+    app.add_plugins(display_plugins(canvas))
+        .insert_resource(visible_workspace_winit_settings())
+        .add_plugins(CoreScenePlugin(core))
+        .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
+        .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
+        .add_plugins((
+            MaterialPlugin::<crate::deep_render::GalaxyMaterial>::default(),
+            MaterialPlugin::<crate::solar_surface::SolarSurfaceMaterial>::default(),
+            MaterialPlugin::<crate::stellar_render::StellarMaterial>::default(),
+            MaterialPlugin::<crate::stellar_render::ProminenceMaterial>::default(),
+        ))
+        .register_asset_loader(crate::hdr_assets::SeHdrLoader)
+        .init_resource::<crate::deep_lod::DeepSpaceLod>()
+        .add_systems(
+            PostUpdate,
+            crate::deep_lod::update_lod
+                .after(bevy::transform::TransformSystems::Propagate)
+                .after(bevy::camera::CameraUpdateSystems),
         )
-            .chain()
-            .after(sync_scene),
-    )
-    .add_observer(world_ready)
-    .add_systems(Update, update_illumination.after(sync_scene))
-    .add_systems(
-        Update,
-        update_camera_fill
-            .after(enforce_camera_collision)
-            .after(update_illumination),
-    )
-    .add_systems(Update, stop_renderer)
-    .add_systems(
-        PostUpdate,
-        draw_annotations
-            .after(bevy::transform::TransformSystems::Propagate)
-            .after(bevy::camera::CameraUpdateSystems),
-    );
+        .add_systems(
+            Update,
+            crate::deep_render::sync_environment.after(update_focus),
+        )
+        .add_systems(
+            Update,
+            crate::sky_render::sync_sky
+                .after(sync_scene)
+                .after(crate::deep_render::sync_environment),
+        )
+        .add_plugins(MaterialPlugin::<crate::trajectory_render::TrajectoryMaterial>::default())
+        .init_resource::<crate::trajectory_render::TrajectoryBatch>()
+        .add_systems(
+            PostUpdate,
+            crate::trajectory_render::upload.after(draw_annotations),
+        )
+        .insert_resource(RendererStop(stop))
+        .insert_resource(RendererPicks(picks))
+        .init_resource::<crate::solar_surface::SolarSurfaceLod>()
+        .add_systems(
+            PostUpdate,
+            crate::solar_surface::sync_solar_surface
+                .after(crate::stellar_render::sync_stellar_lod)
+                .after(bevy::transform::TransformSystems::Propagate),
+        )
+        .init_resource::<crate::stellar_render::StellarLod>()
+        .add_systems(
+            PostUpdate,
+            crate::stellar_render::sync_stellar_lod
+                .after(bevy::transform::TransformSystems::Propagate),
+        )
+        .init_resource::<crate::joint_render::JointRenderState>()
+        .add_systems(
+            PostUpdate,
+            crate::joint_render::apply_model_joints
+                .after(bevy::app::AnimationSystems)
+                .before(bevy::transform::TransformSystems::Propagate),
+        )
+        .init_resource::<OrbitView>()
+        .init_resource::<crate::face_texture::FaceCache>()
+        .add_systems(Startup, setup)
+        .add_systems(
+            Update,
+            (orbit_input, update_focus, enforce_camera_collision)
+                .chain()
+                .before(sync_scene),
+        )
+        .add_systems(
+            Update,
+            (
+                attach_visuals,
+                poll_visuals,
+                crate::face_texture::resolve_faces,
+                crate::ring_texture::resolve_rings,
+            )
+                .chain()
+                .after(sync_scene),
+        )
+        .add_observer(world_ready)
+        .add_systems(Update, update_illumination.after(sync_scene))
+        .add_systems(
+            Update,
+            update_camera_fill
+                .after(enforce_camera_collision)
+                .after(update_illumination),
+        )
+        .add_systems(Update, stop_renderer)
+        .add_systems(
+            PostUpdate,
+            draw_annotations
+                .after(bevy::transform::TransformSystems::Propagate)
+                .after(bevy::camera::CameraUpdateSystems),
+        );
     app.insert_resource(render_timings.clone());
     app.sub_app_mut(bevy::render::RenderApp)
         .insert_resource(render_timings);
@@ -907,14 +922,91 @@ fn update_focus(
     }
 }
 
-/// Every current planet representation is solid. A texture mip level is not
-/// terrain LOD and grants no traversal capability.
+type CollisionNodes<'w, 's> = Query<
+    'w,
+    's,
+    (
+        &'static Transform,
+        Option<&'static Children>,
+        Option<&'static Mesh3d>,
+        Option<&'static Aabb>,
+    ),
+    Without<DisplayCamera>,
+>;
+
+fn closed_surface<'a>(
+    entity: Entity,
+    state: &crate::ObjectState,
+    scale: f64,
+    nodes: &CollisionNodes,
+    meshes: &'a Assets<Mesh>,
+) -> Option<crate::surface_collision::Surface<'a>> {
+    let (_, children, _, _) = nodes.get(entity).ok()?;
+    let children = children?;
+    let mut stack: Vec<_> = children
+        .iter()
+        .map(|child| (child, Mat4::from_scale(Vec3::splat(scale as f32))))
+        .collect();
+    let mut parts = Vec::new();
+    let mut radius = 0_f64;
+    while let Some((entity, parent)) = stack.pop() {
+        let (transform, children, mesh, bounds) = nodes.get(entity).ok()?;
+        let matrix = parent * transform.to_matrix();
+        if !matrix.is_finite() || matrix.determinant() <= 0. {
+            return None;
+        }
+        if let Some(handle) = mesh {
+            let mesh = meshes.get(handle)?;
+            if mesh.primitive_topology() != bevy::mesh::PrimitiveTopology::TriangleList
+                || mesh
+                    .attribute(Mesh::ATTRIBUTE_POSITION)?
+                    .as_float3()?
+                    .is_empty()
+                || mesh.has_morph_targets()
+            {
+                return None;
+            }
+            let (min, max) = transformed_bounds(bounds?, matrix);
+            if !min.is_finite() || !max.is_finite() {
+                return None;
+            }
+            radius = radius.max(min.abs().max(max.abs()).length() as f64);
+            parts.push(crate::surface_collision::Part {
+                mesh,
+                transform: bevy::math::Affine3A::from_mat4(matrix),
+            });
+        }
+        if let Some(children) = children {
+            stack.extend(children.iter().map(|child| (child, matrix)));
+        }
+    }
+    if parts.is_empty() || !radius.is_finite() || radius <= 0. {
+        return None;
+    }
+    let orientation = state
+        .orientation_wxyz
+        .map(|[w, x, y, z]| bevy::math::DQuat::from_xyzw(x, y, z, w))
+        .unwrap_or(bevy::math::DQuat::IDENTITY);
+    Some(crate::surface_collision::Surface {
+        center: DVec3::from_array(state.position_km),
+        orientation,
+        radius: radius * 1.001,
+        parts,
+    })
+}
+
+/// Texture mips grant no traversal. Only complete opt-in static closed meshes
+/// replace the conservative sphere; missing geometry remains solid.
+#[allow(clippy::too_many_arguments)]
 fn enforce_camera_collision(
     store: Res<CoreStore>,
     settings: Res<DisplaySettings>,
     orbit: Option<Res<OrbitView>>,
     mut cameras: Query<(&mut Transform, &mut Projection), With<DisplayCamera>>,
     mut previous: Local<CollisionHistory>,
+    objects: Query<(Entity, &SceneObject)>,
+    nodes: CollisionNodes,
+    meshes: Option<Res<Assets<Mesh>>>,
 ) {
     let Ok(mut core) = store.0.lock() else {
         return;
@@ -928,25 +1020,7 @@ fn enforce_camera_collision(
     }
     let local = camera.translation.as_dvec3() / scale;
     let desired = settings.origin_km + DVec3::new(local.x, -local.z, local.y);
-    let solids: Vec<_> = core
-        .object_ids()
-        .filter_map(|id| core.object_state_at(id, core.clock().epoch()).ok())
-        .map(|body| crate::camera_collision::SolidSphere {
-            center: DVec3::from_array(body.position_km),
-            // Leave room for the f64 -> f32 display projection without
-            // changing the object's scientific radius.
-            radius: body.radius_km
-                + (DVec3::from_array(body.position_km) - settings.origin_km)
-                    .abs()
-                    .max_element()
-                    * f32::EPSILON as f64
-                    * 4.,
-        })
-        .collect();
     let focus = core.camera_framing_target().map(str::to_owned);
-    // Orbital time propagation is not a user camera segment through the parent.
-    // Sweep local camera motion in the current target frame. A target switch
-    // still sweeps the physical transition from the previous world position.
     let start = previous.safe_km.map_or(desired, |safe| {
         if focus.is_some() && focus == previous.focus {
             safe + settings.origin_km - previous.origin_km
@@ -954,7 +1028,66 @@ fn enforce_camera_collision(
             safe
         }
     });
-    let safe = crate::camera_collision::constrain(start, desired, &solids);
+    let mut surfaces = Vec::new();
+    let solids: Vec<_> = core
+        .object_ids()
+        .filter_map(|id| {
+            let body = core.object_state_at(id, core.clock().epoch()).ok()?;
+            if let Some(assignment) = core.visual_assignment(id)
+                && let VisualSpec::Model {
+                    mesh_collision: true,
+                    scale_km_per_unit,
+                    framing_radius_km,
+                    ..
+                } = assignment.spec
+                && framing_radius_km.is_none_or(|radius| {
+                    let center = DVec3::from_array(body.position_km);
+                    let motion = desired - start;
+                    let t = if motion.length_squared() > 0. {
+                        ((center - start).dot(motion) / motion.length_squared()).clamp(0., 1.)
+                    } else {
+                        0.
+                    };
+                    (start + motion * t).distance(center) <= radius.max(body.radius_km) * 1.01
+                })
+                && core.visual_status(id).ok().flatten().is_some_and(|s| {
+                    s.revision == assignment.revision && s.phase == VisualPhase::Ready
+                })
+                && let Some(meshes) = meshes.as_ref()
+                && let Some((entity, _)) = objects.iter().find(|(_, o)| o.id == id)
+                && let Some(surface) =
+                    closed_surface(entity, body, scale_km_per_unit, &nodes, meshes)
+            {
+                surfaces.push((id.to_owned(), surface));
+                return None;
+            }
+            Some(crate::camera_collision::SolidSphere {
+                center: DVec3::from_array(body.position_km),
+                // Leave room for the f64 -> f32 display projection without
+                // changing the object's scientific radius.
+                radius: body.radius_km
+                    + (DVec3::from_array(body.position_km) - settings.origin_km)
+                        .abs()
+                        .max_element()
+                        * f32::EPSILON as f64
+                        * 4.,
+            })
+        })
+        .collect();
+    // Orbital time propagation is not a user camera segment through the parent.
+    // Sweep local camera motion in the current target frame. A target switch
+    // still sweeps the physical transition from the previous world position.
+    let mut safe = crate::camera_collision::constrain(start, desired, &solids);
+    for _ in 0..8 {
+        let previous_safe = safe;
+        for (_, surface) in &surfaces {
+            safe = surface.constrain(start, safe);
+        }
+        safe = crate::camera_collision::constrain(start, safe, &solids);
+        if safe.distance_squared(previous_safe) < 1e-18 {
+            break;
+        }
+    }
     previous.safe_km = Some(safe);
     previous.origin_km = settings.origin_km;
     previous.focus = focus;
@@ -978,7 +1111,10 @@ fn enforce_camera_collision(
             core.object_state_at(id, core.clock().epoch())
                 .ok()
                 .filter(|body| {
-                    desired.distance(DVec3::from_array(body.position_km)) < body.radius_km
+                    surfaces.iter().find(|(key, _)| key == id).map_or_else(
+                        || desired.distance(DVec3::from_array(body.position_km)) < body.radius_km,
+                        |(_, surface)| surface.contains(desired),
+                    )
                 })
                 .map(|_| id.to_owned())
         })
@@ -1006,6 +1142,10 @@ fn enforce_camera_collision(
             .iter()
             .map(|body| safe.distance(body.center) + body.radius)
             .fold(0., f64::max);
+        let extent = surfaces
+            .iter()
+            .map(|(_, surface)| safe.distance(surface.center) + surface.radius)
+            .fold(extent, f64::max);
         let far = (extent * scale * 1.01).min(f32::MAX as f64 / 4.) as f32;
         if far.is_finite() {
             p.far = p.far.max(far);
@@ -2031,6 +2171,7 @@ mod camera_lifecycle_tests {
                     scene: 0,
                     scale_km_per_unit: 0.002,
                     framing_radius_km: None,
+                    mesh_collision: false,
                 }),
             )
             .unwrap();
@@ -2101,6 +2242,7 @@ mod camera_lifecycle_tests {
                     scene: 0,
                     scale_km_per_unit: 0.002,
                     framing_radius_km: None,
+                    mesh_collision: false,
                 }),
             )
             .unwrap();
@@ -3134,6 +3276,127 @@ mod camera_collision_system_tests {
     use crate::Core;
     use std::sync::Mutex;
     #[test]
+    fn ready_closed_surface_replaces_mean_sphere_but_missing_mesh_keeps_protection() {
+        let mut core = Core::default();
+        core.open_session_with_permissions(
+            "s",
+            "p",
+            crate::SessionPermissions {
+                visual_control: true,
+                ..default()
+            },
+        )
+        .unwrap();
+        core.register_object("s", "host").unwrap();
+        core.set_object_state(
+            "s",
+            "host",
+            crate::ObjectState {
+                position_km: [1e8, 0., 0.],
+                radius_km: 3.,
+                epoch_tdb_seconds: 0.,
+                coverage_tdb_seconds: [0., 1.],
+                orientation_wxyz: None,
+                frame: "ICRF".into(),
+                source: "closed surface fixture".into(),
+            },
+        )
+        .unwrap();
+        core.register_asset(
+            "surface",
+            crate::AssetDescriptor {
+                kind: crate::AssetKind::Model,
+                path: "surface.glb".into(),
+            },
+        )
+        .unwrap();
+        core.set_visual(
+            "s",
+            "p",
+            "host",
+            Some(VisualSpec::Model {
+                asset_id: "surface".into(),
+                scene: 0,
+                scale_km_per_unit: 1.,
+                framing_radius_km: Some(3.),
+                mesh_collision: true,
+            }),
+        )
+        .unwrap();
+        let revision = core.visual_assignment("host").unwrap().revision;
+        let shared = Arc::new(Mutex::new(core));
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .insert_resource(DisplaySettings::new([1e8, 0., 0.], 1.).unwrap())
+            .init_resource::<Assets<Mesh>>()
+            .add_systems(Update, enforce_camera_collision);
+        let parent = app
+            .world_mut()
+            .spawn((SceneObject { id: "host".into() }, Transform::default()))
+            .id();
+        let mesh = app
+            .world_mut()
+            .resource_mut::<Assets<Mesh>>()
+            .add(Mesh::from(Cuboid::new(4., 2., 4.)));
+        let mesh_entity = app
+            .world_mut()
+            .spawn((
+                Mesh3d(mesh.clone()),
+                Transform::default(),
+                Aabb::from_min_max(Vec3::new(-2., -1., -2.), Vec3::new(2., 1., 2.)),
+                ChildOf(parent),
+            ))
+            .id();
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::from_xyz(0., 1.01, 0.),
+                Projection::default(),
+            ))
+            .id();
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .length()
+                > 3.,
+            "loading surface must retain conservative sphere"
+        );
+        shared
+            .lock()
+            .unwrap()
+            .record_visual_status("host", revision, VisualPhase::Ready, None);
+        *app.world_mut().get_mut::<Transform>(camera).unwrap() = Transform::from_xyz(0., 1.01, 0.);
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .distance(Vec3::new(0., 1.01, 0.))
+                < 1e-5,
+            "ready geometry must allow actual near-surface view inside mean sphere"
+        );
+        app.world_mut()
+            .resource_mut::<Assets<Mesh>>()
+            .remove(mesh.id());
+        app.world_mut().entity_mut(mesh_entity).remove::<Aabb>();
+        *app.world_mut().get_mut::<Transform>(camera).unwrap() = Transform::from_xyz(0., 1.01, 0.);
+        app.update();
+        assert!(
+            app.world()
+                .get::<Transform>(camera)
+                .unwrap()
+                .translation
+                .length()
+                > 3.,
+            "missing CPU mesh must remain solid"
+        );
+    }
+    #[test]
     fn fast_orbit_rebases_sweep_and_keeps_parent_in_clip_range() {
         let shared = Arc::new(Mutex::new(Core::default()));
         {
@@ -3265,6 +3528,7 @@ mod camera_collision_system_tests {
                 scene: 0,
                 scale_km_per_unit: 1.,
                 framing_radius_km: None,
+                mesh_collision: false,
             }),
         )
         .unwrap();
@@ -3349,6 +3613,7 @@ mod camera_collision_system_tests {
                         scene: 0,
                         scale_km_per_unit: 1.,
                         framing_radius_km: Some(0.00435),
+                        mesh_collision: false,
                     }),
                 )
                 .unwrap();
@@ -3385,6 +3650,7 @@ mod camera_collision_system_tests {
                         scene: 0,
                         scale_km_per_unit: 1.,
                         framing_radius_km: Some(1e-300),
+                        mesh_collision: false,
                     }),
                 )
                 .unwrap();
@@ -3424,6 +3690,7 @@ mod camera_collision_system_tests {
                         scene: 0,
                         scale_km_per_unit: 1.,
                         framing_radius_km: None,
+                        mesh_collision: false,
                     }),
                 )
                 .unwrap();
@@ -3942,6 +4209,7 @@ mod camera_parity_regression_tests {
                     scene: 0,
                     scale_km_per_unit: 1.,
                     framing_radius_km: Some(0.0038),
+                    mesh_collision: false,
                 }),
             )
             .unwrap();

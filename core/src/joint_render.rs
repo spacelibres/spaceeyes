@@ -272,6 +272,7 @@ mod tests {
                 scene: 0,
                 scale_km_per_unit: 1.,
                 framing_radius_km: None,
+                mesh_collision: false,
             }),
         )
         .unwrap();

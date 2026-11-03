@@ -39,6 +39,7 @@ fn joints_are_atomic_owned_and_lifecycle_bound() {
             scene: 0,
             scale_km_per_unit: 1.,
             framing_radius_km: None,
+            mesh_collision: false,
         }),
     )
     .unwrap();

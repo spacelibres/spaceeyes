@@ -900,6 +900,7 @@ dependencies = [
  "bevy_math",
  "bevy_mesh",
  "bevy_pbr",
+ "bevy_picking",
  "bevy_platform",
  "bevy_post_process",
  "bevy_ptr",
@@ -1122,11 +1123,13 @@ dependencies = [
  "bevy_ecs",
  "bevy_input",
  "bevy_math",
+ "bevy_mesh",
  "bevy_platform",
  "bevy_reflect",
  "bevy_time",
  "bevy_transform",
  "bevy_window",
+ "crossbeam-channel",
  "tracing",
  "uuid",
 ]
@@ -4242,7 +4245,7 @@ dependencies = [
 
 [[package]]
 name = "spaceeyes-core"
-version = "0.0.64"
+version = "0.0.65"
 dependencies = [
  "bevy",
  "hifitime",

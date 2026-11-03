@@ -214,6 +214,8 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 `visual.set` 的model可选 `framingRadiusKm`，必须有限且0<值≤1e12；省略保持按完整模型包围取景。它只控制自动取景范围，不改变科学ObjectState.radiusKm、模型scaleKmPerUnit、真实几何或碰撞固体。只能使用已核对目录的显示extents提示，不把它解释为物理半径；SDK复制冻结，Rust独立验证，现有WASM visual JSON直接转发该字段。
 
+model可选`meshCollision:boolean`，缺省false沿用科学半径球碰撞。仅在已审计闭合、朝外一致、无蒙皮和形变的静态实体表面上启用；当前宿主只为Eros启用。它不允许穿越，也不改变科学半径/取景/几何。核心仅在当前revision模型ready、全部三角网格CPU顶点和包围盒可用时替换球碰撞，加载失败/缺失/不支持时继续球体保护。直接复用Bevy网格射线相交，不启动额外鼠标网格拾取后端；相机运动及内部重叠都需约束。不能为开放太阳帆、天线和可动画航天器启用来绕过实体边界。新增模型必须先运行闭合性和场景回归审计。
+
 
 ### 姿态与时间来源边界
 

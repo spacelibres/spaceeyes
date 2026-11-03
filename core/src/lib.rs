@@ -842,6 +842,9 @@ mod solar_surface;
 #[cfg(feature = "browser-render")]
 mod camera_collision;
 
+#[cfg(feature = "browser-render")]
+mod surface_collision;
+
 #[cfg(test)]
 mod fov_tests {
     use super::*;

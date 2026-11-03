@@ -2,6 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PluginHost, type PluginContext } from "../plugin-host.ts";
 import type { VisualSpec } from "../visual-contract.ts";
+import {snapshotVisual} from "../visual-contract.ts";
+
+test("closed surface collision is an explicit immutable model capability",()=>{
+ const input={kind:"model",assetId:"model:eros",scene:0,scaleKmPerUnit:1,meshCollision:true} as VisualSpec;
+ const value=snapshotVisual(input);
+ assert.equal((value as any).meshCollision,true);assert.ok(Object.isFrozen(value));
+ assert.throws(()=>snapshotVisual({...input,meshCollision:"true"} as any));
+ assert.equal((snapshotVisual({kind:"model",assetId:"old",scene:0,scaleKmPerUnit:1}) as any).meshCollision,undefined);
+});
 
 test("timed trajectories validate ascending epochs and isolate caller mutation", async () => {
   let sdk!: PluginContext;

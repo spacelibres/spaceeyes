@@ -6,6 +6,7 @@ import parents from "../eyes-parent-models.json" with {type:"json"};
 import dependencies from "../eyes-parent-dependencies.json" with {type:"json"};
 import originalDependencies from "../eyes-dependencies.json" with {type:"json"};
 import framing from "../eyes-parent-framing.json" with {type:"json"};
+import surfaces from "../eyes-surface-collision.json" with {type:"json"};
 import {readFile} from "node:fs/promises";
 import {createHash} from "node:crypto";
 
@@ -45,5 +46,14 @@ test("reference-host framing stays tied to the audited converter, source bytes a
   assert.ok(model,modelUrl);
   assert.deepEqual(Object.keys(row.geometrySources).sort(),[modelUrl,...model.buffers.map(buffer=>new URL(buffer.uri,modelUrl).href)].sort());
   for(const [url,hash]of Object.entries(row.geometrySources))assert.equal(pins[url]?.sha256,hash,url);
+ }
+});
+
+test("opt-in surfaces retain audited closed outward geometry",()=>{
+ assert.equal(surfaces.converterSha256,framing.converterSha256);
+ for(const [id,audit] of Object.entries(surfaces.entries)){
+  const row=(framing.entries as Record<string,{convertedSha256:string}>)[id];
+  assert.equal(audit.convertedSha256,row.convertedSha256);assert.equal(audit.invalidEdges,0);
+  assert.ok(audit.signedVolumeKm3>0&&audit.triangles>0&&audit.edges>0);
  }
 });

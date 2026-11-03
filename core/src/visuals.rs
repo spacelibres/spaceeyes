@@ -28,6 +28,9 @@ pub enum VisualSpec {
         scale_km_per_unit: f64,
         #[serde(default)]
         framing_radius_km: Option<f64>,
+        /// Opt-in only for audited, closed, static surface meshes.
+        #[serde(default)]
+        mesh_collision: bool,
     },
     Sphere {
         #[serde(default)]
@@ -179,6 +182,7 @@ impl Core {
                 scene,
                 scale_km_per_unit,
                 framing_radius_km,
+                ..
             } => {
                 if framing_radius_km.is_some_and(|r| !r.is_finite() || r <= 0. || r > 1e12) {
                     return Err(CoreError::InvalidVisual);

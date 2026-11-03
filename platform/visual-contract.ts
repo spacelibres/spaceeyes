@@ -5,6 +5,7 @@ export type VisualSpec =
       scene: number;
       scaleKmPerUnit: number;
       framingRadiusKm?: number;
+      meshCollision?: boolean;
     }
   | {
       kind: "sphere";
@@ -36,7 +37,7 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
   if (!spec || typeof spec !== "object") throw new Error("invalid visual spec");
   const allowed =
     spec.kind === "model"
-      ? ["kind", "assetId", "scene", "scaleKmPerUnit", "framingRadiusKm"]
+      ? ["kind", "assetId", "scene", "scaleKmPerUnit", "framingRadiusKm", "meshCollision"]
       : [
           "kind",
           "textureAsset",
@@ -51,6 +52,7 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
   if (Object.keys(spec).some((key) => !allowed.includes(key)))
     throw new Error("invalid visual fields");
   if (spec.kind === "model") {
+    if(spec.meshCollision!==undefined&&typeof spec.meshCollision!=="boolean")throw Error("invalid mesh collision");
     if (
       spec.framingRadiusKm !== undefined &&
       (typeof spec.framingRadiusKm !== "number" ||
@@ -72,6 +74,7 @@ export function snapshotVisual(spec: VisualSpec): Readonly<VisualSpec> {
       assetId: assetId(spec.assetId),
       scene: spec.scene,
       scaleKmPerUnit: spec.scaleKmPerUnit,
+      ...(spec.meshCollision!==undefined?{meshCollision:spec.meshCollision}:{}),
       ...(spec.framingRadiusKm !== undefined
         ? { framingRadiusKm: spec.framingRadiusKm }
         : {}),

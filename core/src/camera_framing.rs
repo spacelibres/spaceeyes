@@ -159,6 +159,7 @@ mod tests {
             scene: 0,
             scale_km_per_unit: 1.,
             framing_radius_km: Some(5.),
+            mesh_collision: false,
         };
         assert_eq!(visual_extent_km(2., Some(&model)), 5.);
         if let VisualSpec::Model {

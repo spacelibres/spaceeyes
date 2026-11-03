@@ -2045,6 +2045,8 @@ test("reference hosts register their real models without eagerly selecting every
   assert.ok(fixtures.visuals().filter(v=>v.id==="243_ida").at(-1)?.spec.framingRadiusKm>29.9,"frame the actual model before its asynchronous load");
   await app.seek(35279033);await app.select("sc_near_shoemaker");
   assert.equal(fixtures.visuals().filter(v=>v.id==="433_eros").at(-1)?.spec.assetId,"eyes:433_eros:model");
+  assert.equal(fixtures.visuals().filter(v=>v.id==="433_eros").at(-1)?.spec.meshCollision,true);
+  assert.equal(fixtures.visuals().filter(v=>v.id==="243_ida").at(-1)?.spec.meshCollision,undefined);
  } finally {await app.dispose();}
 });
 

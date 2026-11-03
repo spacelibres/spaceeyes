@@ -41,6 +41,7 @@ fn model() -> VisualSpec {
         scene: 0,
         scale_km_per_unit: 0.001,
         framing_radius_km: None,
+        mesh_collision: false,
     }
 }
 
@@ -299,6 +300,7 @@ fn model_framing_hint_is_optional_strict_and_bounded() {
         parsed,
         VisualSpec::Model {
             framing_radius_km: None,
+            mesh_collision: false,
             ..
         }
     ));
@@ -319,7 +321,8 @@ fn model_framing_hint_is_optional_strict_and_bounded() {
                     asset_id: "model:juno".into(),
                     scene: 0,
                     scale_km_per_unit: 1.,
-                    framing_radius_km: Some(radius)
+                    framing_radius_km: Some(radius),
+                    mesh_collision: false,
                 })
             ),
             Err(CoreError::InvalidVisual)
@@ -335,6 +338,7 @@ fn model_framing_hint_is_optional_strict_and_bounded() {
                 scene: 0,
                 scale_km_per_unit: 1.,
                 framing_radius_km: Some(radius),
+                mesh_collision: false,
             }),
         )
         .unwrap();

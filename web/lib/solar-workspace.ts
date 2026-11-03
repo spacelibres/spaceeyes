@@ -3,7 +3,7 @@ import { FrameMonitor } from "./frame-monitor.ts";
 import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
 import { TrajectoryWorkQueue } from "./trajectory-work.ts";
 import {missionInitialLook} from "./mission-view.ts";
-import {parentModelFraming} from "./parent-model-framing.ts";
+import {parentModelFraming,parentModelCollision} from "./parent-model-framing.ts";
 import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
 import {eyesModelPhase,eyesModelVariants} from "../../platform/eyes-model-phases.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
@@ -896,6 +896,7 @@ export async function createWorkspace(
           if (detailed && model) {
             sdk.visual.set(body.id, {
               kind: "model",
+              ...(parentModelCollision(body.id,model)?{meshCollision:true}:{}),
               assetId: phase?`eyes:${body.id}:model:${phase.key}`:`eyes:${body.id}:model`,
               scaleKmPerUnit: 1,
               ...(typeof framingRadiusKm === "number" &&
