@@ -546,3 +546,17 @@ test('ORI multi-track absence describes only the proven open gap',async()=>{
   assert.deepEqual(e.domain,{track:'orientation-absence',lowerExclusive:2,upperExclusive:8});return true;
  });}finally{eyesDefinitions.moon.controllers=old;}
 });
+
+
+test("exact upstream bytes are reused while every request still decodes, and invalid 200 is evicted", async () => {
+  const {definition,child}=fixtures();let calls=0;
+  const fetcher:typeof fetch=async input=>{calls++;return new Response(String(input).endsWith("/def.dyn")?definition:child);};
+  const first=await fetchSolarDyn("moon",5,signal(),fetcher);
+  const second=await fetchSolarDyn("moon",6,signal(),fetcher);
+  assert.deepEqual(first,second);assert.equal(calls,2);assert.equal(decodeDyn(second).kind,"inline");
+  let badCalls=0;
+  const recovering:typeof fetch=async input=>{badCalls++;return new Response(badCalls===1?new Uint8Array([0]):String(input).endsWith("/def.dyn")?definition:child);};
+  await assert.rejects(fetchSolarDyn("moon",5,signal(),recovering));
+  assert.equal(decodeDyn(await fetchSolarDyn("moon",5,signal(),recovering)).kind,"inline");
+  assert.equal(badCalls,3);
+});

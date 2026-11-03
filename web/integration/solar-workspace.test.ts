@@ -2401,11 +2401,13 @@ test("a previously displayed secondary trail recovers a transient chunk failure 
 
 test("secondary chunk requests capture the live epoch only when one of four admission slots opens",async()=>{
  const {SolarSystemData}=await import("../../platform/solar-system.ts");
- const fixtures=harness(),originalPrefetch=SolarSystemData.prototype.prefetchPosition;
+ const fixtures=harness(),originalPrefetch=SolarSystemData.prototype.prefetchPosition,originalLoad=SolarSystemData.prototype.load;
  SolarSystemData.prototype.prefetchPosition=async()=>false;
  const ids=new Set(["sc_acs3","sc_aqua","sc_aura","sc_cygnss_1","sc_cygnss_2","sc_cygnss_3"]);
  let armed=false,cutoff:number|undefined,complete!:()=>void;const ready=new Promise<void>(resolve=>{complete=resolve;});
  const calls:{id:string;epoch:number;finish:()=>void}[]=[];
+ const loads:Promise<void>[]=[];
+ SolarSystemData.prototype.load=function(...args){const result=originalLoad.apply(this,args);if(armed&&args[0]?.some(id=>ids.has(id)))loads.push(result);return result;};
  const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="earth"&&snapshot.dataCache.positionEntries>40)complete();},new AbortController().signal,{...fixtures,fetch:async input=>{
   const url=new URL(String(input),"http://fixture"),id=url.pathname.split("/").at(-1)!,orientation=url.searchParams.get("type")==="ori",requested=Number(url.searchParams.get("epoch"));
   if(!orientation&&ids.has(id)) {
@@ -2420,16 +2422,16 @@ test("secondary chunk requests capture the live epoch only when one of four admi
   await app.select("earth");await ready;armed=true;app.play(true,3600);fixtures.step(0);fixtures.step(4000);await settle();
   assert.equal(calls.length,4,"only four actual source owners enter the network path");
   fixtures.step(4034);fixtures.step(4068);assert.equal(calls.length,4);
-  calls[0].finish();await settle();
+  calls[0].finish();await loads[0];await settle();
   assert.equal(calls.length,4,"unstarted sources have no stale URLs queued behind the network semaphore");
   fixtures.step(4102);const admittedEpoch=fixtures.core().epoch();await settle();
   assert.equal(calls.length,5);assert.ok(Math.abs(calls[4].epoch-admittedEpoch)<1e-6,"the fifth request uses its admission epoch after time advanced");
-  for(const call of calls)call.finish();await settle();
+  for(const call of calls)call.finish();await Promise.all(loads);await settle();
   fixtures.step(4136);await settle();assert.equal(calls.length,6,"admission bounds concurrency without capping the object count");
-  calls[5].finish();await settle();fixtures.step(4170);
+  calls[5].finish();await Promise.all(loads);await settle();fixtures.step(4170);
   for(const id of ids)assert.doesNotThrow(()=>fixtures.core().state_at(id,fixtures.core().epoch()));
   assert.equal(fixtures.core().playing(),true);
- } finally {for(const call of calls)call.finish();SolarSystemData.prototype.prefetchPosition=originalPrefetch;await app.dispose();}
+ } finally {for(const call of calls)call.finish();SolarSystemData.prototype.prefetchPosition=originalPrefetch;SolarSystemData.prototype.load=originalLoad;await app.dispose();}
 });
 
 

@@ -1,3 +1,4 @@
+import { dynByteCacheFor } from "./dyn-byte-cache.ts";
 import { createHash } from "node:crypto";
 import { reviewedMissionWindow,ReviewedMissionOutsideCoverage } from "./reviewed-mission-window.ts";
 import type {PositionSelection} from "../../platform/position-selection.ts";
@@ -59,40 +60,14 @@ async function fetchTrack(
   const item = solarCatalog.find((x) => x.id === id);
   if (!item?.orbPath || !Number.isFinite(epoch))
     throw Error("Invalid solar resource");
+  const cache = dynByteCacheFor(fetcher), visited = new Set<string>();
   const read = async (name: string) => {
-    const r = await fetcher(
-      `https://eyes.nasa.gov/assets/dynamic/dynamo/${track ?? (type === "ori" ? `${id}/ori` : item.orbPath)}/${name}.dyn`,
-      {
-        signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]),
-        redirect: "error",
-      },
-    );
-    if (!r.ok || r.redirected) throw Error(`NASA DYN HTTP ${r.status}`);
-    const reader = r.body?.getReader();
-    let n = 0;
-    const parts: Uint8Array[] = [];
-    try {
-      while (reader) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        n += value.length;
-        if (n > 16 * 1024 * 1024) throw Error("DYN byte budget");
-        parts.push(value);
-      }
-    } catch (e) {
-      await reader?.cancel();
-      throw e;
-    } finally {
-      reader?.releaseLock();
-    }
-    const bytes = new Uint8Array(n);
-    let offset = 0;
-    for (const p of parts) {
-      bytes.set(p, offset);
-      offset += p.length;
-    }
+    const url = `https://eyes.nasa.gov/assets/dynamic/dynamo/${track ?? (type === "ori" ? `${id}/ori` : item.orbPath)}/${name}.dyn`;
+    const bytes = await cache.read(url, signal);
+    visited.add(url);
     return bytes;
   };
+  try {
   let name = "def";
   let header: Uint8Array | undefined;
   for (let depth = 0; depth < 8; depth++) {
@@ -168,6 +143,14 @@ async function fetchTrack(
     name = name === "def" ? child : `${name}_${child}`;
   }
   throw Error("DYN index depth budget");
+  } catch (error) {
+    // Transport failures are not cached. Reject reviewed/decoded HTTP-200 bytes
+    // too, so a corrected upstream resource can be fetched immediately.
+    if (!signal.aborted && !(error instanceof PositionOutsideCoverage) &&
+        !(error instanceof OrientationOutsideCoverage))
+      for (const url of visited) cache.evict(url);
+    throw error;
+  }
 }
 
 export async function fetchSolarDyn(
