@@ -35,6 +35,19 @@ test("asset service rejects unknown objects and paths before network and honors 
     await rm(cache, { recursive: true, force: true });
   }
 });
+test("reference host models resolve through audited source pins rather than a placeholder",async()=>{
+ const cache=await mkdtemp(join(tmpdir(),"eyes-assets-hosts-"));
+ const urls:string[]=[];
+ const service=new EyesAssetService({cacheDirectory:cache,fetch:async input=>{
+  urls.push(String(input));return new Response("source temporarily offline",{status:503});
+ }});
+ try {
+  for(const id of ["433_eros","65803_didymos","136108_haumea"])
+   await assert.rejects(service.get(id,"model.glb"),/NASA asset HTTP 503/);
+  assert.equal(urls.length,3);
+  assert.ok(urls.every(url=>url.startsWith("https://eyes.nasa.gov/assets/static/models/")));
+ } finally {await rm(cache,{recursive:true,force:true});}
+});
 
 test("phase resource paths resolve only reviewed model variants before any conversion",async()=>{
  const cache=await mkdtemp(join(tmpdir(),"eyes-assets-phase-"));

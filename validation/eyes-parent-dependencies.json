@@ -1,0 +1,205 @@
+{
+  "source": "NASA Eyes reference-host exact model and texture dependencies; fetched 2026-11-03",
+  "files": {
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/Bennu.bin": {
+      "bytes": 189660,
+      "sha256": "c5f951cec1c990655d4d5602cec6bf179d53e02232909a66c04773a6b0e697ec"
+    },
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/Bennu.gltf": {
+      "bytes": 5698,
+      "sha256": "1859a2cc0bcf905f647cf104c591f38effe37a862bd8fc0953cee153f7a5324d"
+    },
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/Bennu_normal.png": {
+      "bytes": 430439,
+      "sha256": "26e3115bb19468653f45a1c0b5d728c6794ee66ec6d4c33dc1e6c4c48ba53d18"
+    },
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/bennu_patch.jpg": {
+      "bytes": 5739646,
+      "sha256": "bb7033d13103bc96e50f31921887e0450417473f2f96648ec7c87844b87c690f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/bennu_patch_norm.png": {
+      "bytes": 22129,
+      "sha256": "ad3f3d57c9c313513a88a81b4274595001dd645110c35d0dd72106b051f3f90c"
+    },
+    "https://eyes.nasa.gov/assets/static/models/101955_bennu/bennu_whole.jpg": {
+      "bytes": 2692201,
+      "sha256": "deb75d3e6e8d991a784a7f07d7c634e8e342cf024425326faa4522d55c19d25f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/103p_hartley_2/hartley_2.bin": {
+      "bytes": 183200,
+      "sha256": "0a5af11ae46d8a9296ee2efa3eb8cdce29a997d3e4442b5af5aaa0e9245741d4"
+    },
+    "https://eyes.nasa.gov/assets/static/models/103p_hartley_2/hartley_2.gltf": {
+      "bytes": 2937,
+      "sha256": "59a9f4005404e20cb2d12cb33222384625ea4dbc2b1cc2417c609d7ebe156a5a"
+    },
+    "https://eyes.nasa.gov/assets/static/models/103p_hartley_2/hartley_2_albedo.png": {
+      "bytes": 847598,
+      "sha256": "fce88af09cefb15e585c9b91be9bfba0ac80747a91bef05c3f6c36434c77e685"
+    },
+    "https://eyes.nasa.gov/assets/static/models/136108_haumea/Haumea__normals.png": {
+      "bytes": 6388053,
+      "sha256": "f0581101606df8661082f48139b45b520298ec810a9cba2fea07a8257b8e5482"
+    },
+    "https://eyes.nasa.gov/assets/static/models/136108_haumea/Haumea_diff.jpg": {
+      "bytes": 684418,
+      "sha256": "746a065c1b81e9f5c9dc0e378db43fef4aed24034fdcdea723c539fab8f4fd53"
+    },
+    "https://eyes.nasa.gov/assets/static/models/136108_haumea/haumea.bin": {
+      "bytes": 23648,
+      "sha256": "8a053e2158504ad576800ba56140a479fe2c5dc5350a07e3be16da291fe6412f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/136108_haumea/haumea.gltf": {
+      "bytes": 3015,
+      "sha256": "88a70f3abc176dc0f72128a3a94b8733d0f962d2e9b471a0e99c2f9944fe77e5"
+    },
+    "https://eyes.nasa.gov/assets/static/models/16_psyche/psycheAsteroid.bin": {
+      "bytes": 176080,
+      "sha256": "91dfa8099f817974f75cf58e849219bba6691b1812767042dd0bd23c14d57252"
+    },
+    "https://eyes.nasa.gov/assets/static/models/16_psyche/psycheAsteroid.gltf": {
+      "bytes": 3655,
+      "sha256": "bfadee51d0266feb7518cc59cc3acbe346c6c760c4792958d8117adcfe2a272f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/16_psyche/psyche_albedo.jpg": {
+      "bytes": 502294,
+      "sha256": "f1b900a6ccbfa5cff84fa12ba464d5b22573bd6758db290188272b58d0bb39a7"
+    },
+    "https://eyes.nasa.gov/assets/static/models/16_psyche/psyche_normal.png": {
+      "bytes": 931701,
+      "sha256": "8b6be1e8b05a57afedb7726bee35820208b6510e171fd89ba77ae1b6e5fff0c3"
+    },
+    "https://eyes.nasa.gov/assets/static/models/16_psyche/psyche_pbr.png": {
+      "bytes": 603552,
+      "sha256": "d0a221d3d2e4de7b6c9f79ac2cc29d0b74065cc62923870968e6b154797ba591"
+    },
+    "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly.bin": {
+      "bytes": 224860,
+      "sha256": "073bc270e8371b122a559fe56c0ef67ff0611926bd7300b994af70bd3a9ff8d2"
+    },
+    "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly.gltf": {
+      "bytes": 3514,
+      "sha256": "8733c8d39f90b2976cd845d5885d85b7919b0db2a69eb001d62d5632ad586264"
+    },
+    "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly_albedo.jpg": {
+      "bytes": 1044730,
+      "sha256": "121121be66fedb74c31d312212208c7cf4dbcec4a22c9e656fa63c7723bd7d65"
+    },
+    "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly_normal.png": {
+      "bytes": 5953519,
+      "sha256": "b68e50a6cb7252bf6542d3d64c57c19bd8c1d225650890ab0210f7e14bfcbd63"
+    },
+    "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly_pbr.png": {
+      "bytes": 1048407,
+      "sha256": "ebbad8b612182b364a2c236dc27b48bd4885c2d989ed6df5fdf4d1c8d9b9c021"
+    },
+    "https://eyes.nasa.gov/assets/static/models/433_eros/433_eros.bin": {
+      "bytes": 36064,
+      "sha256": "cce3766afde3668f58d14888b91771ae407328c32ebefe107466788fcc79f196"
+    },
+    "https://eyes.nasa.gov/assets/static/models/433_eros/433_eros.gltf": {
+      "bytes": 3075,
+      "sha256": "a580b5857412b917150d6bdb4b99d683d7a149f84a487fd85362f5df291a1093"
+    },
+    "https://eyes.nasa.gov/assets/static/models/433_eros/eros_diff.jpg": {
+      "bytes": 323359,
+      "sha256": "337473381768d5f0f399715097401dceb2bfdc594f41a6dcd7ffb5dce25f5cc6"
+    },
+    "https://eyes.nasa.gov/assets/static/models/433_eros/eros_norm.png": {
+      "bytes": 737015,
+      "sha256": "3eb5905d1f5d6ee1609578c891368b6607a65f3eb347fda7d9a60ca31ec63c11"
+    },
+    "https://eyes.nasa.gov/assets/static/models/486958_arrokoth/mu69.bin": {
+      "bytes": 126512,
+      "sha256": "01e8a3a2fb52a365814af194b2789db26775d618989a5c7530a8674f1453d60e"
+    },
+    "https://eyes.nasa.gov/assets/static/models/486958_arrokoth/mu69.gltf": {
+      "bytes": 2815,
+      "sha256": "7fa99bbc14344bb1a4a39a54970de5648be7362b6f941873f8b3200bf1ece666"
+    },
+    "https://eyes.nasa.gov/assets/static/models/486958_arrokoth/mu69_diff.jpg": {
+      "bytes": 46876,
+      "sha256": "143f30b1608cefbbe3d187aa0e92e7bbe72e5ab131b1e2314bb6ad73a2410f32"
+    },
+    "https://eyes.nasa.gov/assets/static/models/4_vesta/4_vesta.bin": {
+      "bytes": 769216,
+      "sha256": "11648d15f5ccb591563d1d5050c6e8142675d227b75fa854a69c23cf94a6e60f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/4_vesta/4_vesta.gltf": {
+      "bytes": 3072,
+      "sha256": "ca5e96520c03a17ac5e27c16affffea2beefd53f677008872732ab30fa32b39f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/4_vesta/vesta_04.png": {
+      "bytes": 2269694,
+      "sha256": "b26090aeba2169613a492d02965dcd45e8177c3390c98556995a22644f73872c"
+    },
+    "https://eyes.nasa.gov/assets/static/models/4_vesta/vesta_n.png": {
+      "bytes": 1832492,
+      "sha256": "21c3050b9ae6a172b18cef4b6fbbefee01134305bbf96fa19417283abb6ee1ae"
+    },
+    "https://eyes.nasa.gov/assets/static/models/65803_didymos/Didymos.bin": {
+      "bytes": 177676,
+      "sha256": "b03ce332d03ed4595b26787944abcef5b477d5c8ab56dc89cf7b4e85f8b81348"
+    },
+    "https://eyes.nasa.gov/assets/static/models/65803_didymos/Didymos.gltf": {
+      "bytes": 3646,
+      "sha256": "e8c025e0ba7e350f314494576cec496e116f31e687437ad3ef26aa9a586521fd"
+    },
+    "https://eyes.nasa.gov/assets/static/models/65803_didymos/DidymosA_diff.jpg": {
+      "bytes": 1484632,
+      "sha256": "e10bc24e8c515e168b3b8104c76df0f70c6a56a797d92ee9367a0e49082cb8a8"
+    },
+    "https://eyes.nasa.gov/assets/static/models/65803_didymos/DidymosA_norm.png": {
+      "bytes": 1303306,
+      "sha256": "a05264ab3e24b5bc8cb20b11e5a6508d49127efbb98c060bd20afdefab417001"
+    },
+    "https://eyes.nasa.gov/assets/static/models/65803_didymos/DidymosA_rough.png": {
+      "bytes": 429932,
+      "sha256": "da2df13a8f2a4b1aa84a9bcbc5ca6cf743b7c814a9a6cb6e8559928a3ddf533e"
+    },
+    "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_churyumov_gerasimenko.bin": {
+      "bytes": 44992,
+      "sha256": "a4f5db35d477a57bbfcebe42c732ea7c4b2922701eac10e9e0c9a4c8dad00367"
+    },
+    "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_churyumov_gerasimenko.gltf": {
+      "bytes": 3226,
+      "sha256": "cd324d70c97115afec3c87e376e6694149b167c15c3094c2c8f1402cd1f5a55f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_diff.jpg": {
+      "bytes": 530578,
+      "sha256": "e39ecea3dc791987b56a571df04dacc92437159110269e4d498e623864e08c2c"
+    },
+    "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_normals.png": {
+      "bytes": 897526,
+      "sha256": "dc8ca26dcde8e609cec9084c33b239b37c02a1b38fa710008ba439e75689719a"
+    },
+    "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis.bin": {
+      "bytes": 113964,
+      "sha256": "c37ac903055c0a1df93d90f0f39239864fab2d05a4e89ad1a787ffaffe48cecb"
+    },
+    "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis.gltf": {
+      "bytes": 3385,
+      "sha256": "f0d77b8cdb1e2c5c5235f5f65567511feef74d99652d4c8d80dd0dc80811313c"
+    },
+    "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis_diff.jpg": {
+      "bytes": 3502341,
+      "sha256": "9ba068cd32e4f30118b18f17d8b7dd02faa753d7d9e100a9bfa8115622ab05d5"
+    },
+    "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis_norm.png": {
+      "bytes": 5749320,
+      "sha256": "1bdda8cb2c368ce61c2ca0e05e8d933b5d0fc3bd375043ba2662b0ce15826b3c"
+    },
+    "https://eyes.nasa.gov/assets/static/models/9p_tempel_1/9p_tempel.bin": {
+      "bytes": 26896,
+      "sha256": "85b62216714d8e0484c433e4b252522256b85172919e3782d26e6c060fb79187"
+    },
+    "https://eyes.nasa.gov/assets/static/models/9p_tempel_1/9p_tempel.gltf": {
+      "bytes": 2814,
+      "sha256": "7b357d9e8f81c405ae4ab304fe9aa4f211dee79ca4bb0172092c26a70f6a703f"
+    },
+    "https://eyes.nasa.gov/assets/static/models/9p_tempel_1/tempel1_tex_05.jpg": {
+      "bytes": 146040,
+      "sha256": "e359980ebedad4d8ee6af760b7db51703eb677182e507fc26b47c51bdab623be"
+    }
+  }
+}

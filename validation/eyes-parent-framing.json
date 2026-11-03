@@ -1,0 +1,365 @@
+{
+  "source": "Audited NASA reference-host converted geometry in km, centered on original entity origin; 2026-11-03",
+  "converterSha256": "cbae17f5ae0aaee4aa67ada9f732994ced2b7f591cdf83902bc9a0e156ff1624",
+  "entries": {
+    "243_ida": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_2/generic_asteroid_2.gltf",
+        "scale": [
+          24.180000000000003,
+          33.019999999999996,
+          77.74
+        ],
+        "rotate": [
+          {
+            "y": 90
+          }
+        ]
+      },
+      "radiusKm": 55.43356148143607,
+      "convertedSha256": "153fada3fa58f6452bf2f6b6ae3e2ed70738d4123a7e8685031c614be9ec0f4f",
+      "vertices": 2068,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf": "30678a539400bbb97c5a32167c4a2c43401f1bf596ec50078379cc2f5917dbfe",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.bin": "2473bec473a0d8759701933a5e9213773d9502ad2de0bcf5f00853b3e29fe4fc"
+      }
+    },
+    "65803_didymos": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/65803_didymos/Didymos.gltf",
+        "rotate": [
+          {
+            "z": 180
+          },
+          {
+            "x": -90
+          }
+        ]
+      },
+      "radiusKm": 0.42322274256480447,
+      "convertedSha256": "715fd87899f942a2e7b77bde977a99d5f979d02184686ceddc1d8dab39b91997",
+      "vertices": 4061,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/65803_didymos/Didymos.gltf": "e8c025e0ba7e350f314494576cec496e116f31e687437ad3ef26aa9a586521fd",
+        "https://eyes.nasa.gov/assets/static/models/65803_didymos/Didymos.bin": "b03ce332d03ed4595b26787944abcef5b477d5c8ab56dc89cf7b4e85f8b81348"
+      }
+    },
+    "136108_haumea": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/136108_haumea/haumea.gltf",
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "radiusKm": 1161.0000000007958,
+      "convertedSha256": "eaba3a323b9910561597c11a2cc788174b7bf436df783b2c0d8d403ee54a72ee",
+      "vertices": 559,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/136108_haumea/haumea.gltf": "88a70f3abc176dc0f72128a3a94b8733d0f962d2e9b471a0e99c2f9944fe77e5",
+        "https://eyes.nasa.gov/assets/static/models/136108_haumea/haumea.bin": "8a053e2158504ad576800ba56140a479fe2c5dc5350a07e3be16da291fe6412f"
+      }
+    },
+    "4_vesta": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/4_vesta/4_vesta.gltf",
+        "rotate": [
+          {
+            "x": 90
+          }
+        ]
+      },
+      "radiusKm": 292.0523960353756,
+      "convertedSha256": "b574e33ef0c525837e095a69b7d07f2e0457d9f3d69151a4caa65371c4676702",
+      "vertices": 17558,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/4_vesta/4_vesta.gltf": "ca5e96520c03a17ac5e27c16affffea2beefd53f677008872732ab30fa32b39f",
+        "https://eyes.nasa.gov/assets/static/models/4_vesta/4_vesta.bin": "11648d15f5ccb591563d1d5050c6e8142675d227b75fa854a69c23cf94a6e60f"
+      }
+    },
+    "9p_tempel_1": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/9p_tempel_1/9p_tempel.gltf",
+        "rotate": [
+          {
+            "y": 90
+          }
+        ]
+      },
+      "radiusKm": 5,
+      "convertedSha256": "be1ef2b17f30a7004018c55c00f6a3dfd2734ce570add73e1d0056bb1cd627a6",
+      "vertices": 638,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/9p_tempel_1/9p_tempel.gltf": "7b357d9e8f81c405ae4ab304fe9aa4f211dee79ca4bb0172092c26a70f6a703f",
+        "https://eyes.nasa.gov/assets/static/models/9p_tempel_1/9p_tempel.bin": "85b62216714d8e0484c433e4b252522256b85172919e3782d26e6c060fb79187"
+      }
+    },
+    "103p_hartley_2": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/103p_hartley_2/hartley_2.gltf"
+      },
+      "radiusKm": 2,
+      "convertedSha256": "1d777ccbdf1d993fdbbb8419b3a5346ce6870a5917388bd6c40c6955aa57fee3",
+      "vertices": 4213,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/103p_hartley_2/hartley_2.gltf": "59a9f4005404e20cb2d12cb33222384625ea4dbc2b1cc2417c609d7ebe156a5a",
+        "https://eyes.nasa.gov/assets/static/models/103p_hartley_2/hartley_2.bin": "0a5af11ae46d8a9296ee2efa3eb8cdce29a997d3e4442b5af5aaa0e9245741d4"
+      }
+    },
+    "9969_braille": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_2/generic_asteroid_2.gltf",
+        "scale": [
+          1.05,
+          0.5,
+          0.5
+        ]
+      },
+      "radiusKm": 1.2741918341455005,
+      "convertedSha256": "0d82780f0c621871f1e98171d802115eca2a6fa85a58a593233e1a1b75aec552",
+      "vertices": 2068,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf": "30678a539400bbb97c5a32167c4a2c43401f1bf596ec50078379cc2f5917dbfe",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.bin": "2473bec473a0d8759701933a5e9213773d9502ad2de0bcf5f00853b3e29fe4fc"
+      }
+    },
+    "19p_borrelly": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/19p_borrelly/borrelly.gltf"
+      },
+      "radiusKm": 4.610417462767954,
+      "convertedSha256": "5e79d6b5b9f6159a4567d7c1e424319adf27378cdd744031397a1b4589af3ec5",
+      "vertices": 5156,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly.gltf": "8733c8d39f90b2976cd845d5885d85b7919b0db2a69eb001d62d5632ad586264",
+        "https://eyes.nasa.gov/assets/static/models/19p_borrelly/borrelly.bin": "073bc270e8371b122a559fe56c0ef67ff0611926bd7300b994af70bd3a9ff8d2"
+      }
+    },
+    "52246_donaldjohanson": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_2/generic_asteroid_2.gltf",
+        "scale": 1.9475
+      },
+      "radiusKm": 2.586071393711539,
+      "convertedSha256": "24c79bb491f0b9d2359c957e148361fe401efe0585e3aeac0a6c4ac7595eedd7",
+      "vertices": 2068,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf": "30678a539400bbb97c5a32167c4a2c43401f1bf596ec50078379cc2f5917dbfe",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.bin": "2473bec473a0d8759701933a5e9213773d9502ad2de0bcf5f00853b3e29fe4fc"
+      }
+    },
+    "3548_eurybates": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+        "scale": 31.9425
+      },
+      "radiusKm": 33.438609710973296,
+      "convertedSha256": "7be7079cb12ddd5d150452b2558f0b513a12c262ae655e2961d487fa2f5fbc01",
+      "vertices": 2088,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.bin": "898f44a8c9dba0d6f1d085fd4ddb7804d45f9bd1a422816d4f4120b438fb20bc"
+      }
+    },
+    "15094_polymele": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_1/generic_asteroid_1.gltf",
+        "scale": 10.5375
+      },
+      "radiusKm": 13.064567915613017,
+      "convertedSha256": "7522da6ec7e29b521774e726649297dc3b58dfcc7527b07c23f11a1981d0f2e1",
+      "vertices": 2053,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_1/generic_asteroid_1.gltf": "c58e8806383331dedbf1f3b02df3c78d3a9a492c4234ea0615f7c0dc1a9945cd",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_1/generic_asteroid_1.bin": "6f832a8ee17d587271b1b46a5898fbf277fa0e76e98f264143b17a55ab3be930"
+      }
+    },
+    "11351_leucus": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+        "scale": 17.0775
+      },
+      "radiusKm": 17.87736893916088,
+      "convertedSha256": "e425d8a7d4d68673c8cfb7d0ede00bd1874b9572ec5739df8bf88783db9b62de",
+      "vertices": 2088,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.bin": "898f44a8c9dba0d6f1d085fd4ddb7804d45f9bd1a422816d4f4120b438fb20bc"
+      }
+    },
+    "21900_orus": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_2/generic_asteroid_2.gltf",
+        "scale": 25.405
+      },
+      "radiusKm": 33.73511874569533,
+      "convertedSha256": "e3148498182a90d91a3b9d9d90c9682bf2061592577bc8ce123d1b12d11b3e77",
+      "vertices": 2068,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.gltf": "30678a539400bbb97c5a32167c4a2c43401f1bf596ec50078379cc2f5917dbfe",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_2/generic_asteroid_2.bin": "2473bec473a0d8759701933a5e9213773d9502ad2de0bcf5f00853b3e29fe4fc"
+      }
+    },
+    "253_mathilde": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+        "scale": [
+          33,
+          24,
+          23
+        ]
+      },
+      "radiusKm": 33,
+      "convertedSha256": "096feb04922fb0f63f3a5b41d9b7ec29a029765d721b0b096b6bcd72279e7cbd",
+      "vertices": 2088,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.bin": "898f44a8c9dba0d6f1d085fd4ddb7804d45f9bd1a422816d4f4120b438fb20bc"
+      }
+    },
+    "433_eros": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/433_eros/433_eros.gltf"
+      },
+      "radiusKm": 17.628197727711548,
+      "convertedSha256": "f88bd1b82bec6cc91df005ce105549539df426785d1a9410a6745e7f5109abcc",
+      "vertices": 839,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/433_eros/433_eros.gltf": "a580b5857412b917150d6bdb4b99d683d7a149f84a487fd85362f5df291a1093",
+        "https://eyes.nasa.gov/assets/static/models/433_eros/433_eros.bin": "cce3766afde3668f58d14888b91771ae407328c32ebefe107466788fcc79f196"
+      }
+    },
+    "486958_arrokoth": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/486958_arrokoth/mu69.gltf",
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "rotate": [
+          {
+            "x": -110
+          },
+          {
+            "y": 180
+          }
+        ]
+      },
+      "radiusKm": 17.138988175772297,
+      "convertedSha256": "d136b04c309eda14e62699b90bf5f03491b11e2dc145402be391a9cb3e2aaf41",
+      "vertices": 2908,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/486958_arrokoth/mu69.gltf": "7fa99bbc14344bb1a4a39a54970de5648be7362b6f941873f8b3200bf1ece666",
+        "https://eyes.nasa.gov/assets/static/models/486958_arrokoth/mu69.bin": "01e8a3a2fb52a365814af194b2789db26775d618989a5c7530a8674f1453d60e"
+      }
+    },
+    "101955_bennu": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/101955_bennu/Bennu.gltf",
+        "rotate": [
+          {
+            "x": 83
+          },
+          {
+            "z": -168
+          }
+        ],
+        "scale": 0.0009956
+      },
+      "radiusKm": 0.27969236967713007,
+      "convertedSha256": "6de1188f663630d4f107852e76e683e7c5d687ccac0a4b4525f20a65bad51262",
+      "vertices": 4341,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/101955_bennu/Bennu.gltf": "1859a2cc0bcf905f647cf104c591f38effe37a862bd8fc0953cee153f7a5324d",
+        "https://eyes.nasa.gov/assets/static/models/101955_bennu/Bennu.bin": "c5f951cec1c990655d4d5602cec6bf179d53e02232909a66c04773a6b0e697ec"
+      }
+    },
+    "99942_apophis": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/99942_apophis/apophis.gltf"
+      },
+      "radiusKm": 0.225,
+      "convertedSha256": "a4bf53c613c45bba3ebaa84b5be4f9698f58e82bccd7e83c7d8434a3d9b1efcf",
+      "vertices": 2631,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis.gltf": "f0d77b8cdb1e2c5c5235f5f65567511feef74d99652d4c8d80dd0dc80811313c",
+        "https://eyes.nasa.gov/assets/static/models/99942_apophis/apophis.bin": "c37ac903055c0a1df93d90f0f39239864fab2d05a4e89ad1a787ffaffe48cecb"
+      }
+    },
+    "67p_churyumov_gerasimenko": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/67p_churyumov_gerasimenko/67p_churyumov_gerasimenko.gltf",
+        "rotate": [
+          {
+            "x": 90
+          }
+        ],
+        "scale": 0.00124
+      },
+      "radiusKm": 4.1,
+      "convertedSha256": "eff1d761e063ad1ba5abc1e39b5fbf8258b93682dedae2171aa867d5d7edd75d",
+      "vertices": 1037,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_churyumov_gerasimenko.gltf": "cd324d70c97115afec3c87e376e6694149b167c15c3094c2c8f1402cd1f5a55f",
+        "https://eyes.nasa.gov/assets/static/models/67p_churyumov_gerasimenko/67p_churyumov_gerasimenko.bin": "a4f5db35d477a57bbfcebe42c732ea7c4b2922701eac10e9e0c9a4c8dad00367"
+      }
+    },
+    "16_psyche": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/16_psyche/psycheAsteroid.gltf",
+        "scale": [
+          100,
+          100,
+          100
+        ],
+        "rotate": [
+          {
+            "x": 90
+          },
+          {
+            "z": -120
+          }
+        ]
+      },
+      "radiusKm": 154.26462406481645,
+      "convertedSha256": "0986977623fc727c5afe9bec682cfde23c75f242f6d05ffe39dc86e094a35342",
+      "vertices": 4031,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/16_psyche/psycheAsteroid.gltf": "bfadee51d0266feb7518cc59cc3acbe346c6c760c4792958d8117adcfe2a272f",
+        "https://eyes.nasa.gov/assets/static/models/16_psyche/psycheAsteroid.bin": "91dfa8099f817974f75cf58e849219bba6691b1812767042dd0bd23c14d57252"
+      }
+    },
+    "5535_annefrank": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+        "scale": 2.412
+      },
+      "radiusKm": 2.52497226650599,
+      "convertedSha256": "39a52904af4396db8ef7ba3eb0c7336c2b82d9cc55d475dfcf24a9244931199c",
+      "vertices": 2088,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.bin": "898f44a8c9dba0d6f1d085fd4ddb7804d45f9bd1a422816d4f4120b438fb20bc"
+      }
+    },
+    "81p_wild_2": {
+      "model": {
+        "url": "$STATIC_ASSETS_URL/models/generic/asteroid_3/generic_asteroid_3.gltf",
+        "scale": [
+          2.5,
+          2.5,
+          2.5
+        ]
+      },
+      "radiusKm": 2.6170939744050474,
+      "convertedSha256": "4601ccfcb22f176ee34e6c6412da224932f4c8b18a17e96977b648169f4a7412",
+      "vertices": 2088,
+      "geometrySources": {
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.gltf": "e101f1f0d77a7c727813245419024fbc64f5d75c0d8810539702ab51532edf0f",
+        "https://eyes.nasa.gov/assets/static/models/generic/asteroid_3/generic_asteroid_3.bin": "898f44a8c9dba0d6f1d085fd4ddb7804d45f9bd1a422816d4f4120b438fb20bc"
+      }
+    }
+  }
+}

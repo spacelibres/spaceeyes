@@ -45,6 +45,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
 }
 
 function harness(initialNullEnvironmentStatus = false) {
+  const registeredAssets=new Set<string>();
   const labelCalls:{id:string;text:string}[]=[];
   const visuals: { id: string; spec: Record<string, any> }[] = [];
   const focusCalls: string[] = [];
@@ -86,6 +87,10 @@ function harness(initialNullEnvironmentStatus = false) {
               actual.free();
             };
           const value = Reflect.get(target, property);
+          if(property==="register_asset") return (...args:any[])=>{
+            const result=Reflect.apply(value,target,args);
+            registeredAssets.add(args[0]);return result;
+          };
           if (property === "label") return (...args:any[]) => {
             labelCalls.push({id:args[2],text:args[3]});
             return Reflect.apply(value,target,args);
@@ -169,6 +174,7 @@ function harness(initialNullEnvironmentStatus = false) {
     },
     step: (time: number) => callback?.(time),
     visuals: () => visuals,
+    registeredAssets: () => registeredAssets,
     labelCalls: () => labelCalls,
     solar: () => solar,
     focusCalls: () => focusCalls,
@@ -2023,6 +2029,23 @@ test("selecting a moon-bearing planet frames its ready primary satellite family"
     await app.select("jupiter");
     assert.equal(states.at(-1)!.observationMode, "nearby");
   } finally { await app.dispose(); }
+});
+
+test("reference hosts register their real models without eagerly selecting every model",async()=>{
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{
+  ...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori"))),
+ });
+ try {
+  for(const id of ["243_ida","433_eros","65803_didymos","136108_haumea"])
+   assert.ok(fixtures.registeredAssets().has(`eyes:${id}:model`),`${id} model registered`);
+  assert.ok(!fixtures.visuals().some(v=>v.id==="433_eros"&&v.spec.kind==="model"),"reference models remain lazy");
+  await app.select("dactyl");
+  assert.equal(fixtures.visuals().filter(v=>v.id==="243_ida").at(-1)?.spec.assetId,"eyes:243_ida:model");
+  assert.ok(fixtures.visuals().filter(v=>v.id==="243_ida").at(-1)?.spec.framingRadiusKm>29.9,"frame the actual model before its asynchronous load");
+  await app.seek(35279033);await app.select("sc_near_shoemaker");
+  assert.equal(fixtures.visuals().filter(v=>v.id==="433_eros").at(-1)?.spec.assetId,"eyes:433_eros:model");
+ } finally {await app.dispose();}
 });
 
 test("satellite system fit includes its host while the selected satellite remains selected", async () => {

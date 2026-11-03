@@ -3,6 +3,7 @@ import { FrameMonitor } from "./frame-monitor.ts";
 import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
 import { TrajectoryWorkQueue } from "./trajectory-work.ts";
 import {missionInitialLook} from "./mission-view.ts";
+import {parentModelFraming} from "./parent-model-framing.ts";
 import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
 import {eyesModelPhase,eyesModelVariants} from "../../platform/eyes-model-phases.ts";
 import { eyesLineColor } from "../../platform/eyes-line-style.ts";
@@ -342,7 +343,7 @@ export async function createWorkspace(
     galaxySpec = spec;
     return spec;
   };
-  for (const body of eyesCatalog) {
+  for (const body of solarCatalog) {
     const definition = getEyesDefinition(body.id);
     if (definition?.model)
       core.register_asset(
@@ -891,7 +892,7 @@ export async function createWorkspace(
         const phaseChanged=Boolean(phase)&&modelPhaseKeys.get(body.id)!==phase!.key;
         const hadVisual=Boolean(sdk.visual.status(body.id));
         if (restore || !hadVisual || upgrade || phaseChanged) {
-          const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius;
+          const framingRadiusKm = getEyesDefinition(body.id)?.extentsRadius ?? parentModelFraming(body.id,model);
           if (detailed && model) {
             sdk.visual.set(body.id, {
               kind: "model",

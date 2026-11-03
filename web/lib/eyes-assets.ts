@@ -13,6 +13,8 @@ import manifests from "../../validation/eyes-models.json" with { type: "json" };
 import dependencies from "../../validation/eyes-dependencies.json" with { type: "json" };
 import stageModels from "../../validation/eyes-model-stages.json" with {type:"json"};
 import stageDependencies from "../../validation/eyes-model-stage-dependencies.json" with {type:"json"};
+import parentModels from "../../validation/eyes-parent-models.json" with {type:"json"};
+import parentDependencies from "../../validation/eyes-parent-dependencies.json" with {type:"json"};
 import {eyesModelVariants,type ModelPhase} from "../../platform/eyes-model-phases.ts";
 import { getEyesDefinition } from "../../platform/eyes-catalog.ts";
 import {
@@ -27,12 +29,14 @@ const SOURCE = "https://eyes.nasa.gov/assets/static/";
 const VERSION = "eyes-compatible-km-v2";
 const dependencyRevision = digest(JSON.stringify(dependencies.files));
 const stageDependencyRevision=digest(JSON.stringify(stageDependencies.files));
+const parentDependencyRevision=digest(JSON.stringify(parentDependencies.files));
 const phaseConversionRevision="eyes-model-phase-v1";
-const modelRows=[...manifests.rows,...stageModels.rows];
+const modelRows=[...manifests.rows,...stageModels.rows,...parentModels.rows];
 const dependencyFiles:Record<string,{sha256:string;bytes:number}>={...dependencies.files};
-for(const [url,pin]of Object.entries(stageDependencies.files)) {
+for(const registry of [stageDependencies.files,parentDependencies.files])
+for(const [url,pin]of Object.entries(registry)) {
   if(dependencyFiles[url]&&dependencyFiles[url].sha256!==pin.sha256)
-    throw Error("Conflicting phase resource pin");
+    throw Error("Conflicting NASA resource pin");
   dependencyFiles[url]=pin;
 }
 export type EyesAsset = { bytes: Uint8Array; mime: string; sha256: string };
@@ -313,6 +317,7 @@ export class EyesAssetService {
         transform,
         manifest: pinned.sha256,
         dependencyRevision,
+        ...(parentModels.rows.some(row=>row.url===url)?{parentDependencyRevision}:{}),
         ...(phase?{phaseConversionRevision,stageDependencyRevision,hiddenNodes:phase.hiddenNodes}:{}),
       }),
       async (signal) => {

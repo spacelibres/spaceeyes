@@ -1,11 +1,11 @@
-import { eyesCatalog } from "../platform/eyes-catalog.ts";
+import { eyesCatalog, eyesDependencies } from "../platform/eyes-catalog.ts";
 import { EyesAssetService } from "../web/lib/eyes-assets.ts";
 import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 // Server-side warmup/audit only. No model bytes are added to the executable or initial browser load.
 const unique = new Map<string, string>();
-for (const body of eyesCatalog)
+for (const body of [...eyesCatalog,...eyesDependencies])
   if (body.model?.url && !unique.has(body.model.url))
     unique.set(body.model.url, body.id);
 const tasks = [...unique].map(([url, id]) => ({ url, id }));
