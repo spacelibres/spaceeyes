@@ -2248,3 +2248,13 @@ test("a malformed-time chunk is failed and later valid source reload recovers wi
   phase=2;await source.load(['sc_jwst'],12,[]);assert.equal(source.status('sc_jwst')?.status,'ready');assert.deepEqual(source.position('sc_jwst',5),position);
  }finally{source.dispose();}
 });
+
+test("only optional adjacent prefetch adds directional raw-warming hints",async()=>{
+ const {ctx}=context(),urls:URL[]=[];
+ const source=new SolarSystemData(ctx,{fetch:async input=>{const url=new URL(String(input),'http://fixture');urls.push(url);const epoch=Number(url.searchParams.get('epoch')),bytes=orb(2),view=new DataView(bytes.buffer),start=Math.floor(epoch/10)*10;for(let i=0;i<2;i++)view.setFloat64(28+i*72,start+i*10,true);return new Response(bytes);}});
+ try{
+  await source.load(['moon'],5,[]);assert.ok(urls.length>0);assert.ok(urls.every(url=>!url.searchParams.has('adjacent')),'normal/static loads never warm siblings');
+  assert.equal(await source.prefetchPosition('moon',11,5,20),true);assert.equal(await source.prefetchPosition('moon',-1,5,20),true);
+  assert.deepEqual(urls.filter(url=>url.searchParams.has('adjacent')).map(url=>url.searchParams.get('adjacent')),['forward','reverse']);
+ }finally{source.dispose();}
+});

@@ -12,7 +12,9 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const raw = new URL(request.url).searchParams.get("epoch");
+    const query=new URL(request.url).searchParams;
+    const raw = query.get("epoch");
+    const adjacent=query.get("adjacent");
     if (raw === null)
       return Response.json({ error: "epoch required" }, { status: 400 });
     let selection: DynSelection | undefined;
@@ -25,6 +27,7 @@ export async function GET(
       new URL(request.url).searchParams.get("type") === "ori" ? "ori" : "orb",
       (value) => { selection = value; },
       value=>{controller=value;},
+      adjacent==="forward"||adjacent==="reverse"?adjacent:undefined,
     );
     return new Response(bytes as BodyInit, {
       headers: {

@@ -175,3 +175,120 @@ test("32 upstream waits, four body readers and 512 unique pending owners stay bo
   assert.equal(fetches, 32);
   assert.equal(canceled, 32);
 });
+
+test("foreground joins promote queued background network reads ahead of other background work", async () => {
+  const started: string[] = [],
+    headers = new Map<string, (response: Response) => void>();
+  const controller = new AbortController(),
+    cache = new DynByteCache({
+      fetcher: async (input) => {
+        const id = String(input);
+        started.push(id);
+        return new Promise<Response>((resolve) => headers.set(id, resolve));
+      },
+    });
+  const active = Array.from({ length: 32 }, (_, i) =>
+    cache.read(`active${i}`, controller.signal),
+  );
+  await flush();
+  const background = cache.read("background", controller.signal, true),
+    promoted = cache.read("promoted", controller.signal, true),
+    foreground = cache.read("critical", controller.signal),
+    joined = cache.read("promoted", controller.signal);
+  await flush();
+  assert.equal(started.length, 32);
+  headers.get("active0")!(new Response(new Uint8Array([1])));
+  await flush();
+  assert.equal(started[32], "promoted");
+  headers.get("active1")!(new Response(new Uint8Array([1])));
+  await flush();
+  assert.equal(started[33], "critical");
+  controller.abort();
+  await Promise.allSettled([
+    ...active,
+    background,
+    promoted,
+    foreground,
+    joined,
+  ]);
+  for (const release of headers.values())
+    release(new Response(new Uint8Array([1])));
+});
+test("foreground promotion also controls queued body readers without preempting four active readers", async () => {
+  const reading: string[] = [],
+    release = new Map<string, () => void>();
+  const controller = new AbortController();
+  const cache = new DynByteCache({
+    fetcher: async (input) =>
+      new Response(
+        new ReadableStream<Uint8Array>(
+          {
+            pull(stream) {
+              const id = String(input);
+              reading.push(id);
+              return new Promise<void>((resolve) =>
+                release.set(id, () => {
+                  stream.enqueue(new Uint8Array([1]));
+                  stream.close();
+                  resolve();
+                }),
+              );
+            },
+          },
+          { highWaterMark: 0 },
+        ),
+      ),
+  });
+  const active = Array.from({ length: 4 }, (_, i) =>
+    cache.read(`active${i}`, controller.signal),
+  );
+  await flush();
+  const background = cache.read("background", controller.signal, true),
+    promoted = cache.read("promoted", controller.signal, true),
+    foreground = cache.read("critical", controller.signal),
+    joined = cache.read("promoted", controller.signal);
+  await flush();
+  assert.equal(reading.length, 4);
+  release.get("active0")!();
+  await flush();
+  assert.equal(reading[4], "promoted");
+  release.get("active1")!();
+  await flush();
+  assert.equal(reading[5], "critical");
+  controller.abort();
+  await Promise.allSettled([
+    ...active,
+    background,
+    promoted,
+    foreground,
+    joined,
+  ]);
+});
+test("background admission leaves bounded pending capacity for foreground source requests", async () => {
+  const controller = new AbortController(),
+    cache = new DynByteCache({
+      fetcher: async (_input, init) =>
+        new Promise<Response>((_resolve, reject) =>
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(init.signal!.reason),
+            { once: true },
+          ),
+        ),
+    });
+  const background = Array.from({ length: 448 }, (_, i) =>
+    cache.read(String(i), controller.signal, true),
+  );
+  const settled = Promise.allSettled(background);
+  await assert.rejects(
+    cache.read("extra-background", controller.signal, true),
+    /pending request budget/,
+  );
+  const foreground = cache.read("critical", controller.signal);
+  const completed = Promise.allSettled([foreground]);
+  assert.equal(cache.diagnostics.pending, 449);
+  controller.abort();
+  await settled;
+  await completed;
+  assert.equal(cache.diagnostics.pending, 0);
+});

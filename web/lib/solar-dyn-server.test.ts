@@ -583,3 +583,54 @@ test("hash-pinned JWST adjacent ordered runs preserve exact records and share on
  const badFetcher:typeof fetch=async input=>{const child=String(input).split('/').at(-1)!.replace('.dyn',''),bytes=files.get(child)!.slice();if(child==='81_05')bytes[bytes.length-1]^=1;return new Response(bytes);};
  await assert.rejects(fetchSolarDyn('sc_jwst',start+1,signal(),badFetcher),/sample times must increase/);
 });
+
+function adjacentFixture(nested=false){
+ const header=fixtures().definition.slice(0,23);
+ const index=(times:number[],full:boolean)=>{const bytes=new Uint8Array((full?23:0)+5+times.length*8);if(full)bytes.set(header);const base=full?23:0,view=new DataView(bytes.buffer);bytes[base]=0;view.setInt32(base+1,times.length,true);times.forEach((time,i)=>view.setFloat64(base+5+i*8,time,true));return bytes;};
+ const leaf=(start:number,end:number)=>{const child=fixtures().child.slice();const view=new DataView(child.buffer);view.setFloat64(5,start,true);view.setFloat64(77,end,true);return child;};
+ const files=new Map<string,Uint8Array<ArrayBuffer>>([['def',index([0,10,20,30,40],true)]]);
+ for(let i=0;i<4;i++)files.set(String(i).padStart(3,'0'),leaf(i*10,(i+1)*10));
+ if(nested){files.set('001',index([10,12,14,16,18,20],false));for(let i=0;i<5;i++)files.set(`001_${String(i).padStart(3,'0')}`,leaf(10+i*2,12+i*2));}
+ return files;
+}
+test('optional adjacent warming supplies the next exact scientific request from cached raw bytes',async()=>{
+ for(const direction of ['forward','reverse'] as const){const files=adjacentFixture(),calls:string[]=[];
+  const fetcher:typeof fetch=async input=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');calls.push(name);assert.ok(files.has(name),name);return new Response(files.get(name)!);};
+  const epoch=direction==='forward'?15:25,next=direction==='forward'?25:15;
+  await fetchSolarDyn('moon',epoch,signal(),fetcher,'orb',undefined,undefined,direction);
+  await new Promise<void>(resolve=>setImmediate(resolve));
+  assert.deepEqual(calls,['def',direction==='forward'?'001':'002',...(direction==='forward'?['002','003']:['001','000'])]);
+  const before=calls.length,result=decodeDyn(await fetchSolarDyn('moon',next,signal(),fetcher));assert.equal(result.kind,'inline');assert.deepEqual(result.coverage,{start:Math.floor(next/10)*10,end:(Math.floor(next/10)+1)*10});assert.equal(calls.length,before,'the actual validated next request causes zero upstream reads');
+ }
+});
+test('warming uses only the last index sibling prefix, stays in bounds, and never runs without an opt-in',async()=>{
+ for(const [epoch,direction,nested,expected] of [[15,undefined,false,['def','001']],[35,'forward',false,['def','003']],[5,'reverse',false,['def','000']],[15,'forward',true,['def','001','001_002','001_003','001_004']]] as const){
+  const files=adjacentFixture(nested),calls:string[]=[];
+  const fetcher:typeof fetch=async input=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');calls.push(name);assert.ok(files.has(name),name);return new Response(files.get(name)!);};
+  await fetchSolarDyn('moon',epoch,signal(),fetcher,'orb',undefined,undefined,direction);await new Promise<void>(resolve=>setImmediate(resolve));assert.deepEqual(calls,expected);
+ }
+ const {definition,child}=fixtures(),full=new Uint8Array(23+child.length);full.set(definition.subarray(0,23));full.set(child,23);let calls=0;
+ await fetchSolarDyn('moon',5,signal(),async()=>{calls++;return new Response(full);},'orb',undefined,undefined,'forward');await new Promise<void>(resolve=>setImmediate(resolve));assert.equal(calls,1,'inline definitions have no siblings');
+});
+test('canceling prefetch cancels background owners, while malformed warmed bytes still fail scientific validation',async()=>{
+ const files=adjacentFixture(),controller=new AbortController(),upstream:AbortSignal[]=[];
+ const fetcher:typeof fetch=async(input,init)=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');if(name==='002'||name==='003'){upstream.push(init!.signal as AbortSignal);return new Promise<Response>((_resolve,reject)=>init?.signal?.addEventListener('abort',()=>reject(init.signal!.reason),{once:true}));}return new Response(files.get(name)!);};
+ await fetchSolarDyn('moon',15,controller.signal,fetcher,'orb',undefined,undefined,'forward');await new Promise<void>(resolve=>setImmediate(resolve));assert.equal(upstream.length,2);controller.abort();assert.ok(upstream.every(signal=>signal.aborted));
+ const changed=files.get('002')!.slice();new DataView(changed.buffer).setFloat64(77,20,true);files.set('002',changed);let badReads=0;
+ const badFetcher:typeof fetch=async input=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');if(name==='002')badReads++;return new Response(files.get(name)!);};
+ await fetchSolarDyn('moon',15,signal(),badFetcher,'orb',undefined,undefined,'forward');await new Promise<void>(resolve=>setImmediate(resolve));
+ await assert.rejects(fetchSolarDyn('moon',25,signal(),badFetcher),/sample times must increase/);assert.equal(badReads,1,'invalid raw warming is not accepted as scientific geometry');
+ await assert.rejects(fetchSolarDyn('moon',25,signal(),badFetcher),/sample times must increase/);assert.equal(badReads,2,'scientific rejection evicts the warmed invalid bytes');
+});
+
+test('adjacent raw warming never bypasses a changed reviewed-source hash or starts after a rejected current leaf',async()=>{
+ const files=adjacentFixture(),calls:string[]=[];const bad=files.get('001')!.slice();new DataView(bad.buffer).setFloat64(77,10,true);files.set('001',bad);
+ const failedFetcher:typeof fetch=async input=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');calls.push(name);return new Response(files.get(name)!);};
+ await assert.rejects(fetchSolarDyn('moon',15,signal(),failedFetcher,'orb',undefined,undefined,'forward'),/sample times must increase/);await new Promise<void>(resolve=>setImmediate(resolve));assert.deepEqual(calls,['def','001']);
+ const {dynByteCacheFor}=await import('./dyn-byte-cache.ts'),jwst=new Map<string,Uint8Array<ArrayBuffer>>();
+ for(const name of ['def','81','81_05'])jwst.set(name,new Uint8Array(await readFile(new URL(`./fixtures/sc_jwst__earth__orb__${name}-source.dyn`,import.meta.url))));
+ const changed=jwst.get('81_05')!;changed[changed.length-1]^=1;let leafReads=0;
+ const fetcher:typeof fetch=async input=>{const name=String(input).split('/').at(-1)!.replace('.dyn','');if(name==='81_05')leafReads++;return new Response(jwst.get(name)!);};
+ await dynByteCacheFor(fetcher).read('https://eyes.nasa.gov/assets/dynamic/dynamo/sc_jwst/earth/orb/81_05.dyn',signal(),true);
+ await assert.rejects(fetchSolarDyn('sc_jwst',847656569.5369012,signal(),fetcher),/sample times must increase/);assert.equal(leafReads,1,'actual source validation rejects the warmed unknown hash without silently repairing it');
+});

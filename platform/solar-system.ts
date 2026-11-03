@@ -584,7 +584,7 @@ export class SolarSystemData {
     if(requestedEpoch>=previous.coverage.start && requestedEpoch<=previous.coverage.end)return false;
     const generation=this.#loadGeneration, track=this.#dataTracks.get(id),parent=this.#dataParents.get(id),selection=this.#dataSelections.get(id);
     if(track!==positionTrackKey(id,requestedEpoch) || parent!==this.parentAt(id,requestedEpoch) || !acceptsPositionEpoch(selection,requestedEpoch))return false;
-    const result=await this.#read(`/api/solar-dyn/${id}?epoch=${requestedEpoch}`,signal);
+    const result=await this.#read(`/api/solar-dyn/${id}?epoch=${requestedEpoch}&adjacent=${requestedEpoch>liveEpoch?"forward":"reverse"}`,signal);
     if(signal?.aborted || generation!==this.#loadGeneration || this.#data.get(id)!==previous || (this.#retained && !this.#retained.has(id)))return false;
     const next=decodeDyn(result.bytes);
     if(next.kind!=="inline" || next.type!==previous.type || next.version!==previous.version ||

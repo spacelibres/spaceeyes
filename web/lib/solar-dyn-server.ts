@@ -56,6 +56,7 @@ async function fetchTrack(
   onSelection?: (selection: DynSelection) => void,
   track?: string,
   onDomain?: (value: Omit<PositionSelection,"track">) => void,
+  adjacent?: "forward"|"reverse",
 ): Promise<Uint8Array> {
   const item = solarCatalog.find((x) => x.id === id);
   if (!item?.orbPath || !Number.isFinite(epoch))
@@ -68,6 +69,7 @@ async function fetchTrack(
     return bytes;
   };
   try {
+  let siblings:string[]=[];
   let name = "def";
   let header: Uint8Array | undefined;
   for (let depth = 0; depth < 8; depth++) {
@@ -127,7 +129,16 @@ async function fetchTrack(
         epoch>d.coverage.end?d.coverage.end:undefined,epoch<d.coverage.start?d.coverage.start:undefined);
       throw Error("Outside source coverage");
     }
-    if (d.kind === "inline") return bytes;
+    if (d.kind === "inline") {
+      if(adjacent && type==="orb" && siblings.length) {
+        const warmSignal=AbortSignal.any([signal,AbortSignal.timeout(5000)]);
+        for(const sibling of siblings) {
+          const url=`https://eyes.nasa.gov/assets/dynamic/dynamo/${track ?? item.orbPath}/${sibling}.dyn`;
+          void cache.read(url,warmSignal,true).catch(()=>{});
+        }
+      }
+      return bytes;
+    }
     const index = d.segments.findIndex(
       (s, i) =>
         epoch >= s.start &&
@@ -139,6 +150,8 @@ async function fetchTrack(
         Math.max(...d.segments.filter(s=>s.end<=epoch).map(s=>s.end)));
       throw Error("DYN index gap");
     }
+    const direction=adjacent==="forward"?1:-1;
+    siblings=adjacent ? [index+direction,index+direction*2].filter(i=>i>=0&&i<d.segments.length).map(i=>`${name==="def"?"":name+"_"}${String(i).padStart(d.paddingWidth,"0")}`) : [];
     const child = String(index).padStart(d.paddingWidth, "0");
     name = name === "def" ? child : `${name}_${child}`;
   }
@@ -161,6 +174,7 @@ export async function fetchSolarDyn(
   type: "orb" | "ori" = "orb",
   onSelection?: (selection: DynSelection) => void,
   onController?: (selection:PositionSelection)=>void,
+  adjacent?: "forward"|"reverse",
 ): Promise<Uint8Array> {
   if (!Number.isFinite(epoch)) throw Error("Invalid solar resource");
   const allDeclared = declaredTracks(id, type);
@@ -171,7 +185,7 @@ export async function fetchSolarDyn(
   // tracks override earlier tracks, regardless of the URL's parent-looking path.
   const tracks = [...declared].reverse();
   if (!getEyesDefinition(id) || !tracks.length)
-    return fetchTrack(id, epoch, signal, fetcher, type, onSelection);
+    return fetchTrack(id, epoch, signal, fetcher, type, onSelection,undefined,undefined,adjacent);
   let failure: unknown;
   let lowerExclusive=-Infinity,lowerInclusive=-Infinity,upperExclusive=Infinity;
   for (const track of tracks) {
@@ -187,6 +201,7 @@ export async function fetchSolarDyn(
         value => { selection=value; },
         track,
         value => { domain=value; },
+        adjacent,
       );
       if (selection) onSelection?.(selection);
       {

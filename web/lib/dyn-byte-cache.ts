@@ -1,16 +1,21 @@
 class ReadLane {
   #active = 0;
-  #waiters: { signal: AbortSignal; abort: () => void; grant: () => void }[] =
-    [];
+  #waiters: {
+    signal: AbortSignal;
+    abort: () => void;
+    grant: () => void;
+    foreground: () => boolean;
+  }[] = [];
   readonly #limit: number;
   constructor(limit: number) {
     this.#limit = limit;
   }
-  acquire(signal: AbortSignal): Promise<() => void> {
+  acquire(signal: AbortSignal, foreground: () => boolean): Promise<() => void> {
     signal.throwIfAborted();
     return new Promise((resolve, reject) => {
       const waiter = {
         signal,
+        foreground,
         abort: () => {
           const index = this.#waiters.indexOf(waiter);
           if (index >= 0) this.#waiters.splice(index, 1);
@@ -24,7 +29,10 @@ class ReadLane {
             if (released) return;
             released = true;
             this.#active--;
-            this.#waiters.shift()?.grant();
+            const preferred = this.#waiters.findIndex((waiter) =>
+              waiter.foreground(),
+            );
+            this.#waiters.splice(preferred < 0 ? 0 : preferred, 1)[0]?.grant();
           });
         },
       };
@@ -54,6 +62,7 @@ export class DynByteCache {
     {
       controller: AbortController;
       owners: Set<symbol>;
+      foreground: boolean;
       promise: Promise<Uint8Array>;
     }
   >();
@@ -101,7 +110,11 @@ export class DynByteCache {
     for (const flow of this.#pending.values()) flow.controller.abort();
     this.#pending.clear();
   }
-  async read(url: string, signal: AbortSignal): Promise<Uint8Array> {
+  async read(
+    url: string,
+    signal: AbortSignal,
+    background = false,
+  ): Promise<Uint8Array> {
     signal.throwIfAborted();
     const old = this.#entries.get(url);
     if (old && old.expires > this.#now()) {
@@ -112,14 +125,22 @@ export class DynByteCache {
     this.evict(url);
     let flow = this.#pending.get(url);
     if (!flow) {
-      if (this.#pending.size >= 512) throw Error("DYN pending request budget");
+      if (this.#pending.size >= (background ? 448 : 512))
+        throw Error("DYN pending request budget");
       const controller = new AbortController(),
         generation = this.#generation;
-      flow = { controller, owners: new Set<symbol>(), promise: undefined! };
+      flow = {
+        controller,
+        owners: new Set<symbol>(),
+        foreground: !background,
+        promise: undefined!,
+      };
       const current = flow;
       this.#pending.set(url, current);
       current.promise = Promise.resolve()
-        .then(() => this.#load(url, controller.signal))
+        .then(() =>
+          this.#load(url, controller.signal, () => current.foreground),
+        )
         .then((bytes) => {
           controller.signal.throwIfAborted();
           if (
@@ -142,6 +163,7 @@ export class DynByteCache {
           if (this.#pending.get(url) === current) this.#pending.delete(url);
         });
     }
+    if (!background) flow.foreground = true;
     const current = flow,
       owner = Symbol();
     current.owners.add(owner);
@@ -170,10 +192,14 @@ export class DynByteCache {
       if (ownerSignal.aborted) abort();
     });
   }
-  async #load(url: string, ownerSignal: AbortSignal) {
+  async #load(
+    url: string,
+    ownerSignal: AbortSignal,
+    foreground: () => boolean,
+  ) {
     const signal = AbortSignal.any([ownerSignal, AbortSignal.timeout(20000)]);
     signal.throwIfAborted();
-    const releaseRequest = await this.#requests.acquire(signal);
+    const releaseRequest = await this.#requests.acquire(signal, foreground);
     try {
       const response = await this.#fetch(url, { signal, redirect: "error" });
       if (signal.aborted) {
@@ -186,7 +212,7 @@ export class DynByteCache {
       }
       let releaseBody: () => void;
       try {
-        releaseBody = await this.#bodies.acquire(signal);
+        releaseBody = await this.#bodies.acquire(signal, foreground);
       } catch (error) {
         await response.body?.cancel();
         throw error;
