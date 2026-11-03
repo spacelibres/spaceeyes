@@ -473,7 +473,7 @@ test("complete host flow uses real Rust WASM for selection, time, layers and rel
   await assert.rejects(app.select("mars"), /sample times must increase/);
   assert.equal(fixtures.focused(), undefined);
   assert.match(states.at(-1)!.phase, /总览/);
-  assert.match(states.at(-1)!.dataStatus, /^unsupported/);
+  assert.match(states.at(-1)!.dataStatus, /^failed/);
   await Promise.all([app.select("earth"), app.select("moon")]);
   assert.equal(states.at(-1)!.selected, "moon");
   const earth = JSON.parse(fixtures.core().state_at("earth", 0));
@@ -2487,4 +2487,54 @@ test("continuous secondary visual restorations cannot starve an active scientifi
   assert.ok(restoreFrames>=4,"exercise consecutive successful source-restoration frames");
   assert.equal(fixtures.core().playing(),true);
  } finally {SolarSystemData.prototype.trailSampleSteps=original;SolarSystemData.prototype.prefetchPosition=originalPrefetch;await app.dispose();}
+});
+
+
+test("previously valid JWST recovers a rejected unknown malformed chunk while initially invalid sources stay bounded",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),originalPrefetch=SolarSystemData.prototype.prefetchPosition,originalLoad=SolarSystemData.prototype.load;
+ const {readFile}=await import('node:fs/promises');
+ const malformed=new Uint8Array(await readFile(new URL('../lib/fixtures/sc_jwst__earth__orb__81_05-payload.dyn',import.meta.url)));malformed[malformed.length-1]^=1;
+ let failureState:{status:string;error?:string}|undefined;
+ const ownedLoads:Promise<void>[]=[];
+ SolarSystemData.prototype.load=function(...args){
+  const task=originalLoad.apply(this,args);
+  void task.then(()=>{const status=this.status('sc_jwst');if(status?.status==='failed')failureState=status;},()=>{});
+  if(armed&&args[0]?.includes('sc_jwst'))ownedLoads.push(task);
+  return task;
+ };
+ SolarSystemData.prototype.prefetchPosition=async()=>false;
+ let cutoff:number|undefined,armed=false,recoveryRequests=0,neverAvailableRequests=0,done!:()=>void;
+ const ready=new Promise<void>(resolve=>{done=resolve;});
+ const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="earth"&&snapshot.dataCache.positionEntries>40)done();},new AbortController().signal,{...fixtures,fetch:async input=>{
+  const url=new URL(String(input),"http://fixture"),orientation=url.searchParams.get("type")==="ori";
+  if(!orientation&&url.pathname.endsWith("/sc_prefire_2")){neverAvailableRequests++;return new Response(malformed);}
+  if(!orientation&&url.pathname.endsWith("/sc_jwst")) {
+   cutoff??=Number(url.searchParams.get("epoch"))+100;
+   if(armed){recoveryRequests++;if(recoveryRequests===1)return new Response(malformed);return new Response(sample(false));}
+   return new Response(sample(false,cutoff));
+  }
+  return new Response(sample(orientation));
+ }});
+ try {
+  await app.select("earth");await ready;
+  for(let frame=0;frame<200;frame++)fixtures.step(frame*16);
+  const before=fixtures.trails().filter(trail=>trail.id==="sc_jwst"&&trail.count>0).length;
+  assert.ok(before>0,"recovery is restricted to a genuinely displayed trail");
+  armed=true;app.play(true,3600);fixtures.step(4000);
+  assert.equal(ownedLoads.length,1);await ownedLoads[0];
+  // The source has finished (including digest/decode); drain its host cleanup chain.
+  await new Promise<void>(resolve=>setImmediate(resolve));
+  assert.equal(recoveryRequests,1);
+  assert.equal(failureState?.status,'failed');assert.match(failureState?.error??'',/sample times must increase/);
+  fixtures.step(4100);assert.equal(recoveryRequests,1,"existing one-second retry backoff remains bounded");
+  fixtures.step(5100);assert.equal(ownedLoads.length,2);await ownedLoads[1];
+  await new Promise<void>(resolve=>setImmediate(resolve));
+  for(let frame=1;frame<=40;frame++)fixtures.step(5100+frame*34);
+  assert.ok(recoveryRequests>=2,"failed status without coverage metadata does not permanently suppress recovery");
+  assert.ok(fixtures.trails().filter(trail=>trail.id==="sc_jwst"&&trail.count>0).length>before);
+  assert.ok(JSON.parse(fixtures.core().state_at('sc_jwst',fixtures.core().epoch())).positionKm,'recovered geometry has valid real WASM object ownership');
+  assert.equal(neverAvailableRequests,1,"never-available sources do not acquire new retries");
+  assert.equal(fixtures.core().playing(),true);
+ } finally {SolarSystemData.prototype.prefetchPosition=originalPrefetch;SolarSystemData.prototype.load=originalLoad;await app.dispose();}
 });

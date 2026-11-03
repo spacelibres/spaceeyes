@@ -862,11 +862,9 @@ export class SolarSystemData {
           )
             this.#states.set(id, {
               id,
-              status: String(e).includes("sample times must increase")
-                ? "unsupported"
-                : String(e).includes("Outside source coverage")
-                  ? "out-of-coverage"
-                  : "failed",
+              status: String(e).includes("Outside source coverage")
+                ? "out-of-coverage"
+                : "failed",
               error: String(e),
             });
         }

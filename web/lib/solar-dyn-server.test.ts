@@ -560,3 +560,26 @@ test("exact upstream bytes are reused while every request still decodes, and inv
   assert.equal(decodeDyn(await fetchSolarDyn("moon",5,signal(),recovering)).kind,"inline");
   assert.equal(badCalls,3);
 });
+
+test("hash-pinned JWST adjacent ordered runs preserve exact records and share only an identical endpoint",async()=>{
+ const track='sc_jwst/earth/orb',name='81_05',raw=new Uint8Array(await readFile(new URL('./fixtures/sc_jwst__earth__orb__81_05-payload.dyn',import.meta.url)));
+ const source=new Uint8Array(await readFile(new URL('./fixtures/sc_jwst__earth__orb__81_05-source.dyn',import.meta.url)));
+ const {createHash}=await import('node:crypto');
+ assert.equal(createHash('sha256').update(raw).digest('hex'),'f7b7ff632ff10db067eaadab0a2b8139691ebae30fc2f0963e1350491e9f4852');
+ assert.equal(createHash('sha256').update(source).digest('hex'),'c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98');
+ const start=847656568.5369012,knot=849341531.501287,end=850223075.4140545;
+ assert.throws(()=>decodeDyn(raw),/sample times must increase/);
+ assert.deepEqual(raw.subarray(28+6*72,28+7*72),raw.subarray(28+7*72,28+8*72));
+ for(const [epoch,records] of [[start,[0,7]],[start+1,[0,7]],[knot,[0,7]],[knot+1,[7,11]],[end,[7,11]]] as const){
+  const selected=reviewedMissionWindow(track,raw,epoch,name);assert.deepEqual(selected.selection?.records,records);assert.equal(selected.selection?.sourceSha256,'c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98');
+  assert.deepEqual(selected.bytes.subarray(28),raw.subarray(28+records[0]*72,28+records[1]*72));decodeDyn(selected.bytes);
+ }
+ for(const epoch of [start-1,end+1])assert.throws(()=>reviewedMissionWindow(track,raw,epoch,name),/Outside source coverage/);
+ const unknown=raw.slice();unknown[unknown.length-1]^=1;assert.equal(reviewedMissionWindow(track,unknown,start+1,name).selection,undefined);assert.throws(()=>decodeDyn(unknown),/sample times must increase/);
+ assert.deepEqual(raw.subarray(23),source,'reconstructed fixture preserves the complete exact upstream child bytes');
+ const files=new Map<string,Uint8Array>();for(const child of ['def','81','81_05'])files.set(child,new Uint8Array(await readFile(new URL(`./fixtures/sc_jwst__earth__orb__${child}-source.dyn`,import.meta.url))));
+ const fetcher:typeof fetch=async input=>{const child=String(input).split('/').at(-1)!.replace('.dyn','');assert.ok(files.has(child),child);return new Response(new Uint8Array(files.get(child)!));};
+ for(const epoch of [start+1,knot,knot+1,end-1]){let selection:DynSelection|undefined;const selected=await fetchSolarDyn('sc_jwst',epoch,signal(),fetcher,'orb',value=>{selection=value;});const decoded=decodeDyn(selected);assert.ok(epoch>=decoded.coverage.start&&epoch<=decoded.coverage.end);assert.equal(selection?.sourceSha256,'c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98');}
+ const badFetcher:typeof fetch=async input=>{const child=String(input).split('/').at(-1)!.replace('.dyn',''),bytes=files.get(child)!.slice();if(child==='81_05')bytes[bytes.length-1]^=1;return new Response(bytes);};
+ await assert.rejects(fetchSolarDyn('sc_jwst',start+1,signal(),badFetcher),/sample times must increase/);
+});

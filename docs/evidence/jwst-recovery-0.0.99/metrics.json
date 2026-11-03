@@ -1,0 +1,556 @@
+{
+  "case": {
+    "hash": "#/earth?tdb=846973936.2756681&rate=36000&play=1&mode=system&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "epoch": 848110402.2756778,
+    "camera": {
+      "focusedId": "earth",
+      "epochTdbSeconds": 848110402.2756778,
+      "framingReferenceId": "earth",
+      "framingReferencePositionKm": [
+        87247508.51655428,
+        109624687.77641198,
+        47519573.044635996
+      ],
+      "followReferenceId": null,
+      "followReferencePositionKm": null,
+      "positionKm": [
+        87243779.69547476,
+        108681865.50369164,
+        47959142.97463096
+      ],
+      "desiredKm": [
+        87243779.69547476,
+        108681865.50369164,
+        47959142.97463096
+      ],
+      "framingRadiusKm": 181579.8676563263,
+      "collisionAdjusted": false,
+      "desiredInside": []
+    },
+    "tracked": 67,
+    "jwstMissingFrames": 0,
+    "observedFrames": 570,
+    "jwst": {
+      "first": 844408932.0477004,
+      "last": 849341531.501287,
+      "built": 847584784.2756734,
+      "duration": 31536000,
+      "count": 514,
+      "draw": [
+        816048784.2756734,
+        847584784.2756734
+      ],
+      "rs": true,
+      "re": true,
+      "wall": 24761.69999998808,
+      "publications": 4
+    },
+    "allHeadMissingLast": [
+      "sc_aqua",
+      "sc_aura",
+      "sc_cygnss_4",
+      "sc_cygnss_1",
+      "sc_cygnss_2",
+      "sc_cygnss_3",
+      "sc_cygnss_5",
+      "sc_cygnss_7",
+      "sc_cygnss_8",
+      "sc_gpm",
+      "sc_grace_fo1",
+      "sc_grace_fo2",
+      "sc_icesat_2",
+      "sc_iss",
+      "sc_ixpe",
+      "sc_jason_3",
+      "sc_landsat_8",
+      "sc_nustar",
+      "sc_oco_2",
+      "sc_sentinel_6",
+      "sc_smap",
+      "sc_suomi_npp",
+      "sc_terra",
+      "sc_noaa_20",
+      "sc_swot"
+    ],
+    "allHeadMissingP50": 25,
+    "allHeadMissingP95": 25,
+    "allHeadMissingMax": 25,
+    "perf": {
+      "cpu_p50_ms": 11.799999999999999,
+      "cpu_p95_ms": 12.9,
+      "cpu_p99_ms": 13.299999999999999,
+      "gpu_ms": null,
+      "noncritical_pending": 6,
+      "present_interval_p50_ms": 33.99999999999892,
+      "present_interval_p95_ms": 37.10000000000235,
+      "present_interval_p99_ms": 38.699999999998624,
+      "rendered_frames": 1128,
+      "resolution_scale": 1,
+      "skipped_frames": 3000,
+      "stagesMs": {
+        "annotations": {
+          "count": 120,
+          "latest": 1.5,
+          "mean": 1.4158333333333317,
+          "p50": 1.5,
+          "p95": 1.7,
+          "p99": 1.9
+        },
+        "extract": {
+          "count": 120,
+          "latest": 0.8,
+          "mean": 0.8733333333333334,
+          "p50": 0.9,
+          "p95": 1.1,
+          "p99": 1.1
+        },
+        "main": {
+          "count": 120,
+          "latest": 4.5,
+          "mean": 4.270000000000001,
+          "p50": 4.4,
+          "p95": 4.8,
+          "p99": 5.1000000000000005
+        },
+        "render": {
+          "count": 120,
+          "latest": 7.4,
+          "mean": 6.347499999999999,
+          "p50": 6.5,
+          "p95": 7.3,
+          "p99": 7.6
+        },
+        "sync_scene": {
+          "count": 120,
+          "latest": 0,
+          "mean": 0.04499999999999997,
+          "p50": 0,
+          "p95": 0.1,
+          "p99": 0.1
+        },
+        "trajectory_upload": {
+          "count": 120,
+          "latest": 0.4,
+          "mean": 0.3649999999999995,
+          "p50": 0.4,
+          "p95": 0.5,
+          "p99": 0.6
+        }
+      },
+      "target_fps": 30,
+      "transition_reason": "sustained_overload",
+      "transition_seconds": 2.165,
+      "visible": true,
+      "worst_one_second_frames": 25
+    }
+  },
+  "sourceApi": [
+    {
+      "epoch": 847656569.5369012,
+      "status": 200,
+      "coverage": {
+        "start": 847656568.5369012,
+        "end": 849341531.501287
+      },
+      "records": 7,
+      "sourceSha": "c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98",
+      "selection": "{\"records\":[0,7],\"coverage\":[847656568.5369012,849341531.501287]}"
+    },
+    {
+      "epoch": 849341531.501287,
+      "status": 200,
+      "coverage": {
+        "start": 847656568.5369012,
+        "end": 849341531.501287
+      },
+      "records": 7,
+      "sourceSha": "c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98",
+      "selection": "{\"records\":[0,7],\"coverage\":[847656568.5369012,849341531.501287]}"
+    },
+    {
+      "epoch": 849341531.601287,
+      "status": 200,
+      "coverage": {
+        "start": 849341531.501287,
+        "end": 850223075.4140545
+      },
+      "records": 4,
+      "sourceSha": "c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98",
+      "selection": "{\"records\":[7,11],\"coverage\":[849341531.501287,850223075.4140545]}"
+    },
+    {
+      "epoch": 850223074.4140545,
+      "status": 200,
+      "coverage": {
+        "start": 849341531.501287,
+        "end": 850223075.4140545
+      },
+      "records": 4,
+      "sourceSha": "c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98",
+      "selection": "{\"records\":[7,11],\"coverage\":[849341531.501287,850223075.4140545]}"
+    }
+  ],
+  "network": [
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_landsat_8?epoch=863386573.3753796",
+      "duration": 1461.5999999940395,
+      "queue": 667.5999999940395,
+      "ttfb": 793.6000000238419,
+      "body": 0.3999999761581421,
+      "size": 1336
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_prefire_1?epoch=864515440.87718",
+      "duration": 1450.300000011921,
+      "queue": 651.9000000059605,
+      "ttfb": 798.0999999940395,
+      "body": 0.30000001192092896,
+      "size": 5080
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_themis_e?epoch=864519671.1148515",
+      "duration": 1479.3999999761581,
+      "queue": 707,
+      "ttfb": 772.0999999940395,
+      "body": 0.29999998211860657,
+      "size": 1120
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_gpm?epoch=863959854.2642463",
+      "duration": 1266.300000011921,
+      "queue": 507.09999999403954,
+      "ttfb": 758.9000000059605,
+      "body": 0.30000001192092896,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_sentinel_6?epoch=863447028.675805",
+      "duration": 1564.1000000238419,
+      "queue": 550.8000000119209,
+      "ttfb": 1013,
+      "body": 0.30000001192092896,
+      "size": 1192
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_nustar?epoch=864441798.2466146",
+      "duration": 1370.4000000059605,
+      "queue": 526.4000000059605,
+      "ttfb": 843.7000000178814,
+      "body": 0.29999998211860657,
+      "size": 1768
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_iss?epoch=864021931.197798",
+      "duration": 1208.4000000059605,
+      "queue": 427.2000000178814,
+      "ttfb": 780.8999999761581,
+      "body": 0.30000001192092896,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_aura?epoch=863422506.9808253",
+      "duration": 1816,
+      "queue": 749.1999999880791,
+      "ttfb": 1066.5,
+      "body": 0.30000001192092896,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_hubble_space_telescope?epoch=863461525.8758049",
+      "duration": 867.3000000119209,
+      "queue": 864.9000000059605,
+      "ttfb": 2,
+      "body": 0.4000000059604645,
+      "size": 342
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_grace_fo2?epoch=863443830.2514727",
+      "duration": 1468.0999999940395,
+      "queue": 728.5999999940395,
+      "ttfb": 739.0999999940395,
+      "body": 0.4000000059604645,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_3?epoch=863466526.275805",
+      "duration": 1005.3000000119209,
+      "queue": 735.4000000059605,
+      "ttfb": 269.59999999403954,
+      "body": 0.30000001192092896,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_jason_3?epoch=864350706.3529855",
+      "duration": 1736.5,
+      "queue": 937.5999999940395,
+      "ttfb": 798.6999999880791,
+      "body": 0.20000001788139343,
+      "size": 1336
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_pace?epoch=864549054.843418",
+      "duration": 1179.0999999940395,
+      "queue": 913,
+      "ttfb": 265.69999998807907,
+      "body": 0.4000000059604645,
+      "size": 5224
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_starling_4?epoch=864552895.9916701",
+      "duration": 896.4000000059605,
+      "queue": 830.3000000119209,
+      "ttfb": 65.7999999821186,
+      "body": 0.30000001192092896,
+      "size": 5656
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_2?epoch=863448126.4485492",
+      "duration": 1580.5999999940395,
+      "queue": 798.7999999821186,
+      "ttfb": 781.3000000119209,
+      "body": 0.5,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_1?epoch=863474770.2758051",
+      "duration": 1721.800000011921,
+      "queue": 857.5999999940395,
+      "ttfb": 863.8000000119209,
+      "body": 0.4000000059604645,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_spherex?epoch=864558426.2016878",
+      "duration": 1145.9000000059605,
+      "queue": 938.7999999821186,
+      "ttfb": 206.7000000178814,
+      "body": 0.4000000059604645,
+      "size": 4504
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_gpm?epoch=864001952.1943924",
+      "duration": 1511.0999999940395,
+      "queue": 706.2999999821186,
+      "ttfb": 804.5,
+      "body": 0.30000001192092896,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_8?epoch=863494015.8758051",
+      "duration": 1506.300000011921,
+      "queue": 716.8000000119209,
+      "ttfb": 789.2999999821186,
+      "body": 0.20000001788139343,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_starling_3?epoch=864577879.2400178",
+      "duration": 1572.4000000059605,
+      "queue": 781.5999999940395,
+      "ttfb": 790.5999999940395,
+      "body": 0.20000001788139343,
+      "size": 5656
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_3?epoch=863477318.6563739",
+      "duration": 1566.2999999821186,
+      "queue": 771.6999999880791,
+      "ttfb": 794.3000000119209,
+      "body": 0.29999998211860657,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_iss?epoch=864077579.066576",
+      "duration": 1810,
+      "queue": 785.5999999940395,
+      "ttfb": 1024.2000000178814,
+      "body": 0.19999998807907104,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_hubble_space_telescope?epoch=863503512.675805",
+      "duration": 929.2000000178814,
+      "queue": 926.8000000119209,
+      "ttfb": 2,
+      "body": 0.4000000059604645,
+      "size": 342
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_sentinel_6?epoch=863482946.109072",
+      "duration": 958,
+      "queue": 894.5999999940395,
+      "ttfb": 62.900000005960464,
+      "body": 0.5,
+      "size": 1192
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_nustar?epoch=864486446.6419384",
+      "duration": 1759.300000011921,
+      "queue": 958,
+      "ttfb": 801,
+      "body": 0.30000001192092896,
+      "size": 1768
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_ixpe?epoch=863504761.875805",
+      "duration": 2005.300000011921,
+      "queue": 1205.9000000059605,
+      "ttfb": 799.0999999940395,
+      "body": 0.30000001192092896,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_sentinel_6b?epoch=864589294.5854778",
+      "duration": 1271.9000000059605,
+      "queue": 1080.0999999940395,
+      "ttfb": 191.5,
+      "body": 0.30000001192092896,
+      "size": 3712
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_prefire_2?epoch=864598216.4670212",
+      "duration": 1792.2999999821186,
+      "queue": 1008.6999999880791,
+      "ttfb": 783.2000000178814,
+      "body": 0.3999999761581421,
+      "size": 5152
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_starling_1?epoch=864600135.4279723",
+      "duration": 1762,
+      "queue": 974.8000000119209,
+      "ttfb": 786.8000000119209,
+      "body": 0.3999999761581421,
+      "size": 5656
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_jason_3?epoch=864394308.2694097",
+      "duration": 1584.7999999821186,
+      "queue": 768,
+      "ttfb": 816.5,
+      "body": 0.29999998211860657,
+      "size": 1336
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_1?epoch=863475912.6051016",
+      "duration": 1633.199999988079,
+      "queue": 857.9000000059605,
+      "ttfb": 775,
+      "body": 0.29999998211860657,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_starling_2?epoch=864616386.552825",
+      "duration": 938.8000000119209,
+      "queue": 873.5,
+      "ttfb": 65,
+      "body": 0.30000001192092896,
+      "size": 5656
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_terra?epoch=863537259.0758052",
+      "duration": 1001.5,
+      "queue": 939,
+      "ttfb": 62.20000001788139,
+      "body": 0.29999998211860657,
+      "size": 2056
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_noaa_20?epoch=863537259.0758052",
+      "duration": 1854.2000000178814,
+      "queue": 1001.6000000238419,
+      "ttfb": 852.2999999821186,
+      "body": 0.30000001192092896,
+      "size": 1192
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_nisar?epoch=864624858.1051148",
+      "duration": 1707.699999988079,
+      "queue": 875.0999999940395,
+      "ttfb": 832.3000000119209,
+      "body": 0.29999998211860657,
+      "size": 4144
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_cygnss_8?epoch=863503026.192713",
+      "duration": 1716.0999999940395,
+      "queue": 957.8000000119209,
+      "ttfb": 757.9000000059605,
+      "body": 0.3999999761581421,
+      "size": 1264
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_hubble_space_telescope?epoch=863549002.2758052",
+      "duration": 1121.6000000238419,
+      "queue": 1119.6000000238419,
+      "ttfb": 1.7999999821186066,
+      "body": 0.20000001788139343,
+      "size": 342
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_gpm?epoch=864044374.4346929",
+      "duration": 1758.9000000059605,
+      "queue": 964.2000000178814,
+      "ttfb": 794.2999999821186,
+      "body": 0.4000000059604645,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_noaa_21?epoch=864636004.7662346",
+      "duration": 1713.1000000238419,
+      "queue": 917.2000000178814,
+      "ttfb": 795.4000000059605,
+      "body": 0.5,
+      "size": 5872
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_nustar?epoch=864531084.7837832",
+      "duration": 1020.0999999940395,
+      "queue": 957.4000000059605,
+      "ttfb": 62.5,
+      "body": 0.19999998807907104,
+      "size": 1768
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_terra?epoch=863584565.4641925",
+      "duration": 952.7000000178814,
+      "queue": 890.3000000119209,
+      "ttfb": 62.19999998807907,
+      "body": 0.20000001788139343,
+      "size": 2056
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_ixpe?epoch=863520323.9744087",
+      "duration": 911.7999999821186,
+      "queue": 848.1999999880791,
+      "ttfb": 63.400000005960464,
+      "body": 0.19999998807907104,
+      "size": 1480
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_landsat_9?epoch=864662739.616795",
+      "duration": 847.2000000178814,
+      "queue": 781.5999999940395,
+      "ttfb": 65.30000001192093,
+      "body": 0.30000001192092896,
+      "size": 6592
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_hubble_space_telescope?epoch=863589991.8758059",
+      "duration": 648.4000000059605,
+      "queue": 645.8000000119209,
+      "ttfb": 2.199999988079071,
+      "body": 0.4000000059604645,
+      "size": 342
+    },
+    {
+      "name": "http://127.0.0.1:3006/api/solar-dyn/sc_noaa_20?epoch=863553280.1982065",
+      "duration": 307.69999998807907,
+      "queue": 245.09999999403954,
+      "ttfb": 62.30000001192093,
+      "body": 0.29999998211860657,
+      "size": 1192
+    }
+  ],
+  "limitations": "Data-recovery milestone, not complete high-rate acceptance. This run has renewed source starvation in other targets; browser ResourceTiming shows large HTTP1 queue delay. Next milestone warms two exact adjacent server-side leaf resources without changing science."
+}

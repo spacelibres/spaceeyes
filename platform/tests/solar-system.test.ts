@@ -2234,3 +2234,17 @@ test("directional guards preserve visible allocation and science within the same
   const original=build(0);for(const direction of [1,-1] as const){const current=build(direction);assert.deepEqual(current.points,original.points);assert.deepEqual(current.epochsTdbSeconds,original.epochsTdbSeconds);assert.deepEqual(current.drawRangeTdbSeconds,original.drawRangeTdbSeconds);}
  }finally{natural.dispose();}
 });
+
+
+test("a malformed-time chunk is failed and later valid source reload recovers without changing definition support",async()=>{
+ const {ctx}=context();let phase=0;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{
+  const bytes=orb(7000);new DataView(bytes.buffer).setFloat64(28+72,phase===1?0:phase===2?20:10,true);
+  return new Response(bytes);
+ }});
+ try{
+  await source.load(['sc_jwst'],5,[]);assert.equal(source.status('sc_jwst')?.status,'ready');const position=source.position('sc_jwst',5);
+  phase=1;await source.load(['sc_jwst'],11,[]);assert.equal(source.status('sc_jwst')?.status,'failed');assert.match(source.status('sc_jwst')?.error??'',/sample times must increase/);
+  phase=2;await source.load(['sc_jwst'],12,[]);assert.equal(source.status('sc_jwst')?.status,'ready');assert.deepEqual(source.position('sc_jwst',5),position);
+ }finally{source.dispose();}
+});

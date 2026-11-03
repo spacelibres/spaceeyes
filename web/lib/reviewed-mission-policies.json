@@ -874,5 +874,26 @@
     "ambiguousEpochs": [
       978108682.0
     ]
+  },
+  "sc_jwst/earth/orb/81_05": {
+    "hash": "f7b7ff632ff10db067eaadab0a2b8139691ebae30fc2f0963e1350491e9f4852",
+    "sourceSha256": "c3c2002e1c25aa94517212b11b8e4673db0991f720db6e94fb013b38f9da3a98",
+    "base": 28,
+    "stride": 72,
+    "flag": 1,
+    "windows": [
+      [
+        0,
+        7
+      ],
+      [
+        7,
+        11
+      ]
+    ],
+    "fixture": "sc_jwst__earth__orb__81_05-payload.dyn",
+    "sourceFixture": "sc_jwst__earth__orb__81_05-source.dyn",
+    "url": "https://eyes.nasa.gov/assets/dynamic/dynamo/sc_jwst/earth/orb/81_05.dyn",
+    "review": "Two original contiguous ordered runs share byte-identical records 6 and 7 at TDB 849341531.501287. Select either unchanged endpoint at that epoch; never reorder, average or repair an unknown hash."
   }
 }
