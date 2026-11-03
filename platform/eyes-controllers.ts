@@ -23,16 +23,25 @@ export function rotateVector(
     c + w * tz + x * ty - y * tx,
   ];
 }
+/** Entity.getPositionAtTime applies covered position controllers in declaration order. */
+export function staticPositionController(id: string, t: number) {
+  return (eyesDefinitions[id]?.controllers ?? []).filter(c =>
+    (!c.coverage || (t >= Number(c.coverage[0]) && t <= Number(c.coverage[1]))) &&
+    (c.type === "orbitalElements" || (c.type === "fixed" &&
+      (c.position?.constructor === "Vector3" || c.llaOnSpheroid?.constructor === "LatLonAlt")))
+  ).at(-1);
+}
 export function staticPosition(
   id: string,
   t: number,
   parentOrientation?: readonly number[],
 ): [number, number, number] | undefined {
-  for (const c of activeController(id, t, "fixed")) {
+  const c = staticPositionController(id, t);
+  if (c?.type === "fixed") {
     if (c.position?.constructor === "Vector3") {
       const rotates =
         c.relativeToEntity ||
-        activeController(id, t, "rotateByEntityOrientation").length;
+        activeController(id, t, "rotateByEntityOrientation").some(c => c.rotatingPosition !== false);
       if (rotates) {
         if (!parentOrientation)
           throw Error("Reference orientation unavailable");
@@ -74,8 +83,10 @@ export function staticPosition(
       );
     }
   }
-  const c = activeController(id, t, "orbitalElements").at(-1);
-  if (c) {
+  if (c?.type === "orbitalElements") return staticOrbitState(c, t).position;
+  return undefined;
+}
+function staticOrbitState(c: any, t: number) {
     let q = c.orientation?.values;
     if (!q) {
       const O = c.longitudeOfAscendingNode / 2,
@@ -98,20 +109,20 @@ export function staticPosition(
         orientation: q,
       },
       t,
-    ).position;
-  }
+    );
+}
+/** Fixed and orbital velocities use the same winning declaration as position. */
+export function staticVelocity(id: string, t: number): [number, number, number] | undefined {
+  const c = staticPositionController(id, t);
+  if (c?.type === "fixed") return [0, 0, 0];
+  if (c?.type === "orbitalElements") return staticOrbitState(c, t).velocity;
   return undefined;
 }
 export function staticCoverage(
   id: string,
   t: number,
 ): [number, number] | undefined {
-  const c = [
-    ...activeController(id, t, "fixed").filter(
-      (c) => c.position || c.llaOnSpheroid,
-    ),
-    ...activeController(id, t, "orbitalElements"),
-  ].at(-1);
+  const c = staticPositionController(id, t);
   return c
     ? [
         Number(c.coverage?.[0] ?? -Infinity),

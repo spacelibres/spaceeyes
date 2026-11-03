@@ -1,0 +1,6 @@
+{"id":"sc_mars_pathfinder","displayCatalog":false,"scope":"Real catalog declaration evaluator; not an end-to-end resource or GPU certificate"}
+{"epoch":-78692826.001,"parent":"mars","position":[1733.8045354970886,-3114.1893353832183,-682.0562165671394],"velocity":[0,0,0],"coverage":[-78692880,-78692826]}
+{"epoch":-78692826,"parent":"sc_mars_pathfinder_landing_site","position":[0,0,0],"velocity":[0,0,0],"coverage":[-78692826,-71372156]}
+{"epoch":-78692825.999,"parent":"sc_mars_pathfinder_landing_site","position":[0,0,0],"velocity":[0,0,0],"coverage":[-78692826,-71372156]}
+{"epoch":-78692826.001,"parent":"mars","position":[1733.8045354970886,-3114.1893353832183,-682.0562165671394],"velocity":[0,0,0],"coverage":[-78692880,-78692826]}
+{"epoch":-78692826,"parent":"sc_mars_pathfinder_landing_site","position":[0,0,0],"velocity":[0,0,0],"coverage":[-78692826,-71372156]}

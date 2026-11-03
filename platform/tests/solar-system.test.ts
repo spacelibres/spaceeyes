@@ -42,6 +42,58 @@ function context() {
   };
 }
 
+test("orientation-only rotation leaves fixed scientific position and zero velocity available",()=>{
+ const {ctx}=context(),original=eyesDefinitions.earth.controllers;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{throw Error("Unexpected resource request");}});
+ try {
+  eyesDefinitions.earth.controllers=[
+   {type:"fixed",position:{constructor:"Vector3",values:[1,2,3]}},
+   {type:"rotateByEntityOrientation",entityForOrientation:"sun",rotatingPosition:false,rotatingOrientation:true},
+  ];
+  assert.deepEqual(source.position("earth",5),[1,2,3]);
+  assert.deepEqual(source.sourceVelocity("earth",5),[0,0,0]);
+ } finally {eyesDefinitions.earth.controllers=original;source.dispose();}
+});
+
+test("dynamic cache cannot override a later fixed phase velocity when jumping both ways",async()=>{
+ const {ctx}=context(),original=eyesDefinitions.earth.controllers;
+ const bytes=orb(10),view=new DataView(bytes.buffer);
+ for(const offset of [28,100])view.setFloat64(offset+24,0.1,true);
+ const source=new SolarSystemData(ctx,{fetch:async()=>new Response(bytes)});
+ try {
+  eyesDefinitions.earth.controllers=[
+   {type:"dynamo",url:"earth/sun",coverage:[0,5]},
+   {type:"fixed",position:{constructor:"Vector3",values:[1,2,3]},coverage:[5,10]},
+   {type:"rotateByEntityOrientation",rotatingPosition:false,rotatingOrientation:true,coverage:[5,10]},
+  ];
+  for(const t of [2,5,2,5]) {
+   await source.load(["earth"],t,[]);
+   assert.equal(source.status("earth")?.status,"ready");
+   if(t===5) {
+    assert.deepEqual(source.position("earth",t),[1,2,3]);
+    assert.deepEqual(source.sourceVelocity("earth",t),[0,0,0]);
+   } else assert.ok(Math.hypot(...source.sourceVelocity("earth",t))>0);
+  }
+ } finally {eyesDefinitions.earth.controllers=original;source.dispose();}
+});
+
+test("static position provenance and velocity share fixed/orbital declaration order",async()=>{
+ const {ctx}=context(),original=eyesDefinitions.earth.controllers;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{throw Error("Unexpected request");}});
+ const orbital={type:"orbitalElements",epoch:0,semiMajorAxis:90,eccentricity:0,meanAngularMotion:0.01,meanAnomalyAtEpoch:0,orientation:{values:[1,0,0,0]},coverage:[0,10]};
+ const fixed={type:"fixed",position:{constructor:"Vector3",values:[1,2,3]},coverage:[2,8]};
+ try {
+  eyesDefinitions.earth.controllers=[fixed,orbital];
+  await source.load(["earth"],5,[]);
+  assert.equal(source.status("earth")?.positionSource,"orbital-elements");
+  assert.ok(Math.hypot(...source.sourceVelocity("earth",5))>0);
+  eyesDefinitions.earth.controllers=[orbital,fixed];
+  await source.load(["earth"],5,[]);
+  assert.equal(source.status("earth")?.positionSource,"fixed");
+  assert.deepEqual(source.sourceVelocity("earth",5),[0,0,0]);
+ } finally {eyesDefinitions.earth.controllers=original;source.dispose();}
+});
+
 test("overlapping position controllers invalidate same-parent cached data and rollback restores track identity",async()=>{
  const {ctx,states}=context(),old=eyesDefinitions.moon.controllers;
  eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth/a",coverage:[0,10]},{type:"dynamo",url:"moon/earth/b",coverage:[5,8]}];

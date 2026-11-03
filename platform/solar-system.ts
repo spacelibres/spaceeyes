@@ -18,6 +18,8 @@ import {
 } from "./eyes-orientation.ts";
 import {
   staticPosition,
+  staticPositionController,
+  staticVelocity,
   staticCoverage,
   activeController,
   rotateVector,
@@ -37,7 +39,6 @@ import {
   evaluateOrb,
   evaluateOrbVelocity,
   evaluateOri,
-  propagateState,
 } from "./dyn-evaluator.ts";
 import { osculatingOrbit } from "./osculating-orbit.ts";
 import type { PluginContext } from "./plugin-host.ts";
@@ -927,14 +928,9 @@ export class SolarSystemData {
   }
   #positionSource(id: string, t: number): "dyn" | "fixed" | "orbital-elements" {
     if(eyesPositionKeyframe(id,t))return "fixed";
-    if (
-      activeController(id, t, "fixed").some(
-        (c) => c.position || c.llaOnSpheroid,
-      )
-    )
-      return "fixed";
-    if (activeController(id, t, "orbitalElements").length)
-      return "orbital-elements";
+    const selected = staticPositionController(id, t);
+    if (selected?.type === "fixed") return "fixed";
+    if (selected?.type === "orbitalElements") return "orbital-elements";
     return "dyn";
   }
   // Scoped to one synchronous publication: no values survive a load or epoch.
@@ -981,7 +977,7 @@ export class SolarSystemData {
     const needsParentOrientation =
       activeController(id, t, "fixed").some(
         (c) => c.llaOnSpheroid || c.relativeToEntity,
-      ) || activeController(id, t, "rotateByEntityOrientation").length > 0;
+      ) || activeController(id, t, "rotateByEntityOrientation").some(c => c.rotatingPosition !== false);
     const ori =
       parentForOrientation && needsParentOrientation
         ? this.#orientationAt(parentForOrientation, t)
@@ -1000,6 +996,7 @@ export class SolarSystemData {
         t,
         "rotateByEntityOrientation",
       )) {
+        if (controller.rotatingPosition === false) continue;
         const reference =
           controller.entityForOrientation ?? this.parentAt(id, t);
         const attitude = reference
@@ -1153,15 +1150,16 @@ export class SolarSystemData {
     if (!hasDisplayCatalog(id))
       throw Error("Reference-only world velocity unavailable: " + id);
     if (
-      activeController(id, t, "rotateByEntityOrientation").length ||
+      activeController(id, t, "rotateByEntityOrientation").some(c => c.rotatingPosition !== false) ||
       activeController(id, t, "fixed").some(
         (c) => c.relativeToEntity || c.llaOnSpheroid,
       )
     )
       throw Error("Rotating reference world velocity unavailable");
+    const declaredVelocity = staticVelocity(id, t);
+    if (declaredVelocity) return declaredVelocity;
     const d = this.#data.get(id);
     let v: Vec3;
-    const orbital = activeController(id, t, "orbitalElements").at(-1);
     if (d?.kind === "inline" && d.type === "orb") {
       v = evaluateOrbVelocity(d, t);
       if (
@@ -1191,32 +1189,6 @@ export class SolarSystemData {
             (3 * u * u - 4 * u + 1) * a.velocity[j] +
             (3 * u * u - 2 * u) * b.velocity[j],
       ) as unknown as Vec3;
-    } else if (activeController(id, t, "fixed").some((c) => c.position))
-      v = [0, 0, 0];
-    else if (orbital) {
-      let q = orbital.orientation?.values;
-      if (!q) {
-        const O = orbital.longitudeOfAscendingNode / 2,
-          i = orbital.inclination / 2,
-          w = orbital.argumentOfPeriapsis / 2;
-        q = [
-          Math.cos(i) * Math.cos(O + w),
-          Math.sin(i) * Math.cos(O - w),
-          Math.sin(i) * Math.sin(O - w),
-          Math.cos(i) * Math.sin(O + w),
-        ];
-      }
-      v = propagateState(
-        {
-          time: orbital.epoch,
-          semiMajorAxis: orbital.semiMajorAxis,
-          eccentricity: orbital.eccentricity,
-          meanAngularMotion: orbital.meanAngularMotion,
-          meanAnomalyAtEpoch: orbital.meanAnomalyAtEpoch,
-          orientation: q,
-        },
-        t,
-      ).velocity;
     } else throw Error("World velocity unavailable");
     return v;
   }

@@ -13,7 +13,48 @@ test("hyperbolic source elements stay nonperiodic and finite", () => {
   assert.deepEqual(propagateState(r, 0).position, [100, 0, 0]);
   assert.ok(propagateState(r, 100).position[1] > 0);
 });
-import { staticPosition } from "../eyes-controllers.ts";
+import { staticPosition, staticCoverage } from "../eyes-controllers.ts";
+import { eyesDefinitions } from "../eyes-catalog.ts";
+
+test("Pathfinder shared fixed endpoint uses the last covered position and its coverage", () => {
+  const t=-78692826;
+  assert.notDeepEqual(staticPosition("sc_mars_pathfinder",t-0.001,[1,0,0,0]),[0,0,0]);
+  for(const at of [t+0.001,t,t-0.001,t]) {
+    const expected=at<t?[1733.8045354970886,-3114.1893353832183,-682.0562165671394]:[0,0,0];
+    assert.deepEqual(staticPosition("sc_mars_pathfinder",at,[1,0,0,0]),expected);
+    assert.deepEqual(staticCoverage("sc_mars_pathfinder",at),at<t?[-78692880,t]:[t,-71372156]);
+  }
+});
+
+test("static position and coverage preserve declaration order across fixed and orbital controllers", () => {
+  const original=eyesDefinitions.dactyl.controllers;
+  const orbital={type:"orbitalElements",epoch:0,semiMajorAxis:90,eccentricity:0,meanAngularMotion:0.01,meanAnomalyAtEpoch:0,orientation:{values:[1,0,0,0]},coverage:[0,10]};
+  const fixed={type:"fixed",position:{constructor:"Vector3",values:[1,2,3]},coverage:[2,8]};
+  try {
+    eyesDefinitions.dactyl.controllers=[fixed,orbital];
+    assert.deepEqual(staticPosition("dactyl",5),propagateState({time:0,semiMajorAxis:90,eccentricity:0,meanAngularMotion:0.01,meanAnomalyAtEpoch:0,orientation:[1,0,0,0]},5).position);
+    assert.deepEqual(staticCoverage("dactyl",5),[0,10]);
+    eyesDefinitions.dactyl.controllers=[orbital,fixed];
+    assert.deepEqual(staticPosition("dactyl",5),[1,2,3]);
+    assert.deepEqual(staticCoverage("dactyl",5),[2,8]);
+    assert.equal(staticPosition("dactyl",11),undefined);
+    assert.equal(staticCoverage("dactyl",11),undefined);
+  } finally { eyesDefinitions.dactyl.controllers=original; }
+});
+test("orientation-only rotation does not rotate a fixed position or require a position reference", () => {
+  const original=eyesDefinitions.dactyl.controllers;
+  try {
+    eyesDefinitions.dactyl.controllers=[
+      {type:"fixed",position:{constructor:"Vector3",values:[1,2,3]}},
+      {type:"rotateByEntityOrientation",rotatingPosition:false,rotatingOrientation:true},
+    ];
+    assert.deepEqual(staticPosition("dactyl",5),[1,2,3]);
+    assert.deepEqual(staticPosition("dactyl",5,[0,0,0,1]),[1,2,3]);
+    eyesDefinitions.dactyl.controllers[1].rotatingPosition=true;
+    assert.throws(()=>staticPosition("dactyl",5),/orientation/);
+    assert.deepEqual(staticPosition("dactyl",5,[0,0,0,1]),[-1,-2,3]);
+  } finally {eyesDefinitions.dactyl.controllers=original;}
+});
 import { decodeDyn } from "../dyn-decoder.ts";
 import { evaluateOrb } from "../dyn-evaluator.ts";
 test("declared orbital elements and landing coordinates evaluate without source execution", () => {
