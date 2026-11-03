@@ -9,6 +9,7 @@ if (wasm.indexOf(font) !== -1) throw new Error('Embedded label font found in WAS
 const fonts = new URL('../public/assets/fonts/', import.meta.url);
 const shaders = new URL('../public/assets/shaders/', import.meta.url);
 await mkdir(shaders, { recursive: true });
+for(const file of ['solar-lighting.wgsl','solar-material.wgsl'])await copyFile(new URL(`../resources/shaders/${file}`,import.meta.url),new URL(file,shaders));
 await copyFile(new URL('../resources/shaders/ring-particles.wgsl', import.meta.url), new URL('ring-particles.wgsl', shaders));
 await copyFile(new URL('../resources/shaders/stellar.wgsl', import.meta.url), new URL('stellar.wgsl', shaders));
 await mkdir(fonts, { recursive: true });

@@ -13,6 +13,28 @@ pub(crate) type RingMaterial = ExtendedMaterial<StandardMaterial, RingParticles>
 pub(crate) struct RingParticles {
     #[uniform(100)]
     particle_response: Vec4,
+    #[uniform(101)]
+    solar_direction: Vec4,
+}
+#[derive(Component)]
+pub(crate) struct RingSolarSource(String);
+
+pub(crate) fn sync_ring_light(
+    store: Res<CoreStore>,
+    query: Query<(&RingSolarSource, &MeshMaterial3d<RingMaterial>)>,
+    mut materials: ResMut<Assets<RingMaterial>>,
+) {
+    let Ok(core) = store.0.lock() else {
+        return;
+    };
+    for (source, handle) in &query {
+        let direction = crate::solar_lighting::sample(&core, &source.0);
+        if let Some(mut material) = materials.get_mut(&handle.0)
+            && material.extension.solar_direction != direction
+        {
+            material.extension.solar_direction = direction;
+        }
+    }
 }
 impl MaterialExtension for RingParticles {
     fn fragment_shader() -> ShaderRef {
@@ -175,6 +197,7 @@ pub(crate) fn resolve_rings(
             },
             extension: RingParticles {
                 particle_response: Vec4::ONE,
+                solar_direction: crate::solar_lighting::sample(&core, &ring.object),
             },
         });
         core.record_visual_part_ready(
@@ -189,6 +212,7 @@ pub(crate) fn resolve_rings(
         commands
             .entity(entity)
             .insert((
+                RingSolarSource(ring.object.clone()),
                 Mesh3d(
                     meshes.add(
                         Plane3d::default()

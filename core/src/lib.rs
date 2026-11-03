@@ -88,6 +88,8 @@ mod ring_texture;
 mod screen_layout;
 #[cfg(feature = "browser-render")]
 mod sky_render;
+#[cfg(feature = "browser-render")]
+mod solar_lighting;
 mod state;
 pub use clock::SimulationClock;
 pub use state::ObjectState;

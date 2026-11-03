@@ -1,0 +1,21 @@
+<!doctype html><html lang="zh"><meta charset="utf-8"><title>SpaceEyes solar PBR verification</title>
+<style>body{margin:0;overflow:hidden;background:#0d1721;color:#fff;font:14px Arial}header{position:absolute;z-index:2;padding:16px}img{width:240px}canvas{display:block;width:100vw;height:100vh}aside{position:absolute;right:16px;top:16px;max-width:400px;background:#002044dd;padding:12px}button{margin:4px;padding:8px;background:#fff;color:#002044;border:0}pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:140px;overflow:auto;font:11px Consolas}</style>
+<header><img src="/spacelibre.svg" alt="spacelibre"><p>验证夹具：两侧球体应分别朝中央太阳受光，非实际天体。</p></header>
+<canvas id="test-canvas" aria-label="双对象太阳光验证画布"></canvas><aside><p id="state">加载核心</p><button id="natural">自然光</button><button id="shadow">暗面补光</button><button id="flood">强补光</button><button id="move">移动太阳到上方</button><details><summary>性能采样</summary><pre id="metrics"></pre></details></aside>
+<script type="module">
+import init,{WasmCore} from '/wasm/spaceeyes_core.js';
+try {
+ await init();const core=new WasmCore(),s='verify',p='verify.solar';
+ core.open_session(s,p,true,true,true,true);core.set_playback(s,p,false,1);
+ const publish=(id,position,radius)=>core.publish_object(s,p,id,JSON.stringify({positionKm:position,radiusKm:radius,epochTdbSeconds:0,coverageTdbSeconds:[-1e9,1e9],frame:'ICRF',source:'synthetic rendering fixture'}));
+ for(const [id,position,radius]of [['sun',[0,0,0],0.02],['left',[-3,0,0],1],['right',[3,0,0],1]]){
+  publish(id,position,radius);core.set_visual(s,p,id,JSON.stringify({kind:'sphere',colorRgba:id==='sun'?[0,0,0,1]:[0.7,0.7,0.7,1]}));
+ }
+ core.camera_lighting(s,p,'natural');core.camera_observe(s,p,JSON.stringify({targetId:'sun',mode:'system',members:['sun','left','right']}));
+ for(const mode of ['natural','shadow','flood'])document.getElementById(mode).onclick=()=>{core.camera_lighting(s,p,mode);document.getElementById('state').textContent='光照模式：'+mode;};
+ document.getElementById('move').onclick=()=>{publish('sun',[0,3,0],0.02);document.getElementById('state').textContent='太阳已移动；两球体应同步更新方向';};
+ setInterval(()=>{document.getElementById('metrics').textContent=core.performance_snapshot();},1000);
+ document.getElementById('state').textContent='双对象独立太阳方向，Natural；无额外太阳点光';
+ core.start_renderer('#test-canvas');
+}catch(error){document.getElementById('state').textContent=String(error);console.error(error);}
+</script></html>

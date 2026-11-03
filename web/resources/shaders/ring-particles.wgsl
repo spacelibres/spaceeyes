@@ -8,22 +8,25 @@
     pbr_functions::{alpha_discard, apply_pbr_lighting, main_pass_post_lighting_processing},
     mesh_view_bindings::lights,
 }
+#import "shaders/solar-lighting.wgsl" as solar_lighting
 
 @group(#{MATERIAL_BIND_GROUP}) @binding(100)
 var<uniform> particle_response: vec4<f32>;
+@group(#{MATERIAL_BIND_GROUP}) @binding(101)
+var<uniform> solar_direction: vec4<f32>;
 
 @fragment
 fn fragment(in: VertexOutput, @builtin(front_facing) is_front: bool) -> FragmentOutput {
     var pbr = pbr_input_from_standard_material(in, is_front);
     pbr.material.base_color = alpha_discard(pbr.material, pbr.material.base_color);
     if lights.n_directional_lights > 0u {
-        let light = normalize(lights.directional_lights[0].direction_to_light);
+        let light = normalize(select(lights.directional_lights[0].direction_to_light, solar_direction.xyz, solar_direction.w > 0.5));
         let half_vector = light + pbr.V;
         if dot(half_vector, half_vector) > 0.000001 {
             pbr.N = normalize(mix(pbr.N, normalize(half_vector), particle_response.x));
         }
     }
     var out: FragmentOutput;
-    out.color = main_pass_post_lighting_processing(pbr, apply_pbr_lighting(pbr));
+    out.color = main_pass_post_lighting_processing(pbr, solar_lighting::corrected_lighting(pbr,solar_direction));
     return out;
 }

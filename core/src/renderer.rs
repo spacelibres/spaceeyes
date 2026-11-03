@@ -147,6 +147,21 @@ pub(crate) fn create_browser_app(
         .insert_resource(visible_workspace_winit_settings())
         .add_plugins(CoreScenePlugin(core))
         .add_plugins(MaterialPlugin::<crate::ring_texture::RingMaterial>::default())
+        .add_plugins(MaterialPlugin::<crate::solar_lighting::SolarMaterial>::default())
+        .init_resource::<crate::solar_lighting::SolarMaterials>()
+        .add_systems(
+            Update,
+            crate::ring_texture::sync_ring_light
+                .after(crate::ring_texture::resolve_rings)
+                .after(sync_scene),
+        )
+        .add_systems(
+            Update,
+            crate::solar_lighting::sync_solar_materials
+                .after(crate::face_texture::resolve_faces)
+                .after(attach_visuals)
+                .after(sync_scene),
+        )
         .add_plugins(MaterialPlugin::<crate::sky_render::SkyMaterial>::default())
         .add_plugins((
             MaterialPlugin::<crate::deep_render::GalaxyMaterial>::default(),
