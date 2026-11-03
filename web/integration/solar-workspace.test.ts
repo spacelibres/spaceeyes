@@ -2114,16 +2114,21 @@ test("solar overview retains heliocentric spacecraft after returning from a loca
 
 test("solar spacecraft populate startup and survive automatic zoom-out without pausing time", {timeout:5000}, async () => {
  const fixtures=harness();
+ let moonReady!:()=>void;
+ const familyReady=new Promise<void>(resolve=>{moonReady=resolve;});
  let notify!:()=>void;
  let completed=new Promise<void>(resolve=>{notify=resolve;});
  let selection="";
  const app=await createWorkspace("#test",state=>{
    selection=state.selected;
    if(!selection && !state.busy) try {fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch());notify();}catch{}
+   if(selection==="moon" && !state.busy) try {fixtures.core().state_at("sc_lunar_reconnaissance_orbiter",fixtures.core().epoch());moonReady();}catch{}
  },new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
  try {
    await completed;
    await app.select("moon");
+   await familyReady;
+   assert.doesNotThrow(()=>fixtures.core().state_at("sc_lunar_reconnaissance_orbiter",fixtures.core().epoch()));
    completed=new Promise<void>(resolve=>{notify=resolve;});
    app.play(true,1);
    fixtures.clearCoreFocus();
@@ -2132,6 +2137,7 @@ test("solar spacecraft populate startup and survive automatic zoom-out without p
    assert.equal(selection,"");
    assert.equal(fixtures.core().playing(),true);
    assert.doesNotThrow(()=>fixtures.core().state_at("sc_voyager_1",fixtures.core().epoch()));
+   assert.doesNotThrow(()=>fixtures.core().state_at("sc_lunar_reconnaissance_orbiter",fixtures.core().epoch()),"automatic dolly handoff must retain the previous local family");
  } finally {await app.dispose();}
 });
 
