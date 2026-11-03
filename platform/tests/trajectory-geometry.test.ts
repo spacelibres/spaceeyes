@@ -163,3 +163,72 @@ test('pending 20x-to-3600x and forward-to-reverse owners replace guards while re
   }finally{client.dispose();main.dispose();}
  }
 });
+test('eight certified source extensions retain worker science while old wrappers expire and suspended jobs restart',async()=>{
+ let slow=false;
+ const main=data(),port=new Port(()=>port.clock+=slow?1:.001),client=new TrajectoryGeometryClient(port);
+ try {
+  await main.load(['earth','sc_iss'],epoch,[]);client.sync(main);client.tick(epoch);
+  let evaluations=0;const position=port.runtime.data.position.bind(port.runtime.data);
+  port.runtime.data.position=(...args:Parameters<typeof position>)=>{evaluations++;return position(...args);};
+  let live=epoch;
+  const canonical=()=>{const work=main.trailSampleSteps('sc_iss',live,185,false,undefined,7200);let step=work.next();while(!step.done)step=work.next();return step.value;};
+  const build=()=>{const request=client.request({id:'sc_iss',count:185,detailed:false,guardSeconds:7200});for(let n=0;n<256&&!request.done;n++)port.run();assert.equal(request.done,true);const result=request.result();request.cancel();return result;};
+  let previous=build();const cold=evaluations;assert.ok(cold>100);assert.deepEqual(previous.points,canonical().points);
+  for(let update=0;update<8;update++){
+   const old=main.exportScientificSources().find(source=>source.id==='sc_iss')!;
+   assert.ok(old.data?.kind==='inline'&&old.data.type==='orb');
+   const tail=old.data.records.at(-1)!;
+   const next={...old,data:{...old.data,coverage:{...old.data.coverage,end:tail.time+1000},records:[...old.data.records,{...tail,time:tail.time+1000}]},positionChanged:true,orientationChanged:false};
+   main.importScientificSources([next]);client.sync(main);assert.equal(previous.sourceCurrent,false);
+   live=epoch+(update+1)*1200;client.tick(live);
+   evaluations=0;const current=build();assert.ok(evaluations<cold/3,`warm update ${update}: ${evaluations} vs cold ${cold}`);
+   const expected=canonical();assert.deepEqual(current.points,expected.points);assert.deepEqual(current.epochsTdbSeconds,expected.epochsTdbSeconds);assert.equal(current.sourceCurrent,true);previous=current;
+  }
+  // Force a real suspension, then replace the ancestor before the iterator resumes.
+  slow=true;
+  const active=client.request({id:'sc_iss',count:512,detailed:true,guardSeconds:7200});
+  port.run();assert.equal(active.done,false,'the replaced iterator is actually suspended');
+  slow=false;
+  const earth=main.exportScientificSources().find(source=>source.id==='earth')!;
+  assert.ok(earth.data?.kind==='inline'&&earth.data.type==='orb');
+  main.importScientificSources([{...earth,data:{...earth.data,records:earth.data.records.map(record=>({...record,semiMajorAxis:record.semiMajorAxis+1}))},positionChanged:true,orientationChanged:false}]);client.sync(main);
+  for(let n=0;n<256&&!active.done;n++)port.run();assert.equal(active.done,true);assert.equal(active.result().sourceCurrent,true);active.cancel();
+ }finally{client.dispose();main.dispose();}
+});
+
+
+test('worker source metadata changes and conflicting records retire retained certificates',async()=>{
+ for(const change of ['parent','track','controller','mu','record','orientation']) {
+  const main=data(),port=new Port(),client=new TrajectoryGeometryClient(port);
+  try {
+   await main.load(['earth','sc_iss'],epoch,[]);client.sync(main);client.tick(epoch);
+   const request=client.request({id:'sc_iss',count:128,detailed:false,guardSeconds:7200});
+   for(let n=0;n<256&&!request.done;n++)port.run();const old=request.result();request.cancel();
+   const source=main.exportScientificSources().find(source=>source.id==='sc_iss')!;
+   assert.ok(source.data?.kind==='inline'&&source.data.type==='orb');
+   const patch={...source,positionChanged:change!=='orientation',orientationChanged:change==='orientation'};
+   if(change==='parent')patch.parent='moon';
+   if(change==='track')patch.track='changed';
+   if(change==='controller')patch.selection={track:source.track!,lowerExclusive:epoch-10};
+   if(change==='mu')patch.data={...source.data,gravitationalParameter1:1};
+   if(change==='record')patch.data={...source.data,records:source.data.records.map(r=>({...r,semiMajorAxis:r.semiMajorAxis+1}))};
+   // Mesh attitude is intentionally unrelated to position and preserves sampling.
+   if(change==='orientation')patch.oriKey='changed-attitude-only';
+   main.importScientificSources([patch]);client.sync(main);
+   if(change==='orientation')assert.equal(old.sourceCurrent,true);
+   else {assert.equal(old.sourceCurrent,false);assert.equal(port.runtime.data.cacheStats().trailSamplingEntries,0,change);}
+  }finally{client.dispose();main.dispose();}
+ }
+});
+test('worker directional guards exactly match canonical sampling in both playback directions',async()=>{
+ const main=data(),port=new Port(),client=new TrajectoryGeometryClient(port);
+ try{
+  await main.load(['earth','sc_iss'],epoch,[]);client.sync(main);client.tick(epoch);
+  for(const direction of [1,-1] as const){
+   const request=client.request({id:'sc_iss',count:185,detailed:false,guardSeconds:100000,guardDirection:direction});
+   for(let n=0;n<256&&!request.done;n++)port.run();assert.equal(request.done,true);
+   const actual=request.result(),work=main.trailSampleSteps('sc_iss',epoch,185,false,undefined,100000,direction);let step=work.next();while(!step.done)step=work.next();
+   assert.deepEqual(actual.points,step.value.points);assert.deepEqual(actual.epochsTdbSeconds,step.value.epochsTdbSeconds);assert.deepEqual(actual.refreshRange,step.value.refreshRange);assert.equal(actual.durationSeconds,step.value.durationSeconds);assert.ok(actual.points.length<=555);request.cancel();
+  }
+ }finally{client.dispose();main.dispose();}
+});

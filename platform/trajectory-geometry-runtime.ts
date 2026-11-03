@@ -4,7 +4,7 @@ import {eyesTrailPhase} from './eyes-trail-policy.ts';
 import {TrajectoryWorkQueue,latestTrajectory} from './trajectory-work.ts';
 export type TrailGeometry = ReturnType<SolarSystemData['trailSamples']>;
 export type SourceDelta=ScientificSourceSnapshot & {positionChanged:boolean;orientationChanged:boolean;positionVersion:number;orientationVersion:number};
-export type GeometryJob={id:string;token:number;count:number;detailed:boolean;guardSeconds:number;observer?:readonly number[]};
+export type GeometryJob={id:string;token:number;count:number;detailed:boolean;guardSeconds:number;guardDirection?:-1|0|1;observer?:readonly number[]};
 export type GeometryMessage={type:'sources';sources:SourceDelta[];removed:string[]}|{type:'job';job:GeometryJob}|{type:'cancel';id:string;token:number}|{type:'tick';epoch:number;selected?:string;observer?:readonly number[]};
 export type GeometryReply={id:string;token:number;error:string}|{id:string;token:number;points:Float64Array;epochs:Float64Array;style:Omit<TrailGeometry,'points'|'epochsTdbSeconds'|'sourceCurrent'>;proof:{current:boolean;position:[string,number][];orientation:[string,number][]}};
 /** One worker owns pure scientific geometry; it has no network or platform capabilities. */
@@ -26,9 +26,18 @@ export class TrajectoryGeometryRuntime {
  }
  receive(message:GeometryMessage) {
   if(message.type==='sources') {
+   // Close suspended iterators before retained state is pruned or sources change.
+   const changedPosition=new Set([...message.removed,...message.sources.filter(source=>source.positionChanged).map(source=>source.id)]);
+   const changedOrientation=new Set([...message.removed,...message.sources.filter(source=>source.orientationChanged).map(source=>source.id)]);
+   const restart=[...this.jobs.values()].filter(job=>{
+    const dependencies=this.data.scientificTrailDependencies(job.id);
+    return changedPosition.has(job.id) || dependencies.position.some(id=>changedPosition.has(id)) || dependencies.orientation.some(id=>changedOrientation.has(id));
+   });
+   for(const job of restart)this.queue.cancel(job.id);
    this.data.importScientificSources(message.sources,message.removed);
    for(const source of message.sources)this.versions.set(source.id,[source.positionVersion,source.orientationVersion]);
    for(const id of message.removed)this.versions.delete(id);
+   for(const job of restart)this.receive({type:'job',job});
   } else if(message.type==='tick') {
    this.epoch=message.epoch;this.observers.clear();if(message.selected&&message.observer)this.observers.set(message.selected,message.observer);
   } else if(message.type==='cancel') {
@@ -36,7 +45,7 @@ export class TrajectoryGeometryRuntime {
   } else {
    const job=message.job;this.jobs.set(job.id,job);
    this.queue.enqueue({objectId:job.id,revision:job.token,priority:job.detailed,
-    create:latestTrajectory(()=>this.epoch,at=>this.data.trailSampleSteps(job.id,at,job.count,job.detailed,this.observers.get(job.id)??job.observer,job.guardSeconds),
+    create:latestTrajectory(()=>this.epoch,at=>this.data.trailSampleSteps(job.id,at,job.count,job.detailed,this.observers.get(job.id)??job.observer,job.guardSeconds,job.guardDirection),
       (value,live)=>value.sourceCurrent&&value.policyKey===eyesTrailPhase(job.id,live).key&&live>=value.refreshRange[0]&&live<=value.refreshRange[1]),
     commit:value=>{
      const points=new Float64Array(value.points.length*3);for(let i=0;i<value.points.length;i++)points.set(value.points[i],i*3);

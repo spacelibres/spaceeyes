@@ -1,9 +1,10 @@
+import { identicalDynOverlap, unchangedDynIntervals } from "./dyn-continuity.ts";
 import {eyesPositionKeyframe} from "./eyes-position-keyframes.ts";
 import {TrailHistory, type PreparedHistory} from "./trail-history.ts";
 import {eyesTrailDuration, eyesTrailPhase, eyesTrailBoundaries} from "./eyes-trail-policy.ts";
 import {eyesOrbAutoLength} from "./eyes-trail-auto.ts";
 import {parsePositionSelection,acceptsPositionEpoch,type PositionSelection} from "./position-selection.ts";
-import {AdaptiveTrailState, adaptiveTrailSteps} from "./adaptive-trail.ts";
+import {AdaptiveTrailState, adaptiveTrailSteps, shareAdaptiveTrailStates} from "./adaptive-trail.ts";
 import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
@@ -178,7 +179,7 @@ export class SolarSystemData {
   >();
   #positionStitches = new Map<string, {start:number;end:number;url:string;sha256:string;sourceSha256?:string;fetchedAt:string}[]>();
   #history?: HistorySlot;
-  #trailSampling = new Map<string, {key: string; history: unknown; state: AdaptiveTrailState; before: AdaptiveTrailState; after: AdaptiveTrailState; dependencies: Set<string>; orientationDependencies: Set<string>}>();
+  #trailSampling = new Map<string, {key: string; history: unknown; revision: number; state: AdaptiveTrailState; before: AdaptiveTrailState; after: AdaptiveTrailState; dependencies: Set<string>; orientationDependencies: Set<string>}>();
   #networkActive = 0;
   #queueAbort = new AbortController();
   #networkQueue: {
@@ -360,10 +361,19 @@ export class SolarSystemData {
     for(const source of sources) {
       const id=source.id;
       if(!catalogBody(id))throw Error("Unknown scientific source");
-      for(const [target,sampling] of this.#trailSampling)
-        if((source.positionChanged!==false&&sampling.dependencies.has(id)) || (source.orientationChanged!==false&&sampling.orientationDependencies.has(id)))this.#trailSampling.delete(target);
+      const previous=this.#data.get(id);
+      const stableMetadata=this.#dataParents.get(id)===source.parent && this.#dataTracks.get(id)===source.track &&
+        JSON.stringify(this.#dataSelections.get(id))===JSON.stringify(source.selection);
+      const intervals=source.positionChanged!==false && previous && source.data && stableMetadata ? unchangedDynIntervals(previous,source.data) : [];
+      for(const [target,sampling] of this.#trailSampling) {
+        if(source.orientationChanged!==false && sampling.orientationDependencies.has(id))this.#trailSampling.delete(target);
+        else if(source.positionChanged!==false && sampling.dependencies.has(id)) {
+          if(!intervals.length)this.#trailSampling.delete(target);
+          else { sampling.revision++;for(const state of [sampling.state,sampling.before,sampling.after])state.retainIntervals(intervals); }
+        }
+      }
       if(source.positionChanged!==false) {
-        if(source.data)this.#cache(this.#data,id,source.data);else this.#data.delete(id);
+        if(source.data)this.#cache(this.#data,id,source.data,intervals.length>0);else this.#data.delete(id);
         assign(this.#dataParents,id,source.parent);assign(this.#dataTracks,id,source.track);assign(this.#dataSelections,id,source.selection);
       }
       if(source.orientationChanged!==false) {
@@ -582,14 +592,9 @@ export class SolarSystemData {
       JSON.stringify(result.controller)!==JSON.stringify(selection) || !acceptsPositionEpoch(result.controller,requestedEpoch) ||
       requestedEpoch<next.coverage.start || requestedEpoch>next.coverage.end ||
       next.coverage.start>previous.coverage.end || previous.coverage.start>next.coverage.end)return false;
-    const nextRecords=new Map(next.records.map(record=>[record.time,record] as const));
-    for(const record of previous.records)
-      if(record.time>=next.coverage.start && record.time<=next.coverage.end && JSON.stringify(nextRecords.get(record.time))!==JSON.stringify(record))return false;
+    if(!identicalDynOverlap(previous,next))return false;
     const records=new Map(previous.records.map(record=>[record.time,record] as const));
-    for(const record of next.records) {
-      if(record.time>=previous.coverage.start && record.time<=previous.coverage.end && JSON.stringify(records.get(record.time))!==JSON.stringify(record))return false;
-      records.set(record.time,record as typeof previous.records[number]);
-    }
+    for(const record of next.records)records.set(record.time,record as typeof previous.records[number]);
     const ordered=[...records.values()].sort((a,b)=>a.time-b.time);
     const lower=Math.min(liveEpoch-2*retainSeconds,requestedEpoch<liveEpoch?next.coverage.start:liveEpoch),
       upper=Math.max(liveEpoch+2*retainSeconds,requestedEpoch>liveEpoch?next.coverage.end:liveEpoch);
@@ -1684,9 +1689,10 @@ export class SolarSystemData {
     const work=this.trailSampleSteps(id,epoch,count,detailed);
     let step=work.next();while(!step.done)step=work.next();return step.value;
   }
-  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false, observerWorld?: readonly number[], guardSeconds = 0) {
+  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false, observerWorld?: readonly number[], guardSeconds = 0, guardDirection: -1|0|1 = 0) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
+    if(![-1,0,1].includes(guardDirection))throw Error("Invalid predictive trail direction");
     if (!Number.isFinite(epoch) || this.status(id)?.status !== "ready")
       throw Error("Trail unavailable");
     const [rangeStart, rangeEnd] = this.trajectoryRange(id, epoch);
@@ -1713,7 +1719,7 @@ export class SolarSystemData {
     const preparedHistory = this.#historyAt(id, epoch)?.prepared;
     let history = preparedHistory;
     if (history) try {history.position(epoch);} catch {history = undefined;}
-    const samplingKey = JSON.stringify([policy.key, origin, policy.relativeToEntityOrientation, positionTrackKey(id, epoch), count,guardSeconds>0]);
+    const samplingKey = JSON.stringify([policy.key, origin, policy.relativeToEntityOrientation, positionTrackKey(id, epoch), count,guardSeconds>0,guardDirection]);
     let sampling = this.#trailSampling.get(id);
     if (!sampling || sampling.key !== samplingKey || sampling.history !== history) {
       const dependencies=new Set<string>();
@@ -1724,9 +1730,10 @@ export class SolarSystemData {
           target=this.parentAt(target,epoch) ?? undefined;
         }
       }
-      sampling = {key: samplingKey, history, state: new AdaptiveTrailState(), before: new AdaptiveTrailState(), after: new AdaptiveTrailState(), dependencies, orientationDependencies:new Set()};
+      sampling = {key: samplingKey, history, revision: 0, state: new AdaptiveTrailState(), before: new AdaptiveTrailState(), after: new AdaptiveTrailState(), dependencies, orientationDependencies:new Set()};
       this.#trailSampling.set(id, sampling);
     }
+    const samplingRevision=sampling.revision;
     const failedProbes = new Set<number>();
     const relativeCache = new Map<number, number[]>();
     const scientificRelative = (t: number) => {
@@ -1853,20 +1860,28 @@ export class SolarSystemData {
       // Source-authored edges move independently; renderer clips against actual samples.
       drawRangeTdbSeconds=[rawStart,rawEnd];
       const reuse=guardSeconds>0 ? Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)) : durationSeconds/(detailed?1024:16);
+      const directional=guardSeconds>0 && isSpacecraft && count>=32 ? guardDirection : 0;
+      const pastScale=directional>0?.25:directional<0?1.75:1;
+      const futureScale=directional>0?1.75:directional<0?.25:1;
+      const smallGuardCount=Math.max(8,Math.floor(count/4));
+      const beforeCount=directional>0?smallGuardCount:directional<0?count*2-smallGuardCount:count;
+      const afterCount=directional<0?smallGuardCount:directional>0?count*2-smallGuardCount:count;
       const boundaries=eyesTrailBoundaries(id);
-      if(policy.relativeStartTime) start=Math.max(coveredStart,start-reuse,...boundaries.filter(t=>t<=start));
-      if(policy.relativeEndTime) end=Math.min(coveredEnd,end+reuse,...boundaries.filter(t=>t>=end));
+      if(policy.relativeStartTime) start=Math.max(coveredStart,start-reuse*pastScale,...boundaries.filter(t=>t<=start));
+      if(policy.relativeEndTime) end=Math.min(coveredEnd,end+reuse*futureScale,...boundaries.filter(t=>t>=end));
       if(guardSeconds>0) {
         const visibleStart=Math.max(start,Math.min(end,rawStart));
         const visibleEnd=Math.max(visibleStart,Math.min(end,rawEnd));
         times=[];unresolved=new Set<number>();
-        for(const [a,b,anchor,retained] of [
-          [visibleStart,visibleEnd,Math.max(visibleStart,Math.min(visibleEnd,epoch)),sampling.state],
-          [start,visibleStart,visibleStart,sampling.before],
-          [visibleEnd,end,visibleEnd,sampling.after],
-        ] as const) {
+        const parts=[
+          [visibleStart,visibleEnd,Math.max(visibleStart,Math.min(visibleEnd,epoch)),sampling.state,count],
+          [start,visibleStart,visibleStart,sampling.before,beforeCount],
+          [visibleEnd,end,visibleEnd,sampling.after,afterCount],
+        ] as const;
+        shareAdaptiveTrailStates(parts.map(([a,b,,state])=>({state,start:a,end:b})),observer);
+        for(const [a,b,anchor,retained,partCount] of parts) {
           if(a>=b)continue;
-          const part=yield* adaptiveTrailSteps(a,anchor,b,count,relative,period,history?.boundaries??[],observer,retained,true);
+          const part=yield* adaptiveTrailSteps(a,anchor,b,partCount,relative,period,history?.boundaries??[],observer,retained,true);
           times.push(...part.times);
           for(const t of part.unresolved)unresolved.add(t);
         }
@@ -1988,7 +2003,7 @@ export class SolarSystemData {
         ];
       }
     }
-    const sourceCurrent = () => this.#trailSampling.get(id) === sampling && this.#historyAt(id,epoch)?.prepared === preparedHistory;
+    const sourceCurrent = () => this.#trailSampling.get(id) === sampling && sampling.revision===samplingRevision && this.#historyAt(id,epoch)?.prepared === preparedHistory;
     return {
       get sourceCurrent() {return sourceCurrent();},
       points,

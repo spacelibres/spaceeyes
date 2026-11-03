@@ -837,17 +837,18 @@ export async function createWorkspace(
         create: latestTrajectory(()=>core.epoch(),epoch=>{
           observer = currentTrajectoryObserver(id);
           const guardSeconds=core.playing()?Math.abs(state.rate)*trailComputeHorizonSeconds:0;
+          const guardDirection=core.playing()?(Math.sign(state.rate) as -1|0|1):0;
           geometryRequest?.cancel();geometryRequest=undefined;
           if(geometryWorker?.available && data.scientificTrailEligible(id,epoch)) {
-            const request=geometryWorker.request({id,count:budget,detailed:selected===id,observer:observer?.camera,guardSeconds},()=>data.scientificTrailEligible(id,core.epoch()));
+            const request=geometryWorker.request({id,count:budget,detailed:selected===id,observer:observer?.camera,guardSeconds,guardDirection},()=>data.scientificTrailEligible(id,core.epoch()));
             geometryRequest=request;
             return geometryOrNative(request,()=>{
               geometryRequest=undefined;
               const live=core.epoch(),camera=currentTrajectoryObserver(id)?.camera;
-              return data.trailSampleSteps(id,live,budget,selected===id,camera,guardSeconds);
+              return data.trailSampleSteps(id,live,budget,selected===id,camera,guardSeconds,guardDirection);
             });
           }
-          return data.trailSampleSteps(id, epoch, budget, selected === id, observer?.camera,guardSeconds);
+          return data.trailSampleSteps(id, epoch, budget, selected === id, observer?.camera,guardSeconds,guardDirection);
         }, (history, epoch) => history.sourceCurrent && history.policyKey === eyesTrailPhase(id, epoch).key && epoch >= history.refreshRange[0] && epoch <= history.refreshRange[1]),
         onError: error => {
           if(closed || signal.aborted || revision!==ownedRevision) return;
@@ -1999,7 +2000,7 @@ export async function createWorkspace(
                 if (!spacecraft && naturalOrbitBuilt) continue;
                 if (shouldRefreshTrajectory(
                     pendingTrajectories.has(id),
-                    (spacecraft ? trajectoryWindowDue(window,epoch,state.rate,core.playing(),1/targetHz) : !window || epoch < window[0] || epoch > window[1]) || (id===state.selected && viewChanged),
+                    (spacecraft ? trajectoryWindowDue(window,epoch,state.rate,core.playing(),1/targetHz,trailComputeHorizonSeconds) : !window || epoch < window[0] || epoch > window[1]) || (id===state.selected && viewChanged),
                     id === state.selected,
                     now - lastTrajectoryRefresh,
                     now - lastSelectedTrajectoryRefresh,

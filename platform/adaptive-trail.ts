@@ -6,9 +6,39 @@ export class AdaptiveTrailState {
   segments = new Map<string, Segment>();
   times: number[] = [];
   observerKey = "";
+  /** Retire everything not certified by identical old/new evaluation brackets. */
+  retainIntervals(intervals: readonly (readonly [number,number])[]) {
+    const contains = (a:number,b=a) => intervals.some(([start,end])=>start<=a && b<=end);
+    for(const [time,point] of this.samples) if(!point || !contains(time))this.samples.delete(time);
+    this.times=this.times.filter(time=>this.samples.has(time));
+    for(const [key,segment] of this.segments)if(!contains(segment.a,segment.b))this.segments.delete(key);
+  }
   covers(time: number) {
     for(const segment of this.segments.values())if(segment.a<=time && time<=segment.b)return true;
     return false;
+  }
+}
+/** Transfer actual scientific samples between disjoint moving window parts.
+ * Each part owns its maps; pruning one part cannot erase another's coverage.
+ * Geometry certificates can cross parts only under the same current observer. */
+export function shareAdaptiveTrailStates(parts: readonly {state:AdaptiveTrailState;start:number;end:number}[], observer?:readonly number[]) {
+  const samples=new Map<number,readonly number[]|undefined>(), times=new Set<number>();
+  const observerKey=JSON.stringify(observer??[]), segments=new Map<string,Segment>();
+  for(const {state} of parts) {
+    for(const [time,point] of state.samples) {
+      // A known source failure wins over a successful point: never hide a gap.
+      if(!samples.has(time) || !point)samples.set(time,point);
+    }
+    for(const time of state.times)times.add(time);
+    if(state.observerKey===observerKey)for(const [key,segment] of state.segments)segments.set(key,segment);
+  }
+  const failures=[...samples].filter(([,point])=>!point).map(([time])=>time);
+  for(const {state,start,end} of parts) {
+    state.samples=new Map([...samples].filter(([time])=>start<=time && time<=end));
+    state.times=[...times].filter(time=>start<=time && time<=end).sort((a,b)=>a-b);
+    state.segments=new Map([...segments].filter(([,segment])=>start<=segment.a && segment.b<=end && !failures.some(time=>segment.a<=time && time<=segment.b)));
+    // Keep observerKey intact so adaptive refinement still detects observer
+    // changes and reallocates its full independent point/error budget.
   }
 }
 /** Refine curvature rather than shortening source-authored history. */
@@ -45,7 +75,7 @@ export function* adaptiveTrailSteps(
   }
   const cache = retained?.samples ?? new Map<number, readonly number[] | undefined>();
   for (const t of cache.keys()) if (t < start || t > end) cache.delete(t);
-  const failures = new Set<number>();
+  const failures = new Set<number>([...cache].filter(([,point])=>!point).map(([time])=>time));
   const sample = (t: number) => {
     if (cache.has(t)) {
       const p = cache.get(t);

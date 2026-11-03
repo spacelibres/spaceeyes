@@ -2202,3 +2202,35 @@ test("32 header requests retain only four body readers and abort cancels every q
  assert.equal(readers,4,"aborted body waiters never acquire a reader");
  assert.equal(active,0);assert.equal(queuedBodyCancels,28,"already received responses are cancelled without reading their bodies");
 });
+
+test("directional guards preserve visible allocation and science within the same total point budget",async()=>{
+ const epoch=880000000;
+ const make=async(lower=epoch-100000,upper=epoch+100000)=>{const {ctx}=context();const source=new SolarSystemData(ctx,{fetch:async()=>{const bytes=orb(7000),view=new DataView(bytes.buffer);view.setFloat64(7,398600,true);view.setFloat64(15,0,true);for(let i=0;i<2;i++){view.setFloat64(28+i*72,i?upper:lower,true);view.setFloat64(28+i*72+24,2*Math.PI/5573,true);}return new Response(bytes);}});await source.load(['sc_iss'],epoch,[]);return source;};
+ const sample=(source:SolarSystemData,count:number,direction:-1|0|1)=>{const work=source.trailSampleSteps('sc_iss',epoch,count,false,undefined,100000,direction);let step=work.next();while(!step.done)step=work.next();return step.value;};
+ const baselineSource=await make();const baseline=sample(baselineSource,185,0);baselineSource.dispose();
+ const visible=(result:typeof baseline)=>result.epochsTdbSeconds.flatMap((time,i)=>time>=epoch-result.durationSeconds&&time<=epoch?[[time,...result.points[i]]]:[]);
+ for(const direction of [1,-1] as const){const source=await make();try{
+  const result=sample(source,185,direction),duration=result.durationSeconds,small=Math.floor(185/4);
+  assert.equal(duration,baseline.durationSeconds);assert.deepEqual(result.drawRangeTdbSeconds,baseline.drawRangeTdbSeconds);assert.deepEqual(visible(result),visible(baseline),'visible point allocation and exact positions stay unchanged');
+  assert.ok(result.points.length<=185*3);assert.equal(result.breakIndices.length,0);
+  assert.equal(result.epochsTdbSeconds[0],epoch-duration*(direction>0?1.25:2.75));assert.equal(result.epochsTdbSeconds.at(-1),epoch+duration*(direction>0?1.75:.25));
+  const before=result.epochsTdbSeconds.filter(time=>time<=epoch-duration).length,after=result.epochsTdbSeconds.filter(time=>time>=epoch).length;
+  assert.ok(before<=(direction>0?small:370-small));assert.ok(after<=(direction<0?small:370-small));
+  assert.ok(result.refreshRange[0]<=epoch-duration*(direction>0?.25:1.75));assert.ok(result.refreshRange[1]>=epoch+duration*(direction>0?1.75:.25));
+  const outside=epoch-direction*duration*.3;assert.equal(outside>=result.refreshRange[0]&&outside<=result.refreshRange[1],false,'the quarter-period reversal bridge never claims uncovered history');
+  const old=result;const reversed=sample(source,185,direction===1?-1:1);assert.equal(old.sourceCurrent,false,'direction changes retire the old allocation');assert.equal(reversed.sourceCurrent,true);
+ }finally{source.dispose();}}
+ const smallSource=await make();try{assert.deepEqual(sample(smallSource,16,1).epochsTdbSeconds,sample(smallSource,16,0).epochsTdbSeconds,'small allocations keep symmetric compatibility');}finally{smallSource.dispose();}
+ for(const direction of [1,-1] as const){const source=await make();try{
+  const position=source.position.bind(source),duration=5573;
+  source.position=(id,time)=>{const phase=(time-epoch)/duration*direction;if(id==='sc_iss'&&phase>.4&&phase<.5)throw Error('real directional source gap');return position(id,time);};
+  const result=sample(source,185,direction);assert.ok(result.breakIndices.length>0);
+  assert.ok(direction>0?result.refreshRange[1]<epoch+duration*.5:result.refreshRange[0]>epoch-duration*.5,'current head validity cannot cross a real gap');
+ }finally{source.dispose();}}
+ const clipped=await make(epoch-6000,epoch+3000);try{for(const direction of [1,-1] as const){const result=sample(clipped,185,direction);assert.ok(result.epochsTdbSeconds[0]>=epoch-6000);assert.ok(result.epochsTdbSeconds.at(-1)!<=epoch+3000);assert.ok(result.refreshRange[1]<=epoch+3000);assert.ok(result.refreshRange[0]>=epoch-6000);}}finally{clipped.dispose();}
+ const natural=await make();try{
+  await natural.load(['earth'],epoch,[]);
+  const build=(direction:-1|0|1)=>{const work=natural.trailSampleSteps('earth',epoch,185,false,undefined,100000,direction);let step=work.next();while(!step.done)step=work.next();return step.value;};
+  const original=build(0);for(const direction of [1,-1] as const){const current=build(direction);assert.deepEqual(current.points,original.points);assert.deepEqual(current.epochsTdbSeconds,original.epochsTdbSeconds);assert.deepEqual(current.drawRangeTdbSeconds,original.drawRangeTdbSeconds);}
+ }finally{natural.dispose();}
+});

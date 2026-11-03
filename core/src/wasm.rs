@@ -245,7 +245,20 @@ impl WasmCore {
         if points_json.len() > 1024 * 1024 {
             return Err("InvalidVisual".into());
         }
-        let payload = serde_json::from_str(points_json).map_err(|_| "InvalidVisual".to_owned())?;
+        // Timed objects are the high-volume SDK path. Deserialize them directly
+        // instead of buffering every point in Serde's untagged Content tree.
+        // Preserve the historical untagged parser for all non-object inputs,
+        // including positional Timed arrays accepted by that parser.
+        let payload = if points_json
+            .bytes()
+            .find(|b| !matches!(b, b' ' | b'\t' | b'\n' | b'\r'))
+            == Some(b'{')
+        {
+            serde_json::from_str::<Box<Timed>>(points_json).map(Payload::Timed)
+        } else {
+            serde_json::from_str::<Payload>(points_json)
+        }
+        .map_err(|_| "InvalidVisual".to_owned())?;
         let mut core = self.lock()?;
         match payload {
             Payload::Static(points) => {

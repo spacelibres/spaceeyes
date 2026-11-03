@@ -29,3 +29,12 @@ test("scientific jobs prefetch before forward or reverse coverage expiry",()=>{
   assert.equal(trajectoryWindowDue([-312,312],0,3600,true,1/30),false);
   assert.equal(trajectoryWindowDue([-312,312],200,3600,false,1/30),false);
 });
+
+test("measured end-to-end work lead starts refresh early in both directions without altering pause compatibility",()=>{
+ assert.equal(trajectoryWindowDue([-250,1750],300,36000,true,1/30),false);
+ assert.equal(trajectoryWindowDue([-250,1750],300,36000,true,1/30,2),true);
+ assert.equal(trajectoryWindowDue([-1750,250],-300,-36000,true,1/30,2),true);
+ assert.equal(trajectoryWindowDue([-250,1750],-200,36000,true,1/30,2),false,'lead is capped to 75 percent of the real valid window');
+ assert.equal(trajectoryWindowDue([-250,1750],300,36000,false,1/30,2),false);
+ assert.equal(trajectoryWindowDue([-250,1750],300,0,true,1/30,2),false);
+});

@@ -892,3 +892,24 @@ test("authored relative trail policy survives SDK and real WASM adapters", async
  for(const patch of [{drawEpochTdbSeconds:null},{drawRangeTdbSeconds:null},{drawRelativeEnd:1},{drawRelativeStart:'true'}])assert.throws(()=>core.trajectory(captured[0],captured[1],'moon',JSON.stringify({...payload,...patch})),/InvalidVisual/);
  }finally{await host.shutdown();core.free();}
 });
+
+test("trajectory JSON object fast path preserves strict validation and legacy array parsing",()=>{
+ const core=new WasmCore(),session='trajectory-json',plugin='trajectory.json';
+ try{
+  core.open_session(session,plugin,false,true,false,true);
+  core.open_session('trajectory-other','trajectory.other',false,true,false,true);
+  core.publish_object(session,plugin,'trajectory-target',JSON.stringify({positionKm:[0,0,0],radiusKm:1,epochTdbSeconds:0,coverageTdbSeconds:[-10,10],frame:'ICRF',source:'trajectory parser fixture'}));
+  const apply=(json:string)=>core.trajectory(session,plugin,'trajectory-target',json);
+  const points=[[0,0,0],[1,2,3]],epochs=[0,1],timed={points,epochs};
+  apply(' \t\r\n'+JSON.stringify(timed));apply(JSON.stringify(points));
+  // The non-object untagged fallback accepts this historical positional form.
+  const legacy=[null,null,false,false,null,points,epochs,null,false,null,null,null,null,[]];
+  apply(JSON.stringify(legacy));
+  apply(JSON.stringify({points:[],epochs:[]}));apply(' \n []');
+  for(const json of ['null','true','1','"points"','{}','[[1,2]]','[null]','[] []',JSON.stringify({...timed,unknown:true}),JSON.stringify({...timed,epochs:[1,0]}),JSON.stringify({...timed,epochs:[0]}),JSON.stringify({...timed,points:[[null,0,0],[1,2,3]]}),JSON.stringify({...timed,drawRelativeStart:true}),'{"points":[],"points":[],"epochs":[]}',JSON.stringify(legacy.slice(0,6)),JSON.stringify({...timed,breakIndices:[0]}),JSON.stringify({...timed,originId:'trajectory-target'}),JSON.stringify({...timed,colorRgba:[2,1,1,1]})])assert.throws(()=>apply(json),/InvalidVisual/,json);
+  assert.throws(()=>apply(' '.repeat(1024*1024)+'[]'),/InvalidVisual/);
+  assert.throws(()=>apply(JSON.stringify({points:Array.from({length:4097},()=>[0,0,0]),epochs:Array.from({length:4097},(_,i)=>i)})),/InvalidVisual/);
+  assert.throws(()=>core.trajectory('trajectory-other','trajectory.other','trajectory-target',JSON.stringify(timed)),/WrongOwner/);
+  apply(JSON.stringify(timed));
+ }finally{core.release_session(session);core.release_session('trajectory-other');core.free();}
+});
