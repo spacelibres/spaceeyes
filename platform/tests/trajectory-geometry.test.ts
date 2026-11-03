@@ -10,8 +10,8 @@ function bytes(ori=false,radius=7000){const b=new Uint8Array(ori?140:172),v=new 
 function data(){return new SolarSystemData({signal:new AbortController().signal,onDispose(){},data:{publish(){},remove(){}}} as unknown as PluginContext,{fetch:async url=>new Response(bytes(String(url).includes('type=ori')))});}
 class Port implements GeometryWorkerPort {
  onmessage:GeometryWorkerPort['onmessage']=null;onerror:GeometryWorkerPort['onerror']=null;
- tasks:(()=>void)[]=[];messages:GeometryMessage[]=[];transfers=0;runtime:TrajectoryGeometryRuntime;
- constructor(now?:()=>number){this.runtime=new TrajectoryGeometryRuntime((packet,transfer)=>{this.transfers+=transfer.length;const cloned=structuredClone(packet,{transfer});this.onmessage?.({data:cloned} as MessageEvent<GeometryReply>);},run=>this.tasks.push(run),now);}
+ clock=0;tasks:(()=>void)[]=[];messages:GeometryMessage[]=[];transfers=0;runtime:TrajectoryGeometryRuntime;
+ constructor(now?:()=>number){this.runtime=new TrajectoryGeometryRuntime((packet,transfer)=>{this.transfers+=transfer.length;const cloned=structuredClone(packet,{transfer});this.onmessage?.({data:cloned} as MessageEvent<GeometryReply>);},run=>this.tasks.push(run),now??(()=>this.clock+=.001));}
  postMessage(message:GeometryMessage){this.messages.push(message);this.runtime.receive(structuredClone(message));}
  run(){this.tasks.shift()?.();}
  terminate(){this.tasks=[];this.runtime.dispose();}
@@ -75,18 +75,23 @@ test('111 real catalog jobs repeatedly publish off the main frame budget at +/-3
    await main.load(solarCatalog.filter(body=>body.kind==='spacecraft').map(body=>body.id),epoch,[]);
    const eligible=main.status().filter(s=>s.status==='ready'&&s.id.startsWith('sc_')&&main.hasTrajectory(s.id,epoch)).map(s=>s.id);
    const ids=['sc_iss',...eligible.filter(id=>id!=='sc_iss')].slice(0,111);assert.equal(ids.length,111);
-   const jobs=new Map<string,{request?:ReturnType<TrajectoryGeometryClient['request']>;published:number;last?:ReturnType<ReturnType<TrajectoryGeometryClient['request']>['result']>}>();
-   for(const id of ids)jobs.set(id,{published:0});
+   const jobs=new Map<string,{request?:ReturnType<TrajectoryGeometryClient['request']>;published:number;requested:number;lastFrame?:number;last?:ReturnType<ReturnType<TrajectoryGeometryClient['request']>['result']>}>();
+   for(const id of ids)jobs.set(id,{published:0,requested:0});
    let live=epoch;
    for(let frame=0;frame<360;frame++) {
     live+=rate/30;client.sync(main);
     const point=main.position('sc_iss',live),observer=point.map((v,i)=>v+(i===2?.072:0));client.tick(live,'sc_iss',observer);
-    for(const [id,job] of jobs)if(!job.request && (!job.last || live<job.last.refreshRange[0]+2500 || live>job.last.refreshRange[1]-2500))job.request=client.request({id,count:id==='sc_iss'?512:128,detailed:id==='sc_iss',guardSeconds:7200,observer:id==='sc_iss'?observer:undefined});
+    // Long-window missions must actually be requested repeatedly before
+    // asserting repeated publications; this adds load, never weakens coverage.
+    for(const [id,job] of jobs)if(!job.request && (!job.last || frame-(job.lastFrame??0)>=60 || live<job.last.refreshRange[0]+2500 || live>job.last.refreshRange[1]-2500)) {
+      job.requested++;
+      job.request=client.request({id,count:id==='sc_iss'?512:128,detailed:id==='sc_iss',guardSeconds:7200,observer:id==='sc_iss'?observer:undefined});
+    }
     // The worker has its own 15ms chunks, independent of the renderer's ~6ms remainder.
     port.run();port.run();
-    for(const job of jobs.values())if(job.request?.done){const value=job.request.result();assert.equal(value.sourceCurrent,true);if(live>=value.refreshRange[0]&&live<=value.refreshRange[1]){job.published++;job.last=value;}job.request.cancel();job.request=undefined;}
+    for(const job of jobs.values())if(job.request?.done){const value=job.request.result();assert.equal(value.sourceCurrent,true);if(live>=value.refreshRange[0]&&live<=value.refreshRange[1]){job.published++;job.last=value;job.lastFrame=frame;}job.request.cancel();job.request=undefined;}
    }
-   for(const [id,job] of jobs)assert.ok(job.published>=3,`${rate} ${id}: ${job.published} current repeated publications`);
+   for(const [id,job] of jobs)assert.ok(job.requested>=3&&job.published>=3,`${rate} ${id}: ${job.published} current publications/${job.requested} requests; last frame=${job.lastFrame}`);
    assert.ok(port.runtime.data.cacheStats().records<=1000000);assert.ok(port.messages.filter(m=>m.type==='sources').length<5,'frames never reclone unchanged source arrays');
   }finally{client.dispose();main.dispose();}
  }

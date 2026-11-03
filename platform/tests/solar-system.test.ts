@@ -2054,3 +2054,151 @@ test("native ISS predictive coverage avoids private history and preserves its fu
     assert.equal(step.value.sourceCurrent,true,"the eight-point coverage probe never replaces the full visible sampler");
   } finally {source.dispose();}
 });
+
+
+test("real spacecraft guards remain valid beyond the instantaneous half-period conic range",async()=>{
+ const {ctx}=context(),epoch=880000000;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{
+  const bytes=orb(7000),view=new DataView(bytes.buffer);
+  view.setFloat64(7,398600,true);view.setFloat64(15,0,true);
+  for(let i=0;i<2;i++) {
+   view.setFloat64(28+i*72,epoch-100000+i*200000,true);
+   view.setFloat64(28+i*72+24,2*Math.PI/5573,true);
+  }
+  return new Response(bytes);
+ }});
+ try {
+  await source.load(["sc_iss"],epoch,[]);
+  const work=source.trailSampleSteps("sc_iss",epoch,185,false,undefined,100000);
+  let step=work.next();while(!step.done)step=work.next();
+  const guard=step.value,live=epoch+guard.durationSeconds*.75;
+  assert.ok(live>source.trajectoryRange("sc_iss",epoch)[1],"the conic convenience domain is deliberately shorter");
+  assert.ok(live>=guard.refreshRange[0]&&live<=guard.refreshRange[1]);
+  assert.ok(guard.epochsTdbSeconds[0]<=live-guard.durationSeconds);
+  assert.ok(guard.epochsTdbSeconds.at(-1)!>=live);
+  const beyond=guard.epochsTdbSeconds.at(-1)!+1;
+  assert.ok(beyond>guard.refreshRange[1],"a real sampled edge is never widened");
+  const reverse=epoch-guard.durationSeconds*.75;
+  assert.ok(reverse>=guard.refreshRange[0]&&reverse<=guard.refreshRange[1]);
+  assert.ok(guard.epochsTdbSeconds[0]<=reverse-guard.durationSeconds);
+  source.retain(["sun","earth","sc_iss"]);
+  const position=source.position.bind(source);
+  source.position=(id,time)=>{
+   if(id==="sc_iss"&&time>epoch+guard.durationSeconds*.5&&time<epoch+guard.durationSeconds*.6)throw Error("future source gap");
+   return position(id,time);
+  };
+  const gapWork=source.trailSampleSteps("sc_iss",epoch,185,false,undefined,100000);
+  let gapStep=gapWork.next();while(!gapStep.done)gapStep=gapWork.next();
+  assert.ok(gapStep.value.breakIndices.length>0);
+  assert.ok(gapStep.value.refreshRange[1]<live,"refresh validity never crosses a sampled head gap");
+ } finally {source.dispose();}
+});
+
+
+test("already partial guarded spacecraft trails remain publishable without claiming a complete tail",async()=>{
+ const {ctx}=context(),epoch=880000000;
+ const source=new SolarSystemData(ctx,{fetch:async()=>{
+  const bytes=orb(7000),view=new DataView(bytes.buffer);view.setFloat64(7,398600,true);view.setFloat64(15,0,true);
+  for(let i=0;i<2;i++){view.setFloat64(28+i*72,i?epoch+100000:epoch-1000,true);view.setFloat64(28+i*72+24,2*Math.PI/5573,true);}
+  return new Response(bytes);
+ }});
+ try {
+  await source.load(["sc_iss"],epoch,[]);
+  const work=source.trailSampleSteps("sc_iss",epoch,185,false,undefined,100000);
+  let step=work.next();while(!step.done)step=work.next();
+  const partial=step.value;
+  assert.ok(partial.epochsTdbSeconds[0]>partial.drawRangeTdbSeconds[0],"missing real tail data remains explicit");
+  assert.ok(partial.refreshRange[0]<=epoch&&epoch<=partial.refreshRange[1],"partial geometry can publish without retrying forever");
+  assert.ok(partial.epochsTdbSeconds.at(-1)!>=epoch);
+  assert.equal(partial.durationSeconds,5573,"source limits never shorten the authored duration");
+ } finally {source.dispose();}
+});
+
+
+test("aborted delayed forward prefetch cannot decode or trim a newly reversed scientific source",async()=>{
+ const {ctx}=context();let release!:()=>void,started!:()=>void;const pending=new Promise<void>(resolve=>{started=resolve;});
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+  const time=Number(new URL(String(input),"http://fixture").searchParams.get("epoch"));
+  if(time===11){started();return await new Promise<Response>(resolve=>{release=()=>resolve(new Response(new Uint8Array([0])));});}
+  return new Response(orb(2));
+ }});
+ try {
+  await source.load(["moon"],5,[]);const before=source.position("moon",5),coverage=source.coverage("moon");
+  const forward=new AbortController(),prefetch=source.prefetchPosition("moon",11,5,20,forward.signal);
+  await pending;forward.abort();release();
+  await assert.rejects(prefetch,{name:"AbortError"},"aborted payload is rejected before malformed bytes could decode");
+  assert.deepEqual(source.coverage("moon"),coverage);assert.deepEqual(source.position("moon",5),before);
+  assert.equal(source.status("moon")?.status,"ready");
+ } finally {source.dispose();}
+});
+
+
+test("more than eight stitched source chunks keep bounded publish metadata and complete separate provenance",async()=>{
+ const {snapshotState}=await import("../state-contract.ts");
+ const {ctx}=context(),publish=ctx.data.publish.bind(ctx.data),sizes:number[]=[];
+ ctx.data.publish=(id,state)=>{snapshotState(state);if(id==="moon")sizes.push(new TextEncoder().encode(state.source).length);publish(id,state);};
+ const source=new SolarSystemData(ctx,{fetch:async input=>{
+  const at=Number(new URL(String(input),"http://fixture").searchParams.get("epoch")),start=Math.floor(at/10)*10;
+  const bytes=orb(2),view=new DataView(bytes.buffer);for(let i=0;i<2;i++)view.setFloat64(28+i*72,start+i*10,true);
+  return new Response(bytes);
+ }});
+ try {
+  await source.load(["moon"],5,[]);const position=source.position("moon",5);
+  for(let piece=0;piece<12;piece++) {
+   assert.equal(await source.prefetchPosition("moon",source.coverage("moon")![0]-1,5,20),true);
+   source.publishAt(5);
+   assert.equal(source.status("moon")?.status,"ready");
+   assert.deepEqual(source.position("moon",5),position);
+  }
+  assert.ok(sizes.length>=12&&sizes.every(size=>size<=2048));
+  const provenance=source.provenance("moon").find(evidence=>evidence.selection?.includes('"stitched"'))!;
+  const pieces=JSON.parse(provenance.selection!).stitched;
+  assert.equal(pieces.length,13,"all verified source pieces remain available outside the per-frame payload");
+  assert.ok(new TextEncoder().encode(provenance.selection!).length>2048,"the full archive is deliberately larger than the transport field");
+ } finally {source.dispose();}
+});
+
+
+test("source I/O concurrency is configurable up to 32 and disposal never admits queued work",async()=>{
+ const epoch=846972583;
+ for(const limit of [1,8,32]) {
+  const {ctx}=context();let active=0,peak=0,calls=0;const releases:(()=>void)[]=[];
+  const source=new SolarSystemData(ctx,{maxConcurrentRequests:limit,fetch:async(_input,options)=>{
+   calls++;active++;peak=Math.max(peak,active);
+   await new Promise<void>(resolve=>{releases.push(resolve);options?.signal?.addEventListener("abort",()=>resolve(),{once:true});});
+   active--;options?.signal?.throwIfAborted();return new Response(orb(2));
+  }});
+  const ids=solarCatalog.filter(body=>body.id!=="sun"&&source.parentAt(body.id,epoch)==="sun"&&(eyesDefinitions[body.id]?.controllers??[]).some(controller=>controller.type==="dynamo"&&typeof controller.url==="string"&&!/(?:ori|quat|quat_v2)$/.test(controller.url)&&(!controller.coverage||(epoch>=Number(controller.coverage[0])&&epoch<=Number(controller.coverage[1]))))).slice(0,40).map(body=>body.id);
+  assert.equal(ids.length,40,"exercise more genuine independent sources than the largest I/O pool");
+  const loading=source.load(ids,epoch,[]);await new Promise<void>(resolve=>setImmediate(resolve));
+  assert.equal(peak,limit);assert.equal(calls,limit);
+  source.dispose();for(const release of releases)release();await loading;
+  assert.equal(calls,limit,"aborting the source owner prevents all queued network admissions");
+ }
+ for(const limit of [0,-1,1.5,33,Infinity,NaN])assert.throws(()=>new SolarSystemData(context().ctx,{maxConcurrentRequests:limit}),/request concurrency/);
+});
+
+
+test("32 header requests retain only four body readers and abort cancels every queued body",async()=>{
+ const {ctx}=context(),epoch=846972583;let headers=0,readers=0,peak=0,active=0,queuedBodyCancels=0;
+ const source=new SolarSystemData(ctx,{maxConcurrentRequests:32,fetch:async(_input,options)=>{
+  headers++;let controller!:ReadableStreamDefaultController<Uint8Array>;
+  const stream=new ReadableStream<Uint8Array>({start(value){controller=value;},pull(){return new Promise<void>(()=>{});}},{highWaterMark:0});
+  options?.signal?.addEventListener("abort",()=>controller.error(options.signal!.reason),{once:true});
+  const getReader=stream.getReader.bind(stream),cancel=stream.cancel.bind(stream);
+  Object.defineProperty(stream,"cancel",{value:(reason?:unknown)=>{queuedBodyCancels++;return cancel(reason);}});
+  Object.defineProperty(stream,"getReader",{value:()=>{
+   readers++;active++;peak=Math.max(peak,active);const reader=getReader(),release=reader.releaseLock.bind(reader);
+   reader.releaseLock=()=>{active--;release();};return reader;
+  }});
+  return new Response(stream);
+ }});
+ const ids=solarCatalog.filter(body=>body.id!=="sun"&&source.parentAt(body.id,epoch)==="sun"&&(eyesDefinitions[body.id]?.controllers??[]).some(controller=>controller.type==="dynamo"&&typeof controller.url==="string"&&!/(?:ori|quat|quat_v2)$/.test(controller.url)&&(!controller.coverage||(epoch>=Number(controller.coverage[0])&&epoch<=Number(controller.coverage[1]))))).slice(0,40).map(body=>body.id);
+ const loading=source.load(ids,epoch,[]);await new Promise<void>(resolve=>setImmediate(resolve));
+ assert.equal(headers,32,"remote response latency overlaps across the enlarged I/O lane");
+ assert.equal(readers,4);assert.equal(peak,4);
+ source.dispose();await loading;
+ assert.equal(headers,32,"queued network requests never start after disposal");
+ assert.equal(readers,4,"aborted body waiters never acquire a reader");
+ assert.equal(active,0);assert.equal(queuedBodyCancels,28,"already received responses are cancelled without reading their bodies");
+});

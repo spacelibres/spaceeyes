@@ -145,6 +145,7 @@ export type ScientificSourceSnapshot = {
 };
 export class SolarSystemData {
   #maxCachedRecords: number;
+  #maxConcurrentRequests: number;
   #ctx: PluginContext;
   #fetch: typeof fetch;
   #abort = new AbortController();
@@ -186,6 +187,26 @@ export class SolarSystemData {
     signal: AbortSignal;
     abort: () => void;
   }[] = [];
+  #bodyActive=0;
+  #bodyQueue:{start:()=>void;reject:(reason:unknown)=>void;signal:AbortSignal;abort:()=>void}[]=[];
+  async #acquireBody(signal:AbortSignal) {
+    signal.throwIfAborted();
+    await new Promise<void>((resolve,reject)=>{
+      const waiter={start:()=>{this.#bodyActive++;resolve();},reject,signal,abort:()=>{
+        const index=this.#bodyQueue.indexOf(waiter);if(index>=0)this.#bodyQueue.splice(index,1);
+        reject(signal.reason);
+      }};
+      if(this.#bodyActive<4)waiter.start();
+      else {this.#bodyQueue.push(waiter);signal.addEventListener("abort",waiter.abort,{once:true});}
+    });
+  }
+  #releaseBody() {
+    this.#bodyActive--;
+    while(this.#bodyQueue.length&&this.#bodyActive<4) {
+      const waiter=this.#bodyQueue.shift()!;waiter.signal.removeEventListener("abort",waiter.abort);
+      if(waiter.signal.aborted)waiter.reject(waiter.signal.reason);else waiter.start();
+    }
+  }
   async #read(url: string, externalSignal?: AbortSignal) {
     const queueSignal = AbortSignal.any([
       this.#abort.signal,
@@ -207,7 +228,7 @@ export class SolarSystemData {
           reject(queueSignal.reason);
         },
       };
-      if (this.#networkActive < 4) waiter.start();
+      if (this.#networkActive < this.#maxConcurrentRequests) waiter.start();
       else {
         this.#networkQueue.push(waiter);
         queueSignal.addEventListener("abort", waiter.abort, { once: true });
@@ -218,7 +239,7 @@ export class SolarSystemData {
       return await this.#readUnbounded(url, queueSignal);
     } finally {
       this.#networkActive--;
-      while (this.#networkQueue.length && this.#networkActive < 4) {
+      while (this.#networkQueue.length && this.#networkActive < this.#maxConcurrentRequests) {
         const waiter = this.#networkQueue.shift()!;
         waiter.signal.removeEventListener("abort", waiter.abort);
         if (waiter.signal.aborted) waiter.reject(waiter.signal.reason);
@@ -255,6 +276,11 @@ export class SolarSystemData {
         "DYN HTTP " + r.status + " " + (r.headers.get("x-dyn-error") ?? ""),
       );
     }
+    try {await this.#acquireBody(signal);} catch(error) {
+      try {await r.body?.cancel();} catch {/* Preserve the original cancellation reason. */}
+      throw error;
+    }
+    try {
     const reader = r.body?.getReader();
     let n = 0;
     const chunks: Uint8Array[] = [];
@@ -295,14 +321,18 @@ export class SolarSystemData {
         : {}),
     };
     return { bytes, evidence, url, controller:parsePositionSelection(r.headers.get("x-dyn-controller-selection")) };
+    } finally {this.#releaseBody();}
   }
   constructor(
     ctx: PluginContext,
     options: {
       fetch?: typeof fetch;
       maxCachedRecords?: number;
+      maxConcurrentRequests?: number;
     } = {},
   ) {
+    this.#maxConcurrentRequests=options.maxConcurrentRequests??4;
+    if(!Number.isInteger(this.#maxConcurrentRequests)||this.#maxConcurrentRequests<1||this.#maxConcurrentRequests>32)throw Error("Invalid source request concurrency");
     this.#maxCachedRecords = options.maxCachedRecords ?? 1_000_000;
     if (
       !Number.isSafeInteger(this.#maxCachedRecords) ||
@@ -448,6 +478,18 @@ export class SolarSystemData {
       .filter(([key]) => key === id + ":orb" || key === id + ":ori")
       .map(([, value]) => ({ ...value }));
   }
+  #publishedSourceEvidence(id:string) {
+    return ["orb","ori"].flatMap<Record<string,unknown>>(kind=>{
+      const evidence=this.#provenance.get(id+":"+kind);if(!evidence)return [];
+      const pieces=kind==="orb"?this.#positionStitches.get(id):undefined;
+      if(!pieces)return [evidence];
+      const {selection:_fullEvidence,...latestPiece}=evidence;
+      const coverage=this.#data.get(id)?.coverage;
+      // ObjectState.source is a bounded per-frame reference, not the full
+      // evidence archive. The complete verified pieces remain in provenance().
+      return [{latestPiece,stitched:{pieces:pieces.length,coverage,provenanceId:id}}];
+    });
+  }
   parentAt(id: string, epoch: number): string | null {
     const keyframe=eyesPositionKeyframe(id,epoch);
     if(keyframe)return keyframe.referenceId;
@@ -525,15 +567,16 @@ export class SolarSystemData {
     return this.#states.get(id)?.coverage;
   }
   /** Fetch a real adjacent position chunk without retiring the current ready source. */
-  async prefetchPosition(id:string, requestedEpoch:number, liveEpoch:number, retainSeconds:number):Promise<boolean> {
+  async prefetchPosition(id:string, requestedEpoch:number, liveEpoch:number, retainSeconds:number,signal?:AbortSignal):Promise<boolean> {
+    if(signal?.aborted)return false;
     const previous=this.#data.get(id), evidence=this.#provenance.get(id+":orb");
     if(!previous || previous.kind!=="inline" || previous.type==="ori" || !evidence || !Number.isFinite(retainSeconds) || retainSeconds<=0)return false;
     if(requestedEpoch>=previous.coverage.start && requestedEpoch<=previous.coverage.end)return false;
     const generation=this.#loadGeneration, track=this.#dataTracks.get(id),parent=this.#dataParents.get(id),selection=this.#dataSelections.get(id);
     if(track!==positionTrackKey(id,requestedEpoch) || parent!==this.parentAt(id,requestedEpoch) || !acceptsPositionEpoch(selection,requestedEpoch))return false;
-    const result=await this.#read(`/api/solar-dyn/${id}?epoch=${requestedEpoch}`,this.#queueAbort.signal);
+    const result=await this.#read(`/api/solar-dyn/${id}?epoch=${requestedEpoch}`,signal);
+    if(signal?.aborted || generation!==this.#loadGeneration || this.#data.get(id)!==previous || (this.#retained && !this.#retained.has(id)))return false;
     const next=decodeDyn(result.bytes);
-    if(generation!==this.#loadGeneration || this.#data.get(id)!==previous || (this.#retained && !this.#retained.has(id)))return false;
     if(next.kind!=="inline" || next.type!==previous.type || next.version!==previous.version ||
       next.gravitationalParameter1!==previous.gravitationalParameter1 || next.gravitationalParameter2!==previous.gravitationalParameter2 ||
       JSON.stringify(result.controller)!==JSON.stringify(selection) || !acceptsPositionEpoch(result.controller,requestedEpoch) ||
@@ -1358,7 +1401,7 @@ export class SolarSystemData {
                   s.positionSource +
                   " position controller; finite coverage bounded by platform evaluation domain, not observation end; orientation " +
                   (s.orientationSource ?? "unavailable")
-                : JSON.stringify(this.provenance(item.id).slice(-2)) +
+                : JSON.stringify(this.#publishedSourceEvidence(item.id)) +
                   " NASA Eyes DYN / recovered 4a8a83b approximation; ET mapped to core TDB argument, periodic TT-TDB difference unresolved; segment accuracy not certified; shared Eyes Dynamo ICRF-direction convention supported by Earth, Mercury, Jupiter and Moon endpoint comparisons; no all-epoch accuracy certification"),
         });
         this.#published.add(item.id);
@@ -1927,6 +1970,24 @@ export class SolarSystemData {
       }
     }
     if (points.length < 2) throw Error("Trail unavailable");
+    let actualGuardRefresh:[number,number]|undefined;
+    if(guardSeconds>0 && isSpacecraft && drawRangeTdbSeconds && epochsTdbSeconds[0]<=drawRangeTdbSeconds[0] && epochsTdbSeconds.at(-1)!>=drawRangeTdbSeconds[1]) {
+      let headStart=0,headEnd=epochsTdbSeconds.length-1;
+      for(const boundary of breakIndices) {
+        if(epochsTdbSeconds[boundary]<=epoch)headStart=boundary;
+        else {headEnd=boundary-1;break;}
+      }
+      if(epochsTdbSeconds[headStart]<=epoch && epoch<=epochsTdbSeconds[headEnd]) {
+        const startOffset=drawRangeTdbSeconds[0]-epoch,endOffset=drawRangeTdbSeconds[1]-epoch;
+        // Instantaneous conics use a +/-half-period convenience range. Real
+        // sampled spacecraft guards instead require the complete shifted draw
+        // window and a contiguous scientific head interval to remain covered.
+        actualGuardRefresh=[
+          Math.max(coveredStart,...eyesTrailBoundaries(id).filter(t=>t<=epoch),epochsTdbSeconds[headStart],policy.relativeStartTime?epochsTdbSeconds[0]-startOffset:-Infinity),
+          Math.min(coveredEnd,...eyesTrailBoundaries(id).filter(t=>t>=epoch),epochsTdbSeconds[headEnd],policy.relativeEndTime?epochsTdbSeconds.at(-1)!-endOffset:Infinity),
+        ];
+      }
+    }
     const sourceCurrent = () => this.#trailSampling.get(id) === sampling && this.#historyAt(id,epoch)?.prepared === preparedHistory;
     return {
       get sourceCurrent() {return sourceCurrent();},
@@ -1942,7 +2003,7 @@ export class SolarSystemData {
       drawRelativeEnd:policy.relativeEndTime,
       breakIndices,
       durationSeconds,
-      refreshRange: [
+      refreshRange: actualGuardRefresh ?? [
         Math.max(rangeStart,coveredStart,...eyesTrailBoundaries(id).filter(t=>t<=epoch),epoch-(guardSeconds>0?Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)):durationSeconds/(detailed?1024:16))),
         Math.min(rangeEnd,coveredEnd,...eyesTrailBoundaries(id).filter(t=>t>=epoch),epoch+(guardSeconds>0?Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)):durationSeconds/(detailed?1024:16))),
       ] as [number, number],

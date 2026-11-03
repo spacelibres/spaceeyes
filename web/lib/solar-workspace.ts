@@ -1,3 +1,5 @@
+import {positionPrefetchCandidates} from "./position-prefetch.ts";
+import {GeometryWorkerPool} from "./trajectory-geometry-pool.ts";
 import {TrajectoryGeometryClient,geometryOrNative,type GeometryRequest} from "./trajectory-geometry-client.ts";
 import { startupProgress, type StartupProgress, type StartupStage } from "./startup-progress.ts";
 import { FrameMonitor } from "./frame-monitor.ts";
@@ -215,12 +217,15 @@ export async function createWorkspace(
       WasmCore: new () => HostCore;
     }>;
     fetch?: typeof fetch;
+    /** Monotonic computation clock; host adapters can model finite work deterministically. */
+    workClock?:()=>number;
     requestFrame?: typeof requestAnimationFrame;
     cancelFrame?: typeof cancelAnimationFrame;
   } = {},
 ): Promise<WorkspaceRuntime> {
-  const startupAt = performance.now();
-  const frameMonitor = new FrameMonitor();
+  const workClock=options.workClock??(()=>performance.now());
+  const startupAt = workClock();
+  const frameMonitor = new FrameMonitor(workClock);
   let targetHz = 60, lastPerformanceSample = -Infinity;
   let corePerformance: Record<string, unknown> = {};
   let longTaskObserver: PerformanceObserver | undefined;
@@ -437,11 +442,16 @@ export async function createWorkspace(
   const secondaryRestores = new Set<string>();
   const secondaryLoads = new Set<string>();
   const secondaryRetryAt = new Map<string, number>();
-  const trajectoryWork = new TrajectoryWorkQueue<ReturnType<SolarSystemData["trailSamples"]>>(undefined,256);
+  const trajectoryWork = new TrajectoryWorkQueue<ReturnType<SolarSystemData["trailSamples"]>>(workClock,256);
   let geometryWorker:TrajectoryGeometryClient|undefined;
   if(typeof Worker!=="undefined") {
-    try {geometryWorker=new TrajectoryGeometryClient(new Worker(new URL("./trajectory-geometry.worker.ts",import.meta.url),{type:"module"}));} catch {geometryWorker=undefined;}
+    try {geometryWorker=new TrajectoryGeometryClient(new GeometryWorkerPool(()=>new Worker(new URL("./trajectory-geometry.worker.ts",import.meta.url),{type:"module"}),typeof navigator!=="undefined"?navigator.hardwareConcurrency:undefined));} catch {geometryWorker=undefined;}
   }
+  let positionPrefetchAbort = new AbortController();
+  const resetPositionPrefetch = (sceneChanged=false) => {
+    positionPrefetchAbort.abort();positionPrefetchAbort=new AbortController();
+    if(sceneChanged){positionPrefetchRetryAt.clear();positionChunkSpans.clear();}
+  };
   const queuedTrails = new Map<string, string>();
   let trailJobRevision = 0, trailPlaybackRevision = 0;
   const trajectoryErrors = new Map<string,string>();
@@ -616,6 +626,7 @@ export async function createWorkspace(
       if (typeof document !== "undefined") document.removeEventListener("visibilitychange", visibilityChanged);
       trajectoryWork.clear();
       geometryWorker?.dispose();
+      positionPrefetchAbort.abort();
       queuedTrails.clear();
       secondaryRestores.clear();
       secondaryRetryAt.clear();
@@ -769,7 +780,9 @@ export async function createWorkspace(
   const trailLatencyBuckets = new Map<number,number>();
   const positionPrefetches = new Set<string>();
   const positionPrefetchRetryAt = new Map<string,number>();
+  const positionChunkSpans = new Map<string,number>();
   const trajectoryDurations = new Map<string,number>();
+  const retainKnownTrailIntent=(id:string)=>state.trails&&trajectoryDurations.has(id)&&data.status(id)!==undefined&&data.status(id)?.status!=="unsupported"&&solarCatalog.find(body=>body.id===id)?.kind==="spacecraft";
   const historyLoads = new Set<string>();
   const historyRetry = new Map<string, number>();
   const scheduleHistory = (id: string) => {
@@ -801,7 +814,8 @@ export async function createWorkspace(
       queuedTrails.delete(id);
       sdk.visual.trajectory(id, []);
       trajectoryWindows.delete(id);
-      pendingTrajectories.delete(id);
+      if(retainKnownTrailIntent(id)&&data.status(id)?.status!=="ready")pendingTrajectories.add(id);
+      else pendingTrajectories.delete(id);
       trajectoryCounts.delete(id);
       trajectoryObservers.delete(id);
       return;
@@ -813,7 +827,7 @@ export async function createWorkspace(
     if (isTrail) {
       const ownedRevision = revision, selected = state.selected, ownedPlaybackRevision=trailPlaybackRevision;
       let observer: TrajectoryObserver | undefined;
-      const jobQueuedAt = performance.now();
+      const jobQueuedAt = workClock();
       let geometryRequest:GeometryRequest|undefined;
       const key = `${ownedRevision}:${selected}:${budget}:${ownedPlaybackRevision}`;
       if (queuedTrails.get(id) === key) return;
@@ -837,7 +851,7 @@ export async function createWorkspace(
         }, (history, epoch) => history.sourceCurrent && history.policyKey === eyesTrailPhase(id, epoch).key && epoch >= history.refreshRange[0] && epoch <= history.refreshRange[1]),
         onError: error => {
           if(closed || signal.aborted || revision!==ownedRevision) return;
-          pendingTrajectories.delete(id);
+          if(retainKnownTrailIntent(id))pendingTrajectories.add(id);else pendingTrajectories.delete(id);
           if(state.selected===id) state.error=`${id}：${String(error)}`;
           trajectoryErrors.set(id,String(error).slice(0,240));
           if(trajectoryErrors.size>64)trajectoryErrors.delete(trajectoryErrors.keys().next().value!);
@@ -846,7 +860,7 @@ export async function createWorkspace(
         commit: (history) => {
           if (ownedPlaybackRevision!==trailPlaybackRevision || !history.sourceCurrent || history.policyKey !== eyesTrailPhase(id, core.epoch()).key || closed || signal.aborted || revision !== ownedRevision || state.selected !== selected || !state.trails || data.status(id)?.status !== "ready" || !data.hasTrajectory(id, core.epoch()) || core.epoch() < history.refreshRange[0] || core.epoch() > history.refreshRange[1]) return;
           trajectoryDurations.set(id,history.durationSeconds);
-          const publishedAt=performance.now();
+          const publishedAt=workClock();
           const measuredHorizon=Math.min(30,Math.max(2,(publishedAt-jobQueuedAt)/500));
           const wallSecond=Math.floor(publishedAt/1000);
           trailLatencyBuckets.set(wallSecond,Math.max(trailLatencyBuckets.get(wallSecond)??0,measuredHorizon));
@@ -1029,7 +1043,7 @@ export async function createWorkspace(
       const kind = solarCatalog.find((body) => body.id === id)?.kind;
       if (data.status(id)?.status !== "ready" ||
           (kind === "spacecraft" ? !state.trails : !state.trajectories)) {
-        pendingTrajectories.delete(id);
+        if(retainKnownTrailIntent(id))pendingTrajectories.add(id);else pendingTrajectories.delete(id);
         trajectoryCounts.delete(id);
         if (data.status(id)?.status !== "ready") trajectoryWindows.delete(id);
       }
@@ -1143,6 +1157,7 @@ export async function createWorkspace(
       return Promise.reject(new Error("超出 NASA Eyes 时间覆盖范围：1949-12-31 至 2049-12-31（UTC）"));
     }
     const current = ++revision;
+    resetPositionPrefetch(true);
     state.busy = true;
     state.phase = "按对象和时间加载数据";
     emit();
@@ -1174,7 +1189,7 @@ export async function createWorkspace(
               ? ids.filter((id) => critical.has(id) || family.includes(id))
               : ids;
           await data.load(primaryIds, epoch, [...orientationIds]);
-          const reloadApplyStarted=performance.now();
+          const reloadApplyStarted=workClock();
           try {
           assertLive();
           if (current !== revision) {
@@ -1278,7 +1293,7 @@ export async function createWorkspace(
             );
             sdk.camera.view(state.view as "orbit" | "top" | "front" | "side");
           }
-          } finally {frameMonitor.recordPhase("reloadApply",performance.now()-reloadApplyStarted);}
+          } finally {frameMonitor.recordPhase("reloadApply",workClock()-reloadApplyStarted);}
         } finally {
           restore.discard();
           if (!closed && current === revision) {
@@ -1295,6 +1310,7 @@ export async function createWorkspace(
       assertLive();
       observationToken++;
       revision++;
+      resetPositionPrefetch(true);
       cancelRestore?.();
       state.busy = false;
       desiredPlaying = false;
@@ -1603,6 +1619,7 @@ export async function createWorkspace(
       cancelRestore?.();
       observationToken++;
       const ownedRevision = ++revision;
+      resetPositionPrefetch(true);
       sdk.time.setPlayback(desiredPlaying, state.rate);
       state.observationMode = "nearby";
       state.followId = undefined;
@@ -1657,6 +1674,8 @@ export async function createWorkspace(
       state.rate = rate;
       if(scheduleChanged) {
         trailPlaybackRevision++;
+        resetPositionPrefetch();
+        positionPrefetchRetryAt.clear();
         // Replace computational owners, preserving the already displayed
         // geometry and the worker's retained scientific samples.
         for(const id of [...queuedTrails.keys()]) {
@@ -1756,7 +1775,7 @@ export async function createWorkspace(
         sdk = context;
         data = new SolarSystemData(
           context,
-          options.fetch ? { fetch: options.fetch } : {},
+          {maxConcurrentRequests:32,...(options.fetch?{fetch:options.fetch}:{})},
         );
       },
     );
@@ -1811,7 +1830,7 @@ export async function createWorkspace(
     runtime.lighting("shadow");
     core.start_renderer(canvas);
     reportStartup("ready");
-    state.startupMs = Math.max(0, performance.now() - startupAt);
+    state.startupMs = Math.max(0, workClock() - startupAt);
     state.active = true;
     if (options.backgroundGalaxy !== false) runtime.galaxy(true);
     emit();
@@ -1834,12 +1853,12 @@ export async function createWorkspace(
         try {corePerformance=JSON.parse(core.performance_snapshot?.() ?? "{}");}catch{corePerformance={};}
         const reported=corePerformance.target_fps;
         targetHz=reported===30?30:60;
-        state.performance={...frameMonitor.snapshot(now),sampleIntervalSeconds:1,targetHz,core:corePerformance,trajectoryErrors:Object.fromEntries(trajectoryErrors)};
+        state.performance={...frameMonitor.snapshot(now),sampleIntervalSeconds:1,targetHz,core:corePerformance,geometry:geometryWorker?.diagnostics(),trajectoryErrors:Object.fromEntries(trajectoryErrors)};
         lastPerformanceSample=now;
       }
       const accepted=frameMonitor.accept(now,targetHz);
       if(accepted===undefined){frame=requestFrame(tick);return;}
-      const workStarted=performance.now();
+      const workStarted=workClock();
       try {trajectoryCameraSnapshot=JSON.parse(core.camera_render_status?.()??"null")??undefined;} catch {trajectoryCameraSnapshot=undefined;}
       try {
         if (!state.busy) {
@@ -1874,22 +1893,37 @@ export async function createWorkspace(
           }
           const required = criticalDependencies(epoch);
           if(core.playing()) {
-            const lead=Math.abs(state.rate)*Math.max(30,trailComputeHorizonSeconds*8);
-            for(const item of data.status()) {
-              if(positionPrefetches.size>=4)break;
-              if(item.status!=="ready" || item.positionSource!=="dyn" || !item.coverage || positionPrefetches.has(item.id) || now<(positionPrefetchRetryAt.get(item.id)??0))continue;
-              const edge=state.rate>0?item.coverage[1]:item.coverage[0];
-              if(Math.abs(edge-epoch)>lead)continue;
-              const requested=edge+(state.rate>0?1:-1);
-              positionPrefetches.add(item.id);
-              positionPrefetchRetryAt.set(item.id,now+5000);
-              const retainSeconds=trajectoryDurations.get(item.id)??Math.max(1,lead);
-              void data.prefetchPosition(item.id,requested,epoch,retainSeconds).catch(()=>{}).finally(()=>positionPrefetches.delete(item.id));
+            const readySources=data.status();
+            for(const source of readySources)if(source.coverage&&!positionChunkSpans.has(source.id))positionChunkSpans.set(source.id,source.coverage[1]-source.coverage[0]);
+            const leadSeconds=Math.max(30,trailComputeHorizonSeconds*8);
+            for(const candidate of positionPrefetchCandidates(readySources,epoch,state.rate,now,leadSeconds,positionPrefetches,positionPrefetchRetryAt,positionChunkSpans)) {
+              if(positionPrefetches.size>=32)break;
+              const {id,requested,cooldownMs,coverage}=candidate;
+              positionPrefetches.add(id);
+              positionPrefetchRetryAt.set(id,now+cooldownMs);
+              const retainSeconds=trajectoryDurations.get(id)??Math.max(1,Math.abs(state.rate)*leadSeconds);
+              const direction=Math.sign(state.rate),ownedScene=revision,ownedPlayback=trailPlaybackRevision,prefetchSignal=positionPrefetchAbort.signal;
+              const ownsPrefetch=()=>!closed&&!prefetchSignal.aborted&&revision===ownedScene&&trailPlaybackRevision===ownedPlayback;
+              void data.prefetchPosition(id,requested,epoch,retainSeconds,prefetchSignal).then(extended=>{
+                if(!ownsPrefetch())return;
+                if(extended) {
+                  const after=data.coverage(id);
+                  const extension=after?(direction>0?after[1]-coverage[1]:coverage[0]-after[0]):0;
+                  if(extension>0) {
+                    positionChunkSpans.set(id,extension);
+                    if(state.rate!==0)positionPrefetchRetryAt.set(id,now+Math.min(5000,extension/Math.abs(state.rate)*250));
+                  }
+                } else positionPrefetchRetryAt.set(id,Math.max(positionPrefetchRetryAt.get(id)??0,workClock()+1000));
+              }).catch(()=>{if(ownsPrefetch())positionPrefetchRetryAt.set(id,workClock()+1000);}).finally(()=>positionPrefetches.delete(id));
             }
           }
-          const expired = data.status().filter((item) => item.id !== "sun" &&
-            item.coverage && item.status !== "failed" && item.status !== "loading" &&
-            (epoch < item.coverage[0] || epoch > item.coverage[1] || data.needsPositionRefresh(item.id,epoch)));
+          const expired = data.status().filter((item) => item.id !== "sun" && (
+            // A transient chunk failure can omit coverage metadata. Previously
+            // rendered secondary trails remain eligible for bounded recovery;
+            // never-available objects and primary time ownership are unchanged.
+            (!required.has(item.id) && trajectoryDurations.has(item.id) && (item.status==="failed" || item.status==="out-of-coverage")) ||
+            (item.coverage && item.status !== "failed" && item.status !== "loading" &&
+              (epoch < item.coverage[0] || epoch > item.coverage[1] || data.needsPositionRefresh(item.id,epoch)))));
           const missing = expired.some((item) => required.has(item.id));
           if (missing) {
             sdk.time.seek(lastPublishedEpoch);
@@ -1910,13 +1944,18 @@ export async function createWorkspace(
             const retained = new Set(data.status().map((item) => item.id));
             for (const id of secondaryRetryAt.keys())
               if (!retained.has(id)) secondaryRetryAt.delete(id);
-            for (const item of expired) {
+            const secondsUntilExpiry=(item:typeof expired[number])=>item.coverage
+              ? (state.rate<0?epoch-item.coverage[0]:item.coverage[1]-epoch)/Math.max(1,Math.abs(state.rate)) : -Infinity;
+            for (const item of expired.sort((a,b)=>secondsUntilExpiry(a)-secondsUntilExpiry(b))) {
+              // Do not capture fifty request epochs behind four network slots.
+              // Unstarted objects remain eligible for the next frame's epoch.
+              if(secondaryLoads.size>=4)break;
               if (required.has(item.id) || secondaryLoads.has(item.id) ||
                   now < (secondaryRetryAt.get(item.id) ?? -Infinity)) continue;
               secondaryRetryAt.set(item.id, now + 1000);
               secondaryLoads.add(item.id);
-              const requestedRevision = revision;
-              void data.load([item.id], epoch, []).then(() => frameMonitor.measurePhase("secondaryApply", () => {
+              const requestedRevision = revision,requestedEpoch=core.epoch();
+              void data.load([item.id], requestedEpoch, []).then(() => frameMonitor.measurePhase("secondaryApply", () => {
                 if (!closed && requestedRevision === revision && data.status(item.id)?.status === "ready")
                   secondaryRestores.add(item.id);
               })).catch(() => {}).finally(() => {
@@ -1934,10 +1973,10 @@ export async function createWorkspace(
             }
             publishJoints();
             validateFollow();
-            if (!restored && (state.trajectories || state.trails)) {
+            if (state.trajectories || state.trails) {
               // Admit every due asynchronous spacecraft job. Only synchronous
               // natural-orbit construction is limited to one object per frame.
-              let naturalOrbitBuilt = false;
+              let naturalOrbitBuilt = restored;
               const selectedWindow = trajectoryWindows.get(state.selected);
               const observer = currentTrajectoryObserver(state.selected);
               const viewChanged = solarCatalog.find(body=>body.id===state.selected)?.kind === "spacecraft" && observer !== undefined &&
@@ -1951,7 +1990,7 @@ export async function createWorkspace(
                 const id = ids[(start + offset) % ids.length]!;
                 if (data.status(id)?.status !== "ready") {
                   trajectoryWindows.delete(id);
-                  pendingTrajectories.delete(id);
+                  if(retainKnownTrailIntent(id))pendingTrajectories.add(id);else pendingTrajectories.delete(id);
                   trajectoryCounts.delete(id);
                   continue;
                 }
@@ -1970,7 +2009,7 @@ export async function createWorkspace(
                     refreshTrajectory(id);
                   } catch (error) {
                     if (id === state.selected) throw error;
-                    pendingTrajectories.delete(id);
+                    if(retainKnownTrailIntent(id))pendingTrajectories.add(id);else pendingTrajectories.delete(id);
                     trajectoryWindows.delete(id);
                     trajectoryCounts.delete(id);
                     sdk.visual.trajectory(id, []);
@@ -1982,12 +2021,12 @@ export async function createWorkspace(
                 }
               }
             }
-            if (!restored) {
+            {
               // Spend measured remaining frame time on scientific work. A fixed
               // global millisecond cannot service the full Earth spacecraft set.
               const measuredCoreP95=Number(corePerformance.cpu_p95_ms);
               const coreReserveMs=Number.isFinite(measuredCoreP95) && measuredCoreP95>=0 ? measuredCoreP95 : 8;
-              const remainingFrameMs=Math.max(0,1000/targetHz-(performance.now()-workStarted)-coreReserveMs-2);
+              const remainingFrameMs=Math.max(0,1000/targetHz-(workClock()-workStarted)-coreReserveMs-2);
               const work=trajectoryWork.turn({budgetMs:remainingFrameMs,maxSteps:65536});
               core.renderer_work_pending?.(work.active+work.pending);
               frameMonitor.recordSlice(work.samplingMs);
@@ -2007,7 +2046,7 @@ export async function createWorkspace(
         desiredPlaying = false;
         emit();
       }
-      frameMonitor.recordWork(performance.now()-workStarted);
+      frameMonitor.recordWork(workClock()-workStarted);
       frame = requestFrame(tick);
     };
     frame = requestFrame(tick);

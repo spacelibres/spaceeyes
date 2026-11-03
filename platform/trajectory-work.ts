@@ -153,7 +153,7 @@ export class TrajectoryWorkQueue<T> {
             steps++;
             if(held.job.priority)prioritySteps++;
             quantum++;
-          } while (!result.done && quantum<4096 && steps<maxSteps && (!prioritySlice || prioritySteps<priorityStepLimit) && this.now()<sliceDeadline);
+          } while (!result.done && !held.job.blocked?.() && quantum<4096 && steps<maxSteps && (!prioritySlice || prioritySteps<priorityStepLimit) && this.now()<sliceDeadline);
         }
       } catch (error) {
         this.dispose(held);

@@ -66,6 +66,7 @@ function harness(initialNullEnvironmentStatus = false) {
   let desiredLod = 0;
   let environmentStatusReads = 0;
   let callback: FrameRequestCallback | undefined;
+  let measuredWorkMs=0;
   let pauseSignal: (() => void) | undefined;
   class TestCore {
     constructor() {
@@ -165,6 +166,7 @@ function harness(initialNullEnvironmentStatus = false) {
       default: async () => {},
       WasmCore: TestCore as unknown as new () => HostCore,
     }),
+    workClock:()=>{measuredWorkMs+=.001;return measuredWorkMs;},
     requestFrame: (next: FrameRequestCallback) => {
       callback = next;
       return 1;
@@ -172,7 +174,7 @@ function harness(initialNullEnvironmentStatus = false) {
     cancelFrame: () => {
       callback = undefined;
     },
-    step: (time: number) => callback?.(time),
+    step: (time: number) => {measuredWorkMs=Math.max(measuredWorkMs,time);callback?.(time);},
     visuals: () => visuals,
     registeredAssets: () => registeredAssets,
     labelCalls: () => labelCalls,
@@ -2334,4 +2336,153 @@ test("pending spacecraft jobs rebuild their guards on rate and direction changes
   assert.equal(fixtures.core().playing(),true);
   assert.equal(fixtures.trails().slice(before).some(trail=>trail.id==='sc_iss'&&trail.count===0),false,'rate changes keep displayed trajectory ownership');
  } finally {SolarSystemData.prototype.trailSampleSteps=original;await app.dispose();}
+});
+
+
+test("late forward-prefetch completion cannot restore cooldowns after a high-rate reversal",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),original=SolarSystemData.prototype.prefetchPosition;
+ const calls:{id:string;requested:number;signal:AbortSignal|undefined;finish:(value:boolean)=>void}[]=[];
+ SolarSystemData.prototype.prefetchPosition=function(id,requested,_epoch,_retain,signal){return new Promise<boolean>(finish=>calls.push({id,requested,signal,finish}));};
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>{
+  const text=String(input),isOrientation=text.includes("type=ori");
+  if(!isOrientation&&text.includes("/sc_iss?")) {
+   const epoch=Number(new URL(text,"http://fixture").searchParams.get("epoch"));
+   const bytes=sample(false,epoch+1000);new DataView(bytes.buffer).setFloat64(28,epoch-100000,true);return new Response(bytes);
+  }
+  return new Response(sample(isOrientation));
+ }});
+ try {
+  await app.select("sc_iss");app.play(true,3600);fixtures.step(0);fixtures.step(34);
+  assert.equal(calls.length,1);const old=calls[0];assert.equal(old.signal?.aborted,false);
+  app.play(true,-86400);assert.equal(old.signal?.aborted,true,"only the optional prefetch ownership is aborted immediately");
+  fixtures.step(68);assert.equal(calls.length,1,"old in-flight ownership remains until its own finally callback");
+  old.finish(false);for(let turn=0;turn<4;turn++)await Promise.resolve();
+  fixtures.step(102);assert.equal(calls.length,2,"late failure cannot reapply an obsolete one/five-second cooldown");
+  assert.ok(calls[1].requested<old.requested);assert.equal(calls[1].signal?.aborted,false);assert.equal(fixtures.core().playing(),true);
+ } finally {for(const call of calls)call.finish(false);SolarSystemData.prototype.prefetchPosition=original;await app.dispose();}
+});
+
+
+test("a previously displayed secondary trail recovers a transient chunk failure without retrying never-available sources",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),originalPrefetch=SolarSystemData.prototype.prefetchPosition;
+ SolarSystemData.prototype.prefetchPosition=async()=>false;
+ let cutoff:number|undefined,armed=false,recoveryRequests=0,neverAvailableRequests=0,done!:()=>void;
+ const ready=new Promise<void>(resolve=>{done=resolve;});
+ const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="earth"&&snapshot.dataCache.positionEntries>40)done();},new AbortController().signal,{...fixtures,fetch:async input=>{
+  const url=new URL(String(input),"http://fixture"),orientation=url.searchParams.get("type")==="ori";
+  if(!orientation&&url.pathname.endsWith("/sc_prefire_2")){neverAvailableRequests++;return new Response("unavailable",{status:502});}
+  if(!orientation&&url.pathname.endsWith("/sc_noaa_21")) {
+   cutoff??=Number(url.searchParams.get("epoch"))+100;
+   if(armed){recoveryRequests++;if(recoveryRequests===1)return new Response("transient chunk error",{status:502});return new Response(sample(false));}
+   return new Response(sample(false,cutoff));
+  }
+  return new Response(sample(orientation));
+ }});
+ try {
+  await app.select("earth");await ready;
+  for(let frame=0;frame<200;frame++)fixtures.step(frame*16);
+  const before=fixtures.trails().filter(trail=>trail.id==="sc_noaa_21"&&trail.count>0).length;
+  assert.ok(before>0,"recovery is restricted to a genuinely displayed trail");
+  armed=true;app.play(true,3600);fixtures.step(4000);
+  for(let turn=0;turn<20;turn++)await new Promise<void>(resolve=>setImmediate(resolve));
+  assert.equal(recoveryRequests,1);
+  fixtures.step(4100);assert.equal(recoveryRequests,1,"existing one-second retry backoff remains bounded");
+  fixtures.step(5100);for(let turn=0;turn<20;turn++)await new Promise<void>(resolve=>setImmediate(resolve));
+  for(let frame=1;frame<=40;frame++)fixtures.step(5100+frame*34);
+  assert.ok(recoveryRequests>=2,"failed status without coverage metadata does not permanently suppress recovery");
+  assert.ok(fixtures.trails().filter(trail=>trail.id==="sc_noaa_21"&&trail.count>0).length>before);
+  assert.equal(neverAvailableRequests,1,"never-available sources do not acquire new retries");
+  assert.equal(fixtures.core().playing(),true);
+ } finally {SolarSystemData.prototype.prefetchPosition=originalPrefetch;await app.dispose();}
+});
+
+
+test("secondary chunk requests capture the live epoch only when one of four admission slots opens",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),originalPrefetch=SolarSystemData.prototype.prefetchPosition;
+ SolarSystemData.prototype.prefetchPosition=async()=>false;
+ const ids=new Set(["sc_acs3","sc_aqua","sc_aura","sc_cygnss_1","sc_cygnss_2","sc_cygnss_3"]);
+ let armed=false,cutoff:number|undefined,complete!:()=>void;const ready=new Promise<void>(resolve=>{complete=resolve;});
+ const calls:{id:string;epoch:number;finish:()=>void}[]=[];
+ const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="earth"&&snapshot.dataCache.positionEntries>40)complete();},new AbortController().signal,{...fixtures,fetch:async input=>{
+  const url=new URL(String(input),"http://fixture"),id=url.pathname.split("/").at(-1)!,orientation=url.searchParams.get("type")==="ori",requested=Number(url.searchParams.get("epoch"));
+  if(!orientation&&ids.has(id)) {
+   cutoff??=requested+100;
+   if(armed&&requested>=cutoff) {await new Promise<void>(finish=>calls.push({id,epoch:requested,finish}));return new Response(sample(false));}
+   return new Response(sample(false,cutoff));
+  }
+  return new Response(sample(orientation));
+ }});
+ const settle=async()=>{for(let turn=0;turn<20;turn++)await new Promise<void>(resolve=>setImmediate(resolve));};
+ try {
+  await app.select("earth");await ready;armed=true;app.play(true,3600);fixtures.step(0);fixtures.step(4000);await settle();
+  assert.equal(calls.length,4,"only four actual source owners enter the network path");
+  fixtures.step(4034);fixtures.step(4068);assert.equal(calls.length,4);
+  calls[0].finish();await settle();
+  assert.equal(calls.length,4,"unstarted sources have no stale URLs queued behind the network semaphore");
+  fixtures.step(4102);const admittedEpoch=fixtures.core().epoch();await settle();
+  assert.equal(calls.length,5);assert.ok(Math.abs(calls[4].epoch-admittedEpoch)<1e-6,"the fifth request uses its admission epoch after time advanced");
+  for(const call of calls)call.finish();await settle();
+  fixtures.step(4136);await settle();assert.equal(calls.length,6,"admission bounds concurrency without capping the object count");
+  calls[5].finish();await settle();fixtures.step(4170);
+  for(const id of ids)assert.doesNotThrow(()=>fixtures.core().state_at(id,fixtures.core().epoch()));
+  assert.equal(fixtures.core().playing(),true);
+ } finally {for(const call of calls)call.finish();SolarSystemData.prototype.prefetchPosition=originalPrefetch;await app.dispose();}
+});
+
+
+test("a known trail's desired intent survives an unready-to-ready source transition without visual restoration",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),originalStatus=SolarSystemData.prototype.status;
+ type Status=ReturnType<typeof originalStatus>[number];
+ let unready=false,complete!:()=>void;const ready=new Promise<void>(resolve=>{complete=resolve;});
+ SolarSystemData.prototype.status=(function(this:InstanceType<typeof SolarSystemData>,id?:string){
+  const value=Reflect.apply(originalStatus,this,id===undefined?[]:[id]) as Status|Status[]|undefined;
+  const changed=(item:Status)=>unready&&item.id==="sc_noaa_21"?{...item,status:"loading" as const}:item;
+  return Array.isArray(value)?value.map(changed):value?changed(value):undefined;
+ }) as typeof originalStatus;
+ const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="earth"&&snapshot.dataCache.positionEntries>40)complete();},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+  await app.select("earth");await ready;for(let frame=0;frame<200;frame++)fixtures.step(frame*16);
+  const published=fixtures.trails().filter(trail=>trail.id==="sc_noaa_21"&&trail.count>0).length;
+  assert.ok(published>0);
+  const visualSets=fixtures.visuals().filter(value=>value.id==="sc_noaa_21").length;
+  unready=true;for(let frame=0;frame<5;frame++)fixtures.step(3200+frame*34);
+  unready=false;for(let frame=0;frame<40;frame++)fixtures.step(3400+frame*34);
+  assert.ok(fixtures.trails().filter(trail=>trail.id==="sc_noaa_21"&&trail.count>0).length>published,"ready science republishes through retained intent without configureBody recovery");
+  assert.equal(fixtures.visuals().filter(value=>value.id==="sc_noaa_21").length,visualSets,"the source recovery does not depend on recreating a visual");
+  assert.equal(fixtures.core().playing(),true);
+ } finally {SolarSystemData.prototype.status=originalStatus;await app.dispose();}
+});
+
+
+test("continuous secondary visual restorations cannot starve an active scientific geometry owner",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness(),original=SolarSystemData.prototype.trailSampleSteps,originalPrefetch=SolarSystemData.prototype.prefetchPosition;
+ const restoring=new Set(["sc_noaa_21","sc_cygnss_1","sc_cygnss_2","sc_cygnss_3"]);
+ let steps=0,armed=false,cutoff:number|undefined,complete!:()=>void;const ready=new Promise<void>(resolve=>{complete=resolve;});
+ SolarSystemData.prototype.prefetchPosition=async()=>false;
+ SolarSystemData.prototype.trailSampleSteps=function*(...args:Parameters<typeof original>){
+  if(args[0]==="sc_iss")for(let step=0;step<1000000;step++){steps++;yield;}
+  return yield* original.apply(this,args);
+ };
+ const app=await createWorkspace("#test",snapshot=>{if(snapshot.selected==="sc_iss"&&snapshot.dataCache.positionEntries>40)complete();},new AbortController().signal,{...fixtures,fetch:async input=>{
+  const url=new URL(String(input),"http://fixture"),id=url.pathname.split("/").at(-1)!,orientation=url.searchParams.get("type")==="ori";
+  if(!orientation&&restoring.has(id)){cutoff??=Number(url.searchParams.get("epoch"))+100;return new Response(sample(false,armed?4e9:cutoff));}
+  return new Response(sample(orientation));
+ }});
+ try {
+  await app.select("sc_iss");await ready;fixtures.step(0);fixtures.step(34);assert.ok(steps>0);
+  armed=true;app.play(true,3600);fixtures.step(4000);
+  for(let turn=0;turn<20;turn++)await new Promise<void>(resolve=>setImmediate(resolve));
+  let restoreFrames=0;
+  for(let frame=1;frame<=6;frame++) {
+   const beforeSteps=steps,beforeVisuals=fixtures.visuals().length;fixtures.step(4000+frame*34);
+   if(fixtures.visuals().slice(beforeVisuals).some(visual=>restoring.has(visual.id))){restoreFrames++;assert.ok(steps>beforeSteps,"remaining frame budget still advances scientific work after restoration");}
+  }
+  assert.ok(restoreFrames>=4,"exercise consecutive successful source-restoration frames");
+  assert.equal(fixtures.core().playing(),true);
+ } finally {SolarSystemData.prototype.trailSampleSteps=original;SolarSystemData.prototype.prefetchPosition=originalPrefetch;await app.dispose();}
 });

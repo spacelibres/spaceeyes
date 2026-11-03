@@ -2,6 +2,18 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { TrajectoryWorkQueue,latestTrajectory } from "./trajectory-work.ts";
 
+test("a newly blocked worker yields its quantum so other objects can start",()=>{
+ const queue=new TrajectoryWorkQueue<number>(()=>0);
+ let waiting=false,steps=0;const published:number[]=[];
+ queue.enqueue({objectId:"worker",revision:1,blocked:()=>waiting,create:function*(){steps++;waiting=true;yield;steps++;return 1;},commit:value=>published.push(value)});
+ queue.enqueue({objectId:"other",revision:1,create:function*(){return 2;},commit:value=>published.push(value)});
+ queue.turn({budgetMs:1,maxSteps:8});
+ assert.equal(steps,1,"waiting for the worker does not spin the generator");
+ assert.deepEqual(published,[2],"a waiting worker cannot monopolize admission");
+ waiting=false;queue.turn({budgetMs:1,maxSteps:8});
+ assert.deepEqual(published,[2,1]);
+});
+
 test("accelerated pending trajectories capture simulation epoch only when admitted",()=>{
  const q=new TrajectoryWorkQueue<number>(()=>0);let epoch=846972583.005967;const samples:number[]=[];
  for(const id of ['busy-a','busy-b'])q.enqueue({objectId:id,revision:1,create:function*(){yield;yield;return 0;},commit:()=>{}});

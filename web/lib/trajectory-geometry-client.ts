@@ -1,6 +1,6 @@
 import type {SolarSystemData,ScientificSourceSnapshot} from '../../platform/solar-system.ts';
 import type {GeometryJob,GeometryMessage,GeometryReply,TrailGeometry,SourceDelta} from '../../platform/trajectory-geometry-runtime.ts';
-export interface GeometryWorkerPort {postMessage(message:GeometryMessage):void;onmessage:((event:MessageEvent<GeometryReply>)=>void)|null;onerror:((event:ErrorEvent)=>void)|null;terminate():void;}
+export interface GeometryWorkerPort {postMessage(message:GeometryMessage):void;onmessage:((event:MessageEvent<GeometryReply>)=>void)|null;onerror:((event:ErrorEvent)=>void)|null;terminate():void;diagnostics?():Readonly<Record<string,number>>;}
 type Version={source:ScientificSourceSnapshot;positionKey:string;orientationKey:string;position:number;orientation:number};
 export class GeometryRequest {
  reply?:GeometryReply;private value?:TrailGeometry;
@@ -42,6 +42,7 @@ export class TrajectoryGeometryClient {
   try{this.worker.postMessage(message);}catch(error){this.fail(String(error));}
  }
  get available(){return !this.failed;}
+ diagnostics(){return this.worker.diagnostics?.();}
  sync(data:SolarSystemData) {
   if(this.failed)return;
   const sources:SourceDelta[]=[],live=new Set<string>();
