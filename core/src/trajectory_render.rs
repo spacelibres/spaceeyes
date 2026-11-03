@@ -4,7 +4,7 @@ use bevy::{
     render::render_resource::*, shader::ShaderRef,
 };
 // Parsed natural orbits and input history have independent existing budgets.
-const MAX_SEGMENTS: usize = 92_160 + 256 + 16_384 + 1024;
+const MAX_SEGMENTS: usize = 92_160 + 256 + 49_152 + 1024;
 fn line_blend() -> BlendState {
     BlendState {
         color: BlendComponent {

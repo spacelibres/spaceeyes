@@ -2,6 +2,11 @@
 #[serde(rename_all = "camelCase")]
 pub struct CameraRenderStatus {
     pub focused_id: Option<String>,
+    pub epoch_tdb_seconds: f64,
+    pub framing_reference_id: Option<String>,
+    pub framing_reference_position_km: Option<[f64; 3]>,
+    pub follow_reference_id: Option<String>,
+    pub follow_reference_position_km: Option<[f64; 3]>,
     pub position_km: [f64; 3],
     pub desired_km: [f64; 3],
     pub framing_radius_km: f64,
@@ -45,10 +50,16 @@ impl Core {
     #[cfg(any(feature = "browser-render", test))]
     pub(crate) fn record_camera_render_status(&mut self, status: Option<CameraRenderStatus>) {
         self.camera_render_status = status.filter(|s| {
-            s.position_km
-                .iter()
-                .chain(s.desired_km.iter())
-                .all(|n| n.is_finite())
+            s.epoch_tdb_seconds.is_finite()
+                && s.framing_reference_position_km
+                    .iter()
+                    .flatten()
+                    .chain(s.follow_reference_position_km.iter().flatten())
+                    .all(|v| v.is_finite())
+                && s.position_km
+                    .iter()
+                    .chain(s.desired_km.iter())
+                    .all(|n| n.is_finite())
                 && s.framing_radius_km.is_finite()
                 && s.framing_radius_km >= 0.
         });
@@ -303,6 +314,11 @@ mod tests {
         assert!(c.camera_render_status().is_none());
         let status = CameraRenderStatus {
             focused_id: Some("a".into()),
+            epoch_tdb_seconds: 123.,
+            framing_reference_id: Some("a".into()),
+            framing_reference_position_km: Some([0.; 3]),
+            follow_reference_id: None,
+            follow_reference_position_km: None,
             position_km: [1., 2., 3.],
             desired_km: [4., 5., 6.],
             framing_radius_km: 1.,

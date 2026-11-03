@@ -4245,7 +4245,7 @@ dependencies = [
 
 [[package]]
 name = "spaceeyes-core"
-version = "0.0.66"
+version = "0.0.67"
 dependencies = [
  "bevy",
  "hifitime",

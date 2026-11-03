@@ -1845,13 +1845,15 @@ for (const failed of [false, true]) {
     const fixtures = harness();
     let armed = false;
     let retries = 0;
+    let prefetches = 0;
     const app = await createWorkspace("#test", () => {}, new AbortController().signal, {
       ...fixtures,
       fetch: async (input) => {
         const url = new URL(String(input), "http://localhost");
         const moon = url.pathname.endsWith("/moon");
         if (armed && moon) {
-          retries++;
+          if (Number(url.searchParams.get("epoch")) === 846686629) prefetches++;
+          else retries++;
           if (failed) return new Response("unavailable", {status: 503});
         }
         return new Response(sample(url.searchParams.get("type") === "ori", moon ? 846686628 : 4e9));
@@ -1868,6 +1870,7 @@ for (const failed of [false, true]) {
         assert.equal(fixtures.core().playing(), true);
       }
       assert.ok(retries > 0 && retries <= 1, `secondary fetches within 960ms: ${retries}`);
+      assert.ok(prefetches <= 1, `adjacent source prefetch is independently bounded: ${prefetches}`);
       assert.ok(Math.abs(fixtures.core().epoch() - (846686627 + 576)) < 0.001);
     } finally { await app.dispose(); }
   });
@@ -1995,13 +1998,14 @@ test("dense Earth scene keeps resolved long spacecraft histories without starvin
     for (let frame = 0; frame < 1500; frame++) {
       const before = fixtures.trails().length;
       fixtures.step(frame * 16);
-      assert.ok(fixtures.trails().length - before <= 1, "initial trails also share the per-frame limit");
+      const changed = fixtures.trails().slice(before);
+      assert.equal(new Set(changed.map(t => t.id)).size, changed.length, "one object must not publish duplicate geometry in a frame");
     }
     const trails = fixtures.trails().filter(t => t.id.startsWith("sc_") && t.kind === "trail");
     assert.ok(trails.length > 40, `exercise a dense real catalog system: ${trails.length} trails ${JSON.stringify(trails.slice(0,3))}`);
-    assert.ok(trails.every(t => t.count >= 2 && t.count <= 256));
+    assert.ok(trails.every(t => t.count >= 2 && t.count <= 3*256));
     const latest = new Map(fixtures.trails().map(t => [t.id, t]));
-    assert.ok([...latest.values()].reduce((sum,t) => sum + t.count, 0) <= 16384);
+    assert.ok([...latest.values()].reduce((sum,t) => sum + t.count, 0) <= 49152);
     await app.select("sc_iss");
     assert.equal(fixtures.focused(), "sc_iss");
   } finally { await app.dispose(); }
@@ -2305,4 +2309,29 @@ test("failed WASM initialization never reports later startup completion", async 
     loadCore: async () => ({ ...(await fixtures.loadCore()), default: async () => { throw Error("WASM download unavailable"); } }),
   }), /WASM download unavailable/);
   assert.deepEqual(phases,[0,1]);
+});
+
+
+test("pending spacecraft jobs rebuild their guards on rate and direction changes without clearing displayed geometry",async()=>{
+ const {SolarSystemData}=await import("../../platform/solar-system.ts");
+ const fixtures=harness();
+ const original=SolarSystemData.prototype.trailSampleSteps;
+ const guards:number[]=[];
+ SolarSystemData.prototype.trailSampleSteps=function*(...args:Parameters<typeof original>){
+  if(args[0]==='sc_iss'){guards.push(args[5]??0);for(let work=0;work<1000000;work++)yield;}
+  return yield* original.apply(this,args);
+ };
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori")))});
+ try {
+  await app.select('sc_iss');app.play(true,20);fixtures.step(0);fixtures.step(34);
+  assert.ok(guards.includes(40),'the initial active owner captures the low-rate guard');
+  const before=fixtures.trails().length;
+  app.play(true,3600);fixtures.step(68);
+  assert.ok(guards.includes(7200),'acceleration replaces an already active owner');
+  const positiveBuilds=guards.length;
+  app.play(true,-3600);fixtures.step(102);
+  assert.ok(guards.length>positiveBuilds,'a direction reversal replaces the pending owner even at equal absolute rate');
+  assert.equal(fixtures.core().playing(),true);
+  assert.equal(fixtures.trails().slice(before).some(trail=>trail.id==='sc_iss'&&trail.count===0),false,'rate changes keep displayed trajectory ownership');
+ } finally {SolarSystemData.prototype.trailSampleSteps=original;await app.dispose();}
 });

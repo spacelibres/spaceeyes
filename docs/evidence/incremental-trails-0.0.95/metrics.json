@@ -1,0 +1,1099 @@
+{
+  "versions": {
+    "platform": "0.0.53",
+    "web": "0.0.95",
+    "core": "0.0.67"
+  },
+  "method": "Instrumented public trajectory passthrough; bounded RAF coverage records; last five seconds only",
+  "gpuTimerMeasured": false,
+  "vramMeasured": false,
+  "workerHeapMeasured": false,
+  "cases": [
+    {
+      "case": "ISS 1x",
+      "expectedPassing": true,
+      "sourceCapture": "incremental095-release-iss-1x.txt",
+      "finalEpochTdbSeconds": 846972596.5581739,
+      "samplesLastFiveSeconds": 573,
+      "trackedTargetsMin": 67.0,
+      "trackedTargetsMax": 67.0,
+      "maxHeadUncovered": 0.0,
+      "maxWindowPartial": 13.0,
+      "incompleteWindowsAtEnd": [
+        {
+          "id": "sc_ace",
+          "durationSeconds": 31715490,
+          "missingStartSeconds": 18900348,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_aqua",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 4558,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_2",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 2556,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_3",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 690,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_4",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 3257,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_grace_fo1",
+          "durationSeconds": 5575,
+          "missingStartSeconds": 765,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_imap",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 31115765,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jwst",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 28972335,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_oco_2",
+          "durationSeconds": 5933.333333333333,
+          "missingStartSeconds": 2875,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_soho",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 26734507,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_4",
+          "durationSeconds": 5725.603098713663,
+          "missingStartSeconds": 2989,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_solar_1",
+          "durationSeconds": 36322633.44360778,
+          "missingStartSeconds": 1341027,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_wind",
+          "durationSeconds": 16485927,
+          "missingStartSeconds": 15391017,
+          "missingEndSeconds": 0
+        }
+      ],
+      "totalTrailInputPoints": 67.0,
+      "camera": {
+        "focusedId": "sc_iss",
+        "epochTdbSeconds": 846972596.5581739,
+        "framingReferenceId": "sc_iss",
+        "framingReferencePositionKm": [
+          112644605.50827512,
+          88678282.51608111,
+          38443026.31334017
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          112644605.46293706,
+          88678282.8045782,
+          38443026.60464393
+        ],
+        "desiredKm": [
+          112644605.46293706,
+          88678282.8045782,
+          38443026.60464393
+        ],
+        "framingRadiusKm": 0.072,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "corePerformance": {
+        "cpu_p50_ms": 13.2,
+        "cpu_p95_ms": 18,
+        "cpu_p99_ms": 18.4,
+        "gpu_ms": null,
+        "noncritical_pending": 1,
+        "present_interval_p50_ms": 34.699999999999065,
+        "present_interval_p95_ms": 39.69999999999985,
+        "present_interval_p99_ms": 40.000000000000924,
+        "rendered_frames": 493,
+        "resolution_scale": 1,
+        "skipped_frames": 1326,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.1,
+            "mean": 1.4908333333333312,
+            "p50": 1.6,
+            "p95": 1.8,
+            "p99": 1.9
+          },
+          "extract": {
+            "count": 120,
+            "latest": 0.9,
+            "mean": 0.8666666666666658,
+            "p50": 0.9,
+            "p95": 1.1,
+            "p99": 1.1
+          },
+          "main": {
+            "count": 120,
+            "latest": 4,
+            "mean": 5.032500000000002,
+            "p50": 5,
+            "p95": 6.8,
+            "p99": 7.3
+          },
+          "render": {
+            "count": 120,
+            "latest": 7.1000000000000005,
+            "mean": 7.439999999999998,
+            "p50": 7.2,
+            "p95": 10,
+            "p99": 10.9
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0,
+            "mean": 0.0691666666666666,
+            "p50": 0.1,
+            "p95": 0.2,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.3,
+            "mean": 0.39166666666666683,
+            "p50": 0.5,
+            "p95": 0.6,
+            "p99": 0.6
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.1802,
+        "visible": true,
+        "worst_one_second_frames": 2
+      },
+      "pageHeapEstimate": {
+        "used": 63018002,
+        "total": 106259274
+      },
+      "playback": {
+        "paused": 846972596.6275738,
+        "pausedAgain": 846972596.6275738,
+        "resumed": 846972597.6343743
+      },
+      "slider": {
+        "after": null,
+        "before": null,
+        "rate": null
+      },
+      "workers": null
+    },
+    {
+      "case": "ISS slider +3600x",
+      "expectedPassing": true,
+      "sourceCapture": "incremental095-release-slider-forward.txt",
+      "finalEpochTdbSeconds": 847019636.8493638,
+      "samplesLastFiveSeconds": 449,
+      "trackedTargetsMin": 67.0,
+      "trackedTargetsMax": 67.0,
+      "maxHeadUncovered": 0.0,
+      "maxWindowPartial": 6.0,
+      "incompleteWindowsAtEnd": [
+        {
+          "id": "sc_ace",
+          "durationSeconds": 31715490,
+          "missingStartSeconds": 18853308,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_imap",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 31068725,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jwst",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 28925295,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_soho",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 26687467,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_solar_1",
+          "durationSeconds": 36298364.09802353,
+          "missingStartSeconds": 1269717,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_wind",
+          "durationSeconds": 16485927,
+          "missingStartSeconds": 15343976,
+          "missingEndSeconds": 0
+        }
+      ],
+      "totalTrailInputPoints": 67.0,
+      "camera": {
+        "focusedId": "sc_iss",
+        "epochTdbSeconds": 847019536.4093637,
+        "framingReferenceId": "sc_iss",
+        "framingReferencePositionKm": [
+          111704249.7960665,
+          89634951.43863763,
+          38851198.46036655
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          111704249.75072843,
+          89634951.72713472,
+          38851198.75167031
+        ],
+        "desiredKm": [
+          111704249.75072843,
+          89634951.72713472,
+          38851198.75167031
+        ],
+        "framingRadiusKm": 0.072,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "corePerformance": {
+        "cpu_p50_ms": 19.5,
+        "cpu_p95_ms": 20.5,
+        "cpu_p99_ms": 20.9,
+        "gpu_ms": null,
+        "noncritical_pending": 2,
+        "present_interval_p50_ms": 34.49999999997999,
+        "present_interval_p95_ms": 36.7999999999995,
+        "present_interval_p99_ms": 38.39999999999577,
+        "rendered_frames": 5755,
+        "resolution_scale": 1,
+        "skipped_frames": 18599,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.9,
+            "mean": 1.737500000000001,
+            "p50": 1.8,
+            "p95": 2,
+            "p99": 2.1
+          },
+          "extract": {
+            "count": 120,
+            "latest": 1.1,
+            "mean": 1.054999999999999,
+            "p50": 1.1,
+            "p95": 1.2,
+            "p99": 1.4
+          },
+          "main": {
+            "count": 120,
+            "latest": 6.6,
+            "mean": 6.644166666666665,
+            "p50": 6.8,
+            "p95": 7.1000000000000005,
+            "p99": 7.3
+          },
+          "render": {
+            "count": 120,
+            "latest": 12.1,
+            "mean": 11.380000000000004,
+            "p50": 11.700000000000001,
+            "p95": 12.6,
+            "p99": 12.8
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0,
+            "mean": 0.06416666666666662,
+            "p50": 0.1,
+            "p95": 0.2,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.8,
+            "mean": 0.5425000000000006,
+            "p50": 0.5,
+            "p95": 0.7,
+            "p99": 0.8
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.1802,
+        "visible": true,
+        "worst_one_second_frames": 2
+      },
+      "pageHeapEstimate": null,
+      "playback": null,
+      "slider": {
+        "after": "70",
+        "before": "50",
+        "rate": "1 hr/s"
+      },
+      "workers": [
+        "http://127.0.0.1:3006/_next/static/chunks/122.22534b5feb745f28.js"
+      ]
+    },
+    {
+      "case": "ISS -3600x",
+      "expectedPassing": true,
+      "sourceCapture": "incremental095-release-iss-reverse.txt",
+      "finalEpochTdbSeconds": 846929643.6459718,
+      "samplesLastFiveSeconds": 348,
+      "trackedTargetsMin": 67.0,
+      "trackedTargetsMax": 67.0,
+      "maxHeadUncovered": 0.0,
+      "maxWindowPartial": 11.0,
+      "incompleteWindowsAtEnd": [
+        {
+          "id": "sc_ace",
+          "durationSeconds": 31715490,
+          "missingStartSeconds": 18943301,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_imap",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 31158718,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jwst",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 29015288,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_soho",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 26777460,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_solar_1",
+          "durationSeconds": 36509597.42745026,
+          "missingStartSeconds": 1570944,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_wind",
+          "durationSeconds": 16485927,
+          "missingStartSeconds": 15433970,
+          "missingEndSeconds": 0
+        }
+      ],
+      "totalTrailInputPoints": 67.0,
+      "camera": {
+        "focusedId": "sc_iss",
+        "epochTdbSeconds": 846929768.5659717,
+        "framingReferenceId": "sc_iss",
+        "framingReferencePositionKm": [
+          113487863.98469341,
+          87785226.10949771,
+          38049536.21718359
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          113487863.93935534,
+          87785226.3979948,
+          38049536.50848735
+        ],
+        "desiredKm": [
+          113487863.93935534,
+          87785226.3979948,
+          38049536.50848735
+        ],
+        "framingRadiusKm": 0.072,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "corePerformance": {
+        "cpu_p50_ms": 21.9,
+        "cpu_p95_ms": 22.9,
+        "cpu_p99_ms": 23.400000000000002,
+        "gpu_ms": null,
+        "noncritical_pending": 2,
+        "present_interval_p50_ms": 33.10000000000102,
+        "present_interval_p95_ms": 37.60000000000119,
+        "present_interval_p99_ms": 47.5999999999992,
+        "rendered_frames": 515,
+        "resolution_scale": 1,
+        "skipped_frames": 1006,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.2,
+            "mean": 1.7566666666666666,
+            "p50": 1.8,
+            "p95": 2.1,
+            "p99": 2.2
+          },
+          "extract": {
+            "count": 120,
+            "latest": 1.3,
+            "mean": 1.2116666666666673,
+            "p50": 1.2,
+            "p95": 1.4,
+            "p99": 1.4
+          },
+          "main": {
+            "count": 120,
+            "latest": 6.5,
+            "mean": 7.7475,
+            "p50": 7.9,
+            "p95": 8.5,
+            "p99": 8.6
+          },
+          "render": {
+            "count": 120,
+            "latest": 14.4,
+            "mean": 12.174999999999994,
+            "p50": 12.6,
+            "p95": 13.700000000000001,
+            "p99": 13.899999999999999
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0,
+            "mean": 0.06833333333333329,
+            "p50": 0.1,
+            "p95": 0.2,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.5,
+            "mean": 0.511666666666667,
+            "p50": 0.5,
+            "p95": 0.6,
+            "p99": 0.6
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.4897,
+        "visible": true,
+        "worst_one_second_frames": 2
+      },
+      "pageHeapEstimate": {
+        "used": 56787021,
+        "total": 105947817
+      },
+      "playback": {
+        "paused": 846928919.3259718,
+        "pausedAgain": 846928919.3259718,
+        "resumed": 846925394.925972
+      },
+      "slider": {
+        "after": null,
+        "before": null,
+        "rate": null
+      },
+      "workers": null
+    },
+    {
+      "case": "Earth 20x",
+      "expectedPassing": true,
+      "sourceCapture": "incremental095-release-earth-20x.txt",
+      "finalEpochTdbSeconds": 846972869.3219683,
+      "samplesLastFiveSeconds": 593,
+      "trackedTargetsMin": 67.0,
+      "trackedTargetsMax": 67.0,
+      "maxHeadUncovered": 0.0,
+      "maxWindowPartial": 15.0,
+      "incompleteWindowsAtEnd": [
+        {
+          "id": "sc_ace",
+          "durationSeconds": 31715490,
+          "missingStartSeconds": 18900075,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_aqua",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 4286,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_2",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 2284,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_3",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 418,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_4",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 2984,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_grace_fo1",
+          "durationSeconds": 5575,
+          "missingStartSeconds": 492,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_imap",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 31115493,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jwst",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 28972063,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_oco_2",
+          "durationSeconds": 5933.333333333333,
+          "missingStartSeconds": 2602,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_sentinel_6",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 2388,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_soho",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 26734235,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_4",
+          "durationSeconds": 5725.551057454459,
+          "missingStartSeconds": 2716,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_solar_1",
+          "durationSeconds": 36322498.517677434,
+          "missingStartSeconds": 1340619,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_wind",
+          "durationSeconds": 16485927,
+          "missingStartSeconds": 15390744,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_noaa_20",
+          "durationSeconds": 5933,
+          "missingStartSeconds": 3665,
+          "missingEndSeconds": 0
+        }
+      ],
+      "totalTrailInputPoints": 67.0,
+      "camera": {
+        "focusedId": "earth",
+        "epochTdbSeconds": 846972869.3219683,
+        "framingReferenceId": "earth",
+        "framingReferencePositionKm": [
+          112640021.31183504,
+          88679140.04412042,
+          38440704.09164084
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          112636292.49151585,
+          87736317.77140008,
+          38880274.0216358
+        ],
+        "desiredKm": [
+          112636292.49151585,
+          87736317.77140008,
+          38880274.0216358
+        ],
+        "framingRadiusKm": 181579.8676563263,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "corePerformance": {
+        "cpu_p50_ms": 13.2,
+        "cpu_p95_ms": 14.7,
+        "cpu_p99_ms": 15.5,
+        "gpu_ms": null,
+        "noncritical_pending": 0,
+        "present_interval_p50_ms": 34.40000000000154,
+        "present_interval_p95_ms": 35.800000000000054,
+        "present_interval_p99_ms": 36.40000000000043,
+        "rendered_frames": 537,
+        "resolution_scale": 1,
+        "skipped_frames": 1520,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.8,
+            "mean": 1.5325000000000009,
+            "p50": 1.6,
+            "p95": 2,
+            "p99": 2.1
+          },
+          "extract": {
+            "count": 120,
+            "latest": 1,
+            "mean": 0.941666666666666,
+            "p50": 1,
+            "p95": 1.2,
+            "p99": 1.2
+          },
+          "main": {
+            "count": 120,
+            "latest": 5.3,
+            "mean": 5.160833333333334,
+            "p50": 5.1000000000000005,
+            "p95": 6.2,
+            "p99": 6.8
+          },
+          "render": {
+            "count": 120,
+            "latest": 7.6,
+            "mean": 6.815833333333333,
+            "p50": 7.2,
+            "p95": 7.9,
+            "p99": 8.5
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0.1,
+            "mean": 0.054999999999999966,
+            "p50": 0.1,
+            "p95": 0.1,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.4,
+            "mean": 0.4299999999999999,
+            "p50": 0.4,
+            "p95": 0.6,
+            "p99": 0.6
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.1558,
+        "visible": true,
+        "worst_one_second_frames": 12
+      },
+      "pageHeapEstimate": {
+        "used": 39511750,
+        "total": 103695062
+      },
+      "playback": {
+        "paused": 846972870.5719683,
+        "pausedAgain": 846972870.5719683,
+        "resumed": 846972891.2619684
+      },
+      "slider": {
+        "after": null,
+        "before": null,
+        "rate": null
+      },
+      "workers": null
+    },
+    {
+      "case": "Stress -36000x",
+      "expectedPassing": false,
+      "sourceCapture": "incremental095-release-slider-reverse.txt",
+      "finalEpochTdbSeconds": 847272782.7540656,
+      "samplesLastFiveSeconds": 605,
+      "trackedTargetsMin": 67.0,
+      "trackedTargetsMax": 67.0,
+      "maxHeadUncovered": 38.0,
+      "maxWindowPartial": 43.0,
+      "incompleteWindowsAtEnd": [
+        {
+          "id": "sc_cygnss_7",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 379393,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_ace",
+          "durationSeconds": 31715490,
+          "missingStartSeconds": 18600162,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_aqua",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 372283,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_aura",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 377053,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_1",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 378686,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_2",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 373899,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_3",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 375678,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_4",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 370993,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_5",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 375578,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_cygnss_8",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 371794,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_gpm",
+          "durationSeconds": 5549.5,
+          "missingStartSeconds": 378374,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_grace_fo1",
+          "durationSeconds": 5575,
+          "missingStartSeconds": 378703,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_grace_fo2",
+          "durationSeconds": 5575,
+          "missingStartSeconds": 375516,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_icesat_2",
+          "durationSeconds": 5653.2,
+          "missingStartSeconds": 376970,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jason_3",
+          "durationSeconds": 6721,
+          "missingStartSeconds": 379326,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_imap",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 28920070,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_ixpe",
+          "durationSeconds": 5400,
+          "missingStartSeconds": 373737,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_jwst",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 28672149,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_landsat_8",
+          "durationSeconds": 5928,
+          "missingStartSeconds": 373920,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_landsat_9",
+          "durationSeconds": 5940,
+          "missingStartSeconds": 48098,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_nisar",
+          "durationSeconds": 5573,
+          "missingStartSeconds": 253389,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_nustar",
+          "durationSeconds": 5798.66,
+          "missingStartSeconds": 375466,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_oco_2",
+          "durationSeconds": 5933.333333333333,
+          "missingStartSeconds": 379371,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_pace",
+          "durationSeconds": 5891.663557892106,
+          "missingStartSeconds": 289037,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_prefire_1",
+          "durationSeconds": 5660.009756981489,
+          "missingStartSeconds": 371831,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_prefire_2",
+          "durationSeconds": 5667.3168001291915,
+          "missingStartSeconds": 286242,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_sentinel_6",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 379376,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_sentinel_6b",
+          "durationSeconds": 5933.5,
+          "missingStartSeconds": 289383,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_smap",
+          "durationSeconds": 5906.8,
+          "missingStartSeconds": 379378,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_soho",
+          "durationSeconds": 31536000,
+          "missingStartSeconds": 26434321,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_spherex",
+          "durationSeconds": 5859.407448373957,
+          "missingStartSeconds": 294550,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_1",
+          "durationSeconds": 5730.670630538429,
+          "missingStartSeconds": 259197,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_2",
+          "durationSeconds": 5731.711797356003,
+          "missingStartSeconds": 274190,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_3",
+          "durationSeconds": 5709.227472425882,
+          "missingStartSeconds": 319943,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_starling_4",
+          "durationSeconds": 5735.289982346718,
+          "missingStartSeconds": 211071,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_suomi_npp",
+          "durationSeconds": 5798.66,
+          "missingStartSeconds": 379379,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_swot",
+          "durationSeconds": 5933,
+          "missingStartSeconds": 371684,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_terra",
+          "durationSeconds": 5933.33,
+          "missingStartSeconds": 350711,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_wind",
+          "durationSeconds": 16485927,
+          "missingStartSeconds": 15090830,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_noaa_20",
+          "durationSeconds": 5933,
+          "missingStartSeconds": 379338,
+          "missingEndSeconds": 0
+        },
+        {
+          "id": "sc_noaa_21",
+          "durationSeconds": 5933,
+          "missingStartSeconds": 244721,
+          "missingEndSeconds": 0
+        }
+      ],
+      "totalTrailInputPoints": 67.0,
+      "camera": {
+        "focusedId": "sc_iss",
+        "epochTdbSeconds": 847272782.7540656,
+        "framingReferenceId": "sc_iss",
+        "framingReferencePositionKm": [
+          106475507.80223201,
+          94704435.98353328,
+          41057031.05791525
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          106475507.75689395,
+          94704436.27203037,
+          41057031.34921901
+        ],
+        "desiredKm": [
+          106475507.75689395,
+          94704436.27203037,
+          41057031.34921901
+        ],
+        "framingRadiusKm": 0.072,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "corePerformance": {
+        "cpu_p50_ms": 15.6,
+        "cpu_p95_ms": 17.2,
+        "cpu_p99_ms": 17.9,
+        "gpu_ms": null,
+        "noncritical_pending": 1,
+        "present_interval_p50_ms": 34.69999999998663,
+        "present_interval_p95_ms": 35.09999999999991,
+        "present_interval_p99_ms": 39.199999999993906,
+        "rendered_frames": 11549,
+        "resolution_scale": 1,
+        "skipped_frames": 29874,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 0.8,
+            "mean": 0.8749999999999993,
+            "p50": 0.9,
+            "p95": 1,
+            "p99": 1.1
+          },
+          "extract": {
+            "count": 120,
+            "latest": 1,
+            "mean": 0.8374999999999997,
+            "p50": 0.9,
+            "p95": 1.1,
+            "p99": 1.2
+          },
+          "main": {
+            "count": 120,
+            "latest": 4.8,
+            "mean": 4.291666666666668,
+            "p50": 4.8999999999999995,
+            "p95": 5.2,
+            "p99": 5.5
+          },
+          "render": {
+            "count": 120,
+            "latest": 10.3,
+            "mean": 8.813333333333334,
+            "p50": 9.9,
+            "p95": 11.2,
+            "p99": 11.6
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0,
+            "mean": 0.043333333333333314,
+            "p50": 0,
+            "p95": 0.1,
+            "p99": 0.1
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.3,
+            "mean": 0.20166666666666694,
+            "p50": 0.2,
+            "p95": 0.3,
+            "p99": 0.4
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.1802,
+        "visible": true,
+        "worst_one_second_frames": 2
+      },
+      "pageHeapEstimate": null,
+      "playback": null,
+      "slider": {
+        "after": "23",
+        "before": "70",
+        "rate": "-10 hr/s"
+      },
+      "workers": [
+        "http://127.0.0.1:3006/_next/static/chunks/122.22534b5feb745f28.js"
+      ]
+    }
+  ]
+}

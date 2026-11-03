@@ -198,7 +198,7 @@ Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数
 
 ## 有时间语义的卫星拖尾
 
-`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～946080000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，单路径4096点、整会话16384点预算；空点数组清除轨迹及样式。
+`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～946080000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，单路径4096点、整会话49152点预算；空点数组清除轨迹及样式。
 
 无originId的点是ICRF绝对位置；有originId表示数据插件在每个采样时刻扣除父体位置的相对轨迹，显示时平移到父体当前位置，不可称为惯性历史。数据插件负责真实覆盖、阶段和采样；Rust按统一TDB时刻裁剪过去窗口并沿可见采样索引渐隐，不画未来、不制造闭环，暂停/倒放/跳时可复现。不能传任意mesh/material/shader。
 
@@ -233,7 +233,7 @@ model可选`meshCollision:boolean`，缺省false沿用科学半径球碰撞。�
 
 ### Analytic orbit descriptor
 
-Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 16384 input sample budget (4096 per path). This display model does not extend scientific coverage or certify predictions.
+Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 49152 input sample budget (4096 per path). This display model does not extend scientific coverage or certify predictions.
 
 核心实例最多同时保留256条解析轨道，替换不增加计数；清除或释放所属对象归还预算。每条最多360段，总计不超过92160段。
 
@@ -241,9 +241,9 @@ Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transve
 
 宿主初始化通过既有受控接口发布八大行星的轨道、姿态、高清表面及土星环，保持资源驻留以避免选择时重复绑定；界面用visual.status展示准备进度。资源仍在服务器，禁止嵌入WASM。太阳为程序化表面，月球和航天器模型按需。此策略不扩展插件权限，也不允许插件绕过宿主登记或直接操作Bevy。未解析为可见模型像素的卫星仍可用点标记表示，名称按有效性、视野、遮挡和碰撞显示，不代表所有名字必须同时可见。
 
-## 拖尾预算与初始化调度（0.0.37）
+## 拖尾预算与初始化调度（SDK0.0.53 / 核心0.0.67）
 
-每条轨迹最多4096输入点，每会话合计16384输入点；替换扣除本轨迹旧占用，超额原子拒绝。NASA解析天然轨道的独立展开预算不变。宿主普通轨迹最多256点、选中天然轨道256点/航天器512点并预留1024点余量；未选中航天器初次生成和过期维护分帧，不改科学时间或伪造源覆盖。优先采用NASA每目标trail.length和lengthCoverages，后匹配阶段优先，0关闭；未配置时才采用原自动回退。按曲率细分、保留配置时间窗；预算耗尽保留最佳折线近似，禁止将精度目标未达成伪装成源缺口，只有真实缺失数据断线。显示受DYN、祖先和任务阶段覆盖交集限制。索引渐隐不因非均匀采样改成时间渐隐；航天器拖尾白色、行星保留各自颜色。
+每条轨迹最多4096输入点，每会话合计49152输入点；替换扣除本轨迹旧占用，超额原子拒绝。NASA解析天然轨道的独立展开预算不变。宿主可见轨迹普通最多256点、选中天然轨道256点/航天器512点并预留1024点余量；高速播放可另给真实前后缓冲各一份同精度采样预算，总输入仍受单路径4096点、会话49152点限制。可见时长、点预算和误差阈值不因缓冲降低。未选中航天器初次生成和过期维护分帧，不改科学时间或伪造源覆盖。优先采用NASA每目标trail.length和lengthCoverages，后匹配阶段优先，0关闭；未配置时才采用原自动回退。按曲率细分、保留配置时间窗；预算耗尽保留最佳折线近似，禁止将精度目标未达成伪装成源缺口，只有真实缺失数据断线。显示受DYN、祖先和任务阶段覆盖交集限制。索引渐隐不因非均匀采样改成时间渐隐；航天器拖尾白色、行星保留各自颜色。
 
 ## NASA线条显示（0.0.38）
 
@@ -294,3 +294,7 @@ ORI只在已确认root覆盖外时跳过此姿态控制器并保留先前有效�
 ## ORI控制器与缓存身份（SDK0.0.48 / 网页0.0.76）
 
 姿态数据源内部按有效声明与实际覆盖选择最后ORI，后续fixed/align/spin按源顺序继续；同一包不套用其它未覆盖槽位。缓存同时验证活动声明key、选中track、原始覆盖和有效域，正倒跳及同父体阶段变化都要失效。多源已证实无覆盖仅缓存明确开区间，域外/声明变化重新查询；HTTP/坏包不得冒充absence，不得用单位四元数补真姿态。选择/absence元数据经宿主受控协议传递，随checkpoint/rollback/retain/dispose管理，不是新增平台插件或Bevy访问权限。
+
+高速调度：全部到期航天器每帧进入场景有界队列，不受天然轨道每帧一条同步重建的限制；按实测帧内余量、渲染CPU p95预留和有界任务量推进，保留已认证科学采样。真实DYN相邻分段在到期前预取，仅拼接同控制器、父体、类型与参数且重叠记录完全一致的连续数据；不跨缺口或推测未来。跨yield源替换必须使旧结果失效；取消、场景释放和阶段切换清理所有权。
+
+宿主计算Worker（网页0.0.95）：每工作区最多一个纯科学轨迹Worker，复用同一TS求值/采样代码，以不可变DYN/ORI增量快照输入、可转移Float64结果输出；禁止Worker自行联网、加载WASM、持有SDK或操作Bevy。时刻、相机、所有权、源版本、覆盖和受控发布始终在主线程确认，发布仍受帧预算约束。源移除/重建版本必须单调，失效和传输错误通过同一任务回退原路径；倍率或方向改变只替换计算任务，不清除显示轨迹。私有历史源保留原实现。Worker属于宿主内部实现，不增加插件权限。相机观察须使用带渲染时刻和实际取景参考体的状态，匹配当前采样时刻，不能混用缓存的旧世界位置。

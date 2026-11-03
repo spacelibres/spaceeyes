@@ -130,3 +130,89 @@ test("cooperative sampler yields during seed evaluations and preserves output", 
   } while (!result.done);
   assert.deepEqual(result.value, adaptiveTrailTimes(0, 1, 6, 80, curve));
 });
+
+
+test("retained moving windows extend real source edges in both directions", async () => {
+  const { AdaptiveTrailState } = await import("../adaptive-trail.ts");
+  for (const direction of [1, -1]) {
+    const state = new AdaptiveTrailState();
+    let probes = 0;
+    const curve = (t: number) => { probes++; return [100 * Math.cos(t), 100 * Math.sin(t), 0]; };
+    const first = adaptiveTrailTimes(-1, 0, .1, 256, curve, 2*Math.PI, [], undefined, state);
+    const initialProbes = probes;
+    probes = 0;
+    const shift = direction * .001;
+    const next = adaptiveTrailTimes(-1+shift, shift, .1+shift, 256, curve, 2*Math.PI, [], undefined, state);
+    assert.equal(next.times[0], -1+shift);
+    assert.equal(next.times.at(-1), .1+shift);
+    assert.ok(next.times.includes(shift));
+    assert.ok(next.times.filter(t => first.times.includes(t)).length > first.times.length/2);
+    assert.ok(probes < initialProbes/2, `${probes} versus ${initialProbes}`);
+    assert.ok(!next.unresolved.size);
+    assert.ok(state.samples.size <= 256*32);
+  }
+});
+
+
+test("retained state respects gaps, observer changes, pause and distant seeks", async () => {
+  const { AdaptiveTrailState } = await import("../adaptive-trail.ts");
+  const state = new AdaptiveTrailState();
+  let missing = true;
+  const source = (t: number) => {
+    if (missing && t > -.6 && t < -.4) throw Error("gap");
+    return [100*Math.cos(t), 100*Math.sin(t), 0];
+  };
+  const gap = adaptiveTrailTimes(-1, 0, .1, 128, source, 6, [], undefined, state);
+  assert.ok(gap.unresolved.size > 0);
+  missing = false;
+  const loaded = adaptiveTrailTimes(-1, 0, .1, 128, source, 6, [], undefined, state);
+  assert.equal(loaded.unresolved.size, 0);
+  const paused = adaptiveTrailTimes(-1, 0, .1, 128, source, 6, [], undefined, state);
+  assert.deepEqual(paused.times, loaded.times);
+  adaptiveTrailTimes(-1, 0, .1, 128, source, 6, [], [100,0,1], state);
+  assert.equal(state.observerKey, "[100,0,1]");
+  const seek = adaptiveTrailTimes(100, 101, 101.1, 128, source, 6, [], undefined, state);
+  assert.equal(seek.times[0], 100);
+  assert.equal(seek.times.at(-1), 101.1);
+  assert.ok([...state.samples.keys()].every(t => t>=100 && t<=101.1));
+});
+
+
+test("a changed near observer reallocates a full far-camera point budget", async () => {
+  const {AdaptiveTrailState}=await import("../adaptive-trail.ts");
+  const state=new AdaptiveTrailState();
+  const circle=(t:number)=>[100*Math.cos(t),100*Math.sin(t),0];
+  adaptiveTrailTimes(0,1,6,64,circle,2*Math.PI,[],[1000,1000,1000],state);
+  const near=[99,10,0];
+  const retained=adaptiveTrailTimes(0,1,6,64,circle,2*Math.PI,[],near,state);
+  const fresh=adaptiveTrailTimes(0,1,6,64,circle,2*Math.PI,[],near);
+  assert.deepEqual(retained.times,fresh.times);
+  assert.deepEqual(retained.unresolved,fresh.unresolved);
+});
+
+
+test("moving close observers recycle certified distant nodes instead of rebuilding full allocations",async()=>{
+  const {AdaptiveTrailState}=await import("../adaptive-trail.ts");
+  const state=new AdaptiveTrailState();
+  let calls=0;
+  const curve=(t:number)=>{calls++;return [100*Math.cos(t),100*Math.sin(t),0];};
+  for(let frame=0;frame<30;frame++) {
+    const angle=frame*.12,observer=[100.01*Math.cos(angle),100.01*Math.sin(angle),.01];
+    calls=0;
+    const result=adaptiveTrailTimes(-6,0,.1,256,curve,2*Math.PI,[],observer,state);
+    if(frame>=5)assert.ok(calls<600,`frame ${frame}: ${calls} fresh source evaluations`);
+    assert.ok(result.times.length<=256);
+    assert.equal(result.unresolved.size,0);
+    for(let i=1;i<result.times.length;i++) {
+      const a=curve(result.times[i-1]),b=curve(result.times[i]),delta=b.map((x,j)=>x-a[j]);
+      const length2=delta.reduce((sum,x)=>sum+x*x,0);
+      const u=Math.max(0,Math.min(1,delta.reduce((sum,x,j)=>sum+x*(observer[j]-a[j]),0)/length2));
+      const distance=Math.max(1e-6,Math.hypot(...a.map((x,j)=>x+u*delta[j]-observer[j])));
+      for(let probe=0;probe<=8;probe++) {
+        const fraction=probe/8,p=curve(result.times[i-1]+(result.times[i]-result.times[i-1])*fraction);
+        const error=Math.hypot(...p.map((x,j)=>x-(a[j]+delta[j]*fraction)));
+        assert.ok(error<=distance*.0005+1e-10,`projected error frame ${frame}`);
+      }
+    }
+  }
+});

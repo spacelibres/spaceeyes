@@ -1134,8 +1134,26 @@ fn enforce_camera_collision(
                 .map(|_| id.to_owned())
         })
         .collect();
+    let framing_reference_id = core.camera_framing_target().map(str::to_owned);
+    let framing_reference_position_km = framing_reference_id
+        .as_deref()
+        .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|body| body.position_km);
+    let follow_reference_id = core
+        .camera_observation()
+        .filter(|view| view.mode == "follow")
+        .and_then(|view| view.follow_id.clone());
+    let follow_reference_position_km = follow_reference_id
+        .as_deref()
+        .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|body| body.position_km);
     let status = crate::CameraRenderStatus {
         focused_id: core.focused_object().map(str::to_owned),
+        epoch_tdb_seconds: core.clock().epoch(),
+        framing_reference_id,
+        framing_reference_position_km,
+        follow_reference_id,
+        follow_reference_position_km,
         position_km: safe.to_array(),
         desired_km: desired.to_array(),
         framing_radius_km: orbit.as_ref().map_or(0., |v| v.framing_radius_km),

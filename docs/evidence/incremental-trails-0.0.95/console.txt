@@ -1,0 +1,13 @@
+### Result
+Total messages: 20 (Errors: 9, Warnings: 0)
+Returning 9 messages for level "error"
+
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_cluster_ii_fm5?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_cluster_ii_fm7?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_cluster_ii_fm8?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_escapade_blue?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_dscovr?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_escapade_gold?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_grifex?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_roman_space_telescope?epoch=846972583.005967:0
+[ERROR] Failed to load resource: the server responded with a status of 502 (Bad Gateway) @ http://127.0.0.1:3006/api/solar-dyn/sc_tess?epoch=846972583.005967:0

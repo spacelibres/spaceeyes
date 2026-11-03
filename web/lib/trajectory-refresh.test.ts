@@ -1,6 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {shouldRefreshTrajectory} from "./trajectory-refresh.ts";
+import {shouldRefreshTrajectory,trajectoryWindowDue} from "./trajectory-refresh.ts";
 test("pending work does not bypass the ordinary expired-path interval", () => {
   assert.equal(shouldRefreshTrajectory(true, false, false, 16, 16), true);
   assert.equal(shouldRefreshTrajectory(false, true, false, 16, 16), false);
@@ -11,4 +11,21 @@ test("pending work does not bypass the ordinary expired-path interval", () => {
 test("selected refresh follows its own interval despite ordinary or pending updates", () => {
   assert.equal(shouldRefreshTrajectory(false, true, true, 200, 99), false);
   assert.equal(shouldRefreshTrajectory(false, true, true, 10, 100), true);
+});
+
+
+test("every expired spacecraft is admitted immediately, independent of global orbit cadence",()=>{
+  for(let object=0;object<83;object++) {
+    assert.equal(shouldRefreshTrajectory(false,true,false,0,0,true),true);
+    assert.equal(shouldRefreshTrajectory(false,true,true,0,0,true),true);
+  }
+  assert.equal(shouldRefreshTrajectory(false,false,false,1000,1000,true),false);
+});
+
+
+test("scientific jobs prefetch before forward or reverse coverage expiry",()=>{
+  assert.equal(trajectoryWindowDue([-312,312],200,3600,true,1/30),true);
+  assert.equal(trajectoryWindowDue([-312,312],-200,-3600,true,1/30),true);
+  assert.equal(trajectoryWindowDue([-312,312],0,3600,true,1/30),false);
+  assert.equal(trajectoryWindowDue([-312,312],200,3600,false,1/30),false);
 });

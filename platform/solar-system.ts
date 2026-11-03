@@ -3,7 +3,7 @@ import {TrailHistory, type PreparedHistory} from "./trail-history.ts";
 import {eyesTrailDuration, eyesTrailPhase, eyesTrailBoundaries} from "./eyes-trail-policy.ts";
 import {eyesOrbAutoLength} from "./eyes-trail-auto.ts";
 import {parsePositionSelection,acceptsPositionEpoch,type PositionSelection} from "./position-selection.ts";
-import {adaptiveTrailSteps} from "./adaptive-trail.ts";
+import {AdaptiveTrailState, adaptiveTrailSteps} from "./adaptive-trail.ts";
 import { MAX_TRAIL_DURATION_SECONDS } from "./trajectory-contract.ts";
 import type { TrajectoryConic } from "./trajectory-contract.ts";
 import { compileJointAims } from "./eyes-joints.ts";
@@ -86,6 +86,8 @@ export const solarCatalog = [
     (x) => !baseCatalog.some((b) => b.id === x.id),
   ),
 ];
+const solarCatalogById = new Map(solarCatalog.map(body => [body.id, body]));
+const catalogBody = (id: string) => solarCatalogById.get(id) ?? solarCatalog.find(body => body.id === id);
 export const baseSolarIds = baseCatalog.map((x) => x.id);
 class OrientationOutsideCoverage extends Error {
   readonly coverage: [number,number];
@@ -117,6 +119,7 @@ type HistorySlot = {
   origin: string | undefined;
   epoch: number;
   duration: number;
+  reuse: number;
   policyDuration: number | undefined;
   policyKey: string;
   trackKey: string;
@@ -126,7 +129,7 @@ type HistorySlot = {
 };
 /** Reference frames are resolvable definitions, not display bodies. */
 export function hasDisplayCatalog(id: string): boolean {
-  return solarCatalog.some((item) => item.id === id);
+  return !!catalogBody(id);
 }
 function isOrientationDynamo(c: { type?: unknown; url?: unknown }): boolean {
   return (
@@ -135,6 +138,11 @@ function isOrientationDynamo(c: { type?: unknown; url?: unknown }): boolean {
     /(?:^|\/)(?:ori|quat|quat_v2)$/.test(c.url)
   );
 }
+export type ScientificSourceSnapshot = {
+  id:string;data?:DecodedDyn;ori?:DecodedDyn;parent?:string|null;track?:string;selection?:PositionSelection;
+  oriKey?:string;oriSelection?:PositionSelection;oriAbsence?:PositionSelection;outsideOri?:[number,number];
+  spinAnchors:[number,number][];status?:SolarStatus;
+};
 export class SolarSystemData {
   #maxCachedRecords: number;
   #ctx: PluginContext;
@@ -167,7 +175,9 @@ export class SolarSystemData {
       selection?: string;
     }
   >();
+  #positionStitches = new Map<string, {start:number;end:number;url:string;sha256:string;sourceSha256?:string;fetchedAt:string}[]>();
   #history?: HistorySlot;
+  #trailSampling = new Map<string, {key: string; history: unknown; state: AdaptiveTrailState; before: AdaptiveTrailState; after: AdaptiveTrailState; dependencies: Set<string>; orientationDependencies: Set<string>}>();
   #networkActive = 0;
   #queueAbort = new AbortController();
   #networkQueue: {
@@ -306,6 +316,37 @@ export class SolarSystemData {
     ctx.signal.addEventListener("abort", () => this.dispose(), { once: true });
   }
   /** Internal transaction snapshot; frozen DYN payloads remain shared. */
+  exportScientificSources():ScientificSourceSnapshot[] {
+    const ids=new Set([...this.#states.keys(),...this.#data.keys(),...this.#ori.keys()]);
+    return [...ids].map(id=>({id,data:this.#data.get(id),ori:this.#ori.get(id),parent:this.#dataParents.get(id),track:this.#dataTracks.get(id),selection:this.#dataSelections.get(id),oriKey:this.#oriKeys.get(id),oriSelection:this.#oriSelections.get(id),oriAbsence:this.#oriAbsences.get(id),outsideOri:this.#outsideOri.get(id),spinAnchors:[...(this.#spinAnchors.get(id)??[])],status:this.#states.get(id)}));
+  }
+  importScientificSources(sources:readonly (ScientificSourceSnapshot & {positionChanged?:boolean;orientationChanged?:boolean})[],removed:readonly string[]=[]):void {
+    const assign=<T>(map:Map<string,T>,id:string,value:T|undefined)=>{if(value===undefined)map.delete(id);else map.set(id,value);};
+    for(const id of removed) {
+      for(const [target,sampling] of this.#trailSampling)if(sampling.dependencies.has(id)||sampling.orientationDependencies.has(id))this.#trailSampling.delete(target);
+      for(const map of [this.#data,this.#ori,this.#dataParents,this.#dataTracks,this.#dataSelections,this.#oriKeys,this.#oriSelections,this.#oriAbsences,this.#outsideOri,this.#states,this.#spinAnchors])map.delete(id);
+      this.#trailSampling.delete(id);
+    }
+    for(const source of sources) {
+      const id=source.id;
+      if(!catalogBody(id))throw Error("Unknown scientific source");
+      for(const [target,sampling] of this.#trailSampling)
+        if((source.positionChanged!==false&&sampling.dependencies.has(id)) || (source.orientationChanged!==false&&sampling.orientationDependencies.has(id)))this.#trailSampling.delete(target);
+      if(source.positionChanged!==false) {
+        if(source.data)this.#cache(this.#data,id,source.data);else this.#data.delete(id);
+        assign(this.#dataParents,id,source.parent);assign(this.#dataTracks,id,source.track);assign(this.#dataSelections,id,source.selection);
+      }
+      if(source.orientationChanged!==false) {
+        if(source.ori)this.#cache(this.#ori,id,source.ori);else this.#ori.delete(id);
+        assign(this.#oriKeys,id,source.oriKey);assign(this.#oriSelections,id,source.oriSelection);assign(this.#oriAbsences,id,source.oriAbsence);
+        assign(this.#outsideOri,id,source.outsideOri);this.#spinAnchors.set(id,new Map(source.spinAnchors));
+      }
+      assign(this.#states,id,source.status);
+    }
+    if(this.#data.size>256||this.#ori.size>256||this.cacheStats().records>this.#maxCachedRecords)throw Error("Scientific snapshot budget");
+  }
+  scientificTrailEligible(id:string,epoch:number):boolean {return !this.#historyAt(id,epoch)?.prepared;}
+  scientificTrailDependencies(id:string) {const sampling=this.#trailSampling.get(id);return {position:[...(sampling?.dependencies??[])],orientation:[...(sampling?.orientationDependencies??[])]};}
   checkpoint(): (() => void) & { discard(): void } {
     const generation = this.#generation;
     const published = new Set(this.#published);
@@ -314,6 +355,7 @@ export class SolarSystemData {
     const dataTracks = new Map(this.#dataTracks);
     const dataSelections = new Map(this.#dataSelections);
     const retained = this.#retained ? new Set(this.#retained) : undefined;
+    const positionStitches = new Map(this.#positionStitches);
     const ori = new Map(this.#ori);
     const oriKeys = new Map(this.#oriKeys);
     const oriSelections = new Map(this.#oriSelections);
@@ -344,6 +386,7 @@ export class SolarSystemData {
       dataParents.clear();
       dataTracks.clear();
       dataSelections.clear();
+      positionStitches.clear();
       ori.clear();
       oriKeys.clear();
       oriSelections.clear();
@@ -366,6 +409,8 @@ export class SolarSystemData {
         if (!published.has(id)) this.#ctx.data.remove(id);
       }
       this.#published = new Set(published);
+      this.#trailSampling.clear();
+      this.#positionStitches = new Map(positionStitches);
       this.#data = new Map(data);
       this.#dataParents = new Map(dataParents);
       this.#dataTracks = new Map(dataTracks);
@@ -408,7 +453,7 @@ export class SolarSystemData {
     if(keyframe)return keyframe.referenceId;
     return eyesDefinitions[id]
       ? parentAt(id, epoch)
-      : (solarCatalog.find((x) => x.id === id)?.parentId ?? null);
+      : (catalogBody(id)?.parentId ?? null);
   }
   retain(ids: readonly string[]) {
     const keep = new Set(ids);
@@ -416,10 +461,12 @@ export class SolarSystemData {
       !Array.isArray(ids) ||
       ids.length > 256 ||
       keep.size !== ids.length ||
-      ids.some((id) => !solarCatalog.some((item) => item.id === id))
+      ids.some((id) => !!!catalogBody(id))
     )
       throw Error("Invalid retained scene");
     this.clearTrailHistory();
+    this.#trailSampling.clear();
+    for(const id of this.#positionStitches.keys())if(!keep.has(id))this.#positionStitches.delete(id);
     this.#cancelLoads();
     for (const map of [this.#data, this.#ori, this.#dataParents, this.#dataTracks, this.#dataSelections, this.#outsideOri, this.#oriKeys, this.#oriSelections, this.#oriAbsences])
       for (const id of map.keys()) if (!keep.has(id)) map.delete(id);
@@ -455,11 +502,12 @@ export class SolarSystemData {
       records: count(this.#data) + count(this.#ori),
       positionEntries: this.#data.size,
       orientationEntries: this.#ori.size,
+      trailSamplingEntries: this.#trailSampling.size,
       provenance: this.#provenance.size,
       maxRecords: this.#maxCachedRecords,
     });
   }
-  #cache(map: Map<string, DecodedDyn>, id: string, value: DecodedDyn) {
+  #cache(map: Map<string, DecodedDyn>, id: string, value: DecodedDyn, certifiedExtension = false) {
     const ids = new Set([...this.#data.keys(), ...this.#ori.keys(), ...this.#oriKeys.keys(), id]);
     if (ids.size > 256) throw Error("DYN cached object budget exceeded");
     const count = (d?: DecodedDyn) =>
@@ -469,10 +517,54 @@ export class SolarSystemData {
       this.#maxCachedRecords
     )
       throw Error("DYN cached record budget exceeded");
+    if (!certifiedExtension) for (const [target, sampling] of this.#trailSampling)
+      if ((map===this.#ori ? sampling.orientationDependencies : sampling.dependencies).has(id))this.#trailSampling.delete(target);
     map.set(id, value);
   }
   coverage(id: string) {
     return this.#states.get(id)?.coverage;
+  }
+  /** Fetch a real adjacent position chunk without retiring the current ready source. */
+  async prefetchPosition(id:string, requestedEpoch:number, liveEpoch:number, retainSeconds:number):Promise<boolean> {
+    const previous=this.#data.get(id), evidence=this.#provenance.get(id+":orb");
+    if(!previous || previous.kind!=="inline" || previous.type==="ori" || !evidence || !Number.isFinite(retainSeconds) || retainSeconds<=0)return false;
+    if(requestedEpoch>=previous.coverage.start && requestedEpoch<=previous.coverage.end)return false;
+    const generation=this.#loadGeneration, track=this.#dataTracks.get(id),parent=this.#dataParents.get(id),selection=this.#dataSelections.get(id);
+    if(track!==positionTrackKey(id,requestedEpoch) || parent!==this.parentAt(id,requestedEpoch) || !acceptsPositionEpoch(selection,requestedEpoch))return false;
+    const result=await this.#read(`/api/solar-dyn/${id}?epoch=${requestedEpoch}`,this.#queueAbort.signal);
+    const next=decodeDyn(result.bytes);
+    if(generation!==this.#loadGeneration || this.#data.get(id)!==previous || (this.#retained && !this.#retained.has(id)))return false;
+    if(next.kind!=="inline" || next.type!==previous.type || next.version!==previous.version ||
+      next.gravitationalParameter1!==previous.gravitationalParameter1 || next.gravitationalParameter2!==previous.gravitationalParameter2 ||
+      JSON.stringify(result.controller)!==JSON.stringify(selection) || !acceptsPositionEpoch(result.controller,requestedEpoch) ||
+      requestedEpoch<next.coverage.start || requestedEpoch>next.coverage.end ||
+      next.coverage.start>previous.coverage.end || previous.coverage.start>next.coverage.end)return false;
+    const nextRecords=new Map(next.records.map(record=>[record.time,record] as const));
+    for(const record of previous.records)
+      if(record.time>=next.coverage.start && record.time<=next.coverage.end && JSON.stringify(nextRecords.get(record.time))!==JSON.stringify(record))return false;
+    const records=new Map(previous.records.map(record=>[record.time,record] as const));
+    for(const record of next.records) {
+      if(record.time>=previous.coverage.start && record.time<=previous.coverage.end && JSON.stringify(records.get(record.time))!==JSON.stringify(record))return false;
+      records.set(record.time,record as typeof previous.records[number]);
+    }
+    const ordered=[...records.values()].sort((a,b)=>a.time-b.time);
+    const lower=Math.min(liveEpoch-2*retainSeconds,requestedEpoch<liveEpoch?next.coverage.start:liveEpoch),
+      upper=Math.max(liveEpoch+2*retainSeconds,requestedEpoch>liveEpoch?next.coverage.end:liveEpoch);
+    let first=ordered.findIndex(record=>record.time>=lower);if(first<0)first=ordered.length-1;first=Math.max(0,first-1);
+    let last=ordered.findIndex(record=>record.time>upper);if(last<0)last=ordered.length-1;
+    const kept=ordered.slice(first,last+1);
+    if(kept.length<2)return false;
+    const coverage={start:Math.max(kept[0].time,Math.min(previous.coverage.start,next.coverage.start)),end:Math.min(kept.at(-1)!.time,Math.max(previous.coverage.end,next.coverage.end))};
+    if(liveEpoch<coverage.start || liveEpoch>coverage.end)return false;
+    const pieces=[...(this.#positionStitches.get(id)??[{start:previous.coverage.start,end:previous.coverage.end,...evidence}]),
+      {start:next.coverage.start,end:next.coverage.end,url:result.url,...result.evidence}].filter(piece=>piece.end>=coverage.start && piece.start<=coverage.end);
+    if(pieces.length>64)return false;
+    this.#cache(this.#data,id,{...previous,coverage,records:kept} as DecodedDyn,true);
+    this.#positionStitches.set(id,pieces);
+    this.#provenance.set(id+":orb",{url:result.url,...result.evidence,selection:JSON.stringify({stitched:pieces})});
+    const status=this.#states.get(id);
+    if(status?.status==="ready")this.#states.set(id,{...status,coverage:this.#phaseCoverage(id,liveEpoch,coverage.start,coverage.end)});
+    return true;
   }
   needsPositionRefresh(id:string,epoch:number):boolean {
     return this.#data.has(id) && this.#positionSource(id,epoch) === "dyn" &&
@@ -506,7 +598,7 @@ export class SolarSystemData {
     const generation = this.#loadGeneration;
     await Promise.all(
       ids.map(async (id) => {
-        const item = solarCatalog.find((x) => x.id === id);
+        const item = catalogBody(id);
         if (!item) throw Error("Unknown object");
         if (this.#abort.signal.aborted || generation !== this.#loadGeneration)
           return;
@@ -660,6 +752,7 @@ export class SolarSystemData {
               (this.#retained && !this.#retained.has(id))
             )
               return;
+            this.#positionStitches.delete(id);
             this.#cache(this.#data, id, d);
             this.#provenance.set(id + ":orb", {
               url: result.url,
@@ -939,7 +1032,9 @@ export class SolarSystemData {
     positions: Map<string, [number, number, number]>;
   } | undefined;
   #positionStack: string[] = [];
+  #positionDependenciesCapture?: Set<string>;
   position(id: string, t: number): [number, number, number] {
+    this.#positionDependenciesCapture?.add(id);
     if (this.#positionStack.includes(id))
       throw Error(
         "Position dependency cycle: " +
@@ -962,7 +1057,7 @@ export class SolarSystemData {
   #positionAt(id: string, t: number): [number, number, number] {
     if (id === "sun") return [0, 0, 0];
     if (this.needsPositionRefresh(id,t)) throw Error("Outside source controller coverage");
-    const item = solarCatalog.find((x) => x.id === id),
+    const item = catalogBody(id),
       d = this.#data.get(id);
     if (!item) {
       const controllers = eyesDefinitions[id]?.controllers ?? [];
@@ -1024,8 +1119,10 @@ export class SolarSystemData {
     );
   }
   #orientationStack: string[] = [];
+  #orientationDependenciesCapture?: Set<string>;
 
   #orientationAt(id: string, t: number): Quat {
+    this.#orientationDependenciesCapture?.add(id);
     if (this.#orientationStack.includes(id))
       throw Error(
         "Orientation dependency cycle: " +
@@ -1144,6 +1241,7 @@ export class SolarSystemData {
   }
   /** Recovered Entity.getVelocityAtTime: controller-local velocity, no ancestor sum. */
   sourceVelocity(id: string, t: number): Vec3 {
+    this.#positionDependenciesCapture?.add(id);
     if (id === "sun") return [0, 0, 0];
     const keyframe=eyesPositionKeyframe(id,t);if(keyframe)return keyframe.velocity;
     if (this.needsPositionRefresh(id,t)) throw Error("Outside source controller coverage");
@@ -1471,11 +1569,11 @@ export class SolarSystemData {
     return slot?.id === id && slot.origin === (eyesTrailPhase(id,epoch).relativeToEntity || this.parentAt(id,epoch) || undefined) && slot.policyKey===eyesTrailPhase(id,epoch).key &&
       slot.policyDuration === eyesTrailDuration(id, epoch) &&
       slot.trackKey === positionTrackKey(id,epoch) &&
-      Math.abs(epoch - slot.epoch) <= slot.duration / 32 ? slot : undefined;
+      Math.abs(epoch - slot.epoch) <= slot.reuse ? slot : undefined;
   }
   /** Prepare separate historical sources without publishing states or changing time. */
-  async prepareTrailHistory(id: string, epoch: number): Promise<boolean> {
-    if (solarCatalog.find(body => body.id === id)?.kind !== "spacecraft" || this.status(id)?.status !== "ready") return false;
+  async prepareTrailHistory(id: string, epoch: number, predictive = false): Promise<boolean> {
+    if (catalogBody(id)?.kind !== "spacecraft" || this.status(id)?.status !== "ready") return false;
     const policy=eyesTrailPhase(id,epoch);
     const origin=policy.relativeToEntity || this.parentAt(id,epoch) || undefined;
     const existing = this.#historyAt(id, epoch);
@@ -1483,12 +1581,29 @@ export class SolarSystemData {
       if (existing.pending) return existing.pending;
       return false;
     }
+    const displaySampling=this.#trailSampling.get(id);
+    let local:ReturnType<SolarSystemData["trailSamples"]>;
+    let alreadyCovered=false;
+    try {
+      // A lightweight coverage probe must never replace the live 512-point
+      // selected-camera allocation merely because its own budget is eight.
+      local=this.trailSamples(id,epoch,8);
+      if(predictive) {
+        const probe=this.trailSampleSteps(id,epoch,8,false,undefined,local.durationSeconds);
+        let step=probe.next();while(!step.done)step=probe.next();
+        const policyBoundaries=eyesTrailBoundaries(id);
+        const desiredStart=Math.max(epoch-2*local.durationSeconds,...policyBoundaries.filter(time=>time<=epoch-local.durationSeconds));
+        const desiredEnd=Math.min(epoch+local.durationSeconds,...policyBoundaries.filter(time=>time>=epoch));
+        alreadyCovered=step.value.breakIndices.length===0 && step.value.epochsTdbSeconds[0]<=desiredStart+1e-6 && step.value.epochsTdbSeconds.at(-1)!>=desiredEnd-1e-6;
+      } else alreadyCovered=local.epochsTdbSeconds[0]<=epoch-local.durationSeconds+1e-6 && local.epochsTdbSeconds.at(-1)!>=epoch-1e-6;
+    } finally {
+      if(displaySampling)this.#trailSampling.set(id,displaySampling);
+      else this.#trailSampling.delete(id);
+    }
+    if(alreadyCovered)return false;
     this.clearTrailHistory();
-    const local = this.trailSamples(id, epoch, 8);
-    if (local.epochsTdbSeconds[0] <= epoch - local.durationSeconds + 1e-6 &&
-        local.epochsTdbSeconds.at(-1)! >= epoch - 1e-6) return false;
     // Pad both ends for bidirectional reuse without truncating the display window.
-    const start = epoch - local.durationSeconds * (1 + 1 / 32), end = epoch + local.durationSeconds * (1 / 16 + 1 / 32);
+    const start = epoch - local.durationSeconds * (predictive ? 2 : 1 + 1 / 32), end = epoch + local.durationSeconds * (predictive ? 1 : 1 / 16 + 1 / 32);
     const manager = new TrailHistory({
       parentAt:(target,time)=>this.parentAt(target,time), boundaries: target => [...(eyesDefinitions[target]?.parents ?? []).map(([time]) => Number(time)),...positionTrackBoundaries(target),...eyesTrailBoundaries(target)],
       phaseAt:(target,time)=>positionFrameKey(target,time,origin),
@@ -1507,7 +1622,7 @@ export class SolarSystemData {
         },
       }),
     });
-    const slot: HistorySlot = {id,origin,epoch,duration:local.durationSeconds,policyDuration:eyesTrailDuration(id,epoch),trackKey:positionTrackKey(id,epoch),policyKey:policy.key,manager};
+    const slot: HistorySlot = {id,origin,epoch,duration:local.durationSeconds,reuse:local.durationSeconds*(predictive? .5:1/32),policyDuration:eyesTrailDuration(id,epoch),trackKey:positionTrackKey(id,epoch),policyKey:policy.key,manager};
     this.#history = slot;
     slot.pending = manager.prepare(id, Math.max(start,Math.min(end,epoch)), start, end, origin, undefined, {referenceOrientation:policy.relativeToEntityOrientation}).then(prepared => {
       if (this.#history !== slot) {prepared.dispose(); return false;}
@@ -1526,7 +1641,7 @@ export class SolarSystemData {
     const work=this.trailSampleSteps(id,epoch,count,detailed);
     let step=work.next();while(!step.done)step=work.next();return step.value;
   }
-  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false, observerWorld?: readonly number[]) {
+  *trailSampleSteps(id: string, epoch: number, count = 256, detailed = false, observerWorld?: readonly number[], guardSeconds = 0) {
     if (!Number.isInteger(count) || count < 8 || count > 4096)
       throw Error("Trajectory sample budget");
     if (!Number.isFinite(epoch) || this.status(id)?.status !== "ready")
@@ -1552,22 +1667,43 @@ export class SolarSystemData {
     // revolutions with unresolved chords or cross a source coverage gap.
     const policy=eyesTrailPhase(id,epoch);
     const origin=policy.relativeToEntity || this.parentAt(id,epoch) || undefined;
-    let history = this.#historyAt(id, epoch)?.prepared;
+    const preparedHistory = this.#historyAt(id, epoch)?.prepared;
+    let history = preparedHistory;
     if (history) try {history.position(epoch);} catch {history = undefined;}
+    const samplingKey = JSON.stringify([policy.key, origin, policy.relativeToEntityOrientation, positionTrackKey(id, epoch), count,guardSeconds>0]);
+    let sampling = this.#trailSampling.get(id);
+    if (!sampling || sampling.key !== samplingKey || sampling.history !== history) {
+      const dependencies=new Set<string>();
+      for(const root of [id,origin]) {
+        let target=root;
+        while(target && !dependencies.has(target)) {
+          dependencies.add(target);
+          target=this.parentAt(target,epoch) ?? undefined;
+        }
+      }
+      sampling = {key: samplingKey, history, state: new AdaptiveTrailState(), before: new AdaptiveTrailState(), after: new AdaptiveTrailState(), dependencies, orientationDependencies:new Set()};
+      this.#trailSampling.set(id, sampling);
+    }
     const failedProbes = new Set<number>();
     const relativeCache = new Map<number, number[]>();
-    const relative = (t: number) => {
+    const scientificRelative = (t: number) => {
       if (history) return history.position(t);
       const cached = relativeCache.get(t);
       if (cached) return cached;
       let world: [number, number, number];
       let parent: number[];
+      const previousPublicationCache=this.#publicationCache;
+      this.#publicationCache={epoch:t,positions:new Map()};
       try {
+        // Child composition and subtraction share the same scientific ancestor
+        // evaluation at this probe epoch; the scope never crosses a yield.
         world = this.position(id, t);
         parent = origin ? this.position(origin, t) : [0, 0, 0];
       } catch (error) {
         failedProbes.add(t);
         throw error;
+      } finally {
+        this.#publicationCache=previousPublicationCache;
       }
       let point = world.map((v, i) => v - parent[i]);
       if(policy.relativeToEntityOrientation && origin) {
@@ -1577,14 +1713,22 @@ export class SolarSystemData {
       relativeCache.set(t, point);
       return point;
     };
+    const captureScientific = <T>(evaluate:()=>T):T => {
+      const previous=this.#orientationDependenciesCapture,previousPositions=this.#positionDependenciesCapture;
+      this.#orientationDependenciesCapture=sampling.orientationDependencies;
+      this.#positionDependenciesCapture=sampling.dependencies;
+      try {return evaluate();} finally {this.#orientationDependenciesCapture=previous;this.#positionDependenciesCapture=previousPositions;}
+    };
+    const relative = (t:number) => captureScientific(()=>scientificRelative(t));
+    const trailOrientation = (target:string,time:number) => captureScientific(()=>this.orientation(target,time));
     // Renderer freezes the parent frame at the current epoch for this path.
     // Measure visual error in that same frame, never against heliocentric radius.
     let observer: number[] | undefined;
     if(detailed && observerWorld?.length===3 && observerWorld.every(Number.isFinite)) {
-      const parent=origin ? this.position(origin,epoch) : [0,0,0];
+      const parent=origin ? captureScientific(()=>this.position(origin,epoch)) : [0,0,0];
       observer=observerWorld.map((x,i)=>x-parent[i]);
       if(policy.relativeToEntityOrientation && origin) {
-        const q=this.orientation(origin,epoch);
+        const q=trailOrientation(origin,epoch);
         observer=rotateVector(observer as [number,number,number],[q[0],-q[1],-q[2],-q[3]]);
       }
     }
@@ -1615,10 +1759,10 @@ export class SolarSystemData {
     }
     if (d?.kind === "inline" && d.type === "orb" && this.#positionSource(id,epoch) === "dyn") {
       try {
-        const at=this.position(id,epoch);
-        const parent=origin ? this.position(origin,epoch) : [0,0,0];
+        const at=captureScientific(()=>this.position(id,epoch));
+        const parent=origin ? captureScientific(()=>this.position(origin,epoch)) : [0,0,0];
         const local=at.map((x,i)=>x-parent[i]) as [number,number,number];
-        const autoLength=eyesOrbAutoLength(d,epoch,local,this.sourceVelocity(id,epoch));
+        const autoLength=eyesOrbAutoLength(d,epoch,local,captureScientific(()=>this.sourceVelocity(id,epoch)));
         if (autoLength !== undefined) inferredPeriod=autoLength;
       } catch {
         /* Unsupported rotating frames retain the existing finite fallback. */
@@ -1626,7 +1770,7 @@ export class SolarSystemData {
     }
     const authoredDuration = policy.relativeStartTime ? policy.startTime : undefined;
     if (authoredDuration === 0) throw Error("Trail disabled by source policy");
-    const isSpacecraft = solarCatalog.find(body => body.id === id)?.kind === "spacecraft";
+    const isSpacecraft = catalogBody(id)?.kind === "spacecraft";
     let durationSeconds = authoredDuration ?? (isSpacecraft
       ? Math.max(1, Math.min(MAX_TRAIL_DURATION_SECONDS, inferredPeriod))
       : Math.min(
@@ -1665,11 +1809,29 @@ export class SolarSystemData {
       if(start>=end)throw Error('Trail disabled by source policy');
       // Source-authored edges move independently; renderer clips against actual samples.
       drawRangeTdbSeconds=[rawStart,rawEnd];
-      const reuse=durationSeconds/(detailed?1024:16);
+      const reuse=guardSeconds>0 ? Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)) : durationSeconds/(detailed?1024:16);
       const boundaries=eyesTrailBoundaries(id);
       if(policy.relativeStartTime) start=Math.max(coveredStart,start-reuse,...boundaries.filter(t=>t<=start));
       if(policy.relativeEndTime) end=Math.min(coveredEnd,end+reuse,...boundaries.filter(t=>t>=end));
-      ({times,unresolved}=yield* adaptiveTrailSteps(start,Math.max(start,Math.min(end,epoch)),end,count,relative,period,[...(history?.boundaries??[]),...drawRangeTdbSeconds],observer));
+      if(guardSeconds>0) {
+        const visibleStart=Math.max(start,Math.min(end,rawStart));
+        const visibleEnd=Math.max(visibleStart,Math.min(end,rawEnd));
+        times=[];unresolved=new Set<number>();
+        for(const [a,b,anchor,retained] of [
+          [visibleStart,visibleEnd,Math.max(visibleStart,Math.min(visibleEnd,epoch)),sampling.state],
+          [start,visibleStart,visibleStart,sampling.before],
+          [visibleEnd,end,visibleEnd,sampling.after],
+        ] as const) {
+          if(a>=b)continue;
+          const part=yield* adaptiveTrailSteps(a,anchor,b,count,relative,period,history?.boundaries??[],observer,retained,true);
+          times.push(...part.times);
+          for(const t of part.unresolved)unresolved.add(t);
+        }
+        times=[...new Set(times)].sort((a,b)=>a-b);
+        if(times.length>4096)throw Error("Predictive trail per-object sample capacity");
+      } else {
+        ({times,unresolved}=yield* adaptiveTrailSteps(start,Math.max(start,Math.min(end,epoch)),end,count,relative,period,[...(history?.boundaries??[]),...drawRangeTdbSeconds.filter(t=>!sampling.state.covers(t))],observer,sampling.state,true));
+      }
     } else for (let attempt = 0; attempt <= 8; attempt++) {
       relativeCache.clear();
       start = Math.max(coveredStart, epoch - durationSeconds);
@@ -1733,7 +1895,7 @@ export class SolarSystemData {
     const failures = [...failedProbes].sort((a, b) => a - b);
     let failureIndex = 0;
     for (let i = 1; i < times.length; i++) {
-      yield;
+      if (i % 16 === 1) yield;
       while (
         failureIndex < failures.length &&
         failures[failureIndex] < times[i - 1]
@@ -1747,10 +1909,12 @@ export class SolarSystemData {
     const points: [number, number, number][] = [];
     const breakIndices: number[] = [];
     let gap = false;
+    let assembled = 0;
     for (const t of [...new Set(times)].sort((a, b) => a - b)) {
-      yield;
+      const cached = sampling.state.samples.get(t) ?? sampling.before.samples.get(t) ?? sampling.after.samples.get(t);
+      if (!cached || assembled++ % 16 === 0) yield;
       try {
-        const point = relative(t) as [number, number, number];
+        const point = (cached ?? relative(t)) as [number, number, number];
         if (!point.every(Number.isFinite)) throw Error("Invalid trail point");
         if ((gap || unresolved.has(t)) && points.length)
           breakIndices.push(points.length);
@@ -1763,7 +1927,9 @@ export class SolarSystemData {
       }
     }
     if (points.length < 2) throw Error("Trail unavailable");
+    const sourceCurrent = () => this.#trailSampling.get(id) === sampling && this.#historyAt(id,epoch)?.prepared === preparedHistory;
     return {
+      get sourceCurrent() {return sourceCurrent();},
       points,
       epochsTdbSeconds,
       originId,
@@ -1777,13 +1943,13 @@ export class SolarSystemData {
       breakIndices,
       durationSeconds,
       refreshRange: [
-        Math.max(rangeStart,coveredStart,...eyesTrailBoundaries(id).filter(t=>t<=epoch),epoch-durationSeconds/(detailed?1024:16)),
-        Math.min(rangeEnd,coveredEnd,...eyesTrailBoundaries(id).filter(t=>t>=epoch),epoch+durationSeconds/(detailed?1024:16)),
+        Math.max(rangeStart,coveredStart,...eyesTrailBoundaries(id).filter(t=>t<=epoch),epoch-(guardSeconds>0?Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)):durationSeconds/(detailed?1024:16))),
+        Math.min(rangeEnd,coveredEnd,...eyesTrailBoundaries(id).filter(t=>t>=epoch),epoch+(guardSeconds>0?Math.min(durationSeconds,Math.max(durationSeconds/(detailed?1024:16),guardSeconds)):durationSeconds/(detailed?1024:16))),
       ] as [number, number],
     };
   }
   dispose() {
-    this.clearTrailHistory();    this.#generation++;
+    this.clearTrailHistory();    this.#trailSampling.clear(); this.#positionStitches.clear(); this.#generation++;
     this.#loadGeneration++;
     this.#abort.abort();
     for (const id of this.#published)

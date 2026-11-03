@@ -1495,6 +1495,23 @@ test("automatic deep-space spacecraft history is not truncated to 30 days or by 
       assert.ok(trail.epochsTdbSeconds.at(-1)!>epoch);
       assert.ok(trail.points.length <= count);
     }
+    const next=source.trailSamples("sc_psyche",epoch+1,128);
+    assert.equal(next.drawEpochTdbSeconds,epoch+1);
+    assert.ok(!next.epochsTdbSeconds.includes(epoch+1),"moving drawEnd must not reinsert a certified interior head");
+    const headIndex=next.epochsTdbSeconds.findIndex(t=>t>epoch+1);
+    assert.ok(headIndex>0 && !next.breakIndices.includes(headIndex),"exact live head remains inside contiguous scientific coverage");
+    const predictiveWork=source.trailSampleSteps("sc_psyche",epoch,128,false,undefined,period/2);
+    let predictiveStep=predictiveWork.next();while(!predictiveStep.done)predictiveStep=predictiveWork.next();
+    const predictive=predictiveStep.value;
+    assert.equal(predictive.durationSeconds,source.trailSamples("sc_psyche",epoch,128).durationSeconds);
+    assert.equal(predictive.drawRangeTdbSeconds[0],epoch-period);
+    assert.equal(predictive.drawRangeTdbSeconds[1],epoch);
+    assert.ok(predictive.epochsTdbSeconds[0]<=epoch-period*1.5);
+    assert.ok(predictive.epochsTdbSeconds.at(-1)!>=epoch+period*.5);
+    assert.ok(predictive.points.length<=3*128,"independent guards have a bounded additive allocation");
+    const {adaptiveTrailTimes}=await import("../adaptive-trail.ts");
+    const visible=adaptiveTrailTimes(epoch-period,epoch,epoch,128,t=>source.position("sc_psyche",t),period);
+    assert.deepEqual(predictive.epochsTdbSeconds.filter(t=>t>=epoch-period && t<=epoch),visible.times,"visible allocation is independent of additional guard work");
   } finally { source.dispose(); }
 });
 
@@ -1858,4 +1875,182 @@ test('ORI multi-source absence shares the 256-object budget and retain/rollback 
   await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'unavailable');assert.match(source.status(ids[256])?.orientationError??'',/budget/i);
   const restore=source.checkpoint();source.retain([ids[256]]);await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'ready');restore();await source.load([ids[256]],5);assert.equal(source.status(ids[256])?.orientationStatus,'unavailable');
  }finally{source.dispose();solarCatalog.splice(originalLength);for(const id of ids)delete eyesDefinitions[id];}
+});
+
+
+test("same-track DYN replacement and retain release retained scientific sampling", async () => {
+  const {ctx}=context();
+  let wide=false;
+  const source=new SolarSystemData(ctx,{fetch:async()=>{
+    const bytes=orb(wide?20:2);
+    for(let i=0;i<2;i++)new DataView(bytes.buffer).setFloat64(28+i*72+24,.1,true);
+    if(wide)new DataView(bytes.buffer).setFloat64(28+72,30,true);
+    return new Response(bytes);
+  }});
+  try {
+    await source.load(["moon"],5,[]);
+    source.trailSamples("moon",5,32);
+    assert.equal(source.cacheStats().trailSamplingEntries,1);
+    await source.load(["mars"],5,[]);
+    assert.equal(source.cacheStats().trailSamplingEntries,1,"unrelated DYN loading preserves retained Moon work");
+    wide=true;
+    await source.load(["moon"],20,[]);
+    assert.equal(source.cacheStats().trailSamplingEntries,0,"new coverage payload invalidates old scientific certificates");
+    source.trailSamples("moon",20,32);
+    assert.equal(source.cacheStats().trailSamplingEntries,1);
+    source.retain([]);
+    assert.equal(source.cacheStats().trailSamplingEntries,0);
+  } finally {source.dispose();}
+});
+
+
+test("active scientific trail rejects source replacement between cooperative steps and retries",async()=>{
+  const {latestTrajectory}=await import("../../web/lib/trajectory-work.ts");
+  const {ctx}=context();
+  let radius=2,builds=0;
+  const source=new SolarSystemData(ctx,{fetch:async()=>{
+    const bytes=orb(radius);
+    for(let i=0;i<2;i++)new DataView(bytes.buffer).setFloat64(28+i*72+24,.1,true);
+    return new Response(bytes);
+  }});
+  try {
+    await source.load(["moon"],5,[]);
+    const work=latestTrajectory(()=>5,epoch=>{builds++;return source.trailSampleSteps("moon",epoch,32);},value=>value.sourceCurrent)();
+    assert.equal(work.next().done,false);
+    source.retain([]);
+    radius=20;
+    source.retain(["moon","earth","sun"]);
+    await source.load(["moon"],5,[]);
+    let result=work.next();while(!result.done)result=work.next();
+    assert.equal(builds,2);
+    assert.equal(result.value.sourceCurrent,true);
+    for(let i=0;i<result.value.points.length;i++) {
+      const at=result.value.epochsTdbSeconds[i];
+      const expected=source.position("moon",at).map((v,j)=>v-source.position("earth",at)[j]);
+      assert.ok(result.value.points[i].every((v,j)=>Math.abs(v-expected[j])<1e-9));
+    }
+    source.retain([]);
+    assert.equal(result.value.sourceCurrent,false,"even completed ready work is invalidated before publication");
+  } finally {source.dispose();}
+});
+
+
+test("prepared-history gap fallback remains current instead of retrying forever",async()=>{
+  const {TrailHistory}=await import("../trail-history.ts");
+  const original=TrailHistory.prototype.prepare;
+  const {ctx}=context(),epoch=880000000;
+  const source=new SolarSystemData(ctx,{fetch:async()=>{
+    const bytes=orb(1e8),view=new DataView(bytes.buffer);
+    for(let i=0;i<2;i++) {
+      view.setFloat64(28+i*72,epoch-1000000+i*2000000,true);
+      view.setFloat64(28+i*72+24,.001,true);
+    }
+    return new Response(bytes);
+  }});
+  TrailHistory.prototype.prepare=async function(...args) {
+    const prepared=await original.apply(this,args);
+    const position=prepared.position;
+    let checked=false;
+    return {...prepared,position:(time:number)=>{
+      if(checked)throw Error("prepared source gap");
+      checked=true;
+      return position(time);
+    }};
+  };
+  try {
+    await source.load(["sc_psyche"],epoch,[]);
+    assert.equal(await source.prepareTrailHistory("sc_psyche",epoch),true);
+    const fallback=source.trailSamples("sc_psyche",epoch,64);
+    assert.equal(fallback.sourceCurrent,true);
+    assert.ok(fallback.points.length>=2);
+  } finally {TrailHistory.prototype.prepare=original;source.dispose();}
+});
+
+
+test("adjacent real DYN prefetch preserves the current ready interval and stitches continuous source evidence",async()=>{
+  const {ctx}=context();
+  let conflict=false,gap=false;
+  const source=new SolarSystemData(ctx,{fetch:async input=>{
+    const at=Number(new URL(String(input),"http://fixture").searchParams.get("epoch"));
+    const bytes=orb(2),view=new DataView(bytes.buffer);
+    if(at>10)for(let i=0;i<2;i++)view.setFloat64(28+i*72,(gap?11:10)+i*10,true);
+    if(conflict && at>10)view.setFloat64(28+8,3,true);
+    return new Response(bytes);
+  }});
+  try {
+    await source.load(["moon"],5,[]);
+    const old=source.position("moon",5);
+    assert.equal(await source.prefetchPosition("earth",11,5,20),true);
+    assert.equal(await source.prefetchPosition("moon",11,5,20),true);
+    assert.equal(source.status("moon")?.status,"ready");
+    assert.deepEqual(source.coverage("moon"),[0,20]);
+    assert.deepEqual(source.position("moon",5),old);
+    assert.ok(source.position("moon",15).every(Number.isFinite));
+    assert.ok(source.cacheStats().records<=1000000);
+  } finally {source.dispose();}
+  for(const mode of ["conflict","gap"]) {
+    conflict=mode==="conflict";gap=mode==="gap";
+    const rejected=new SolarSystemData(ctx,{fetch:async input=>{
+      const at=Number(new URL(String(input),"http://fixture").searchParams.get("epoch"));
+      const bytes=orb(2),view=new DataView(bytes.buffer);
+      if(at>10)for(let i=0;i<2;i++)view.setFloat64(28+i*72,(gap?11:10)+i*10,true);
+      if(conflict && at>10)view.setFloat64(28+8,3,true);
+      return new Response(bytes);
+    }});
+    try {
+      await rejected.load(["moon"],5,[]);
+      assert.equal(await rejected.prefetchPosition("moon",11,5,20),false,mode);
+      assert.deepEqual(rejected.coverage("moon"),[0,10]);
+    } finally {rejected.dispose();}
+  }
+});
+
+
+test("mesh-only ORI loads preserve trails while sampled rotating-reference ORI invalidates them",async()=>{
+  for(const rotating of [false,true]) {
+    const {ctx}=context(),oldMoon=eyesDefinitions.moon.controllers,oldEarth=eyesDefinitions.earth.controllers;
+    const source=new SolarSystemData(ctx,{fetch:async input=>{
+      const text=String(input),at=Number(new URL(text,"http://fixture").searchParams.get("epoch"));
+      if(text.includes("type=ori"))return new Response(orientation(at>10?10:0));
+      const bytes=orb(2),view=new DataView(bytes.buffer);
+      view.setFloat64(28+72,30,true);
+      for(let i=0;i<2;i++)view.setFloat64(28+i*72+24,.1,true);
+      return new Response(bytes);
+    }});
+    try {
+      eyesDefinitions.earth.controllers=[{type:"dynamo",url:"earth/sun"},{type:"dynamo",url:"earth/ori"}];
+      eyesDefinitions.moon.controllers=[{type:"dynamo",url:"moon/earth"},{type:"dynamo",url:"moon/ori"},
+        ...(rotating?[{type:"rotateByEntityOrientation",entityForOrientation:"earth",rotatingPosition:true,rotatingOrientation:false}]:[])];
+      await source.load(["moon"],5,[]);
+      const trail=source.trailSamples("moon",5,32);
+      assert.equal(trail.sourceCurrent,true);
+      await source.load(["moon"],5,["moon"]);
+      assert.equal(trail.sourceCurrent,true,"own mesh attitude is not a trail-position dependency");
+      if(rotating) {
+        await source.load(["earth"],15,["earth"]);
+        assert.equal(trail.sourceCurrent,false,"sampled rotating reference attitude invalidates dependent science");
+      }
+    } finally {source.dispose();eyesDefinitions.moon.controllers=oldMoon;eyesDefinitions.earth.controllers=oldEarth;}
+  }
+});
+
+
+test("native ISS predictive coverage avoids private history and preserves its full display allocation",async()=>{
+  const {ctx}=context(),epoch=880000000;
+  const source=new SolarSystemData(ctx,{fetch:async()=>{
+    const bytes=orb(10000),view=new DataView(bytes.buffer);
+    for(let i=0;i<2;i++) {
+      view.setFloat64(28+i*72,epoch-100000+i*200000,true);
+      view.setFloat64(28+i*72+24,.001,true);
+    }
+    return new Response(bytes);
+  }});
+  try {
+    await source.load(["sc_iss"],epoch,[]);
+    const work=source.trailSampleSteps("sc_iss",epoch,512,true,undefined,7200);
+    let step=work.next();while(!step.done)step=work.next();
+    assert.equal(step.value.sourceCurrent,true);
+    assert.equal(await source.prepareTrailHistory("sc_iss",epoch,true),false);
+    assert.equal(step.value.sourceCurrent,true,"the eight-point coverage probe never replaces the full visible sampler");
+  } finally {source.dispose();}
 });

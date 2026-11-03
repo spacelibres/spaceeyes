@@ -193,23 +193,33 @@ fn dense_trails_keep_a_bounded_replaceable_session_budget() {
         },
     )
     .unwrap();
-    for id in ["a", "b", "c", "d", "e"] {
+    let ids = [
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+    ];
+    for id in ids {
         core.register_object("s", id).unwrap();
     }
-    for id in ["a", "b", "c", "d"] {
+    for id in &ids[..4] {
+        core.set_annotation("s", "p", id, Some(vec![[1., 0., 0.]; 4096]), None)
+            .unwrap();
+    }
+    // Scientific guard coverage can exceed the previous 16,384-point pool.
+    core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]]), None)
+        .unwrap();
+    for id in &ids[4..12] {
         core.set_annotation("s", "p", id, Some(vec![[1., 0., 0.]; 4096]), None)
             .unwrap();
     }
     assert_eq!(
-        core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]]), None),
+        core.set_annotation("s", "p", "m", Some(vec![[1., 0., 0.]]), None),
         Err(CoreError::InvalidVisual)
     );
     core.set_annotation("s", "p", "a", Some(vec![[1., 0., 0.]; 160]), None)
         .unwrap();
-    core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]; 3936]), None)
+    core.set_annotation("s", "p", "m", Some(vec![[1., 0., 0.]; 3936]), None)
         .unwrap();
     assert_eq!(
-        core.set_annotation("s", "p", "e", Some(vec![[1., 0., 0.]; 3937]), None),
+        core.set_annotation("s", "p", "m", Some(vec![[1., 0., 0.]; 3937]), None),
         Err(CoreError::InvalidVisual)
     );
     assert_eq!(
