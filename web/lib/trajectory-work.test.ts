@@ -1,6 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { TrajectoryWorkQueue } from "./trajectory-work.ts";
+import { TrajectoryWorkQueue,latestTrajectory } from "./trajectory-work.ts";
+
+test("accelerated pending trajectories capture simulation epoch only when admitted",()=>{
+ const q=new TrajectoryWorkQueue<number>(()=>0);let epoch=846972583.005967;const samples:number[]=[];
+ for(const id of ['busy-a','busy-b'])q.enqueue({objectId:id,revision:1,create:function*(){yield;yield;return 0;},commit:()=>{}});
+ q.enqueue({objectId:'satellite',revision:1,create:latestTrajectory(()=>epoch,function*(time){return time;}),commit:time=>samples.push(time)});
+ q.turn({budgetMs:1,maxSteps:2});epoch+=3600;
+ for(let i=0;i<6;i++)q.turn({budgetMs:1,maxSteps:16});
+ assert.deepEqual(samples,[epoch]);
+});
 test("queue bounds work, coalesces revisions and releases cancellation", () => {
   let clock = 0,
     released = 0;

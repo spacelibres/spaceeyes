@@ -7,6 +7,11 @@ export interface TrajectoryWork<T> {
   onError?: (error: unknown) => void;
   signal?: AbortSignal;
 }
+
+/** Capture simulation time on admission, not while waiting behind other objects. */
+export function latestTrajectory<T>(epoch:()=>number,build:(epoch:number)=>Generator<void,T>):()=>Generator<void,T> {
+  return ()=>build(epoch());
+}
 type Held<T> = {
   job: TrajectoryWork<T>;
   iterator: Generator<void, T>;

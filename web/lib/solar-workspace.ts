@@ -1,7 +1,7 @@
 import { startupProgress, type StartupProgress, type StartupStage } from "./startup-progress.ts";
 import { FrameMonitor } from "./frame-monitor.ts";
 import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
-import { TrajectoryWorkQueue } from "./trajectory-work.ts";
+import { TrajectoryWorkQueue, latestTrajectory } from "./trajectory-work.ts";
 import {missionInitialLook} from "./mission-view.ts";
 import {parentModelFraming,parentModelCollision} from "./parent-model-framing.ts";
 import {eyesCoverageLabel,EYES_COVERAGE_LABEL_MANIFEST} from "../../platform/eyes-coverage.ts";
@@ -801,14 +801,14 @@ export async function createWorkspace(
       solarCatalog.find((body) => body.id === id)!.kind,
     );
     if (isTrail) {
-      const ownedRevision = revision, selected = state.selected, epoch = core.epoch();
+      const ownedRevision = revision, selected = state.selected;
       const observer = currentTrajectoryObserver(id);
       const key = `${ownedRevision}:${selected}:${budget}`;
       if (queuedTrails.get(id) === key) return;
       queuedTrails.set(id, key);
       trajectoryWork.enqueue({
         objectId: id, revision: ++trailJobRevision,
-        create: () => data.trailSampleSteps(id, epoch, budget, selected === id, observer?.camera),
+        create: latestTrajectory(()=>core.epoch(),epoch=>data.trailSampleSteps(id, epoch, budget, selected === id, observer?.camera)),
         onError: error => {
           if(closed || signal.aborted || revision!==ownedRevision) return;
           pendingTrajectories.delete(id);
