@@ -513,8 +513,8 @@ fn update_focus(
         }
         return;
     }
-    let focused_id = core.focused_object().map(str::to_owned);
-    let Some(id) = focused_id.as_deref() else {
+    let framing_id = core.camera_framing_target().map(str::to_owned);
+    let Some(id) = framing_id.as_deref() else {
         return;
     };
     let Ok(state) = core.object_state_at(id, core.clock().epoch()).cloned() else {
@@ -943,7 +943,7 @@ fn enforce_camera_collision(
                     * 4.,
         })
         .collect();
-    let focus = core.focused_object().map(str::to_owned);
+    let focus = core.camera_framing_target().map(str::to_owned);
     // Orbital time propagation is not a user camera segment through the parent.
     // Sweep local camera motion in the current target frame. A target switch
     // still sweeps the physical transition from the previous world position.
@@ -962,7 +962,7 @@ fn enforce_camera_collision(
         let local = (safe - settings.origin_km) * scale;
         camera.translation = Vec3::new(local.x as f32, local.z as f32, -local.y as f32);
         let target = core
-            .focused_object()
+            .camera_framing_target()
             .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
             .map_or(DVec3::ZERO, |body| DVec3::from_array(body.position_km));
         let target = (target - settings.origin_km) * scale;
@@ -2550,8 +2550,12 @@ fn draw_annotations(
     } else {
         1.
     };
+    let framing_target = core.camera_framing_target();
+    let trajectory_range = framing_target
+        .and_then(|id| core.object_state_at(id, core.clock().epoch()).ok())
+        .map(|state| scientific_camera.distance(DVec3::from_array(state.position_km)));
     let trajectory_focus = crate::orbit_lines::TrajectoryFocus {
-        focused: core.focused_object(),
+        focused: framing_target,
         parent: core
             .camera_observation()
             .filter(|observation| Some(observation.target_id.as_str()) == core.focused_object())
@@ -2572,7 +2576,7 @@ fn draw_annotations(
             crate::orbit_lines::system_path_visibility(
                 id,
                 points,
-                focus_range,
+                trajectory_range,
                 orbit_visibility,
                 style,
                 &trajectory_focus,
@@ -3500,6 +3504,110 @@ mod nasa_framing_system_tests {
     use super::*;
     use crate::{Core, ObjectState, SessionPermissions};
     use std::sync::Mutex;
+    #[test]
+    fn selected_moon_system_frames_its_host_without_changing_selection() {
+        let shared = Arc::new(Mutex::new(Core::default()));
+        let origin = [1e8, 2e8, 3e8];
+        {
+            let mut c = shared.lock().unwrap();
+            c.open_session_with_permissions(
+                "s",
+                "p",
+                SessionPermissions {
+                    camera_control: true,
+                    ..default()
+                },
+            )
+            .unwrap();
+            for (id, position, radius) in
+                [("host", origin, 30.), ("moon", [1e8 + 90., 2e8, 3e8], 0.7)]
+            {
+                c.register_object("s", id).unwrap();
+                c.set_object_state(
+                    "s",
+                    id,
+                    ObjectState {
+                        position_km: position,
+                        radius_km: radius,
+                        orientation_wxyz: None,
+                        epoch_tdb_seconds: 0.,
+                        coverage_tdb_seconds: [0., 100.],
+                        frame: "ICRF".into(),
+                        source: "system framing".into(),
+                    },
+                )
+                .unwrap();
+            }
+            c.set_camera_observation_with_context(
+                "s",
+                "p",
+                crate::CameraObservation {
+                    target_id: "moon".into(),
+                    mode: "system".into(),
+                    members: vec!["host".into(), "moon".into()],
+                    system_id: Some("host".into()),
+                    follow_id: None,
+                    initial_look: None,
+                },
+            )
+            .unwrap();
+        }
+        let mut app = App::new();
+        app.insert_resource(CoreStore(shared.clone()))
+            .init_resource::<DisplaySettings>()
+            .init_resource::<OrbitView>()
+            .add_systems(Update, (update_focus, enforce_camera_collision).chain());
+        let camera = app
+            .world_mut()
+            .spawn((
+                DisplayCamera,
+                Transform::default(),
+                Projection::Perspective(PerspectiveProjection::default()),
+            ))
+            .id();
+        app.update();
+        assert_eq!(
+            app.world()
+                .resource::<DisplaySettings>()
+                .origin_km
+                .to_array(),
+            origin
+        );
+        assert_eq!(
+            app.world().resource::<OrbitView>().target.as_deref(),
+            Some("host")
+        );
+        assert_eq!(shared.lock().unwrap().focused_object(), Some("moon"));
+        assert!(app.world().resource::<OrbitView>().framing_radius_km > 30.);
+        let transform = app.world().get::<Transform>(camera).unwrap();
+        let Projection::Perspective(p) = app.world().get::<Projection>(camera).unwrap() else {
+            panic!()
+        };
+        let scale = app.world().resource::<DisplaySettings>().units_per_km as f32;
+        let half = p.fov * 0.5;
+        for (offset, radius) in [(Vec3::ZERO, 30.), (Vec3::X * 90., 0.7)] {
+            let local = transform.rotation.inverse() * (offset * scale - transform.translation);
+            let margin = radius * scale / half.cos();
+            assert!(local.x.abs() + margin < -local.z * half.tan());
+            assert!(local.y.abs() + margin < -local.z * half.tan());
+        }
+        shared
+            .lock()
+            .unwrap()
+            .set_camera_observation("s", "p", "moon", "nearby", vec![], None)
+            .unwrap();
+        for _ in 0..30 {
+            app.update();
+        }
+        assert_eq!(
+            app.world()
+                .resource::<DisplaySettings>()
+                .origin_km
+                .to_array(),
+            [1e8 + 90., 2e8, 3e8]
+        );
+        assert_eq!(shared.lock().unwrap().focused_object(), Some("moon"));
+    }
     #[test]
     fn system_fit_is_view_aware_stable_during_motion_and_refits_on_resize() {
         let shared = Arc::new(Mutex::new(Core::default()));

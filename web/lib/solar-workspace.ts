@@ -409,7 +409,9 @@ export async function createWorkspace(
     const systemId = parent && parent !== "sun" && data.status(parent)?.status === "ready" ? parent : undefined;
     const framing = mode === "nearby" ? missionInitialLook(target, parent) : undefined;
     const initialLook = framing && data.status(framing.referenceId)?.status === "ready" ? framing : undefined;
-    sdk.camera.observe(target, mode, { ...options, ...(systemId ? { systemId } : {}), ...(initialLook ? {initialLook} : {}) });
+    sdk.camera.observe(target, mode, { ...options,
+      ...(mode === "system" ? {members: systemMembers(target, core.epoch())} : {}),
+      ...(systemId ? { systemId } : {}), ...(initialLook ? {initialLook} : {}) });
     observationContext = { target, mode, options, systemId };
   };
   let galaxySdk!: PluginContext;
@@ -1052,9 +1054,16 @@ export async function createWorkspace(
     solarCatalog.find(body => body.id === target)?.kind === "planet"
     ? eyesCatalog.filter(body => body.kind === "moon" && body.subcategory === "Major Moon" && data.parentAt(body.id, epoch) === target).map(body => body.id)
     : [];
-  const systemMembers = (target: string, epoch: number) => sceneIds(epoch).filter(id =>
-    id === target || (data.parentAt(id, epoch) === target && data.status(id)?.status === "ready" &&
-      solarCatalog.find(body => body.id === id)?.kind === (target === "sun" ? "planet" : "moon")));
+  const systemMembers = (target: string, epoch: number) => {
+    const parent=data.parentAt(target,epoch);
+    const root=parent && parent!=="sun" && data.status(parent)?.status==="ready" ? parent : target;
+    // The selected state has already been published before observation. A
+    // concurrent cache refresh may transiently report loading; keep that
+    // required target, while admitting only ready additional members.
+    return sceneIds(epoch).filter(id => id === target || (data.status(id)?.status === "ready" &&
+      (id === root || (data.parentAt(id, epoch) === root &&
+        solarCatalog.find(body => body.id === id)?.kind === (root === "sun" ? "planet" : "moon")))));
+  };
   const loadOverviewFamily = (ownedRevision = revision) => {
     const epoch = core.epoch();
     const ids = sceneIds(epoch);

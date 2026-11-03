@@ -2025,6 +2025,24 @@ test("selecting a moon-bearing planet frames its ready primary satellite family"
   } finally { await app.dispose(); }
 });
 
+test("satellite system fit includes its host while the selected satellite remains selected", async () => {
+ const fixtures=harness();
+ const app=await createWorkspace("#test",()=>{},new AbortController().signal,{
+  ...fixtures,fetch:async input=>new Response(sample(String(input).includes("type=ori"))),
+ });
+ try {
+  app.play(false,1);
+  await app.select("moon"); await app.observation("system");
+  let observation=JSON.parse(fixtures.core().camera_observation!());
+  assert.equal(observation.targetId,"moon");assert.equal(observation.systemId,"earth");
+  assert.ok(observation.members.includes("earth"));assert.ok(observation.members.includes("moon"));
+  await app.select("dactyl"); await app.observation("system");
+  observation=JSON.parse(fixtures.core().camera_observation!());
+  assert.equal(observation.targetId,"dactyl");assert.equal(observation.systemId,"243_ida");
+  assert.ok(observation.members.includes("243_ida"));assert.ok(observation.members.includes("dactyl"));
+ } finally {await app.dispose();}
+});
+
 test("satellite system context survives independent orbit and trail switches", async () => {
   const fixtures = harness();
   const app = await createWorkspace("#test", () => {}, new AbortController().signal, {

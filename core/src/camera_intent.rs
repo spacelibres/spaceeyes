@@ -29,6 +29,16 @@ pub struct CameraObservation {
     pub initial_look: Option<InitialLook>,
 }
 impl Core {
+    /// System observation keeps selection on the child while framing its host.
+    #[cfg(any(feature = "browser-render", test))]
+    pub(crate) fn camera_framing_target(&self) -> Option<&str> {
+        let selected = self.focused_object()?;
+        self.camera_observation()
+            .filter(|view| view.mode == "system" && view.target_id == selected)
+            .and_then(|view| view.system_id.as_deref())
+            .filter(|id| self.object_state_at(id, self.clock().epoch()).is_ok())
+            .or(Some(selected))
+    }
     pub fn camera_render_status(&self) -> Option<CameraRenderStatus> {
         self.camera_render_status.clone()
     }
@@ -261,6 +271,31 @@ mod tests {
         );
         c.focus("s", "p", "a").unwrap();
         assert!(c.camera_observation().is_none());
+    }
+    #[test]
+    fn system_framing_target_is_separate_from_selected_and_nearby_target() {
+        let mut c = core();
+        c.set_camera_observation_with_context(
+            "s",
+            "p",
+            CameraObservation {
+                target_id: "a".into(),
+                mode: "system".into(),
+                members: vec!["a".into(), "b".into()],
+                follow_id: None,
+                system_id: Some("b".into()),
+                initial_look: None,
+            },
+        )
+        .unwrap();
+        assert_eq!(c.camera_framing_target(), Some("b"));
+        assert_eq!(c.focused_object(), Some("a"));
+        c.set_camera_observation("s", "p", "a", "nearby", vec![], None)
+            .unwrap();
+        assert_eq!(c.camera_framing_target(), Some("a"));
+        c.set_camera_observation("s", "p", "a", "follow", vec![], Some("b".into()))
+            .unwrap();
+        assert_eq!(c.camera_framing_target(), Some("a"));
     }
     #[test]
     fn render_status_is_finite_read_only_and_clearable() {
