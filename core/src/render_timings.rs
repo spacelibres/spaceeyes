@@ -26,7 +26,20 @@ impl Stage {
     }
 }
 #[derive(Clone, Default, Resource)]
-pub(crate) struct RenderTimings(Arc<Mutex<BTreeMap<Stage, VecDeque<f64>>>>);
+pub(crate) struct RenderTimings(
+    Arc<Mutex<BTreeMap<Stage, VecDeque<f64>>>>,
+    Arc<Mutex<RendererStartup>>,
+);
+#[derive(Clone, Copy, Default, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct RendererStartup {
+    frames: u64,
+    pending: usize,
+    failed: usize,
+    stable_frames: u64,
+    #[serde(skip)]
+    pipeline_count: usize,
+}
 #[derive(serde::Serialize)]
 pub(crate) struct StageSnapshot {
     count: usize,
@@ -37,6 +50,26 @@ pub(crate) struct StageSnapshot {
     p99: f64,
 }
 impl RenderTimings {
+    pub(crate) fn record_startup(&self, pipeline_count: usize, pending: usize, failed: usize) {
+        if let Ok(mut status) = self.1.lock() {
+            status.frames += 1;
+            status.stable_frames = if pipeline_count > 0
+                && pending == 0
+                && failed == 0
+                && status.pipeline_count == pipeline_count
+            {
+                status.stable_frames + 1
+            } else {
+                0
+            };
+            status.pipeline_count = pipeline_count;
+            status.pending = pending;
+            status.failed = failed;
+        }
+    }
+    pub(crate) fn startup_snapshot(&self) -> RendererStartup {
+        self.1.lock().map(|status| *status).unwrap_or_default()
+    }
     fn record(&self, stage: Stage, ms: f64) {
         if !ms.is_finite() || ms < 0. {
             return;
@@ -95,6 +128,24 @@ impl Drop for StageTimer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn startup_requires_completed_pipeline_frames_and_resets_for_new_work() {
+        let timings = RenderTimings::default();
+        assert_eq!(timings.startup_snapshot().frames, 0);
+        timings.record_startup(0, 0, 0);
+        assert_eq!(timings.startup_snapshot().stable_frames, 0);
+        timings.record_startup(3, 1, 0);
+        assert_eq!(timings.startup_snapshot().stable_frames, 0);
+        for _ in 0..3 {
+            timings.record_startup(3, 0, 0);
+        }
+        assert_eq!(timings.startup_snapshot().stable_frames, 3);
+        timings.record_startup(4, 0, 0);
+        assert_eq!(timings.startup_snapshot().stable_frames, 0);
+        timings.record_startup(4, 0, 1);
+        assert_eq!(timings.startup_snapshot().failed, 1);
+        assert_eq!(timings.startup_snapshot().stable_frames, 0);
+    }
     #[test]
     fn bounded_quantiles_and_invalid_samples() {
         let timings = RenderTimings::default();

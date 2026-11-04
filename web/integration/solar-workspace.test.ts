@@ -44,7 +44,7 @@ function sample(orientation = false, end = 4e9): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function harness(initialNullEnvironmentStatus = false) {
+function harness(initialNullEnvironmentStatus = false, startupSnapshot?:()=>string) {
   const registeredAssets=new Set<string>();
   const labelCalls:{id:string;text:string}[]=[];
   const visuals: { id: string; spec: Record<string, any> }[] = [];
@@ -73,6 +73,11 @@ function harness(initialNullEnvironmentStatus = false) {
       const actual = new WasmCore();
       core = new Proxy(actual, {
         get(target, property) {
+          if(startupSnapshot && property==="performance_snapshot")return startupSnapshot;
+          if(startupSnapshot && property==="owned_visual_status")return (...args:any[])=>{
+            const value=JSON.parse(Reflect.apply(Reflect.get(target,property),target,args));
+            return JSON.stringify(value?{...value,phase:"ready"}:null);
+          };
           // Rendering is replaced in this harness; GPU projection is checked separately.
           if (property === "environment_status")
             return () =>
@@ -2299,6 +2304,25 @@ test("startup progress follows actual async boundaries and completes only after 
     onStartup: (_phase, progress) => phases.push(progress?.completedStages ?? -1),
   });
   try { assert.deepEqual(phases,[0,1,2,3,4,5]); } finally { await app.dispose(); }
+});
+
+test("work area stays inactive until rendered startup frames finish compilation",async()=>{
+ let status={frames:0,pending:1,failed:0,stableFrames:0};
+ let observed!:()=>void;const firstRead=new Promise<void>(resolve=>{observed=resolve;});
+ const fixtures=harness(false,()=>{observed();return JSON.stringify({startup:status});});
+ const states:SolarSnapshot[]=[];const phases:number[]=[];
+ const opening=createWorkspace("#test",state=>states.push(state),new AbortController().signal,{
+   ...fixtures,backgroundStars:false,backgroundGalaxy:false,
+   onStartup:(_phase,progress)=>phases.push(progress.completedStages),
+ });
+ await firstRead;
+ assert.equal(states.some(state=>state.active),false);
+ assert.equal(phases.includes(5),false);
+ status={frames:5,pending:1,failed:0,stableFrames:0};fixtures.step(0);
+ assert.equal(phases.includes(5),false,'CPU data completion cannot finish GPU startup');
+ status={frames:8,pending:0,failed:0,stableFrames:3};fixtures.step(16);
+ const app=await opening;
+ try{assert.equal(phases.at(-1),5);assert.equal(states.at(-1)!.active,true);}finally{await app.dispose();}
 });
 
 

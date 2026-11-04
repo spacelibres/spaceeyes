@@ -2,6 +2,7 @@ import {positionPrefetchCandidates} from "./position-prefetch.ts";
 import {GeometryWorkerPool} from "./trajectory-geometry-pool.ts";
 import {TrajectoryGeometryClient,geometryOrNative,type GeometryRequest} from "./trajectory-geometry-client.ts";
 import { startupProgress, type StartupProgress, type StartupStage } from "./startup-progress.ts";
+import {waitForRendererStartup} from "./renderer-startup.ts";
 import { FrameMonitor } from "./frame-monitor.ts";
 import { eyesTrailPhase } from "../../platform/eyes-trail-policy.ts";
 import { TrajectoryWorkQueue, latestTrajectory } from "./trajectory-work.ts";
@@ -1828,11 +1829,10 @@ export async function createWorkspace(
     }
     sdk.camera.view("overview");
     reportStartup("renderer");
+    const preparedPhase=state.phase;
+    state.phase=startupProgress("renderer").label;
     runtime.lighting("shadow");
     core.start_renderer(canvas);
-    reportStartup("ready");
-    state.startupMs = Math.max(0, workClock() - startupAt);
-    state.active = true;
     if (options.backgroundGalaxy !== false) runtime.galaxy(true);
     emit();
     void stars.setLod(0);
@@ -1847,6 +1847,22 @@ export async function createWorkspace(
           emit();
         }
       });
+    if(core.performance_snapshot) {
+      await waitForRendererStartup(
+        ()=>JSON.parse(core.performance_snapshot!()).startup,
+        ()=>baseSolarIds.every(id=>{
+          if(data.status(id)?.status!=="ready")return true;
+          const phase=sdk.visual.status(id)?.phase;
+          return phase==="ready"||phase==="failed";
+        }),signal,requestFrame,cancelFrame,
+      );
+      assertLive();
+    }
+    reportStartup("ready");
+    state.phase=preparedPhase;
+    state.startupMs = Math.max(0, workClock() - startupAt);
+    state.active = true;
+    emit();
     const tick = (now: number) => {
       if (closed) return;
       if (typeof document !== "undefined" && document.hidden) {frameMonitor.reset();lastFrame=undefined;frame=requestFrame(tick);return;}

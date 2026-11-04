@@ -94,6 +94,8 @@ impl WasmCore {
             .map_err(|_| "RendererUnavailable".to_owned())?;
         snapshot["stagesMs"] = serde_json::to_value(self.render_timings.snapshot())
             .map_err(|_| "RendererUnavailable".to_owned())?;
+        snapshot["startup"] = serde_json::to_value(self.render_timings.startup_snapshot())
+            .map_err(|_| "RendererUnavailable".to_owned())?;
         Ok(snapshot.to_string())
     }
     #[cfg(feature = "browser-render")]

@@ -3,7 +3,7 @@ export const STARTUP_STAGES = [
   ["wasm", "下载并初始化 WASM", "显示引擎"],
   ["catalog", "连接天体目录与数据插件", "天体目录"],
   ["data", "加载八大行星轨道、姿态和表面资源", "行星数据"],
-  ["renderer", "启动三维渲染器", "三维场景"],
+  ["renderer", "准备 GPU 着色器与首帧画面", "三维场景"],
 ] as const;
 export type StartupStage = (typeof STARTUP_STAGES)[number][0] | "ready";
 export type StartupProgress = {
@@ -17,7 +17,7 @@ export function startupProgress(stage: StartupStage): StartupProgress {
   if (stage !== "ready" && index < 0) throw Error("Unknown startup stage");
   return {
     stage,
-    label: stage === "ready" ? "三维渲染器已启动" : STARTUP_STAGES[index][1],
+    label: stage === "ready" ? "三维场景已就绪" : STARTUP_STAGES[index][1],
     completedStages: stage === "ready" ? STARTUP_STAGES.length : index,
     totalStages: STARTUP_STAGES.length,
   };

@@ -276,6 +276,34 @@ pub(crate) fn install(app: &mut App, shared: SharedFrameBudget) {
             .map(|t| t.scope(crate::render_timings::Stage::Render));
         world.run_schedule(original);
         drop(stage);
+        if let (Some(timings), Some(cache)) = (
+            world.get_resource::<crate::render_timings::RenderTimings>(),
+            world.get_resource::<bevy::render::render_resource::PipelineCache>(),
+        ) {
+            use bevy::render::render_resource::CachedPipelineState;
+            let (mut total, mut pending, mut failed) = (0, 0, 0);
+            for pipeline in cache.pipelines() {
+                // WebGL display readiness must not wait on unused compute
+                // pipelines (the backend does not support compute shaders).
+                if !matches!(
+                    &pipeline.descriptor,
+                    bevy::render::render_resource::PipelineDescriptor::RenderPipelineDescriptor(_)
+                ) {
+                    continue;
+                }
+                total += 1;
+                match &pipeline.state {
+                    CachedPipelineState::Queued | CachedPipelineState::Creating(_) => pending += 1,
+                    CachedPipelineState::Err(
+                        bevy::shader::ShaderCacheError::ShaderNotLoaded(_)
+                        | bevy::shader::ShaderCacheError::ShaderImportNotYetAvailable,
+                    ) => pending += 1,
+                    CachedPipelineState::Err(_) => failed += 1,
+                    CachedPipelineState::Ok(_) => {}
+                }
+            }
+            timings.record_startup(total, pending, failed);
+        }
         if let Some(sample) = world.remove_resource::<CpuSample>()
             && let Ok(mut budget) = sample.shared.lock()
         {
