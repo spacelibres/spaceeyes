@@ -21,6 +21,38 @@ jobs:
           cargo install wasm-bindgen-cli --version 0.2.129 --locked
       - run: npm ci --prefix platform --ignore-scripts
       - run: npm ci --prefix web --ignore-scripts
+      - name: Deployment security and cache tests
+        run: |
+          node --test deploy/tests/*.test.mjs
+          python3 -m unittest discover -s deploy/tests -p test_archive.py
+          bash deploy/tests/test_deploy_release.sh
       - name: Core and real WASM integration
         shell: pwsh
         run: ./tools/check-core.ps1 -Renderer -ReleaseWasm -Workspace
+      - name: Package and verify Linux standalone release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'spacelibres/spaceeyes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=web/.next/standalone
+          test -f "$root/web/server.js"
+          rm -rf -- "$root/web/.cache" "$root/web/.next/cache"
+          cp -a web/public "$root/web/public"
+          cp -a web/.next/static "$root/web/.next/static"
+          tar -czhf "$RUNNER_TEMP/spaceeyes-release.tar.gz" -C "$root" .
+          python3 deploy/validate_archive.py "$RUNNER_TEMP/spaceeyes-release.tar.gz"
+          (cd "$root/web" && HOSTNAME=127.0.0.1 PORT=4310 node server.js > "$RUNNER_TEMP/spaceeyes-smoke.log" 2>&1) &
+          server=$!
+          trap 'kill "$server" 2>/dev/null || true' EXIT
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:4310/ > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" = 1
+          curl -fsS http://127.0.0.1:4310/wasm/spaceeyes_core_bg.wasm -o /dev/null
+      - name: Deploy verified main release through signed webhook
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'spacelibres/spaceeyes'
+        env:
+          SPACEEYES_DEPLOY_SECRET: ${{ secrets.SPACEEYES_DEPLOY_SECRET }}
+        run: node deploy/send.mjs "$RUNNER_TEMP/spaceeyes-release.tar.gz" "$GITHUB_SHA"

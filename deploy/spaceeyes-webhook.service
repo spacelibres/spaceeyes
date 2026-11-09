@@ -1,0 +1,20 @@
+[Unit]
+Description=SpaceEyes signed deployment webhook
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=root
+Environment=SPACEEYES_WEBHOOK_SECRET_FILE=/etc/spaceeyes/webhook.secret
+ExecStart=/opt/spaceeyes/node/bin/node /opt/spaceeyes/bin/receiver.mjs
+Restart=on-failure
+RestartSec=3
+MemoryMax=256M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/spaceeyes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
+import { resolve } from "node:path";
 const config: NextConfig = {
   agentRules: false,
+  output: "standalone",
+  outputFileTracingRoot: resolve(process.cwd(), ".."),
+  outputFileTracingExcludes: {
+    "/*": ["./.cache/**/*", "../validation/.cache/**/*"],
+  },
   async rewrites() {
     return { beforeFiles: [
       { source: "/assets/planets/:body/:file", destination: "/api/_buffered-assets/planets/:body/:file" },

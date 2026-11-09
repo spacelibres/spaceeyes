@@ -1,0 +1,13 @@
+[Unit]
+Description=SpaceEyes bounded resource cache maintenance
+
+[Service]
+Type=oneshot
+User=spaceeyes
+Group=spaceeyes
+Environment=SPACEEYES_CACHE_ROOT=/opt/spaceeyes/shared/cache
+ExecStart=/opt/spaceeyes/node/bin/node /opt/spaceeyes/bin/cache-maintain.mjs
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/spaceeyes/shared/cache

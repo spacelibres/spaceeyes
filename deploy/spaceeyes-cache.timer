@@ -1,0 +1,11 @@
+[Unit]
+Description=Regular SpaceEyes resource cache maintenance
+
+[Timer]
+OnBootSec=90s
+OnUnitActiveSec=60s
+AccuracySec=5s
+Unit=spaceeyes-cache.service
+
+[Install]
+WantedBy=timers.target

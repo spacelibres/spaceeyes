@@ -1,0 +1,25 @@
+[Unit]
+Description=SpaceEyes web application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=spaceeyes
+Group=spaceeyes
+WorkingDirectory=/opt/spaceeyes/current/web
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3100
+Environment=NODE_OPTIONS=--max-old-space-size=512
+ExecStart=/opt/spaceeyes/node/bin/node server.js
+Restart=on-failure
+RestartSec=3
+MemoryMax=1200M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/spaceeyes/shared/cache
+
+[Install]
+WantedBy=multi-user.target
