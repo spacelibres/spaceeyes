@@ -13,6 +13,7 @@ const config: NextConfig = {
       "./node_modules/@loaders.gl/textures/package.json",
       "./node_modules/@loaders.gl/textures/dist/index.cjs",
       "./node_modules/@loaders.gl/textures/dist/libs/basis_encoder.*",
+      "./node_modules/draco3dgltf/*.wasm",
     ],
   },
   async rewrites() {

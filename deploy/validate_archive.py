@@ -9,6 +9,8 @@ REQUIRED = {
     "web/node_modules/@loaders.gl/textures/dist/index.cjs",
     "web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.js",
     "web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.wasm",
+    "web/node_modules/draco3dgltf/draco_decoder_gltf.wasm",
+    "web/node_modules/draco3dgltf/draco_encoder.wasm",
 }
 MAX_UNPACKED = 1024 * 1024 * 1024
 
