@@ -59,6 +59,9 @@ export default function Workspace() {
     mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
+    if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
+      void navigator.serviceWorker.register("/model-cache-worker.js", { type: "module" }).catch(() => {});
+    }
     const leave = () => {
       controller.current?.abort();
       void runtime.current?.dispose();

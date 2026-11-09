@@ -54,3 +54,7 @@ pwsh -File tools/check-core.ps1 -Renderer -ReleaseWasm -Workspace -NativeCamera 
 可使用 `SPACEEYES_NASA_DYN_MIRROR` 指向已有原始镜像的 `files` 目录，作为只读来源；镜像布局为路径段以 `__` 连接的目录和原始 `.dyn` 文件。镜像内容不被修改，缺失时默认仍可从受控 NASA 地址获取并保存。设置 `SPACEEYES_NASA_DYN_OFFLINE=1` 禁止 DYN 上游请求，缺失内容明确失败。现有原始镜像没有完整的逐文件可信散列记录，实际分段、姿态和时间覆盖仍需全量审计，不能将根路径存在等同于完整离线覆盖。旧快照不会自动追踪 NASA 更新；同步与快照切换功能属于后续批次。
 
 `npm --prefix web run audit:nasa-dyn -- --mirror=<原始镜像的files目录>` 逐层读取并严格解码已登记与镜像发现的轨迹，记录每个成功读取文件的来源散列、长度、覆盖及缺失/需审查结果。可加 `--repair` 从受控 NASA 来源补充缺失的分段，只有通过严格解码的内容才写入持久库；已知需专门窗口处理的原始文件不会被擅自改写。可使用 `--track=<轨迹路径>` 审计单条，报告位于 `web/.cache/nasa-dyn-audit`。`--resume` 会复用相同来源的历史成功报告，报告明确标注此情况；历史结果不能证明外部镜像后来未被修改，如需重新验证应不使用 `--resume`。
+
+## 大型模型与 WASM 的浏览器缓存
+
+网页在 HTTPS 或 localhost 注册独立 Service Worker，只拦截同源航天器模型 GLB 和核心 WASM 的普通 GET。模型成功响应在服务器给定的有效期内（最多一小时）可由浏览器 Cache Storage 复用；WASM 每次使用 HEAD 请求检查服务器 ETag，一致时复用本地字节，新版本则重新下载。两类合计缓存上限 256 MiB、最多 128 项，单文件超过 64 MiB 不写入，最多两个后台写入同时执行。过期模型、`no-cache`、`no-store`、失败、带 Range 或授权的请求不作为缓存命中，缓存不可用时仍走原始网络路径。DYN、时间、页面及其他站点请求不由该缓存处理；浏览器可以自行清理这些可重建数据。
