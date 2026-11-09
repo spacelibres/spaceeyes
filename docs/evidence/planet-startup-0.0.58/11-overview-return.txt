@@ -1,0 +1,72 @@
+- main:
+  - img "spacelibre"
+  - heading "太空之眼 SPACE EYES" [level=1]
+  - button "探索天体"
+  - button "对象与图层" [expanded]
+  - button "太阳系总览" [active]
+  - button "全屏"
+  - button "分享场景"
+  - link "数据诊断":
+    - /url: /diagnostics
+  - status:
+    - generic: 太阳系总览
+    - status "八大行星资源准备": 行星资源 8/8 · 已就绪
+    - generic: 本次初始化 4.03 秒（不含首帧及贴图就绪）
+    - button "退出工作区"
+  - region "Bevy太阳系三维画布":
+    - generic "三维场景：方向键环绕，加减缩放，Home近景，空格播放"
+    - generic: 太阳系总览
+    - generic: ICRF · AU
+    - button "展开观察设置":
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - complementary "对象与图层面板":
+    - button "关闭对象信息": ×
+    - paragraph: 对象信息
+    - heading "太阳系" [level=2]
+    - paragraph: SOLAR SYSTEM
+    - button "聚焦" [disabled]
+    - button "跟随" [disabled]
+    - term: 数据状态
+    - definition: 10/667 个对象数据可用 · 10 个显示表示就绪 · 八大行星表面初始化预载
+    - term: 姿态来源与状态
+    - definition: 未选择对象
+    - term: 科学来源
+    - definition: NASA Eyes 动态数据与固定表面资源 · 近似星历精度未验收
+    - term: 有效覆盖 · J2000 TDB 秒
+    - definition: 选择对象查看其真实有效范围
+    - heading "显示图层" [level=3]
+    - checkbox "天然卫星" [checked]
+    - text: 天然卫星
+    - checkbox "人造卫星与飞船" [checked]
+    - text: 人造卫星与飞船
+    - checkbox "银河全景" [checked]
+    - text: 银河全景
+    - status "银河加载状态": NASA 银河全景已就绪
+    - checkbox "背景星空" [checked]
+    - text: 背景星空
+    - status "背景星空状态": 星空数据：7/7 层 · 43,878 点
+    - generic "场景与深空数据诊断"
+    - checkbox "对象标签" [checked]
+    - text: 对象标签
+    - checkbox "轨道线" [checked]
+    - text: 轨道线
+    - checkbox "卫星拖尾" [checked]
+    - text: 卫星拖尾
+    - paragraph: 行星椭圆是当前状态推导的瞬时轨道；天然卫星显示父体相对轨道，人造卫星拖尾显示有效覆盖内的过去轨迹，尾端随时间渐隐。
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 2026-10-31T13:05:29.891Z
+    - generic: 846723999.074 J2000 TDB s
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放"
+    - button "降低播放倍率": −
+    - text: 播放速率 · real rate
+    - slider "播放速率": "50"
+    - button "提高播放倍率": +
+    - button "1× 速度"
+    - button "日期与跳转"
+    - button "当前时间"
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert

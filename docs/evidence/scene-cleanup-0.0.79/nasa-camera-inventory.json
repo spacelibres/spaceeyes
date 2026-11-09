@@ -1,0 +1,1071 @@
+[
+  {
+    "name": "CameraScripts.js",
+    "file": "core/CameraScripts.js",
+    "sha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5",
+    "lines": 781,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 7,
+        "static": false
+      },
+      {
+        "name": "setCameraManager",
+        "line": 29,
+        "static": false
+      },
+      {
+        "name": "scene",
+        "line": 32,
+        "static": false
+      },
+      {
+        "name": "scene",
+        "line": 35,
+        "static": false
+      },
+      {
+        "name": "cameraEntity",
+        "line": 38,
+        "static": false
+      },
+      {
+        "name": "cameraEntity",
+        "line": 41,
+        "static": false
+      },
+      {
+        "name": "getNormalToEcliptic",
+        "line": 44,
+        "static": false
+      },
+      {
+        "name": "isBarycenter",
+        "line": 49,
+        "static": false
+      },
+      {
+        "name": "removeBarycenter",
+        "line": 52,
+        "static": false
+      },
+      {
+        "name": "lookAtSurfaceLatLon",
+        "line": 55,
+        "static": false
+      },
+      {
+        "name": "goToCelestialObject",
+        "line": 97,
+        "static": false
+      },
+      {
+        "name": "_easeOutExpoTransition",
+        "line": 149,
+        "static": false
+      },
+      {
+        "name": "_easeInOutExpoTransition",
+        "line": 161,
+        "static": false
+      },
+      {
+        "name": "goToSpacecraft",
+        "line": 173,
+        "static": false
+      },
+      {
+        "name": "goToInstrument",
+        "line": 226,
+        "static": false
+      },
+      {
+        "name": "compareObjects",
+        "line": 272,
+        "static": false
+      },
+      {
+        "name": "showLocation",
+        "line": 321,
+        "static": false
+      },
+      {
+        "name": "alignObjects",
+        "line": 390,
+        "static": false
+      },
+      {
+        "name": "alignSpacecraftPlanet",
+        "line": 440,
+        "static": false
+      },
+      {
+        "name": "viewFromSide",
+        "line": 471,
+        "static": false
+      },
+      {
+        "name": "spacecraftLookAtTarget",
+        "line": 532,
+        "static": false
+      },
+      {
+        "name": "spacecraftLockedOnTarget",
+        "line": 539,
+        "static": false
+      },
+      {
+        "name": "goToSystemSideway",
+        "line": 546,
+        "static": false
+      },
+      {
+        "name": "goToSystem",
+        "line": 605,
+        "static": false
+      },
+      {
+        "name": "_goToSystem",
+        "line": 632,
+        "static": false
+      },
+      {
+        "name": "goToCenter",
+        "line": 707,
+        "static": false
+      },
+      {
+        "name": "showLocationCenter",
+        "line": 730,
+        "static": false
+      },
+      {
+        "name": "showLocationInParentSystem",
+        "line": 753,
+        "static": false
+      },
+      {
+        "name": "showLocationInSolarSystem",
+        "line": 759,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "CameraManager.js",
+    "file": "managers/CameraManager.js",
+    "sha256": "fe28ea5735c77a45b405fd77afb6e9392d74c54f2eb6dc68a5b819f0f76982f9",
+    "lines": 390,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 7,
+        "static": false
+      },
+      {
+        "name": "createViewportAndCamera",
+        "line": 33,
+        "static": false
+      },
+      {
+        "name": "getContext",
+        "line": 45,
+        "static": false
+      },
+      {
+        "name": "getIsTransitioning",
+        "line": 48,
+        "static": false
+      },
+      {
+        "name": "setIsTransitioning",
+        "line": 51,
+        "static": false
+      },
+      {
+        "name": "waitForTransitionComplete",
+        "line": 54,
+        "static": false
+      },
+      {
+        "name": "setContext",
+        "line": 61,
+        "static": false
+      },
+      {
+        "name": "getCurrentId",
+        "line": 73,
+        "static": false
+      },
+      {
+        "name": "getShadowLightColor",
+        "line": 76,
+        "static": false
+      },
+      {
+        "name": "getFullLightColor",
+        "line": 79,
+        "static": false
+      },
+      {
+        "name": "defaultScene",
+        "line": 82,
+        "static": false
+      },
+      {
+        "name": "cameraEntity",
+        "line": 85,
+        "static": false
+      },
+      {
+        "name": "cameraLight",
+        "line": 88,
+        "static": false
+      },
+      {
+        "name": "dynamicEnvMap",
+        "line": 91,
+        "static": false
+      },
+      {
+        "name": "toggleCameraLight",
+        "line": 94,
+        "static": false
+      },
+      {
+        "name": "updateLighting",
+        "line": 97,
+        "static": false
+      },
+      {
+        "name": "getSelectionCallback",
+        "line": 100,
+        "static": false
+      },
+      {
+        "name": "setSelectionCallback",
+        "line": 103,
+        "static": false
+      },
+      {
+        "name": "getIsFreeFly",
+        "line": 106,
+        "static": false
+      },
+      {
+        "name": "setUpFreeFlyCamera",
+        "line": 109,
+        "static": false
+      },
+      {
+        "name": "resetFreeFlyCamera",
+        "line": 116,
+        "static": false
+      },
+      {
+        "name": "enableFreeFly",
+        "line": 146,
+        "static": false
+      },
+      {
+        "name": "disableFreeFly",
+        "line": 153,
+        "static": false
+      },
+      {
+        "name": "toggleFreeFly",
+        "line": 158,
+        "static": false
+      },
+      {
+        "name": "goToEntity",
+        "line": 169,
+        "static": false
+      },
+      {
+        "name": "followTheEntity",
+        "line": 252,
+        "static": false
+      },
+      {
+        "name": "goToBetweenPos",
+        "line": 315,
+        "static": false
+      },
+      {
+        "name": "zoom",
+        "line": 355,
+        "static": false
+      },
+      {
+        "name": "zoomIn",
+        "line": 365,
+        "static": false
+      },
+      {
+        "name": "zoomOut",
+        "line": 371,
+        "static": false
+      },
+      {
+        "name": "defaultMaxDistance",
+        "line": 377,
+        "static": false
+      },
+      {
+        "name": "defaultMaxDistance",
+        "line": 380,
+        "static": false
+      },
+      {
+        "name": "addDynamicEnvMap",
+        "line": 383,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "CameraComponent.js",
+    "file": "components/CameraComponent.js",
+    "sha256": "12788965bbf8df9ca80375121389311a2320d13d95d4eac10127f6f771bfe27a",
+    "lines": 379,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 10,
+        "static": false
+      },
+      {
+        "name": "getViewport",
+        "line": 40,
+        "static": false
+      },
+      {
+        "name": "getFieldOfView",
+        "line": 43,
+        "static": false
+      },
+      {
+        "name": "getHorizontalFieldOfView",
+        "line": 47,
+        "static": false
+      },
+      {
+        "name": "getVerticalFieldOfView",
+        "line": 51,
+        "static": false
+      },
+      {
+        "name": "setFieldOfView",
+        "line": 54,
+        "static": false
+      },
+      {
+        "name": "getInvertDepth",
+        "line": 57,
+        "static": false
+      },
+      {
+        "name": "setInvertDepth",
+        "line": 60,
+        "static": false
+      },
+      {
+        "name": "getNearDistance",
+        "line": 63,
+        "static": false
+      },
+      {
+        "name": "setNearDistance",
+        "line": 66,
+        "static": false
+      },
+      {
+        "name": "getAutoNearDistance",
+        "line": 69,
+        "static": false
+      },
+      {
+        "name": "getMidDistance",
+        "line": 72,
+        "static": false
+      },
+      {
+        "name": "setMidDistance",
+        "line": 75,
+        "static": false
+      },
+      {
+        "name": "getAutoMidDistance",
+        "line": 78,
+        "static": false
+      },
+      {
+        "name": "getNormalSpacePositionFromCameraSpacePosition",
+        "line": 82,
+        "static": false
+      },
+      {
+        "name": "getNormalSpaceRadiusFromRadius",
+        "line": 90,
+        "static": false
+      },
+      {
+        "name": "getCameraSpacePositionFromNormalSpacePosition",
+        "line": 94,
+        "static": false
+      },
+      {
+        "name": "getRadiusFromNormalSpaceRadius",
+        "line": 102,
+        "static": false
+      },
+      {
+        "name": "getRaycast",
+        "line": 106,
+        "static": false
+      },
+      {
+        "name": "getRaycastColor",
+        "line": 142,
+        "static": false
+      },
+      {
+        "name": "isPositionOccluded",
+        "line": 201,
+        "static": false
+      },
+      {
+        "name": "getNearestIntersectingEntity",
+        "line": 205,
+        "static": false
+      },
+      {
+        "name": "setBloom",
+        "line": 224,
+        "static": false
+      },
+      {
+        "name": "setOutline",
+        "line": 229,
+        "static": false
+      },
+      {
+        "name": "__addToOccludingEntities",
+        "line": 250,
+        "static": false
+      },
+      {
+        "name": "__destroy",
+        "line": 255,
+        "static": false
+      },
+      {
+        "name": "__updateCameraVariablesForConnectedScene",
+        "line": 263,
+        "static": false
+      },
+      {
+        "name": "__prepareForRender",
+        "line": 312,
+        "static": false
+      },
+      {
+        "name": "__render",
+        "line": 326,
+        "static": false
+      },
+      {
+        "name": "__setViewport",
+        "line": 334,
+        "static": false
+      },
+      {
+        "name": "_updateProjectionMatrix",
+        "line": 339,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "ZoomController.js",
+    "file": "controllers/ZoomController.js",
+    "sha256": "4bdecb4c41b02d52cd29eeea1c0c5465f2ddf81750c3c9d13bc3317cbfcd081b",
+    "lines": 105,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 5,
+        "static": false
+      },
+      {
+        "name": "getZoomSensitivity",
+        "line": 13,
+        "static": false
+      },
+      {
+        "name": "setZoomSensitivity",
+        "line": 16,
+        "static": false
+      },
+      {
+        "name": "getZoomSmoothness",
+        "line": 19,
+        "static": false
+      },
+      {
+        "name": "setZoomSmoothness",
+        "line": 22,
+        "static": false
+      },
+      {
+        "name": "getDistanceClamp",
+        "line": 25,
+        "static": false
+      },
+      {
+        "name": "setDistanceClamp",
+        "line": 28,
+        "static": false
+      },
+      {
+        "name": "__update",
+        "line": 31,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "OrbitController.js",
+    "file": "controllers/OrbitController.js",
+    "sha256": "c996ca581ad4e79b8d27b7ef8cbc5575e346164d33d9922134bf891cbdcdc27c",
+    "lines": 313,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 6,
+        "static": false
+      },
+      {
+        "name": "getDragSensitivity",
+        "line": 21,
+        "static": false
+      },
+      {
+        "name": "setDragSensitivity",
+        "line": 24,
+        "static": false
+      },
+      {
+        "name": "getDragSmoothness",
+        "line": 27,
+        "static": false
+      },
+      {
+        "name": "setDragSmoothness",
+        "line": 30,
+        "static": false
+      },
+      {
+        "name": "getYawAxisType",
+        "line": 33,
+        "static": false
+      },
+      {
+        "name": "setYawAxisType",
+        "line": 36,
+        "static": false
+      },
+      {
+        "name": "getPitchAxisType",
+        "line": 59,
+        "static": false
+      },
+      {
+        "name": "setPitchAxisType",
+        "line": 62,
+        "static": false
+      },
+      {
+        "name": "getYawAxisEntity",
+        "line": 85,
+        "static": false
+      },
+      {
+        "name": "setYawAxisEntity",
+        "line": 88,
+        "static": false
+      },
+      {
+        "name": "getPitchAxisEntity",
+        "line": 111,
+        "static": false
+      },
+      {
+        "name": "setPitchAxisEntity",
+        "line": 114,
+        "static": false
+      },
+      {
+        "name": "getYawAngleLimits",
+        "line": 137,
+        "static": false
+      },
+      {
+        "name": "setYawAngleLimits",
+        "line": 140,
+        "static": false
+      },
+      {
+        "name": "getPitchAngleLimits",
+        "line": 143,
+        "static": false
+      },
+      {
+        "name": "setPitchAngleLimits",
+        "line": 146,
+        "static": false
+      },
+      {
+        "name": "__update",
+        "line": 149,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "Cameras.js",
+    "file": "core/Cameras.js",
+    "sha256": "dbe6a24e931eafabdf1bd064a4e0ab0ee2150fc6915645a8c0b2b84edead558c",
+    "lines": 146,
+    "methods": [
+      {
+        "name": "createFullSizeViewportAndCamera",
+        "line": 5,
+        "static": true
+      },
+      {
+        "name": "focusOnEntity",
+        "line": 12,
+        "static": true
+      },
+      {
+        "name": "lookAtEntity",
+        "line": 22,
+        "static": true
+      },
+      {
+        "name": "goToEntity",
+        "line": 45,
+        "static": true
+      },
+      {
+        "name": "pickOnEntity",
+        "line": 106,
+        "static": true
+      },
+      {
+        "name": "getDistanceToFitEntities",
+        "line": 122,
+        "static": true
+      }
+    ]
+  },
+  {
+    "name": "CameraFollowManager.js",
+    "file": "managers/CameraFollowManager.js",
+    "sha256": "83fe539e640a1d8b8fefacad3dbec5a23d187af3bdfb41877ba93cdbf9159319",
+    "lines": 523,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 9,
+        "static": false
+      },
+      {
+        "name": "setFollowVars",
+        "line": 52,
+        "static": false
+      },
+      {
+        "name": "setToastContent",
+        "line": 68,
+        "static": false
+      },
+      {
+        "name": "showToast",
+        "line": 86,
+        "static": false
+      },
+      {
+        "name": "validateTimeLimits",
+        "line": 89,
+        "static": false
+      },
+      {
+        "name": "follow",
+        "line": 145,
+        "static": false
+      },
+      {
+        "name": "unfollow",
+        "line": 200,
+        "static": false
+      },
+      {
+        "name": "animateCamera",
+        "line": 231,
+        "static": false
+      },
+      {
+        "name": "setParentsChangedCallbacks",
+        "line": 250,
+        "static": false
+      },
+      {
+        "name": "setLabelWeight",
+        "line": 261,
+        "static": false
+      },
+      {
+        "name": "updateOccludedEntities",
+        "line": 268,
+        "static": false
+      },
+      {
+        "name": "getEntitiesToUnocclude",
+        "line": 274,
+        "static": false
+      },
+      {
+        "name": "setOcclusionProps",
+        "line": 278,
+        "static": false
+      },
+      {
+        "name": "setTargetNotClickable",
+        "line": 293,
+        "static": false
+      },
+      {
+        "name": "_createReframeElement",
+        "line": 302,
+        "static": false
+      },
+      {
+        "name": "_createSumParent",
+        "line": 308,
+        "static": false
+      },
+      {
+        "name": "initSearch",
+        "line": 316,
+        "static": false
+      },
+      {
+        "name": "showSearch",
+        "line": 338,
+        "static": false
+      },
+      {
+        "name": "hideSearch",
+        "line": 343,
+        "static": false
+      },
+      {
+        "name": "setTimeLimits",
+        "line": 347,
+        "static": false
+      },
+      {
+        "name": "setYawPitchLimits",
+        "line": 372,
+        "static": false
+      },
+      {
+        "name": "setSearchOptions",
+        "line": 393,
+        "static": false
+      },
+      {
+        "name": "entitiesInPlace",
+        "line": 457,
+        "static": false
+      },
+      {
+        "name": "update",
+        "line": 461,
+        "static": false
+      },
+      {
+        "name": "setEnabled",
+        "line": 470,
+        "static": false
+      },
+      {
+        "name": "setHideTimeout",
+        "line": 492,
+        "static": false
+      },
+      {
+        "name": "stopHideTimeout",
+        "line": 499,
+        "static": false
+      },
+      {
+        "name": "targetId",
+        "line": 503,
+        "static": false
+      },
+      {
+        "name": "targetEntity",
+        "line": 512,
+        "static": false
+      },
+      {
+        "name": "followInnerHtml",
+        "line": 515,
+        "static": false
+      },
+      {
+        "name": "isEnabled",
+        "line": 518,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "VisibleInterval.js",
+    "file": "core/VisibleInterval.js",
+    "sha256": "b0223ecd0f7bf02d4dc691ee6eb41f35bf089d395e1242d0871f35bb2d33fa4b",
+    "lines": 124,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 8,
+        "static": false
+      },
+      {
+        "name": "min",
+        "line": 15,
+        "static": false
+      },
+      {
+        "name": "min",
+        "line": 18,
+        "static": false
+      },
+      {
+        "name": "max",
+        "line": 21,
+        "static": false
+      },
+      {
+        "name": "max",
+        "line": 24,
+        "static": false
+      },
+      {
+        "name": "minSpace",
+        "line": 27,
+        "static": false
+      },
+      {
+        "name": "maxSpace",
+        "line": 30,
+        "static": false
+      },
+      {
+        "name": "fadeBlur",
+        "line": 33,
+        "static": false
+      },
+      {
+        "name": "fadeBlur",
+        "line": 36,
+        "static": false
+      },
+      {
+        "name": "toString",
+        "line": 39,
+        "static": false
+      },
+      {
+        "name": "copy",
+        "line": 42,
+        "static": false
+      },
+      {
+        "name": "set",
+        "line": 49,
+        "static": false
+      },
+      {
+        "name": "length",
+        "line": 53,
+        "static": false
+      },
+      {
+        "name": "clamp",
+        "line": 56,
+        "static": false
+      },
+      {
+        "name": "expandTo",
+        "line": 59,
+        "static": false
+      },
+      {
+        "name": "contains",
+        "line": 63,
+        "static": false
+      },
+      {
+        "name": "intersects",
+        "line": 66,
+        "static": false
+      },
+      {
+        "name": "intersection",
+        "line": 69,
+        "static": false
+      },
+      {
+        "name": "union",
+        "line": 76,
+        "static": false
+      },
+      {
+        "name": "getFadeMultiplier",
+        "line": 80,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "SpriteComponent.js",
+    "file": "components/SpriteComponent.js",
+    "sha256": "1e81797a9afb3ad3b283e851badeb436475307b6160b2b62fb64564629f91ea8",
+    "lines": 203,
+    "methods": [
+      {
+        "name": "constructor",
+        "line": 5,
+        "static": false
+      },
+      {
+        "name": "getTextureUrl",
+        "line": 17,
+        "static": false
+      },
+      {
+        "name": "setTextureUrl",
+        "line": 20,
+        "static": false
+      },
+      {
+        "name": "getSize",
+        "line": 24,
+        "static": false
+      },
+      {
+        "name": "setSize",
+        "line": 27,
+        "static": false
+      },
+      {
+        "name": "getSizeUnits",
+        "line": 31,
+        "static": false
+      },
+      {
+        "name": "setSizeUnits",
+        "line": 34,
+        "static": false
+      },
+      {
+        "name": "getColorMultiplier",
+        "line": 38,
+        "static": false
+      },
+      {
+        "name": "setColorMultiplier",
+        "line": 41,
+        "static": false
+      },
+      {
+        "name": "getAlignment",
+        "line": 45,
+        "static": false
+      },
+      {
+        "name": "setAlignment",
+        "line": 48,
+        "static": false
+      },
+      {
+        "name": "isBillboard",
+        "line": 52,
+        "static": false
+      },
+      {
+        "name": "setBillboard",
+        "line": 55,
+        "static": false
+      },
+      {
+        "name": "getTransparent",
+        "line": 58,
+        "static": false
+      },
+      {
+        "name": "setTransparent",
+        "line": 61,
+        "static": false
+      },
+      {
+        "name": "setBlending",
+        "line": 65,
+        "static": false
+      },
+      {
+        "name": "getRenderOrder",
+        "line": 69,
+        "static": false
+      },
+      {
+        "name": "setRenderOrder",
+        "line": 72,
+        "static": false
+      },
+      {
+        "name": "__prepareForRender",
+        "line": 76,
+        "static": false
+      },
+      {
+        "name": "__loadResources",
+        "line": 95,
+        "static": false
+      },
+      {
+        "name": "__unloadResources",
+        "line": 138,
+        "static": false
+      },
+      {
+        "name": "_updateSizeUniform",
+        "line": 155,
+        "static": false
+      }
+    ]
+  },
+  {
+    "name": "Unidentified695.js",
+    "file": "core/Unidentified695.js",
+    "sha256": "1ecdc5793c76029da937df839091903c42ac484fd26ded7bfdd49e3fac2cd9c9",
+    "lines": 531,
+    "methods": []
+  }
+]

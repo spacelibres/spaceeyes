@@ -1,0 +1,18 @@
+[
+  {
+    "path": "src/engine/core/LabelQuadtree.js",
+    "sha256": "e927b9e36b97053c364fa1d8adfa1c959008e541ea233220803592234155965e"
+  },
+  {
+    "path": "src/engine/components/DivComponent.js",
+    "sha256": "14d2e007c6c980fb384586979c02f173918b79cccd6ea3e3e53d40f746e8e841"
+  },
+  {
+    "path": "src/engine/managers/LabelManager-563.js",
+    "sha256": "02092eff5a6230e03c266a072bc9894cfd14f8bb7659a7cebb28db66aa4dea2b"
+  },
+  {
+    "path": "shell/app.css",
+    "sha256": "a6984196f35e8bcc78938923442344149e4736b61d6fec32a3f9145810ca1d34"
+  }
+]

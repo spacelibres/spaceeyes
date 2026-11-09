@@ -1,0 +1,26 @@
+✔ analytic orbit SDK reaches real WASM and Rust rejects malformed geometry (9.2808ms)
+✔ real WASM validates environment ownership and clears it with the session (1.6123ms)
+✔ starfield SDK publishes independent layers to real WASM and revokes all on disposal (1.5626ms)
+✔ host pick query validates normalized input and empty headless frames never select (0.3977ms)
+✔ TS plugin drives real Rust WASM state, clock, focus and session cleanup (1.5997ms)
+✔ actual WASM boundary independently rejects spoofed identity and invalid JSON (0.1985ms)
+✔ real WASM visual API enforces registered resources, ownership and revisions (2.2183ms)
+✔ clock epochs survive 1000 JSON publications without stale state (12.8833ms)
+✔ real WASM stellar tuning is owned, bounded, revocable and does not reload visual revision (4.3893ms)
+✔ trail SDK reaches real WASM with strict metadata and ordinary orbit compatibility (1.1944ms)
+✔ camera observation intents reach real WASM and restore nearby on focus (2.4552ms)
+✔ lighting SDK controls real WASM and disposal restores natural lighting (0.8415ms)
+✔ rollback clears newly published object from real Rust core (24.1882ms)
+✔ render camera diagnostics remain null without a renderer (0.2834ms)
+✔ real WASM ordinary Unix UTC roundtrips across pre-leap-second fractions (0.6216ms)
+✔ real WASM model joint ownership and strict wire validation (0.9227ms)
+✔ authored relative trail policy survives SDK and real WASM adapters (0.593ms)
+✔ trajectory JSON object fast path preserves strict validation and legacy array parsing (5.2998ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 340.5785

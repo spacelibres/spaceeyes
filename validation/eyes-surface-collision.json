@@ -1,0 +1,14 @@
+{
+  "source": "NASA Eros converted static triangle surface; 2026-11-03",
+  "converterSha256": "cbae17f5ae0aaee4aa67ada9f732994ced2b7f591cdf83902bc9a0e156ff1624",
+  "entries": {
+    "433_eros": {
+      "convertedSha256": "f88bd1b82bec6cc91df005ce105549539df426785d1a9410a6745e7f5109abcc",
+      "weldToleranceKm": 0.00001,
+      "triangles": 1536,
+      "edges": 2304,
+      "invalidEdges": 0,
+      "signedVolumeKm3": 2477.0940140137172
+    }
+  }
+}

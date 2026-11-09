@@ -1,0 +1,20 @@
+{
+  "epoch": 846615186.622,
+  "range": [
+    842814926.102778,
+    850415447.141222
+  ],
+  "before": {
+    "vertices": 128,
+    "nearestPolylineKm": 22451.318212968315,
+    "mercuryRadiusKm": 2439.4,
+    "ratio": 9.203623109358167
+  },
+  "after": {
+    "vertices": 2045,
+    "currentEpochIndex": 1022,
+    "vertexDistanceKm": 0,
+    "nextSampleSeconds": 0.5548198223114014,
+    "endpointGapKm": 502.5626922016891
+  }
+}

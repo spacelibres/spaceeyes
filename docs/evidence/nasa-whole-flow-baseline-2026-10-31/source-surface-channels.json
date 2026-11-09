@@ -1,0 +1,130 @@
+{
+  "rows": [
+    {
+      "id": "sun",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [
+        "colorMapEmissive"
+      ],
+      "sourceShadowEntities": []
+    },
+    {
+      "id": "mercury",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": []
+    },
+    {
+      "id": "venus",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": []
+    },
+    {
+      "id": "earth",
+      "sourceChannels": [
+        "color",
+        "normal",
+        "specular",
+        "night",
+        "decal"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "moon"
+      ]
+    },
+    {
+      "id": "moon",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "earth"
+      ]
+    },
+    {
+      "id": "mars",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "phobos",
+        "deimos"
+      ]
+    },
+    {
+      "id": "jupiter",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "io",
+        "europa",
+        "ganymede",
+        "callisto"
+      ]
+    },
+    {
+      "id": "saturn",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [
+        "shadowRings"
+      ],
+      "sourceShadowEntities": [
+        "iapetus",
+        "dione",
+        "rhea",
+        "tethys",
+        "titan",
+        "mimas",
+        "enceladus"
+      ]
+    },
+    {
+      "id": "uranus",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "titania",
+        "oberon",
+        "umbriel",
+        "ariel",
+        "miranda"
+      ]
+    },
+    {
+      "id": "neptune",
+      "sourceChannels": [
+        "color"
+      ],
+      "sourceMaterialOptions": [],
+      "sourceShadowEntities": [
+        "triton",
+        "proteus",
+        "despina",
+        "galatea",
+        "larissa"
+      ]
+    }
+  ],
+  "currentRendererEvidence": {
+    "cubeFaces": "core/src/render_assets.rs:117; base/emissive color only, roughness not explicit",
+    "sphere": "core/src/render_assets.rs:197; perceptual_roughness=0.9",
+    "faceResolve": "core/src/face_texture.rs:215; color/emissive image assignment"
+  },
+  "classification": "confirmed channel/creation-policy gap; not a measured regression attribution"
+}

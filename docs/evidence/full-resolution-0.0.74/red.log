@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.55 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 59s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-f77a5a3def0b7cae.exe)
+
+running 1 test
+test frame_budget::tests::frame_budget_sustained_overload_keeps_full_resolution ... FAILED
+
+failures:
+
+---- frame_budget::tests::frame_budget_sustained_overload_keeps_full_resolution stdout ----
+
+thread 'frame_budget::tests::frame_budget_sustained_overload_keeps_full_resolution' (55608) panicked at src\frame_budget.rs:348:13:
+assertion `left == right` failed: overload must not reduce visual fidelity
+  left: 0.85
+ right: 1.0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    frame_budget::tests::frame_budget_sustained_overload_keeps_full_resolution
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 145 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--lib`

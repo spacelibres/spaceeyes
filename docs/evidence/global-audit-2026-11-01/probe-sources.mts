@@ -1,0 +1,5 @@
+import {fetchSolarDyn} from '../../../web/lib/solar-dyn-server.ts';
+import {createHash} from 'node:crypto';
+import {writeFile,mkdir} from 'node:fs/promises';
+const results=[];for(const id of ['sc_europa_clipper','sc_juice','sc_lucy','sc_iss','sc_lunar_reconnaissance_orbiter','sc_mars_reconnaissance_orbiter','sc_psyche','sc_juno'])for(const type of ['orb','ori'] as const){const requests=[];try{const bytes=await fetchSolarDyn(id,846686627,new AbortController().signal,async(u,o)=>{const r=await fetch(u,o),b=new Uint8Array(await r.arrayBuffer());requests.push({url:String(u),status:r.status,bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});return new Response(b,{status:r.status});},type);results.push({id,type,epoch:846686627,ok:true,bytes:bytes.length,requests});}catch(e){results.push({id,type,epoch:846686627,ok:false,error:String(e),requests});} console.log(id,type,results.at(-1).ok);}
+await mkdir('docs/evidence/global-audit-2026-11-01',{recursive:true});await writeFile('docs/evidence/global-audit-2026-11-01/source-probes.json',JSON.stringify(results,null,2)+'\n');

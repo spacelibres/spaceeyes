@@ -1,0 +1,125 @@
+✔ known ORI root coverage skips its controller without erasing prior align (41.6341ms)
+✖ ORI cache identity and source ordering survive forward/reverse covered-stage switches (4.2917ms)
+✖ ORI effective cache domain refreshes an overlapping source despite unchanged declared set (2.6947ms)
+✖ ORI proven multi-source absence retains fixed attitude only inside its open domain (2.0688ms)
+✖ ORI chooses the last covered controller and respects closed declared endpoints (27.3823ms)
+✖ ORI root coverage fallback exports cache boundary but transport or decode failures never fall back (1.5196ms)
+✖ ORI multi-track absence describes only the proven open gap (1.6637ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 1
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 309.6514
+
+✖ failing tests:
+
+test at platform\tests\solar-system.test.ts:1753:1
+✖ ORI cache identity and source ordering survive forward/reverse covered-stage switches (4.2917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  false !== true
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1766:40)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at platform\tests\solar-system.test.ts:1770:1
+✖ ORI effective cache domain refreshes an overlapping source despite unchanged declared set (2.6947ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  false !== true
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1773:108)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at platform\tests\solar-system.test.ts:1776:1
+✖ ORI proven multi-source absence retains fixed attitude only inside its open domain (2.0688ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+
+  + 'unavailable'
+  - 'ready'
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1779:44)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'unavailable',
+    expected: 'ready',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at web\lib\solar-dyn-server.test.ts:526:1
+✖ ORI chooses the last covered controller and respects closed declared endpoints (27.3823ms)
+  TypeError: Cannot read properties of undefined (reading 'track')
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:532:65)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at web\lib\solar-dyn-server.test.ts:535:1
+✖ ORI root coverage fallback exports cache boundary but transport or decode failures never fall back (1.5196ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+  -   'b',
+      'a'
+    ]
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:539:10)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'a' ],
+    expected: [ 'b', 'a' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at web\lib\solar-dyn-server.test.ts:543:1
+✖ ORI multi-track absence describes only the proven open gap (1.6637ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+  + undefined
+  - {
+  -   lowerExclusive: 2,
+  -   track: 'orientation-absence',
+  -   upperExclusive: 8
+  - }
+
+      at Object.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:546:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/lib/solar-dyn-server.test.ts:545:6)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: { track: 'orientation-absence', lowerExclusive: 2, upperExclusive: 8 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

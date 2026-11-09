@@ -1,0 +1,555 @@
+{
+  "baseline": {
+    "activeAtMs": null,
+    "worstGestureMs": 17233,
+    "longestTasks": [
+      {
+        "at": 7780.299999982119,
+        "ms": 11116
+      },
+      {
+        "at": 2534.9000000059605,
+        "ms": 4168
+      },
+      {
+        "at": 20928.90000000596,
+        "ms": 3630
+      },
+      {
+        "at": 1339.0999999940395,
+        "ms": 661
+      },
+      {
+        "at": 2000.2999999821186,
+        "ms": 533
+      },
+      {
+        "at": 7350,
+        "ms": 237
+      },
+      {
+        "at": 6803.5999999940395,
+        "ms": 98
+      }
+    ],
+    "postEntryTasks": null,
+    "maxPostEntryInputLagMs": null,
+    "perf": null,
+    "cpuProfileHot": [
+      {
+        "fn": "__wbg_getProgramParameter_fc7124bb9fb7c675",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1761,
+        "col": 60,
+        "count": 6794
+      },
+      {
+        "fn": "(idle)",
+        "url": "",
+        "line": -1,
+        "col": -1,
+        "count": 3606
+      },
+      {
+        "fn": "__wbg_getProgramParameter_fc7124bb9fb7c675",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1761,
+        "col": 60,
+        "count": 2421
+      },
+      {
+        "fn": "__wbg_getProgramParameter_fc7124bb9fb7c675",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1761,
+        "col": 60,
+        "count": 2217
+      },
+      {
+        "fn": "(program)",
+        "url": "",
+        "line": -1,
+        "col": -1,
+        "count": 766
+      },
+      {
+        "fn": "wasm-function[664]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 2529833,
+        "count": 71
+      },
+      {
+        "fn": "__wbg_getShaderParameter_745acf10b8e45e31",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1793,
+        "col": 59,
+        "count": 42
+      },
+      {
+        "fn": "wasm-function[3776]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 8017321,
+        "count": 36
+      },
+      {
+        "fn": "(garbage collector)",
+        "url": "",
+        "line": -1,
+        "col": -1,
+        "count": 35
+      },
+      {
+        "fn": "wasm-function[8686]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 11203048,
+        "count": 32
+      },
+      {
+        "fn": "wasm-function[3128]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 7282959,
+        "count": 28
+      },
+      {
+        "fn": "__wbg_bufferSubData_8609cd8a2c013181",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1269,
+        "col": 54,
+        "count": 24
+      },
+      {
+        "fn": "t",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 214677,
+        "count": 20
+      },
+      {
+        "fn": "",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 103255,
+        "count": 20
+      },
+      {
+        "fn": "#eb",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 132091,
+        "count": 19
+      },
+      {
+        "fn": "starfield",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 108230,
+        "count": 19
+      },
+      {
+        "fn": "__wbg_getShaderParameter_745acf10b8e45e31",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1793,
+        "col": 59,
+        "count": 18
+      },
+      {
+        "fn": "wasm-function[536]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 1776771,
+        "count": 17
+      },
+      {
+        "fn": "wasm-function[685]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 2623779,
+        "count": 17
+      },
+      {
+        "fn": "U",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 24585,
+        "count": 15
+      },
+      {
+        "fn": "wasm-function[1107]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 3869909,
+        "count": 15
+      },
+      {
+        "fn": "",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 93286,
+        "count": 14
+      },
+      {
+        "fn": "__wbg_useProgram_e075c2902e420761",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 2565,
+        "col": 51,
+        "count": 13
+      },
+      {
+        "fn": "wasm-function[6779]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 10225061,
+        "count": 13
+      },
+      {
+        "fn": "wasm-function[801]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 3051526,
+        "count": 13
+      },
+      {
+        "fn": "wasm-function[1030]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 3690480,
+        "count": 13
+      },
+      {
+        "fn": "fetch",
+        "url": "",
+        "line": -1,
+        "col": -1,
+        "count": 12
+      },
+      {
+        "fn": "wasm-function[664]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 2529833,
+        "count": 12
+      },
+      {
+        "fn": "wasm-function[6779]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 10225061,
+        "count": 12
+      },
+      {
+        "fn": "#eS",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/app/page-71b175cc70e3ffbf.js",
+        "line": 0,
+        "col": 136250,
+        "count": 12
+      },
+      {
+        "fn": "wasm-function[53275]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 20024039,
+        "count": 11
+      },
+      {
+        "fn": "__wbg_getShaderParameter_745acf10b8e45e31",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core.js",
+        "line": 1793,
+        "col": 59,
+        "count": 11
+      },
+      {
+        "fn": "wasm-function[13350]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 12819045,
+        "count": 10
+      },
+      {
+        "fn": "wasm-function[664]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 2529833,
+        "count": 10
+      },
+      {
+        "fn": "wasm-function[464]",
+        "url": "http://127.0.0.1:3006/wasm/spaceeyes_core_bg.wasm",
+        "line": 0,
+        "col": 881590,
+        "count": 10
+      }
+    ]
+  },
+  "first": {
+    "activeAtMs": 20107.59999999404,
+    "worstGestureMs": 149,
+    "longestTasks": [
+      {
+        "at": 2010.7999999821186,
+        "ms": 425
+      },
+      {
+        "at": 2436.5999999940395,
+        "ms": 360
+      },
+      {
+        "at": 2870.199999988079,
+        "ms": 211
+      },
+      {
+        "at": 3655.5,
+        "ms": 183
+      },
+      {
+        "at": 3901.2999999821186,
+        "ms": 121
+      }
+    ],
+    "postEntryTasks": [],
+    "maxPostEntryInputLagMs": 20.80000001192093,
+    "perf": {
+      "cpu_p50_ms": 8,
+      "cpu_p95_ms": 9.5,
+      "cpu_p99_ms": 10.5,
+      "gpu_ms": null,
+      "noncritical_pending": 0,
+      "present_interval_p50_ms": 20.800000000001262,
+      "present_interval_p95_ms": 21.000000000000796,
+      "present_interval_p99_ms": 21.500000000003183,
+      "rendered_frames": 1057,
+      "resolution_scale": 1,
+      "skipped_frames": 2866,
+      "stagesMs": {
+        "annotations": {
+          "count": 120,
+          "latest": 0.4,
+          "mean": 0.540833333333334,
+          "p50": 0.5,
+          "p95": 0.8,
+          "p99": 0.9
+        },
+        "extract": {
+          "count": 120,
+          "latest": 0.7,
+          "mean": 0.6633333333333344,
+          "p50": 0.6,
+          "p95": 0.9,
+          "p99": 1.1
+        },
+        "main": {
+          "count": 120,
+          "latest": 2.3,
+          "mean": 2.499166666666669,
+          "p50": 2.4,
+          "p95": 3.1,
+          "p99": 3.2
+        },
+        "render": {
+          "count": 120,
+          "latest": 5.6,
+          "mean": 4.924166666666666,
+          "p50": 4.7,
+          "p95": 5.8999999999999995,
+          "p99": 6.4
+        },
+        "sync_scene": {
+          "count": 120,
+          "latest": 0,
+          "mean": 0.028333333333333346,
+          "p50": 0,
+          "p95": 0.1,
+          "p99": 0.1
+        },
+        "trajectory_upload": {
+          "count": 120,
+          "latest": 0.3,
+          "mean": 0.2541666666666668,
+          "p50": 0.3,
+          "p95": 0.4,
+          "p99": 0.4
+        }
+      },
+      "startup": {
+        "failed": 0,
+        "frames": 1057,
+        "pending": 0,
+        "stableFrames": 985
+      },
+      "target_fps": 60,
+      "transition_reason": "cpu_recovered",
+      "transition_seconds": 17.129,
+      "visible": true,
+      "worst_one_second_frames": 8
+    }
+  },
+  "freshProfile": {
+    "activeAtMs": 37100.70000001788,
+    "worstGestureMs": 126,
+    "longestTasks": [
+      {
+        "at": 9529.300000011921,
+        "ms": 6896
+      },
+      {
+        "at": 18297.90000000596,
+        "ms": 3857
+      },
+      {
+        "at": 2040.9000000059605,
+        "ms": 3373
+      },
+      {
+        "at": 6180.0999999940395,
+        "ms": 3268
+      },
+      {
+        "at": 1284.5,
+        "ms": 406
+      },
+      {
+        "at": 1691.4000000059605,
+        "ms": 343
+      },
+      {
+        "at": 5960.5,
+        "ms": 139
+      },
+      {
+        "at": 5435,
+        "ms": 76
+      }
+    ],
+    "postEntryTasks": [],
+    "maxPostEntryInputLagMs": 21.899999976158142,
+    "perf": {
+      "cpu_p50_ms": 7.4,
+      "cpu_p95_ms": 10,
+      "cpu_p99_ms": 11.2,
+      "gpu_ms": null,
+      "noncritical_pending": 0,
+      "present_interval_p50_ms": 34.70000000000084,
+      "present_interval_p95_ms": 34.900000000000375,
+      "present_interval_p99_ms": 35.09999999999991,
+      "rendered_frames": 840,
+      "resolution_scale": 1,
+      "skipped_frames": 3134,
+      "stagesMs": {
+        "annotations": {
+          "count": 120,
+          "latest": 0.8,
+          "mean": 0.6091666666666672,
+          "p50": 0.6,
+          "p95": 0.8,
+          "p99": 0.9
+        },
+        "extract": {
+          "count": 120,
+          "latest": 0.9,
+          "mean": 0.7241666666666678,
+          "p50": 0.7,
+          "p95": 1,
+          "p99": 1.2
+        },
+        "main": {
+          "count": 120,
+          "latest": 3,
+          "mean": 2.699166666666667,
+          "p50": 2.7,
+          "p95": 3.4,
+          "p99": 3.7
+        },
+        "render": {
+          "count": 120,
+          "latest": 5.8999999999999995,
+          "mean": 4.317499999999999,
+          "p50": 4,
+          "p95": 5.8999999999999995,
+          "p99": 6.3
+        },
+        "sync_scene": {
+          "count": 120,
+          "latest": 0,
+          "mean": 0.03500000000000002,
+          "p50": 0,
+          "p95": 0.1,
+          "p99": 0.2
+        },
+        "trajectory_upload": {
+          "count": 120,
+          "latest": 0.3,
+          "mean": 0.27333333333333354,
+          "p50": 0.3,
+          "p95": 0.4,
+          "p99": 0.4
+        }
+      },
+      "startup": {
+        "failed": 0,
+        "frames": 840,
+        "pending": 0,
+        "stableFrames": 771
+      },
+      "target_fps": 30,
+      "transition_reason": "sustained_overload",
+      "transition_seconds": 3.785,
+      "visible": true,
+      "worst_one_second_frames": 1
+    }
+  },
+  "heapAndFrameConfirmedInput": {
+    "heap": {
+      "usedSize": 27287352,
+      "totalSize": 79302656,
+      "embedderHeapUsedSize": 12926968,
+      "backingStorageSize": 10458785
+    },
+    "system": null,
+    "gestures": [
+      {
+        "changed": true
+      },
+      {
+        "changed": true
+      },
+      {
+        "changed": true
+      },
+      {
+        "changed": true
+      }
+    ]
+  },
+  "gpu": {
+    "renderer": "ANGLE (Intel, Intel(R) Arc(TM) B390 GPU (0x0000B080) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.101.8724)",
+    "devices": [
+      {
+        "vendorId": 32902,
+        "deviceId": 45184,
+        "subSysId": 347344963,
+        "revision": 4,
+        "vendorString": "",
+        "deviceString": "Intel(R) Arc(TM) B390 GPU",
+        "driverVendor": "Intel",
+        "driverVersion": "32.0.101.8724"
+      },
+      {
+        "vendorId": 5140,
+        "deviceId": 140,
+        "subSysId": 0,
+        "revision": 0,
+        "vendorString": "",
+        "deviceString": "Microsoft Basic Render Driver",
+        "driverVendor": "",
+        "driverVersion": "10.0.26100.9711"
+      }
+    ]
+  },
+  "limitations": [
+    "Different browser and driver cache states; compilation duration is not a controlled before-after speed benchmark.",
+    "GPU execution time, VRAM and process RSS were not measured.",
+    "JS heap sample does not include all WASM, Worker or GPU memory."
+  ]
+}

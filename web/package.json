@@ -1,0 +1,38 @@
+{
+  "name": "spaceeyes-web",
+  "version": "0.0.115",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --webpack --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test lib/*.test.ts",
+    "prepare:assets": "node scripts/prepare-runtime.mjs",
+    "prepare:nasa-static": "node ../tools/prepare-nasa-static.ts",
+    "audit:nasa-dyn": "node ../tools/audit-nasa-dyn.ts",
+    "prepare:fixture": "node scripts/prepare-assets.mjs",
+    "prepare:galaxy": "node --max-old-space-size=4096 scripts/prepare-galaxy-lod.ts && node scripts/prepare-galaxy-lod-audit.ts"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "@gltf-transform/extensions": "4.5.1",
+    "@loaders.gl/textures": "4.5.4",
+    "draco3dgltf": "1.5.9",
+    "gl-matrix": "3.4.4",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "sharp": "0.35.5",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "acorn": "8.19.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3"
+  }
+}

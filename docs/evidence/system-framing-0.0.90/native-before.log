@@ -1,0 +1,21 @@
+   Compiling spaceeyes-core v0.0.63 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 05s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-5843f930ba919db3.exe)
+
+running 1 test
+
+thread 'renderer::nasa_framing_system_tests::selected_moon_system_frames_its_host_without_changing_selection' (32588) panicked at src\renderer.rs:3529:9:
+assertion `left == right` failed
+  left: [100000090.0, 200000000.0, 300000000.0]
+ right: [100000000.0, 200000000.0, 300000000.0]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test renderer::nasa_framing_system_tests::selected_moon_system_frames_its_host_without_changing_selection ... FAILED
+
+failures:
+
+failures:
+    renderer::nasa_framing_system_tests::selected_moon_system_frames_its_host_without_changing_selection
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 157 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `--lib`

@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.52 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.34s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-524281a36de75b4b.exe)
+
+running 1 test
+test orbit_lines::trail_tests::selected_satellite_does_not_hide_other_satellites_of_its_host ... FAILED
+
+failures:
+
+---- orbit_lines::trail_tests::selected_satellite_does_not_hide_other_satellites_of_its_host stdout ----
+
+thread 'orbit_lines::trail_tests::selected_satellite_does_not_hide_other_satellites_of_its_host' (11604) panicked at src\orbit_lines.rs:276:9:
+assertion `left == right` failed
+  left: 0.0
+ right: 1.0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    orbit_lines::trail_tests::selected_satellite_does_not_hide_other_satellites_of_its_host
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

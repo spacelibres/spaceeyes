@@ -1,0 +1,34 @@
+{
+  "before": {
+    "focusedId": "earth",
+    "positionKm": [
+      117502885.54356562,
+      83313764.90620373,
+      36138964.78535688
+    ],
+    "desiredKm": [
+      117502885.54356562,
+      83313764.90620373,
+      36138964.78535688
+    ],
+    "framingRadiusKm": 6378.1,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "earth",
+    "positionKm": [
+      117502885.54356562,
+      83201255.73703755,
+      36138964.78535688
+    ],
+    "desiredKm": [
+      117502885.54356562,
+      83201255.73703755,
+      36138964.78535688
+    ],
+    "framingRadiusKm": 6378.1,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}

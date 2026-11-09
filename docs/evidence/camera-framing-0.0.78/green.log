@@ -1,0 +1,10 @@
+   Compiling spaceeyes-core v0.0.57 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.50s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-8e4ba59c099ad119.exe)
+
+running 3 tests
+test renderer::camera_parity_regression_tests::nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center ... ok
+test renderer::camera_parity_regression_tests::nasa_entry_uses_parent_north_and_preserves_manual_orbit ... ok
+test renderer::camera_parity_regression_tests::nasa_near_surface_zoom_scales_altitude ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 145 filtered out; finished in 0.02s

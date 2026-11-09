@@ -1,0 +1,36 @@
+   Compiling spaceeyes-core v0.0.57 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 38.49s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-8e4ba59c099ad119.exe)
+
+running 3 tests
+test renderer::camera_parity_regression_tests::nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center ... FAILED
+test renderer::camera_parity_regression_tests::nasa_entry_uses_parent_north_and_preserves_manual_orbit ... FAILED
+test renderer::camera_parity_regression_tests::nasa_near_surface_zoom_scales_altitude ... FAILED
+
+failures:
+
+---- renderer::camera_parity_regression_tests::nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center stdout ----
+
+thread 'renderer::camera_parity_regression_tests::nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center' (30268) panicked at src\renderer.rs:3455:9:
+authored radius is centered on the entity origin
+
+---- renderer::camera_parity_regression_tests::nasa_entry_uses_parent_north_and_preserves_manual_orbit stdout ----
+
+thread 'renderer::camera_parity_regression_tests::nasa_entry_uses_parent_north_and_preserves_manual_orbit' (32700) panicked at src\renderer.rs:3395:9:
+entry roll must use parent north, not world Y
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- renderer::camera_parity_regression_tests::nasa_near_surface_zoom_scales_altitude stdout ----
+
+thread 'renderer::camera_parity_regression_tests::nasa_near_surface_zoom_scales_altitude' (28216) panicked at src\renderer.rs:3482:9:
+planet zoom must multiply altitude, not distance to center
+
+
+failures:
+    renderer::camera_parity_regression_tests::nasa_authored_extents_fit_aims_at_entity_origin_not_moving_mesh_center
+    renderer::camera_parity_regression_tests::nasa_entry_uses_parent_north_and_preserves_manual_orbit
+    renderer::camera_parity_regression_tests::nasa_near_surface_zoom_scales_altitude
+
+test result: FAILED. 0 passed; 3 failed; 0 ignored; 0 measured; 145 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--lib`

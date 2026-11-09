@@ -1,0 +1,12 @@
+{
+  "description": "Pinned NASA sample identities observed on 2026-10-28; no third-party payloads distributed.",
+  "artifacts": [
+    { "file": "juno.gltf", "kind": "gltf", "bytes": 56278, "sha256": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9", "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/Juno.gltf" },
+    { "file": "juno_closed.bin", "kind": "binary", "bytes": 1779752, "sha256": "ecb0f34d8cdcd961e0e4e6ddf1aafc402be4d2a9071a41ec4829b1a667cebee0", "source": "https://eyes.nasa.gov/assets/static/models/sc_juno/juno_closed.bin" },
+    { "file": "galaxies.0.bin", "kind": "point-cloud", "bytes": 27857, "sha256": "2fbe14f798539bed8cb0b7770d9ad4fae4b6a460c675b00622a932a967029b05", "source": "https://eyes.nasa.gov/assets/static/stars/galaxies.0.bin" },
+    { "file": "earth-color-face0-level-7.ktx2", "kind": "ktx2", "bytes": 728, "sha256": "bee4dcfc2635d96bfb8266cf673ed1bba354b0189385cb97a51ecee681242c1e", "source": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/color/0/-7/0/0.ktx2" },
+    { "file": "earth-sun-orb-def.dyn", "kind": "dyn", "bytes": 30916, "sha256": "5c31b43bcd091f63c314da053595f67ea4277f9a71584e2a901983cf8041a580", "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/sun/orb/def.dyn" },
+    { "file": "earth-ori-def.dyn", "kind": "dyn", "bytes": 204, "sha256": "bb6b0384b9b0c17f2ed49b1b458758dbd731e1b3e27477afdc6a11fe9d0bd877", "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/earth/ori/def.dyn" },
+    { "file": "jupiter-sun-orb-def.dyn", "kind": "dyn", "bytes": 2548, "sha256": "9e69166cf390e6713d6b345a9941d0f7efb7c2a42517b826005ee71574d38f43", "source": "https://eyes.nasa.gov/assets/dynamic/dynamo/jupiter/sun/orb/def.dyn" }
+  ]
+}

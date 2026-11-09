@@ -1,0 +1,34 @@
+{
+  "before": {
+    "focusedId": "jupiter",
+    "positionKm": [
+      -548153982.6627578,
+      517620565.00372285,
+      238278043.35123098
+    ],
+    "desiredKm": [
+      -548153982.6627578,
+      517620565.00372285,
+      238278043.35123098
+    ],
+    "framingRadiusKm": 1249378.0895004272,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "after": {
+    "focusedId": "jupiter",
+    "positionKm": [
+      -548153982.6627578,
+      521294207.2121579,
+      238278043.35123098
+    ],
+    "desiredKm": [
+      -548153982.6627578,
+      521294207.2121579,
+      238278043.35123098
+    ],
+    "framingRadiusKm": 1249378.0895004272,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  }
+}

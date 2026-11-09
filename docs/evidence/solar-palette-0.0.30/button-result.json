@@ -1,0 +1,11 @@
+{
+  "palette": {
+    "surfaceGain": 1.05,
+    "surfaceColor": 16729088,
+    "coolColor": 6620160,
+    "hotColor": 16742922,
+    "archCoolColor": 9636352,
+    "archHotColor": 16765018
+  },
+  "nonPaletteChanged": []
+}

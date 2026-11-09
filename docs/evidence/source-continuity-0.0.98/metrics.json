@@ -1,0 +1,2413 @@
+{
+  "method": "Fixed starting epoch846972583.005967, FOV45, all flags enabled, true GPU, actual timeline drag. Lightweight pass-through observer extracts only epoch/style fields; no full per-path JSON.parse or Worker message tap in these final cases. Head coverage is distinct from complete visible-history coverage.",
+  "cases": [
+    {
+      "name": "Earth system +36000",
+      "hash": "#/earth?tdb=846972885.9137684&rate=36000&play=1&mode=system&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+      "epoch": 848109351.9137776,
+      "camera": {
+        "focusedId": "earth",
+        "epochTdbSeconds": 848109351.9137776,
+        "framingReferenceId": "earth",
+        "framingReferencePositionKm": [
+          87273291.99866284,
+          109607870.54511206,
+          47512284.13626867
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          87269563.17758332,
+          108665048.27239172,
+          47951854.06626363
+        ],
+        "desiredKm": [
+          87269563.17758332,
+          108665048.27239172,
+          47951854.06626363
+        ],
+        "framingRadiusKm": 181579.8676563263,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "workers": 4,
+      "tracked": 67,
+      "headMissingLast": [
+        "sc_jwst"
+      ],
+      "missingHeadP50": 1,
+      "missingHeadP95": 1,
+      "missingHeadMax": 1,
+      "issMissingFrames": 0,
+      "observedFrames": 279,
+      "partialLast": [
+        "sc_ace",
+        "sc_imap",
+        "sc_jwst",
+        "sc_soho",
+        "sc_wind"
+      ],
+      "perf": {
+        "cpu_p50_ms": 17.4,
+        "cpu_p95_ms": 18.9,
+        "cpu_p99_ms": 19,
+        "gpu_ms": null,
+        "noncritical_pending": 26,
+        "present_interval_p50_ms": 34.20000000000556,
+        "present_interval_p95_ms": 39.00000000000148,
+        "present_interval_p99_ms": 41.69999999999874,
+        "rendered_frames": 1164,
+        "resolution_scale": 1,
+        "skipped_frames": 1504,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.9,
+            "mean": 2.6066666666666642,
+            "p50": 2.7,
+            "p95": 3,
+            "p99": 3.1
+          },
+          "extract": {
+            "count": 120,
+            "latest": 0.8,
+            "mean": 1.207500000000001,
+            "p50": 1.2,
+            "p95": 1.5,
+            "p99": 1.7
+          },
+          "main": {
+            "count": 120,
+            "latest": 5.4,
+            "mean": 6.819999999999996,
+            "p50": 6.8999999999999995,
+            "p95": 7.5,
+            "p99": 7.8
+          },
+          "render": {
+            "count": 120,
+            "latest": 9.1,
+            "mean": 9.01083333333334,
+            "p50": 9.1,
+            "p95": 10.200000000000001,
+            "p99": 10.6
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0,
+            "mean": 0.07166666666666659,
+            "p50": 0.1,
+            "p95": 0.2,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.6,
+            "mean": 0.6991666666666672,
+            "p50": 0.7,
+            "p95": 0.8,
+            "p99": 0.9
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.4277,
+        "visible": true,
+        "worst_one_second_frames": 1
+      },
+      "rows": {
+        "sc_chandra": {
+          "first": 847846102.8137774,
+          "last": 848218608.3137774,
+          "built": 848092608.3137774,
+          "duration": 228505.5,
+          "count": 244,
+          "draw": [
+            847864102.8137774,
+            848092608.3137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44885.69999998808,
+          "publications": 24
+        },
+        "sc_ace": {
+          "first": 834157454.6192824,
+          "last": 850443016.8325185,
+          "built": 846974135.1137685,
+          "duration": 31715490,
+          "count": 82,
+          "draw": [
+            815258645.1137685,
+            846974135.1137685
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 13788.40000000596,
+          "publications": 4
+        },
+        "sc_acs3": {
+          "first": 848100392.7940296,
+          "last": 848118896.6014247,
+          "built": 848108102.7137775,
+          "duration": 6167.935798395309,
+          "count": 403,
+          "draw": [
+            848101934.7779791,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45288.30000001192,
+          "publications": 353
+        },
+        "sc_aqua": {
+          "first": 848100685.8387775,
+          "last": 848118486.3387775,
+          "built": 848108102.7137775,
+          "duration": 5933.5,
+          "count": 451,
+          "draw": [
+            848102169.2137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45288.59999999404,
+          "publications": 348
+        },
+        "sc_aura": {
+          "first": 848098187.4387776,
+          "last": 848115987.9387776,
+          "built": 848105604.3137776,
+          "duration": 5933.5,
+          "count": 486,
+          "draw": [
+            848099670.8137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45251.40000000596,
+          "publications": 294
+        },
+        "sc_cygnss_2": {
+          "first": 848098638.0637776,
+          "last": 848115357.0637776,
+          "built": 848105604.3137776,
+          "duration": 5573,
+          "count": 486,
+          "draw": [
+            848100031.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45252.90000000596,
+          "publications": 264
+        },
+        "sc_cygnss_4": {
+          "first": 848097637.2637776,
+          "last": 848114356.2637776,
+          "built": 848104603.5137776,
+          "duration": 5573,
+          "count": 508,
+          "draw": [
+            848099030.5137776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45217.90000000596,
+          "publications": 262
+        },
+        "sc_cygnss_8": {
+          "first": 848097637.2637776,
+          "last": 848114356.2637776,
+          "built": 848104603.5137776,
+          "duration": 5573,
+          "count": 531,
+          "draw": [
+            848099030.5137776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45218.40000000596,
+          "publications": 250
+        },
+        "sc_cygnss_1": {
+          "first": 848098638.0637776,
+          "last": 848115357.0637776,
+          "built": 848105604.3137776,
+          "duration": 5573,
+          "count": 454,
+          "draw": [
+            848100031.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45222.59999999404,
+          "publications": 307
+        },
+        "sc_cygnss_3": {
+          "first": 848097637.2637776,
+          "last": 848114356.2637776,
+          "built": 848104603.5137776,
+          "duration": 5573,
+          "count": 544,
+          "draw": [
+            848099030.5137776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45216.69999998808,
+          "publications": 262
+        },
+        "sc_cygnss_5": {
+          "first": 848097637.2637776,
+          "last": 848114356.2637776,
+          "built": 848104603.5137776,
+          "duration": 5573,
+          "count": 532,
+          "draw": [
+            848099030.5137776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45189.5,
+          "publications": 295
+        },
+        "sc_cygnss_7": {
+          "first": 848096388.0637776,
+          "last": 848113107.0637776,
+          "built": 848103354.3137776,
+          "duration": 5573,
+          "count": 483,
+          "draw": [
+            848097781.3137776,
+            848103354.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45184,
+          "publications": 228
+        },
+        "sc_euclid": {
+          "first": 814971629.1137685,
+          "last": 850449629.1137685,
+          "built": 847000379.1137685,
+          "duration": 31536000,
+          "count": 282,
+          "draw": [
+            815464379.1137685,
+            847000379.1137685
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 14551.59999999404,
+          "publications": 4
+        },
+        "sc_gpm": {
+          "first": 848098667.4387776,
+          "last": 848115315.9387776,
+          "built": 848105604.3137776,
+          "duration": 5549.5,
+          "count": 454,
+          "draw": [
+            848100054.8137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45252.09999999404,
+          "publications": 273
+        },
+        "sc_grace_fo1": {
+          "first": 848098635.5637776,
+          "last": 848115360.5637776,
+          "built": 848105604.3137776,
+          "duration": 5575,
+          "count": 506,
+          "draw": [
+            848100029.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45223.40000000596,
+          "publications": 251
+        },
+        "sc_grace_fo2": {
+          "first": 848098635.5637776,
+          "last": 848115360.5637776,
+          "built": 848105604.3137776,
+          "duration": 5575,
+          "count": 506,
+          "draw": [
+            848100029.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45223,
+          "publications": 288
+        },
+        "sc_hubble_space_telescope": {
+          "first": 848100917.0887775,
+          "last": 848118162.5887775,
+          "built": 848108102.7137775,
+          "duration": 5748.5,
+          "count": 562,
+          "draw": [
+            848102354.2137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45289,
+          "publications": 347
+        },
+        "sc_ibex": {
+          "first": 847250623.1537771,
+          "last": 848192112.3137771,
+          "built": 848066112.3137771,
+          "duration": 797489.16,
+          "count": 195,
+          "draw": [
+            847268623.1537771,
+            848066112.3137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44126.59999999404,
+          "publications": 23
+        },
+        "sc_icesat_2": {
+          "first": 848101036.2137775,
+          "last": 848117995.8137776,
+          "built": 848108102.7137775,
+          "duration": 5653.2,
+          "count": 524,
+          "draw": [
+            848102449.5137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45291.5,
+          "publications": 273
+        },
+        "sc_imap": {
+          "first": 846552361.8494804,
+          "last": 848509999.4588792,
+          "built": 847001628.3137685,
+          "duration": 31536000,
+          "count": 62,
+          "draw": [
+            815465628.3137685,
+            847001628.3137685
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 14585.5,
+          "publications": 4
+        },
+        "sc_iss": {
+          "first": 848101136.4637775,
+          "last": 848117855.4637775,
+          "built": 848108102.7137775,
+          "duration": 5573,
+          "count": 546,
+          "draw": [
+            848102529.7137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45290.90000000596,
+          "publications": 279
+        },
+        "sc_landsat_9": {
+          "first": 848100677.7137775,
+          "last": 848118497.7137775,
+          "built": 848108102.7137775,
+          "duration": 5940,
+          "count": 386,
+          "draw": [
+            848102162.7137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45289.19999998808,
+          "publications": 362
+        },
+        "sc_mms_1": {
+          "first": 847958370.713777,
+          "last": 848188364.713777,
+          "built": 848062364.713777,
+          "duration": 85994,
+          "count": 137,
+          "draw": [
+            847976370.713777,
+            848062364.713777
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44023.90000000596,
+          "publications": 23
+        },
+        "sc_ixpe": {
+          "first": 848098854.3137776,
+          "last": 848115054.3137776,
+          "built": 848105604.3137776,
+          "duration": 5400,
+          "count": 445,
+          "draw": [
+            848100204.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45251.69999998808,
+          "publications": 283
+        },
+        "sc_jason_3": {
+          "first": 848099701.4637775,
+          "last": 848119864.4637775,
+          "built": 848108102.7137775,
+          "duration": 6721,
+          "count": 429,
+          "draw": [
+            848101381.7137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45291.19999998808,
+          "publications": 270
+        },
+        "sc_jwst": {
+          "first": 844408932.0477004,
+          "last": 847656568.5369012,
+          "built": 847653217.5137742,
+          "duration": 31536000,
+          "count": 119,
+          "draw": [
+            816117217.5137742,
+            847653217.5137742
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 32655.59999999404,
+          "publications": 30
+        },
+        "sc_landsat_8": {
+          "first": 848100692.7137775,
+          "last": 848118476.7137775,
+          "built": 848108102.7137775,
+          "duration": 5928,
+          "count": 384,
+          "draw": [
+            848102174.7137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45290.59999999404,
+          "publications": 308
+        },
+        "sc_mms_2": {
+          "first": 847962150.3137771,
+          "last": 848192112.3137771,
+          "built": 848066112.3137771,
+          "duration": 85962,
+          "count": 136,
+          "draw": [
+            847980150.3137771,
+            848066112.3137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44126.80000001192,
+          "publications": 23
+        },
+        "sc_mms_3": {
+          "first": 847997758.1137775,
+          "last": 848228105.1137775,
+          "built": 848102105.1137775,
+          "duration": 86347,
+          "count": 138,
+          "draw": [
+            848015758.1137775,
+            848102105.1137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45119.30000001192,
+          "publications": 23
+        },
+        "sc_mms_4": {
+          "first": 847988584.3137774,
+          "last": 848218608.3137774,
+          "built": 848092608.3137774,
+          "duration": 86024,
+          "count": 137,
+          "draw": [
+            848006584.3137774,
+            848092608.3137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44853.19999998808,
+          "publications": 23
+        },
+        "sc_nisar": {
+          "first": 848101136.4637775,
+          "last": 848117855.4637775,
+          "built": 848108102.7137775,
+          "duration": 5573,
+          "count": 421,
+          "draw": [
+            848102529.7137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45289.5,
+          "publications": 323
+        },
+        "sc_nustar": {
+          "first": 848097355.1887777,
+          "last": 848114751.1687776,
+          "built": 848104603.5137776,
+          "duration": 5798.66,
+          "count": 521,
+          "draw": [
+            848098804.8537776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45217.5,
+          "publications": 248
+        },
+        "sc_oco_2": {
+          "first": 848098187.6471108,
+          "last": 848115987.6471109,
+          "built": 848105604.3137776,
+          "duration": 5933.333333333333,
+          "count": 509,
+          "draw": [
+            848099670.9804442,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45221.5,
+          "publications": 307
+        },
+        "sc_pace": {
+          "first": 848100735.6725742,
+          "last": 848118416.5714622,
+          "built": 848108102.7137775,
+          "duration": 5893.632962644257,
+          "count": 449,
+          "draw": [
+            848102209.0808148,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45289.80000001192,
+          "publications": 359
+        },
+        "sc_prefire_1": {
+          "first": 848098516.6285902,
+          "last": 848115527.0730398,
+          "built": 848105604.3137776,
+          "duration": 5670.148149857338,
+          "count": 564,
+          "draw": [
+            848099934.1656277,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45218.80000001192,
+          "publications": 312
+        },
+        "sc_prefire_2": {
+          "first": 848098509.8733995,
+          "last": 848115536.5303069,
+          "built": 848105604.3137776,
+          "duration": 5675.552302489917,
+          "count": 496,
+          "draw": [
+            848099928.7614751,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45221.09999999404,
+          "publications": 328
+        },
+        "sc_soho": {
+          "first": 842171103.8903233,
+          "last": 850452127.5137686,
+          "built": 847002877.5137686,
+          "duration": 31536000,
+          "count": 51,
+          "draw": [
+            815466877.5137686,
+            847002877.5137686
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 14623.5,
+          "publications": 4
+        },
+        "sc_spherex": {
+          "first": 848100784.9296476,
+          "last": 848118347.6115595,
+          "built": 848108102.7137775,
+          "duration": 5854.2273040147475,
+          "count": 447,
+          "draw": [
+            848102248.4864736,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45291.80000001192,
+          "publications": 349
+        },
+        "sc_starling_3": {
+          "first": 848100968.4496226,
+          "last": 848118090.6835945,
+          "built": 848108102.7137775,
+          "duration": 5707.411323954126,
+          "count": 557,
+          "draw": [
+            848102395.3024536,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45290.09999999404,
+          "publications": 337
+        },
+        "sc_starling_4": {
+          "first": 848100944.9083961,
+          "last": 848118123.6413115,
+          "built": 848108102.7137775,
+          "duration": 5726.244305151843,
+          "count": 448,
+          "draw": [
+            848102376.4694724,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45290.40000000596,
+          "publications": 338
+        },
+        "sc_tdrs_6": {
+          "first": 847966726.6537771,
+          "last": 848196864.3137771,
+          "built": 848070864.3137771,
+          "duration": 86137.66,
+          "count": 533,
+          "draw": [
+            847984726.6537771,
+            848070864.3137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44251.59999999404,
+          "publications": 22
+        },
+        "sc_sdo": {
+          "first": 848003965.0537776,
+          "last": 848234102.7137775,
+          "built": 848108102.7137775,
+          "duration": 86137.66,
+          "count": 532,
+          "draw": [
+            848021965.0537776,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45292.19999998808,
+          "publications": 23
+        },
+        "sc_sentinel_6": {
+          "first": 848100685.8387775,
+          "last": 848118486.3387775,
+          "built": 848108102.7137775,
+          "duration": 5933.5,
+          "count": 418,
+          "draw": [
+            848102169.2137775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45287.90000000596,
+          "publications": 241
+        },
+        "sc_sentinel_6b": {
+          "first": 848098187.4387776,
+          "last": 848115987.9387776,
+          "built": 848105604.3137776,
+          "duration": 5933.5,
+          "count": 450,
+          "draw": [
+            848099670.8137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45219.59999999404,
+          "publications": 304
+        },
+        "sc_smap": {
+          "first": 848098220.8137776,
+          "last": 848115941.2137775,
+          "built": 848105604.3137776,
+          "duration": 5906.8,
+          "count": 506,
+          "draw": [
+            848099697.5137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45252.5,
+          "publications": 238
+        },
+        "sc_starling_1": {
+          "first": 848100945.057494,
+          "last": 848118123.4325744,
+          "built": 848108102.7137775,
+          "duration": 5726.125026781574,
+          "count": 476,
+          "draw": [
+            848102376.5887507,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45292.5,
+          "publications": 341
+        },
+        "sc_starling_2": {
+          "first": 848098433.304484,
+          "last": 848115643.7267885,
+          "built": 848105604.3137776,
+          "duration": 5736.807434856062,
+          "count": 508,
+          "draw": [
+            848099867.5063428,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45220.40000000596,
+          "publications": 302
+        },
+        "sc_tdrs_5": {
+          "first": 847966726.6537771,
+          "last": 848196864.3137771,
+          "built": 848070864.3137771,
+          "duration": 86137.66,
+          "count": 541,
+          "draw": [
+            847984726.6537771,
+            848070864.3137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44255.59999999404,
+          "publications": 22
+        },
+        "sc_tdrs_8": {
+          "first": 847967962.3137771,
+          "last": 848198113.5137771,
+          "built": 848072113.5137771,
+          "duration": 86151.2,
+          "count": 538,
+          "draw": [
+            847985962.3137771,
+            848072113.5137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44289.80000001192,
+          "publications": 22
+        },
+        "sc_tdrs_9": {
+          "first": 847977459.3137773,
+          "last": 848207610.3137773,
+          "built": 848081610.3137773,
+          "duration": 86151,
+          "count": 535,
+          "draw": [
+            847995459.3137773,
+            848081610.3137773
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44553,
+          "publications": 22
+        },
+        "sc_tdrs_11": {
+          "first": 847967962.5137771,
+          "last": 848198113.5137771,
+          "built": 848072113.5137771,
+          "duration": 86151,
+          "count": 537,
+          "draw": [
+            847985962.5137771,
+            848072113.5137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44290.19999998808,
+          "publications": 22
+        },
+        "sc_tdrs_12": {
+          "first": 847977459.3137773,
+          "last": 848207610.3137773,
+          "built": 848081610.3137773,
+          "duration": 86151,
+          "count": 537,
+          "draw": [
+            847995459.3137773,
+            848081610.3137773
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44553.5,
+          "publications": 22
+        },
+        "sc_tdrs_13": {
+          "first": 847961961.3137771,
+          "last": 848192112.3137771,
+          "built": 848066112.3137771,
+          "duration": 86151,
+          "count": 538,
+          "draw": [
+            847979961.3137771,
+            848066112.3137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44149.5,
+          "publications": 22
+        },
+        "sc_suomi_npp": {
+          "first": 848098355.9887776,
+          "last": 848115751.9687775,
+          "built": 848105604.3137776,
+          "duration": 5798.66,
+          "count": 441,
+          "draw": [
+            848099805.6537776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45221.80000001192,
+          "publications": 295
+        },
+        "sc_tempo": {
+          "first": 847981188.1203504,
+          "last": 848211357.9137775,
+          "built": 848085357.9137775,
+          "duration": 86169.79342711592,
+          "count": 532,
+          "draw": [
+            847999188.1203504,
+            848085357.9137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44657.09999999404,
+          "publications": 22
+        },
+        "sc_terra": {
+          "first": 848100686.0512775,
+          "last": 848118486.0412775,
+          "built": 848108102.7137775,
+          "duration": 5933.33,
+          "count": 452,
+          "draw": [
+            848102169.3837775,
+            848108102.7137775
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45292.80000001192,
+          "publications": 314
+        },
+        "sc_tdrs_3": {
+          "first": 847967976.1837771,
+          "last": 848198113.5137771,
+          "built": 848072113.5137771,
+          "duration": 86137.33,
+          "count": 538,
+          "draw": [
+            847985976.1837771,
+            848072113.5137771
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44317.59999999404,
+          "publications": 22
+        },
+        "sc_tdrs_7": {
+          "first": 847978708.5137774,
+          "last": 848208859.5137774,
+          "built": 848082859.5137774,
+          "duration": 86151,
+          "count": 532,
+          "draw": [
+            847996708.5137774,
+            848082859.5137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44620.90000000596,
+          "publications": 22
+        },
+        "sc_tdrs_10": {
+          "first": 847978708.3137773,
+          "last": 848208859.5137774,
+          "built": 848082859.5137774,
+          "duration": 86151.2,
+          "count": 533,
+          "draw": [
+            847996708.3137773,
+            848082859.5137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44621.30000001192,
+          "publications": 22
+        },
+        "sc_themis_a": {
+          "first": 847965182.3137773,
+          "last": 848207610.3137773,
+          "built": 848081610.3137773,
+          "duration": 98428,
+          "count": 372,
+          "draw": [
+            847983182.3137773,
+            848081610.3137773
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44553.80000001192,
+          "publications": 22
+        },
+        "sc_themis_e": {
+          "first": 847958952.0137774,
+          "last": 848208859.5137774,
+          "built": 848082859.5137774,
+          "duration": 105907.5,
+          "count": 441,
+          "draw": [
+            847976952.0137774,
+            848082859.5137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44621.69999998808,
+          "publications": 22
+        },
+        "sc_wind": {
+          "first": 845877686.1539876,
+          "last": 849764788.5794011,
+          "built": 847961640.3137761,
+          "duration": 16485927,
+          "count": 555,
+          "draw": [
+            831475713.3137761,
+            847961640.3137761
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 41253.30000001192,
+          "publications": 4
+        },
+        "sc_noaa_20": {
+          "first": 848098188.0637776,
+          "last": 848115987.0637776,
+          "built": 848105604.3137776,
+          "duration": 5933,
+          "count": 433,
+          "draw": [
+            848099671.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45222.19999998808,
+          "publications": 294
+        },
+        "sc_noaa_21": {
+          "first": 848098188.0637776,
+          "last": 848115987.0637776,
+          "built": 848105604.3137776,
+          "duration": 5933,
+          "count": 450,
+          "draw": [
+            848099671.3137776,
+            848105604.3137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45220.69999998808,
+          "publications": 327
+        },
+        "sc_solar_1": {
+          "first": 811990990,
+          "last": 849677922.4232211,
+          "built": 847002877.5137686,
+          "duration": 36031485.58659709,
+          "count": 703,
+          "draw": [
+            810971391.9271715,
+            847002877.5137686
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 14682.300000011921,
+          "publications": 3
+        },
+        "sc_swot": {
+          "first": 848097187.2637776,
+          "last": 848114986.2637776,
+          "built": 848104603.5137776,
+          "duration": 5933,
+          "count": 413,
+          "draw": [
+            848098670.5137776,
+            848104603.5137776
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 45217.09999999404,
+          "publications": 257
+        },
+        "sc_themis_d": {
+          "first": 847962047.7137774,
+          "last": 848220854.7137774,
+          "built": 848094854.7137774,
+          "duration": 114807,
+          "count": 417,
+          "draw": [
+            847980047.7137774,
+            848094854.7137774
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 44917.59999999404,
+          "publications": 22
+        }
+      }
+    },
+    {
+      "name": "ISS nearby +36000",
+      "hash": "#/sc_iss?tdb=846975219.7701678&rate=36000&play=1&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+      "epoch": 848113183.370176,
+      "camera": {
+        "focusedId": "sc_iss",
+        "epochTdbSeconds": 848113183.370176,
+        "framingReferenceId": "sc_iss",
+        "framingReferencePositionKm": [
+          87178116.648009,
+          109662530.68223183,
+          47538101.09357803
+        ],
+        "followReferenceId": null,
+        "followReferencePositionKm": null,
+        "positionKm": [
+          87178116.60267094,
+          109662530.97072892,
+          47538101.384881794
+        ],
+        "desiredKm": [
+          87178116.60267094,
+          109662530.97072892,
+          47538101.384881794
+        ],
+        "framingRadiusKm": 0.072,
+        "collisionAdjusted": false,
+        "desiredInside": []
+      },
+      "workers": 4,
+      "tracked": 67,
+      "headMissingLast": [
+        "sc_jwst"
+      ],
+      "missingHeadP50": 1,
+      "missingHeadP95": 9,
+      "missingHeadMax": 14,
+      "issMissingFrames": 0,
+      "observedFrames": 274,
+      "partialLast": [
+        "sc_ace",
+        "sc_imap",
+        "sc_jwst",
+        "sc_soho",
+        "sc_wind"
+      ],
+      "perf": {
+        "cpu_p50_ms": 20.9,
+        "cpu_p95_ms": 22.4,
+        "cpu_p99_ms": 23.599999999999998,
+        "gpu_ms": null,
+        "noncritical_pending": 35,
+        "present_interval_p50_ms": 33.300000000004104,
+        "present_interval_p95_ms": 36.999999999999034,
+        "present_interval_p99_ms": 39.400000000000546,
+        "rendered_frames": 1132,
+        "resolution_scale": 1,
+        "skipped_frames": 917,
+        "stagesMs": {
+          "annotations": {
+            "count": 120,
+            "latest": 1.9,
+            "mean": 1.7750000000000012,
+            "p50": 1.8,
+            "p95": 2,
+            "p99": 2
+          },
+          "extract": {
+            "count": 120,
+            "latest": 1.4,
+            "mean": 1.192500000000001,
+            "p50": 1.2,
+            "p95": 1.4,
+            "p99": 1.5
+          },
+          "main": {
+            "count": 120,
+            "latest": 7.6,
+            "mean": 7.057500000000007,
+            "p50": 7.1000000000000005,
+            "p95": 7.6,
+            "p99": 8.1
+          },
+          "render": {
+            "count": 120,
+            "latest": 13.299999999999999,
+            "mean": 12.574166666666667,
+            "p50": 12.6,
+            "p95": 13.799999999999999,
+            "p99": 14.6
+          },
+          "sync_scene": {
+            "count": 120,
+            "latest": 0.1,
+            "mean": 0.06416666666666664,
+            "p50": 0.1,
+            "p95": 0.2,
+            "p99": 0.2
+          },
+          "trajectory_upload": {
+            "count": 120,
+            "latest": 0.6,
+            "mean": 0.538333333333334,
+            "p50": 0.5,
+            "p95": 0.6,
+            "p99": 0.7
+          }
+        },
+        "target_fps": 30,
+        "transition_reason": "sustained_overload",
+        "transition_seconds": 2.3092,
+        "visible": true,
+        "worst_one_second_frames": 1
+      },
+      "rows": {
+        "sc_iss": {
+          "first": 848103718.720176,
+          "last": 848120437.720176,
+          "built": 848110684.970176,
+          "duration": 5573,
+          "count": 880,
+          "draw": [
+            848105111.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52666.39999997616,
+          "publications": 366
+        },
+        "sc_chandra": {
+          "first": 847780970.8701756,
+          "last": 848225317.9701765,
+          "built": 848036456.5701758,
+          "duration": 228505.5,
+          "count": 312,
+          "draw": [
+            847807951.0701758,
+            848036456.5701758
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 50633.69999998808,
+          "publications": 19
+        },
+        "sc_ace": {
+          "first": 834157454.6192824,
+          "last": 850446599.8889179,
+          "built": 846977718.1701679,
+          "duration": 31715490,
+          "count": 82,
+          "draw": [
+            815262228.1701679,
+            846977718.1701679
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 21256.59999999404,
+          "publications": 5
+        },
+        "sc_acs3": {
+          "first": 848102971.9030836,
+          "last": 848121483.2641054,
+          "built": 848110684.970176,
+          "duration": 6170.453673961965,
+          "count": 466,
+          "draw": [
+            848104514.516502,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52701.19999998808,
+          "publications": 125
+        },
+        "sc_aqua": {
+          "first": 848098523.2951759,
+          "last": 848116323.7951759,
+          "built": 848105940.1701759,
+          "duration": 5933.5,
+          "count": 384,
+          "draw": [
+            848100006.6701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52605.39999997616,
+          "publications": 120
+        },
+        "sc_aura": {
+          "first": 848098523.2951759,
+          "last": 848116323.7951759,
+          "built": 848105940.1701759,
+          "duration": 5933.5,
+          "count": 498,
+          "draw": [
+            848100006.6701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52632.09999999404,
+          "publications": 117
+        },
+        "sc_cygnss_1": {
+          "first": 848103718.720176,
+          "last": 848120437.720176,
+          "built": 848110684.970176,
+          "duration": 5573,
+          "count": 463,
+          "draw": [
+            848105111.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52668.09999999404,
+          "publications": 124
+        },
+        "sc_cygnss_2": {
+          "first": 848098973.9201759,
+          "last": 848115692.9201759,
+          "built": 848105940.1701759,
+          "duration": 5573,
+          "count": 469,
+          "draw": [
+            848100367.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52605.09999999404,
+          "publications": 113
+        },
+        "sc_cygnss_3": {
+          "first": 848100223.120176,
+          "last": 848116942.120176,
+          "built": 848107189.370176,
+          "duration": 5573,
+          "count": 452,
+          "draw": [
+            848101616.370176,
+            848107189.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52634.5,
+          "publications": 98
+        },
+        "sc_cygnss_4": {
+          "first": 848103718.720176,
+          "last": 848120437.720176,
+          "built": 848110684.970176,
+          "duration": 5573,
+          "count": 475,
+          "draw": [
+            848105111.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52702,
+          "publications": 111
+        },
+        "sc_cygnss_5": {
+          "first": 848098973.9201759,
+          "last": 848115692.9201759,
+          "built": 848105940.1701759,
+          "duration": 5573,
+          "count": 478,
+          "draw": [
+            848100367.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52634.09999999404,
+          "publications": 120
+        },
+        "sc_cygnss_7": {
+          "first": 848098973.9201759,
+          "last": 848115692.9201759,
+          "built": 848105940.1701759,
+          "duration": 5573,
+          "count": 535,
+          "draw": [
+            848100367.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52604.69999998808,
+          "publications": 103
+        },
+        "sc_cygnss_8": {
+          "first": 848101468.720176,
+          "last": 848118187.720176,
+          "built": 848108434.970176,
+          "duration": 5573,
+          "count": 372,
+          "draw": [
+            848102861.970176,
+            848108434.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52635.89999997616,
+          "publications": 122
+        },
+        "sc_euclid": {
+          "first": 814948968.1701679,
+          "last": 850426968.1701679,
+          "built": 846977718.1701679,
+          "duration": 31536000,
+          "count": 236,
+          "draw": [
+            815441718.1701679,
+            846977718.1701679
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 21308.09999999404,
+          "publications": 5
+        },
+        "sc_gpm": {
+          "first": 848097750.495176,
+          "last": 848114398.995176,
+          "built": 848104687.370176,
+          "duration": 5549.5,
+          "count": 444,
+          "draw": [
+            848099137.870176,
+            848104687.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52568.5,
+          "publications": 129
+        },
+        "sc_hubble_space_telescope": {
+          "first": 848103499.345176,
+          "last": 848120744.845176,
+          "built": 848110684.970176,
+          "duration": 5748.5,
+          "count": 448,
+          "draw": [
+            848104936.470176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52702.19999998808,
+          "publications": 159
+        },
+        "sc_grace_fo1": {
+          "first": 848101466.220176,
+          "last": 848118191.220176,
+          "built": 848108434.970176,
+          "duration": 5575,
+          "count": 493,
+          "draw": [
+            848102859.970176,
+            848108434.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52635,
+          "publications": 98
+        },
+        "sc_grace_fo2": {
+          "first": 848103716.220176,
+          "last": 848120441.220176,
+          "built": 848110684.970176,
+          "duration": 5575,
+          "count": 495,
+          "draw": [
+            848105109.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52700.39999997616,
+          "publications": 122
+        },
+        "sc_ibex": {
+          "first": 847255223.210176,
+          "last": 848268553.9701769,
+          "built": 848079692.5701761,
+          "duration": 797489.16,
+          "count": 199,
+          "draw": [
+            847282203.4101762,
+            848079692.5701761
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51802.5,
+          "publications": 19
+        },
+        "sc_icesat_2": {
+          "first": 848098873.6701759,
+          "last": 848115833.2701759,
+          "built": 848105940.1701759,
+          "duration": 5653.2,
+          "count": 478,
+          "draw": [
+            848100286.9701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52632.29999998212,
+          "publications": 113
+        },
+        "sc_imap": {
+          "first": 846552361.8494804,
+          "last": 848509999.4588792,
+          "built": 846993216.1701679,
+          "duration": 31536000,
+          "count": 74,
+          "draw": [
+            815457216.1701679,
+            846993216.1701679
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 21623.59999999404,
+          "publications": 4
+        },
+        "sc_ixpe": {
+          "first": 848099190.1701759,
+          "last": 848115390.1701759,
+          "built": 848105940.1701759,
+          "duration": 5400,
+          "count": 502,
+          "draw": [
+            848100540.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52633.69999998808,
+          "publications": 118
+        },
+        "sc_jason_3": {
+          "first": 848096286.120176,
+          "last": 848116449.120176,
+          "built": 848104687.370176,
+          "duration": 6721,
+          "count": 426,
+          "draw": [
+            848097966.370176,
+            848104687.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52568.79999998212,
+          "publications": 113
+        },
+        "sc_jwst": {
+          "first": 844408932.0477004,
+          "last": 847656568.5369012,
+          "built": 847654798.9701734,
+          "duration": 31536000,
+          "count": 201,
+          "draw": [
+            816118798.9701734,
+            847654798.9701734
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 40004.59999999404,
+          "publications": 24
+        },
+        "sc_landsat_9": {
+          "first": 848103259.970176,
+          "last": 848121079.970176,
+          "built": 848110684.970176,
+          "duration": 5940,
+          "count": 417,
+          "draw": [
+            848104744.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52668.5,
+          "publications": 158
+        },
+        "sc_mms_1": {
+          "first": 847976952.070176,
+          "last": 848234934.070176,
+          "built": 848084444.570176,
+          "duration": 85994,
+          "count": 151,
+          "draw": [
+            847998450.570176,
+            848084444.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51969.59999999404,
+          "publications": 25
+        },
+        "sc_mms_2": {
+          "first": 847988983.670176,
+          "last": 848246869.670176,
+          "built": 848096436.170176,
+          "duration": 85962,
+          "count": 148,
+          "draw": [
+            848010474.170176,
+            848096436.170176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52270,
+          "publications": 25
+        },
+        "sc_mms_3": {
+          "first": 847977756.420176,
+          "last": 848236797.420176,
+          "built": 848085690.170176,
+          "duration": 86347,
+          "count": 151,
+          "draw": [
+            847999343.170176,
+            848085690.170176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51969,
+          "publications": 24
+        },
+        "sc_oco_2": {
+          "first": 848098523.5035092,
+          "last": 848116323.5035093,
+          "built": 848105940.1701759,
+          "duration": 5933.333333333333,
+          "count": 417,
+          "draw": [
+            848100006.8368425,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52605.79999998212,
+          "publications": 118
+        },
+        "sc_pace": {
+          "first": 848103326.9922798,
+          "last": 848120986.1392307,
+          "built": 848110684.970176,
+          "duration": 5886.382316975917,
+          "count": 413,
+          "draw": [
+            848104798.587859,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52699.69999998808,
+          "publications": 155
+        },
+        "sc_soho": {
+          "first": 842171103.8903233,
+          "last": 850448467.370168,
+          "built": 846999217.370168,
+          "duration": 31536000,
+          "count": 51,
+          "draw": [
+            815463217.370168,
+            846999217.370168
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 21791.399999976158,
+          "publications": 4
+        },
+        "sc_landsat_8": {
+          "first": 848098530.1701759,
+          "last": 848116314.1701759,
+          "built": 848105940.1701759,
+          "duration": 5928,
+          "count": 494,
+          "draw": [
+            848100012.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52633,
+          "publications": 123
+        },
+        "sc_mms_4": {
+          "first": 847980410.170176,
+          "last": 848238482.170176,
+          "built": 848087940.170176,
+          "duration": 86024,
+          "count": 150,
+          "draw": [
+            848001916.170176,
+            848087940.170176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52073.59999999404,
+          "publications": 25
+        },
+        "sc_nisar": {
+          "first": 848100223.120176,
+          "last": 848116942.120176,
+          "built": 848107189.370176,
+          "duration": 5573,
+          "count": 324,
+          "draw": [
+            848101616.370176,
+            848107189.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52631.5,
+          "publications": 109
+        },
+        "sc_nustar": {
+          "first": 848101186.645176,
+          "last": 848118582.625176,
+          "built": 848108434.970176,
+          "duration": 5798.66,
+          "count": 423,
+          "draw": [
+            848102636.310176,
+            848108434.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52635.5,
+          "publications": 96
+        },
+        "sc_prefire_1": {
+          "first": 848100110.1538191,
+          "last": 848117100.2730755,
+          "built": 848107189.370176,
+          "duration": 5663.373085453297,
+          "count": 411,
+          "draw": [
+            848101525.9970905,
+            848107189.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52631.79999998212,
+          "publications": 110
+        },
+        "sc_prefire_2": {
+          "first": 848104830.7268047,
+          "last": 848121870.3508958,
+          "built": 848111930.570176,
+          "duration": 5679.874697011511,
+          "count": 495,
+          "draw": [
+            848106250.695479,
+            848111930.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52702.69999998808,
+          "publications": 150
+        },
+        "sc_sdo": {
+          "first": 847980268.0951761,
+          "last": 848238681.075176,
+          "built": 848087940.170176,
+          "duration": 86137.66,
+          "count": 374,
+          "draw": [
+            848001802.5101761,
+            848087940.170176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52073.89999997616,
+          "publications": 25
+        },
+        "sc_spherex": {
+          "first": 848102363.8812906,
+          "last": 848119923.9346156,
+          "built": 848109680.570176,
+          "duration": 5853.351108318604,
+          "count": 494,
+          "draw": [
+            848103827.2190677,
+            848109680.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52636.5,
+          "publications": 126
+        },
+        "sc_starling_3": {
+          "first": 848103562.7318535,
+          "last": 848120656.1038275,
+          "built": 848110684.970176,
+          "duration": 5697.790658020904,
+          "count": 398,
+          "draw": [
+            848104987.179518,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52700.09999999404,
+          "publications": 153
+        },
+        "sc_starling_4": {
+          "first": 848103519.0225947,
+          "last": 848120717.2967898,
+          "built": 848110684.970176,
+          "duration": 5732.758065003791,
+          "count": 398,
+          "draw": [
+            848104952.212111,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52703,
+          "publications": 151
+        },
+        "sc_tdrs_5": {
+          "first": 847987518.4951761,
+          "last": 848245931.475176,
+          "built": 848095190.570176,
+          "duration": 86137.66,
+          "count": 370,
+          "draw": [
+            848009052.910176,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52270.19999998808,
+          "publications": 25
+        },
+        "sc_tdrs_6": {
+          "first": 848003012.895176,
+          "last": 848261425.875176,
+          "built": 848110684.970176,
+          "duration": 86137.66,
+          "count": 364,
+          "draw": [
+            848024547.310176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52703.29999998212,
+          "publications": 25
+        },
+        "sc_tdrs_9": {
+          "first": 847987501.820176,
+          "last": 848245954.820176,
+          "built": 848095190.570176,
+          "duration": 86151,
+          "count": 372,
+          "draw": [
+            848009039.570176,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52270.5,
+          "publications": 25
+        },
+        "sc_tdrs_11": {
+          "first": 848002996.220176,
+          "last": 848261449.220176,
+          "built": 848110684.970176,
+          "duration": 86151,
+          "count": 364,
+          "draw": [
+            848024533.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52703.5,
+          "publications": 25
+        },
+        "sc_tdrs_12": {
+          "first": 847987501.820176,
+          "last": 848245954.820176,
+          "built": 848095190.570176,
+          "duration": 86151,
+          "count": 372,
+          "draw": [
+            848009039.570176,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52271.19999998808,
+          "publications": 25
+        },
+        "sc_suomi_npp": {
+          "first": 848098691.845176,
+          "last": 848116087.8251759,
+          "built": 848105940.1701759,
+          "duration": 5798.66,
+          "count": 379,
+          "draw": [
+            848100141.510176,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52571.79999998212,
+          "publications": 127
+        },
+        "sc_sentinel_6": {
+          "first": 848103268.095176,
+          "last": 848121068.595176,
+          "built": 848110684.970176,
+          "duration": 5933.5,
+          "count": 421,
+          "draw": [
+            848104751.470176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52701.5,
+          "publications": 101
+        },
+        "sc_sentinel_6b": {
+          "first": 848103268.095176,
+          "last": 848121068.595176,
+          "built": 848110684.970176,
+          "duration": 5933.5,
+          "count": 421,
+          "draw": [
+            848104751.470176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52703.79999998212,
+          "publications": 135
+        },
+        "sc_smap": {
+          "first": 848099805.870176,
+          "last": 848117526.2701759,
+          "built": 848107189.370176,
+          "duration": 5906.8,
+          "count": 453,
+          "draw": [
+            848101282.570176,
+            848107189.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52632.59999999404,
+          "publications": 108
+        },
+        "sc_starling_1": {
+          "first": 848098771.3787265,
+          "last": 848115976.4782051,
+          "built": 848105940.1701759,
+          "duration": 5735.033159536024,
+          "count": 372,
+          "draw": [
+            848100205.1370164,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52569.39999997616,
+          "publications": 126
+        },
+        "sc_tdrs_8": {
+          "first": 847987501.570176,
+          "last": 848245955.170176,
+          "built": 848095190.570176,
+          "duration": 86151.2,
+          "count": 372,
+          "draw": [
+            848009039.370176,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52270.79999998212,
+          "publications": 25
+        },
+        "sc_tdrs_13": {
+          "first": 847958755.8201761,
+          "last": 848217208.8201761,
+          "built": 848066444.5701761,
+          "duration": 86151,
+          "count": 361,
+          "draw": [
+            847980293.5701761,
+            848066444.5701761
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51464.69999998808,
+          "publications": 24
+        },
+        "sc_tempo": {
+          "first": 847987478.52957,
+          "last": 848245987.4270244,
+          "built": 848095190.570176,
+          "duration": 86169.63248474659,
+          "count": 372,
+          "draw": [
+            848009020.9376912,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52271.5,
+          "publications": 25
+        },
+        "sc_terra": {
+          "first": 848098523.5076759,
+          "last": 848116323.4976759,
+          "built": 848105940.1701759,
+          "duration": 5933.33,
+          "count": 498,
+          "draw": [
+            848100006.8401759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52570.79999998212,
+          "publications": 136
+        },
+        "sc_themis_a": {
+          "first": 847964905.170176,
+          "last": 848260189.170176,
+          "built": 848087940.170176,
+          "duration": 98428,
+          "count": 518,
+          "draw": [
+            847989512.170176,
+            848087940.170176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52074.29999998212,
+          "publications": 19
+        },
+        "sc_themis_e": {
+          "first": 847926813.395176,
+          "last": 848244535.895176,
+          "built": 848059197.770176,
+          "duration": 105907.5,
+          "count": 525,
+          "draw": [
+            847953290.270176,
+            848059197.770176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51297.39999997616,
+          "publications": 17
+        },
+        "sc_noaa_20": {
+          "first": 848103268.720176,
+          "last": 848121067.720176,
+          "built": 848110684.970176,
+          "duration": 5933,
+          "count": 495,
+          "draw": [
+            848104751.970176,
+            848110684.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52700.79999998212,
+          "publications": 121
+        },
+        "sc_noaa_21": {
+          "first": 848098523.9201759,
+          "last": 848116322.9201759,
+          "built": 848105940.1701759,
+          "duration": 5933,
+          "count": 385,
+          "draw": [
+            848100007.1701759,
+            848105940.1701759
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52571.39999997616,
+          "publications": 145
+        },
+        "sc_starling_2": {
+          "first": 848097523.7302316,
+          "last": 848114716.4660982,
+          "built": 848104687.370176,
+          "duration": 5730.911955530754,
+          "count": 451,
+          "draw": [
+            848098956.4582205,
+            848104687.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52569.79999998212,
+          "publications": 112
+        },
+        "sc_tdrs_3": {
+          "first": 847968273.307676,
+          "last": 848226685.297676,
+          "built": 848075944.970176,
+          "duration": 86137.33,
+          "count": 357,
+          "draw": [
+            847989807.6401759,
+            848075944.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51733.29999998212,
+          "publications": 22
+        },
+        "sc_wind": {
+          "first": 845877686.1539876,
+          "last": 849723130.4358003,
+          "built": 847919982.1701753,
+          "duration": 16485927,
+          "count": 555,
+          "draw": [
+            831434055.1701753,
+            847919982.1701753
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 47368.69999998808,
+          "publications": 3
+        },
+        "sc_tdrs_7": {
+          "first": 847968256.220176,
+          "last": 848226709.220176,
+          "built": 848075944.970176,
+          "duration": 86151,
+          "count": 358,
+          "draw": [
+            847989793.970176,
+            848075944.970176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51733.59999999404,
+          "publications": 22
+        },
+        "sc_tdrs_10": {
+          "first": 847973004.3701761,
+          "last": 848231457.9701761,
+          "built": 848080693.3701761,
+          "duration": 86151.2,
+          "count": 354,
+          "draw": [
+            847994542.170176,
+            848080693.3701761
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 51871.89999997616,
+          "publications": 22
+        },
+        "sc_solar_1": {
+          "first": 811990990,
+          "last": 849677922.4232211,
+          "built": 847005218.570168,
+          "duration": 36009360.71360974,
+          "count": 703,
+          "draw": [
+            810995857.8565583,
+            847005218.570168
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 22107.399999976158,
+          "publications": 2
+        },
+        "sc_swot": {
+          "first": 848097271.120176,
+          "last": 848115070.120176,
+          "built": 848104687.370176,
+          "duration": 5933,
+          "count": 451,
+          "draw": [
+            848098754.370176,
+            848104687.370176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52569.09999999404,
+          "publications": 99
+        },
+        "sc_themis_d": {
+          "first": 847953403.3701758,
+          "last": 848284051.9701767,
+          "built": 848095190.570176,
+          "duration": 114807,
+          "count": 541,
+          "draw": [
+            847980383.570176,
+            848095190.570176
+          ],
+          "rs": true,
+          "re": true,
+          "wall": 52269.5,
+          "publications": 16
+        }
+      }
+    }
+  ],
+  "parserBenchmark": {
+    "old": {
+      "paths": 60,
+      "points": 512,
+      "publicationsPerPass": 600,
+      "jsonBytes": 33421,
+      "directMs": [
+        135.9441,
+        126.8243,
+        119.43539999999985,
+        118.22619999999984,
+        120.99089999999978,
+        123.78240000000005,
+        121.41210000000001
+      ],
+      "sdkMs": [
+        271.6007,
+        248.13790000000006,
+        251.4158,
+        238.98389999999995,
+        245.46420000000012,
+        246.91780000000017,
+        252.26080000000002
+      ]
+    },
+    "fresh": {
+      "paths": 60,
+      "points": 512,
+      "publicationsPerPass": 600,
+      "jsonBytes": 33421,
+      "directMs": [
+        95.32080000000002,
+        94.24109999999996,
+        91.24009999999998,
+        90.33939999999984,
+        91.71849999999995,
+        92.76099999999997,
+        89.5917999999997
+      ],
+      "sdkMs": [
+        204.183,
+        200.7174,
+        201.2879999999999,
+        197.0232000000001,
+        201.77659999999992,
+        198.98299999999995,
+        199.43859999999995
+      ]
+    }
+  },
+  "heaps": {
+    "main": {
+      "usedSize": 73331480,
+      "totalSize": 173309952,
+      "embedderHeapUsedSize": 7782064,
+      "backingStorageSize": 10551488
+    },
+    "targets": [
+      {
+        "sessionId": "816B495E457CE7A1A2759CA9196C9231",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.e3ffadea151c3e6a.js"
+      },
+      {
+        "sessionId": "264E2C1EB4989D7032C9756C79609922",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.e3ffadea151c3e6a.js"
+      },
+      {
+        "sessionId": "F6AFCEA7AA70F7C81906E94D018A3D22",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.e3ffadea151c3e6a.js"
+      },
+      {
+        "sessionId": "D9C628BDE019541B55058FEAD4B04638",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.e3ffadea151c3e6a.js"
+      }
+    ],
+    "responses": [
+      {
+        "sessionId": "D9C628BDE019541B55058FEAD4B04638",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "816B495E457CE7A1A2759CA9196C9231",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "F6AFCEA7AA70F7C81906E94D018A3D22",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "264E2C1EB4989D7032C9756C79609922",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "816B495E457CE7A1A2759CA9196C9231",
+        "message": {
+          "id": 1,
+          "result": {
+            "usedSize": 56921472,
+            "totalSize": 126181376,
+            "embedderHeapUsedSize": 633768,
+            "backingStorageSize": 652275
+          }
+        }
+      },
+      {
+        "sessionId": "264E2C1EB4989D7032C9756C79609922",
+        "message": {
+          "id": 2,
+          "result": {
+            "usedSize": 43531596,
+            "totalSize": 124084224,
+            "embedderHeapUsedSize": 586408,
+            "backingStorageSize": 652275
+          }
+        }
+      },
+      {
+        "sessionId": "F6AFCEA7AA70F7C81906E94D018A3D22",
+        "message": {
+          "id": 3,
+          "result": {
+            "usedSize": 22577320,
+            "totalSize": 135618560,
+            "embedderHeapUsedSize": 553952,
+            "backingStorageSize": 652275
+          }
+        }
+      },
+      {
+        "sessionId": "D9C628BDE019541B55058FEAD4B04638",
+        "message": {
+          "id": 4,
+          "result": {
+            "usedSize": 49562848,
+            "totalSize": 128540672,
+            "embedderHeapUsedSize": 588584,
+            "backingStorageSize": 652275
+          }
+        }
+      }
+    ]
+  },
+  "environment": {
+    "hardwareConcurrency": 16,
+    "workers": 4
+  },
+  "gpu": "ANGLE (Intel, Intel(R) Arc(TM) B390 GPU (0x0000B080) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.101.8724)",
+  "limitations": "JWST source becomes unsupported after an independently audited duplicated-node leaf; .99 handles that separately. Other-target short gaps remain under ISS close-view pressure. GPU time/VRAM unmeasured; heap snapshots are not RSS. No all-rate/all-NASA-parity claim."
+}

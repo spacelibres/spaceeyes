@@ -1,0 +1,56 @@
+[
+  {
+    "id": "sc_europa_clipper",
+    "status": {
+      "id": "sc_europa_clipper",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        794230007,
+        849407067
+      ]
+    },
+    "position": [
+      113942735.61237606,
+      51225798.536965534,
+      18674197.79184338
+    ]
+  },
+  {
+    "id": "sc_juice",
+    "status": {
+      "id": "sc_juice",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        844049179,
+        916393497
+      ]
+    },
+    "position": [
+      86000006.31398645,
+      87605079.2041447,
+      37973467.72468081
+    ]
+  },
+  {
+    "id": "sc_lucy",
+    "status": {
+      "id": "sc_lucy",
+      "status": "ready",
+      "orientationStatus": "not-requested",
+      "positionSource": "dyn",
+      "coverage": [
+        798584539,
+        870652086
+      ]
+    },
+    "position": [
+      -551166151.5968065,
+      -481989124.70804214,
+      -247933033.4489397
+    ]
+  }
+]

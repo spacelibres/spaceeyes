@@ -1,0 +1,305 @@
+---
+name: spaceeyes-platform-sdk
+description: Use when authoring or reviewing SPACEEYES TypeScript plugins using controlled data, time, camera and visual asset APIs, including capability approval and lifecycle cleanup.
+---
+
+# 太空之眼平台 SDK 技能书（基础实现草案）
+
+依据项目根目录的 `docs/太空之眼平台架构书.md`；实际接口为 `platform/plugin-host.ts`，内部核心适配边界为 `platform/core-port.ts`。本书随接口更新，不是最终协议或沙箱验收声明。
+
+## 当前能做什么
+
+插件提供清单与激活函数，由宿主调用 `PluginHost.register`。清单含 `id`、`apiVersion: 1` 和 `capabilities`。标识采用 `vendor.plugin` 形式，每段以小写字母开头，后续为小写字母、数字或连字符。当前识别 `camera.control`、`data.publish`、`time.control`、`scene.visual`。
+
+插件在激活时得到 `PluginContext`：
+
+- `pluginId`：宿主提供的插件身份。
+- `signal`：本次会话的 AbortSignal，传给支持取消的异步操作。
+- `onDispose(callback)`：登记释放订阅、请求和其他资源的回调。
+- `camera.lighting(mode)`：同步受控照明意图，需声明并获批 `camera.control`，严格接受 `natural`（自然太阳光）、`shadow`（弱相机补光）、`flood`（强相机补光）；shadow不是阴影开关。请求复制并冻结，Rust再次验证权限并登记所属会话；拥有者释放恢复natural。未知值拒绝且不改变状态，停用后的旧SDK拒绝调用。该接口不暴露灯光实体、Transform或Bevy内部结构。WASM精确传递session、plugin、mode；只声明照明参数映射，不代表物理照度等价或全部自定义材质支持补光。
+- `camera.focus(targetId)`：请求聚焦一个对象，需清单声明且宿主批准 `camera.control`。目标标识为 1～256 个 ASCII 字符，首字符为字母或数字，其余允许字母、数字、冒号、点、下划线、斜杠及连字符；该标识不是文件路径或 URL。核心负责核验目标存在性及实际相机执行。
+- `requireCapability(name)`：检查当前会话及能力，不能用它推断尚未实现的 API 可用。
+- `data.publish(targetId, state)`、`data.remove(targetId)`：需 `data.publish`。状态包含 positionKm 三元数组、正数 radiusKm、epochTdbSeconds、coverageTdbSeconds 二元数组、frame 固定 ICRF、非空 source。时间为 J2000 起算 TDB 秒，数值必须有限，采样时刻在覆盖内。发布时复制并冻结数据；Rust 再校验权限与归属。当前不提交姿态或轨迹。
+- `time.seek(epochTdbSeconds)`、`time.setPlayback(playing, rate)`：需 `time.control`，时间与倍率必须有限，支持负倍率反向播放。不得自行用 UTC Date 数值冒充 TDB。没有当前时刻样本时显示端须报告缺失，不擅自外推。控制时间的会话停用后暂停播放。
+- `visual.set(targetId, spec)`、`visual.clear(targetId)`、`visual.status(targetId)`：需 `scene.visual`，只能操作或读取本会话所属对象。`data.publish` 不包含此权限。资源只能引用宿主已登记的 assetId，不能把 URL 或文件路径传给插件接口。
+- `visual.starfield(layerId, spec|null)`：需 `scene.visual`，发布或清除本会话的独立背景点层，不创建科学对象，不占用轨迹点预算。layerId 使用 assetId 的 ASCII 语法；同名层在不同会话隔离。spec 仅接受 frame 固定 ICRF、非空 source（最多 1024 字符）、平铺 positionsKm/colorsRgb、magnitudes/absoluteMagnitudes。N 个点分别要求 3N/3N/N/N 个有限数值，1≤N≤50000；RGB 在 [0,1] 且每点非全黑，位置非零且每分量绝对值≤1e30 km。每会话最多八层、合计五万点，替换原子校验；传 null 清除，停用释放全部层。SDK 复制并冻结数组，Rust 再验证；不能借此操作相机、材质或任意 shader。
+
+视觉参数严格采用以下两种结构，不接受额外字段：
+
+```ts
+sdk.visual.set('object:spacecraft', {
+  kind: 'model', assetId: 'model:juno', scene: 0, scaleKmPerUnit: 0.001,
+});
+sdk.visual.set('object:body', { kind: 'sphere', textureAsset: 'texture:surface' });
+```
+
+assetId 为 1～256 个 ASCII 字符，首位字母或数字，其余允许字母、数字、冒号、点、下划线和连字符。scene 是 0～1023 的整数，实际存在性由加载器检查；scaleKmPerUnit 是有限正数，表示模型单位到千米的比例，不是科学对象半径。球体贴图作为基色图使用，不能借此传任意材质或 shader。未提供 textureAsset 时使用中性球体。
+
+`clear` 清除资源表示并恢复默认验证几何体，不删除科学对象；删除对象使用 `data.remove`。设置资源表示不是逐帧发布数据的步骤，只在表示变化时调用；重复设置会创建新修订并重新绑定资源。
+
+`status` 返回只读 `{ revision, phase, detail }` 或 null。revision 为不透明十进制字符串；phase 是 pending/loading/ready/failed/suspended。ready 表示图像或模型实例及依赖已加载，不是 GPU 像素、科学姿态或 NASA 效果认证。failed 时对象隐藏，不用默认球体冒充已加载模型；suspended 表示没有当前时刻有效显示状态。清除或替换后，旧修订的完成结果不再生效。
+
+```ts
+host.register({
+  id: 'example.observer', apiVersion: 1, capabilities: ['camera.control'],
+}, sdk => {
+  // 仅在宿主已提供可用核心、且目标由对象目录确认存在时调用。
+  sdk.camera.focus('body:mars');
+});
+// enable 及批准列表由宿主控制，不由插件自行授予。
+```
+
+## 边界与失败处理
+
+### 场景点选属于宿主输入
+
+宿主内部 `WasmCore.pick_object(u,v)` 查询最近一次实际相机投影的候选对象，参数是画布内归一化坐标，必须有限且在 [0,1] 内；没有命中返回 undefined，不修改科学状态、时间或相机。候选会核对当前对象有效性与显示失败状态，停止渲染后不接受旧帧。球体按投影圆盘、远景标记及避让后标签判断，深度优先，不是模型三角形或环拾取。
+
+网页点选命中后沿用已有选择流程，按需获取数据/表面，再通过现有 SDK 相机意图聚焦；空白、拖动、取消或多指手势不触发选择。此方法不在 PluginContext 中，插件不能借此获取 Bevy World、相机投影缓存、宿主输入或新权限；插件继续使用已批准的公开 SDK。
+
+### 资源和会话
+
+宿主可使用内部 `platform/resource-client.ts` 管理已审查的同源目录：只按资源标识读取，拒绝未知标识、越界路径和重定向；单文件最多 16 MiB，目录最多 4096 项，缓存默认 16 MiB 并受总预算约束。返回字节为副本；`clear()` 使在途旧结果失效，取消信号后返回的结果不入缓存。调用方必须将会话 signal 传入并在清理时清空其独立客户端。缓存目录视为不可变，来源更新由宿主重新建目录/清空，尚未提供 TTL、散列校验或跨调用请求合并；该工具不是新授予插件任意网络权限，也不是同进程 JS 沙箱。
+
+插件只能表达公开 SDK 意图，不获得 CorePort、sessionId、Bevy World、相机内部对象或服务器模块。不得访问冻结分支作为默认实现来源；不得把自建 TS 场景状态当作 Rust 核心权威状态。不得从本接口推导 Nyx、市场或任意命令执行能力已可用。WasmCorePort 已连接实际 Rust WASM；browser-render 提供 Bevy 显示与受控模型/贴图入口，未注入对应适配方法时调用明确失败。
+
+资源登记是宿主职责，不向插件开放。宿主必须审查资源包及 glTF 外部依赖，固定来源、长度和散列，登记相对资产根目录的路径。当前目录接受 glTF/GLB 模型与 PNG/JPEG/WebP 贴图，最多 4096 项，实例内不可覆盖同名资源。NASA Eyes 受控资源服务已通过成熟库在服务器解码 Draco、Basis/KTX2、WebP，保留 glTF 纹理变换；这不是浏览器原生支持所有扩展或 NASA 材质一致性认证。
+
+### NASA Eyes 全量目录与按需资源
+
+独立数据插件维护固定快照的 451 个天然卫星和 171 个航天器；含基线对象的用户目录为 631 项。源定义缺失的三个条目明确不可用，不能推测 URL、位置或替代模型。目录元数据登记不触发全量数据或模型请求；选择对象才获取其数据、当前父体依赖和详细模型，返回总览保留十对象基线。
+
+父体按核心统一 TDB 时刻和任务阶段确定，位置统一为 ICRF/km；非当前任务时间须切到已核验的有效观测时间后重新求值，不扩大覆盖、不外推。源静态表达式只接受已实现的受控类型，未知源函数保持不可执行。`platform/eyes-observation-times.json` 是时间入口提示，不是烘焙星历。
+
+模型、依赖和表面在服务器按 URL 白名单及 SHA256 固定；局部源变换和单位由资源转换器标准化为 km，已转换模型使用 `scaleKmPerUnit: 1`。不得再次按 0.001 缩放，不得将用于相机取景的模型 extents 标为物理半径。源提供的通用小卫星模型是示意几何。
+
+插件只引用宿主登记的 assetId；服务器 `/assets/eyes/` 路径、转换库、缓存和源 URL 不构成新 SDK 权限。数据读取最多四并发，模型转换最多二并发，磁盘缓存预算 3 GiB；切换、取消、退出后的旧结果不得重新发布。模型 ready、科学状态 ready 与 GPU 检查分别记录。不能将本批资源接入宣称为任务部件动画、所有姿态或完整 NASA Eyes 视觉验收。
+
+### 已审查的模型阶段与部件显隐
+
+宿主按固定的26个源动作槽位，为11个对象预编译27种不可变模型表示。覆盖端点、直接跳时和倒播均使用同一阶段规则；只登记白名单资源，不在初始化时获取全部变体。详细模型实际需要某阶段时，宿主通过现有 `visual.set` 引用已登记的变体 assetId，同阶段不逐帧重新设置，资源修订隔离晚到结果。
+
+原始模型及贴图继续由服务器按固定URL/SHA256获取和转换，不进入WASM。阶段旋转替代原模型局部旋转，统一坐标基转换后输出km；隐藏操作只移除指定子树的绘制几何，保留节点、变换、关节名称和可见节点共享的mesh。部件匹配遵循源加载器的名称规范化，未匹配的名字按源行为不产生几何修改，不猜测其他部件。
+
+`rotationWxyz`和隐藏部件名单属于宿主内部的审查配置，不是 `VisualSpec` 新字段，也不是插件操作Bevy内部节点的权限。插件仍只传宿主批准的assetId。阶段资源使用现有两并发转换、取消、散列校验和磁盘预算；模型切换和显隐不等于骨骼动画、喷流或部署过程连续动画已经完成。
+
+### NASA Eyes 背景星空
+
+独立 `spaceeyes.background-stars` 数据插件只申请 scene.visual。按固定白名单、字节和 SHA256 读取七份星表，TS 解码 23 字节记录并按 wxyz 四元数转换至赤道 J2000，核心只做统一显示基转换。进入工作区即触发需求，先亮星层再两并发补齐；不阻塞太阳系初始化。关闭取消未完成工作并清除表示，已验证的解析数据在五万点缓存预算内复用；退出清空缓存。
+
+背景表没有名称、唯一星表 ID、自行或速度，不用于生成可选择天体或动态科学状态。保留源绝对星等与位置，543 条源距离/星等不一致不擅改。Bevy 按层合批，不逐星创建实体；源亮度、像素尺寸和径向衰减是显示参数，逐点数值接收不等同 GPU 或外部天文精度认证。原始二进制和星点 WGSL 均由服务器提供，不放入 WASM。
+
+模型加载禁用 glTF 内置摄像机与灯光导入，scene.visual 不授予相机或照明控制权。当前资源是同源受控根目录下的已审查文件；不能将测试资源服务当作市场沙箱或通用任意 URL 代理。
+
+缺少声明或批准时拒绝调用；停用后调用旧 SDK 会得到 inactive 错误；目标语法不合法会被拒绝；未连接核心得到 unavailable 错误，不能以静默成功或自建替代渲染冒充执行成功。核心适配器的失败继续抛给调用者。本批错误仍为 Error，不依赖其文字作为稳定机器协议。
+
+每次重新启用得到新会话，不能复用上次 SDK。停用先撤销会话、发出取消信号，再逆序尝试全部清理；清理失败会聚合上报，不能据此声称资源已全部释放。同进程宿主不能强制终止不合作插件；不可信代码隔离尚未实现。
+
+宿主销毁时调用 `await host.shutdown()`，它会先撤销全部会话并等待在途启停，再尝试所有插件清理。清理回调负责取消/释放外部资源，不应再用已失效 SDK 修改场景；核心会话释放由宿主负责。关闭错误仍需上报，但应在 finally 中继续请求渲染器停止并 free 核心。停止和原始 WasmCore 只归宿主，不向插件开放。
+
+## 验证
+
+运行 `node --test platform/tests/*.test.ts` 检查 SDK 逻辑；完整集中验证执行 `pwsh -File tools/check-core.ps1`，会重新生成 WASM 并执行 `platform/integration/wasm.test.ts`。测试包括无权限、核心缺失、无效目标、旧会话、重启隔离、释放和真实 Rust 再验证。真实 WASM 集成不代表 Bevy 聚焦、GPU 画面或不可信插件隔离通过。技能书行为测试尚未单独验收。
+
+## 第一版整体显示控制扩展
+
+- `camera.view('overview' | 'top' | 'front' | 'side' | 'orbit')` 需要 `camera.control`。overview 使用当前有效对象的科学位置与半径包围范围计算总览；`camera.focus(id)` 随仿真状态持续跟随。显示原点和缩放不修改科学状态。
+- `ObjectState.orientationWxyz?: [w,x,y,z]` 是单位四元数，body-local 到 ICRF；平方模误差不得超过 `1e-6`。省略时视为无额外旋转。Bevy 显示使用既有 `(x,z,-y)` 基变换。
+- `visual.trajectory(targetId, points)` 接收 ICRF km 三元组数组；每会话最多 4096 点、有限数值，空数组清除。Bevy 内置 Gizmos 绘制。
+- `visual.label(targetId, text)` 最多 256 Unicode 字符，不接受控制字符，空串清除；Bevy 原生 UI Text 经 Camera world_to_viewport 投影显示。
+- 字符校验不代表字形覆盖。当前外置标签字库未配置中文字形，内置标签使用 ASCII 对象标识；完整多语言标签不属于本版已验收能力。
+- `visual.layers({ labels, trajectories })` 仅控制调用会话自有对象对应显示层。以上均需 `scene.visual`，Rust 再次验证权限与对象归属；移除对象/释放会话清理附属状态。
+- sphere `VisualSpec` 可选 `colorRgba`、`emissiveRgba`，均为 `[r,g,b,a]`，各通道有限且 `[0,1]`。由 Bevy `StandardMaterial` 执行；纹理仍通过宿主资源目录 `textureAsset`，不得虚构 NASA 资源。
+- 宿主 `WasmCore.utc_to_tdb(unixSeconds)` 使用独立 Hifitime 4.3.1 转换 UTC Unix 秒为 J2000 TDB 秒，不改变 clock；不链接 Nyx。闰秒依据库内表，未来闰秒需随资料维护。
+
+- sphere `faceAssets?: [string,string,string,string,string,string]` 与 `textureAsset` 互斥，六个资源均须在Rust目录登记为texture。按恢复CubeMap原面号 +X,+Y,-X,-Y,+Z,-Z，以及其U/V面基重采样；输出2048x1024，64组有界缓存。使用Bevy原生Image、UV Sphere和StandardMaterial，不替换PBR渲染器。载入/解码失败报告failed，不呈现未完成纹理。GPU地标、极向和接缝验收独立于编译通过。
+- 宿主 `WasmCore.tdb_to_utc(tdbSeconds)` 是同一Hifitime的反向换算纯函数，返回Unix秒。
+
+- sphere环：`ringAssets: [topId,bottomId]`，同时必填`ringInnerRadiusRatio`、`ringOuterRadiusRatio`，满足1<=inner<outer<=10。NASA原环图是径向条带，按恢复RingsComponent的u=(r-inner)/(outer-inner)展开1024二维透明纹理；两片Bevy Plane3d各背面剔除，跟随父对象姿态。相机按outer展示范围取景，不改变科学radiusKm。
+
+## 外置资源与触发加载
+
+### 带时间的轨迹
+
+`visual.trajectory(targetId, points, epochsTdbSeconds?, style?)` 仍需 `scene.visual` 且只可修改本会话对象。可选第三参数为每个顶点对应的 J2000 TDB 秒，长度必须与 points 相同、数值有限且严格递增；空数组用于清空，单点带时间轨迹拒绝。TS 复制输入，Rust 再验证；全部对象仍共享每会话最多 4096 个轨迹顶点的预算。
+
+带时间轨迹可指定 `style: {originId?, colorRgba?}`。originId 必须是本会话另一个有效对象，points 此时是相对于该对象的 ICRF 方向千米向量，显示时使用父体当前核心位置平移，不是把各历史时刻的父体运动叠加到卫星环线。colorRgba 为有限 [0,1] 四元组，作为轨迹颜色，不能传 shader 或任意材质字段。当前宿主月球轨迹使用 earth 作为原点，所有轨迹使用对象目录的颜色。近距离观察时轨迹随相机距离淡出，拉远恢复，图层开关仍生效。
+
+带时间轨迹在当前时刻落入已提供的相邻顶点区间时，Bevy 使用核心同一时刻的对象位置分割该线段，保证与显示天体一致；不是以最近空间点猜测时间。历史路径必须来自覆盖内有效数据，不能用跨缺段直线补齐。瞬时椭圆可以由有效 DYN 当前相对位置、端点传播后混合的速度和引力参数推导：整周模型采样时刻只是该瞬时二体轨道的参数，不扩展 `data.publish` 的科学覆盖，不是整周实测或未来预测。宿主须明确标注含义，非椭圆/退化状态不可强制闭合。当前太阳系宿主采用瞬时椭圆；历史采样接口继续保留真实断口。未提供时间的旧调用仍是静态折线，不承诺随天体运动自动连接。清空、移除或停用对象会清理时间元数据。核心不自动首尾闭合；闭合必须由来源明确的同一轨道模型提供相同端点。
+
+### 资源触发
+
+NASA DYN 服务对固定 SHA256 的金星重复记录、火星历史回退文件可选择已审查的无歧义有序窗口；原始记录不排序、不改值，默认解码仍严格递增。响应携带原始哈希、记录范围和覆盖，数据源 provenance 与核心 source 保留它们。此内部适配不授予插件修复任意 DYN、扩大科学覆盖或屏蔽错误的能力。火星歧义历史查询仍失败，网页当前时间恢复不代表完整历史已修复。
+
+当前日心宿主总览围绕科学原点，以 1 AU=149597870.7 km 统一换算，行星分布变化不移动观察中心；局部观察仍先在 f64 中减去科学原点以保留精度。用户拉远超过局部场景阈值时，核心进入总览，宿主同步清除局部选择；这不是向插件开放任意相机内部控制。
+
+当前宿主的环正反面共用同一张上表面颜色/透明纹理。Bevy ExtendedMaterial 仅对环启用光线—视线半向量的粒子受光近似，颜色、方向光、透明混合和调色仍由 Bevy PBR 执行，不使用 emissive/unlit。它不是已标定的散射模型或 NASA 完整阴影复刻。着色器程序是项目受控服务器文件，不允许插件指定任意 shader。
+
+模型、纹理、字体、音频、星历及场景数据不得用 include_bytes/include_str 或嵌入资产宏编译进核心 WASM。资源登记只登记受控路径，不触发下载。首页总览需要科学位置与轨迹，因此只触发所需 DYN 轨道数据获取；姿态在选择该天体后才请求；总览基础几何不请求高清表面。选择天体才绑定该对象的六面纹理及其环，已访问表示在本会话中复用；不能为了相邻对象或未来操作提前加载整目录。
+
+当前标签字库是服务器 `/assets/fonts/FiraMono-subset.ttf`，首次有实际标签显示时由 Bevy AssetServer 加载，不使用编译内嵌 default_font。字体不包含完整中文字形。插件不能借此指定任意字体 URL 或绕过受控目录。
+
+Bevy 着色器、运行时生成的基础网格及程序常量属于核心程序；WASM data section 不等于业务资产包，不能通过清空所有 data section 实现资源分离。
+
+
+## 深空环境与恒星显示（SDK 0.0.19）
+
+- `visual.environment({assetId, frame: 'ICRF', intensity})` 或 `null` 需要 `scene.visual`；assetId 必须是宿主登记的 texture，intensity 为有限 [0,4]。只允许一个活动会话拥有环境；其他会话不能覆盖或清除，释放会话自动清理。环境是方向背景，不生成科学天体或轨道，不授予灯光、相机或任意 URL 权限。
+- sphere 可选 `stellar: {coronaIntensity, flowSpeed}`，分别为有限 [0,4]、[0,2]；SDK 复制并冻结，Rust 再验证。它只描述通用自发光天体的视觉效果，不改变科学尺寸、时间或状态，不能用于推断太阳观测数据。
+- 银河固定源、原始字节及 SHA256 见 validation/galaxy-assets.json。服务器成熟 EXR 解码后做线性曝光/Reinhard/sRGB 转换并翻转底向上行序；派生图单独通过服务器加载，不进入 WASM。浏览器仍只有 Bevy 渲染器。
+- 银河加载状态由宿主查询核心 pending/ready/failed/disabled；ready 表示纹理加载，不代表着色器或 GPU 验收。必须检查包括 Bevy 转发为 log 级别的 ERROR 信息。关闭/退出取消订阅，不能复活旧层；失败可重试。
+- 标签显隐、遮挡、文字测量、碰撞及鼠标轻惯性由核心执行；插件不能直接改 Bevy 实体。未来头显姿态不得套用鼠标惯性滤波；未提供 WebXR 或头显验收。
+
+银河宿主可在已登记预览与高清assetId之间渐进替换；核心在新纹理就绪前保留旧层，关闭清理两者。当前仅两级全景，不代表视野瓦片调度。stellar日珥是核心通用视觉模拟，不改变科学半径，不能作为磁场或真实喷发数据。
+
+
+## Parker数值基线（SDK 0.0.20）
+
+`platform/solar-wind.ts` 是独立纯TS模型，参数为SI，输出速度m/s、电子密度m^-3、质量密度kg/m³和温度K。仅支持纯电离氢同温等温球对称跨声速解，临界点需位于基部与参考半径之间；无效/超域输入拒绝。来源与示例边界见validation/solar-wind-model.json；温度和1AU密度假设不能标为实时观测。
+
+宿主资源准备生成外置WGSL查表及JSON数值审计；这不是新的插件权限，不开放Bevy内部实体。当前stellar接口保持不变；flowSpeed仍是显示速度，不能伪装为科学积分步长。ne²相对发射包络、亮度增强与时间压缩必须分开声明，不得宣称完整MHD、实测磁场或全部无贴图太阳已完成。
+
+
+### 三维外流标签（SDK 0.0.21）
+
+`windMaterialPoint(positionR, flightSeconds, timeSeconds, periodSeconds)` 返回摄像机无关的三维物质坐标标签，仅用于显示输运一致性验证；positionR在1..12R范围内，周期边界淡入淡出。它不是粒子科学状态、磁场数据或新场景权限。宿主生成的外置体积查表覆盖1..12R，Parker科学表仍到1AU。消光、亮度和时间压缩是显示映射，不得把周期扰动宣称为完整守恒MHD。相机不作为密度场输入，未来每眼分别计算射线；未验收VR。
+
+
+## 太阳特效实时调参（核心0.0.23 / SDK0.0.22）
+
+`visual.stellar(targetId, tuning)`需要已批准的scene.visual及本会话已有的stellar球体对象。tuning只含settings和profile；settings严格包含platform/stellar-controls.json全部58个具名字段，不接受未知字段。使用`stellarDefaults()`、`snapshotSettings()`和`buildStellarTuning(settings)`构造；后者按温度和1AU参考电子密度重算64点Parker表，并缓存物理输入，普通视觉调整不重复求解。
+
+profile含density/travel各64个有限值，density相对根部且>0、<=1.00001，首点1；travel首点0且严格递增，不超过1e12秒。范围固定1..12R对数半径；不能塞任意shader、URL或Core指针。TS冻结副本，Rust再次校验字段、数值范围、配对关系、顶点预算和归属。采样步数4..24，日珥顶点<=50000；fullDistance<=enterDistance<exitDistance，fadeStart<outerRadius，各阈值低<高。
+
+更新不增加视觉资源修订，不重载贴图；普通字段进入现有uniform，日珥几何字段替换同一专用Mesh资产内容。源对象移除、清空表示或释放会话清除调参；旧会话不可再更新。宿主关闭面板保留本次配置，本机保存/恢复及JSON导入导出由宿主管理，导入仍必须走同样校验。Parker温度和密度为示例边界，不是实测日期；日珥网格/体积噪声不是离散粒子或完整MHD。
+
+
+网页0.0.30 / SDK0.0.23的`applySolarReferencePalette(settings)`仅返回参考照片的光球亮度与五项颜色覆盖，仍通过snapshotSettings校验；不修改开关、形态、速度、Parker输入或采样预算。宿主随后沿用visual.stellar发布并可自行保存配置。默认光球#FF4400/1.05，外流#650400→#FF7A0A，日珥#930A00→#FFD05A。
+
+
+## 观测约束太阳重建（核心0.0.25 / SDK0.0.24）
+
+settings扩为74项，新增字段索引58..73固定。只接受完整74项，或严格旧58项快照；旧快照补默认且observationStyle=0，保持旧模式。未知/部分字段仍拒绝。JSON/localStorage读v1/v2、写v2，不覆盖用户配置。
+
+`applySolarObservationPreset(settings)`明确切换新模式；程序化自发光表面与局部活动区、局部三维日珥、有限近表面日冕。日珥高度/丝径/长度为km，流速km/s；参数经科学半径换算，乘显式形态系数，输运另乘显示速度与时间压缩。颜色与常量源函数是显示映射，非NLTE解。旧Parker输入保留且只服务旧风模式。
+
+Premultiplied透明层使用Iout=Iin*exp(-tau)+S*(1-exp(-tau))的常量源函数近似；不能宣称求解MHD、观测磁场、能量守恒或实测喷发。细节仅靠近创建，退出距离/关闭/源移除释放专用材质和几何；资源仍由服务器按需获取，着色器不内嵌WASM。完整依据见docs/太阳观测约束与三维重建设计.md。
+
+
+网页0.0.32统一太阳入口：宿主初始化就发布已恢复参数，不等到选择或面板打开；旧SDK模式保持兼容，但工作区规范化为同一观测显示。太阳表面保留同一个轻量材质，远景通过shader平滑减细节并跳过噪声，不切回照片；近景日冕/日珥仍独立距离门控并回收。宿主不再给Sun绑定NASA六面图；其他天体按需资源规则不变。
+
+## 银河七级 HDR 与观察视场
+
+`camera.fieldOfView(degrees)` 需 `camera.control`，有限值10～100度，默认45度，按NASA画面长边定义（核心转换为Bevy竖直FOV，银河/恒星读取同一投影）；改变观察视场不会改变聚焦修订或移动科学坐标。滚轮继续控制相机距离。
+
+`visual.environment(spec)` 的可选 `lod` 按 `platform/environment-contract.ts` 严格定义七级128×64到8192×4096、256像素瓦片及2像素边缘。只能引用宿主登记资源，不接受URL、路径、shader或任意Bevy结构。线性半浮点图像、漫反射与GGX镜面环境图均由服务器提供，不进入WASM。曝光[-6,6]EV，黑位[0,0.02]，IBL强度[0,2]。停用释放渲染资源。
+
+`visual.starfield` 可选 `kind: 'star' | 'galaxy'`，默认star；保留源位置与星等。`StarfieldSource.setLod(0..6)` 控制累计星表读取，缓存仍受五万点上限约束；六份恒星文件不代表六个LOD，galaxies文件是独立角色。恒星与银河共享投影与层级过渡；迟到点层另有短渐入，关闭银河不关闭恒星LOD。不得把银河背景伪造成近距离三维视差。
+
+## 有时间语义的卫星拖尾
+
+`visual.trajectory(targetId, pointsKm, epochsTdbSeconds, style)` 需要scene.visual及本会话对象归属。style只允许originId、colorRgba、kind、trailDurationSeconds、breakIndices。kind省略或orbit为完整轨道；trail必须有有限1～946080000秒窗口。breakIndices严格递增，索引1..N-1，跳过该点之前的连接，禁止跨覆盖/阶段缺口连线。所有点与epoch必须有限，epoch严格递增，单路径4096点、整会话49152点预算；空点数组清除轨迹及样式。
+
+无originId的点是ICRF绝对位置；有originId表示数据插件在每个采样时刻扣除父体位置的相对轨迹，显示时平移到父体当前位置，不可称为惯性历史。数据插件负责真实覆盖、阶段和采样；Rust按统一TDB时刻裁剪过去窗口并沿可见采样索引渐隐，不画未来、不制造闭环，暂停/倒放/跳时可复现。不能传任意mesh/material/shader。
+
+卫星拖尾与行星轨道是独立显示开关。新增界面入口不授权插件绕过核心时间、坐标或资源归属。
+
+## 相机观察和输入意图
+
+`camera.observe(targetId, mode, options?)`需要camera.control。nearby仅目标；system需要options.members为最多128个唯一已登记当前有效对象ID且含targetId；follow需要不同于targetId的有效followId，不接受members。System以选中对象为中心取景，Follow仍锚定选中对象但随指定对象方向变化，不等于再次focus。`focus`恢复nearby，overview清理观察模式；退出清理会话意图。
+
+`camera.orbit(yawRadians,pitchRadians)`每分量有限[-0.5,0.5]；`camera.zoom(delta)`有限[-1,1]，负值靠近。核心有界累计，每帧只消费一次并执行惯性和碰撞，不授予Transform、原始Bevy对象或穿透能力。鼠标、按钮、键盘、触摸经同一受控意图协作，不能绕过核心科学坐标。
+
+### 模型自动取景提示
+
+`visual.set` 的model可选 `framingRadiusKm`，必须有限且0<值≤1e12；省略保持按完整模型包围取景。它只控制自动取景范围，不改变科学ObjectState.radiusKm、模型scaleKmPerUnit、真实几何或碰撞固体。只能使用已核对目录的显示extents提示，不把它解释为物理半径；SDK复制冻结，Rust独立验证，现有WASM visual JSON直接转发该字段。
+
+model可选`meshCollision:boolean`，缺省false沿用科学半径球碰撞。仅在已审计闭合、朝外一致、无蒙皮和形变的静态实体表面上启用；当前宿主只为Eros启用。它不允许穿越，也不改变科学半径/取景/几何。核心仅在当前revision模型ready、全部三角网格CPU顶点和包围盒可用时替换球碰撞，加载失败/缺失/不支持时继续球体保护。直接复用Bevy网格射线相交，不启动额外鼠标网格拾取后端；相机运动及内部重叠都需约束。不能为开放太阳帆、天线和可动画航天器启用来绕过实体边界。新增模型必须先运行闭合性和场景回归审计。
+
+
+### 姿态与时间来源边界
+
+- 数据插件发布`orientationWxyz`必须为归一化wxyz四元数，注明DYN、固定源或控制器推导；推导不是实测。引用系仅用于求值，不能为了姿态把内部辅助frame伪造成可见天体。退化/循环/缺覆盖保持位置与姿态可用性分别报告，禁止默认朝向冒充结果。
+- 平台科学时钟保持TDB；NASA恢复UI的TT型ET近似与DYN文件时标认证是不同证据。静态无限适用范围截到平台有限求值域不代表观测截止。普通Unix逆投影使用平台修正入口，真实闰秒的Unix fold不能当作时间双射。
+
+
+## 模型关节与源姿态
+
+`visual.joints(id, aims)` 需scene.visual权限及对象所有权，仅模型可接收非空约束；最多32个唯一节点名（128 UTF-8字节），hingeAxis/normalAxis为模型本地单位正交轴，targetDirectionIcrf为当前源时刻单位方向。SDK快照及Rust均独立验证，未知字段拒绝。空数组清理并恢复绑定旋转，平移/缩放保持。
+
+`visual.jointStatus(id)` 区分pending/ready/partial/failed，applied/missing/ambiguous报告实际模型节点，不以模型加载ready代替关节ready。禁止插件直接访问Bevy实体；缺姿态/关节名不得假称已对日。受机械轴约束时只在可转平面求最优朝向，不新增不存在的自由度。天然卫星使用父体相对瞬时轨道，人造卫星/航天器使用过去轨迹；它们分别遵循轨道与拖尾开关。
+
+源spin可有绝对relativeToTime；没有绝对相位的可视化自旋以本次首次有效加载时刻为零点并明确标注，不能称实测绝对姿态。
+
+### Analytic orbit descriptor
+
+Trajectory style accepts optional conic: {semiLatusRectumKm, radialUnit, transverseUnit, eccentricityRadial, eccentricityTransverse}, under existing scene.visual permission. Only explicit kind orbit, at least two points, and no breaks are allowed. Finite semi-latus rectum must satisfy 0<p<=1e15 km. Both ICRF basis vectors must be finite unit triples within 1e-6 and orthogonal within 1e-6; finite eccentricity components must have hypot<1. Unknown fields are rejected; SDK clones and freezes nested arrays and Rust validates independently. NASA OrbitLine display uses one-degree analytic resolution independently of the shared 49152 input sample budget (4096 per path). This display model does not extend scientific coverage or certify predictions.
+
+核心实例最多同时保留256条解析轨道，替换不增加计数；清除或释放所属对象归还预算。每条最多360段，总计不超过92160段。
+
+## 宿主行星预载策略（2026-10-31用户确认）
+
+宿主初始化通过既有受控接口发布八大行星的轨道、姿态、高清表面及土星环，保持资源驻留以避免选择时重复绑定；界面用visual.status展示准备进度。资源仍在服务器，禁止嵌入WASM。太阳为程序化表面，月球和航天器模型按需。此策略不扩展插件权限，也不允许插件绕过宿主登记或直接操作Bevy。未解析为可见模型像素的卫星仍可用点标记表示，名称按有效性、视野、遮挡和碰撞显示，不代表所有名字必须同时可见。
+
+## 拖尾预算与初始化调度（SDK0.0.53 / 核心0.0.67）
+
+每条轨迹最多4096输入点，每会话合计49152输入点；替换扣除本轨迹旧占用，超额原子拒绝。NASA解析天然轨道的独立展开预算不变。宿主可见轨迹普通最多256点、选中天然轨道256点/航天器512点并预留1024点余量；高速播放可另给真实前后缓冲各一份同精度采样预算，总输入仍受单路径4096点、会话49152点限制。可见时长、点预算和误差阈值不因缓冲降低。未选中航天器初次生成和过期维护分帧，不改科学时间或伪造源覆盖。优先采用NASA每目标trail.length和lengthCoverages，后匹配阶段优先，0关闭；未配置时才采用原自动回退。按曲率细分、保留配置时间窗；预算耗尽保留最佳折线近似，禁止将精度目标未达成伪装成源缺口，只有真实缺失数据断线。显示受DYN、祖先和任务阶段覆盖交集限制。索引渐隐不因非均匀采样改成时间渐隐；航天器拖尾白色、行星保留各自颜色。
+
+## NASA线条显示（0.0.38）
+
+线条colorRgba的RGB按着色器原值传输，不额外做sRGB解码；这与表面贴图的色彩空间路径独立。宿主使用NASA TrailManager原始八大行星RGB，天然卫星及航天器使用默认白色；颜色是显示编码，不代表表面光谱。核心使用加法混合（SrcAlpha/One）且不写透明深度，保留行星遮挡的深度测试；零alpha区间不上传，不得遮掉银河。行星普通1.2px/悬停2px，拖尾按索引由0→2px、悬停2→4px；行星primary=.75，其它secondary=.35，hover=1，另乘已有距离渐隐。外置WGSL通过服务器加载，插件不能传入任意shader/material或访问Bevy内部。
+
+主宿星缩放显示规则（网页0.0.64）：轨迹originId等于当前聚焦对象时，天然卫星轨道与航天器拖尾均不受宿主缩放的两层渐隐影响；主宿星自身上级轨道仍可渐隐。图层、源缺口、视锥和实体遮挡仍生效。必须声明真实参考父体，不得伪造originId来规避显示规则。
+
+卫星聚焦上下文（网页0.0.65）：聚焦卫星时，宿主通过camera.observe可选systemId发布真实父体，核心优先读取独立观察上下文，旧调用回退当前有效轨迹originId，保留该局部主星本身及同父体其它天然/人造卫星轨迹，也保留当前对象直接子体。当前聚焦对象自己的轨道仍可近景渐隐；太阳根不是本规则的局部卫星父体系，无明确父体不猜测。每帧重读上下文，图层/覆盖/遮挡限制照常有效，不新增插件绕过权限。SDK 0.0.39的systemId必须为合法登记对象ID，Rust核验其当前有效状态，失败原子拒绝；沿用camera.control授权。关闭自身轨道不清除系统关系，宿主在真实父体/可用性变化时刷新上下文；对象注销清除引用，focus/总览/会话释放沿用清理规则。
+
+## 月球子系统与航天器自动历史（0.0.40）
+
+宿主加载集合须包含当前目标直接子体及其局部所属系统同级目标，不能把非planet对象一律只替换成父体，否则Moon自己的轨道器会丢失。按时刻真实parentAt筛选，直接子体优先但不突破128关联/256场景预算，按需加载真实数据/模型，spacecraft图层关闭时移除其未选中子体。自动航天器时长不受30天与点预算缩窗；orb使用轨道周期，非orb使用2π|r×v|/|v|²估计，显示参数夹到1秒至946080000秒，真实可用覆盖取交集。零速或不可稳定估计沿用有限覆盖回退。不得外推、不增点预算、不把跨阶段源限制伪装为完整历史；天然解析轨道不改为拖尾。
+
+## Sun系统与独立历史/ORI覆盖（0.0.41）
+
+总览空选择按Sun系统加载直属飞船，基础行星首批，飞船后台补齐；返回/自动拉远不能只retain基础十对象。当前选中航天器可由数据插件内部异步准备历史，最多32段/200000 decoded缓存记录，各新source获得剩余额度，主source与历史source共享四个网络槽。历史只读context禁止发布平台对象，不改变时间或相机；转换到当前origin的历史参考系后才通过已有visual.trajectory提交，真实缺口/不连续源断线，原点/预算/图层约束不变。关闭拖尾、切换与停用取消历史，不复活旧轨迹。
+
+ORI只在已确认root覆盖外时跳过此姿态控制器并保留先前有效机身align。HTTP/解码失败不冒充覆盖外，多track未知范围不推断。派生来源必须明确；只有joint align不能生成机身姿态，不能使用单位四元数假装真实姿态。进入已知ORI覆盖后非阻塞补载，覆盖内DYN按NASA目录顺序覆盖派生结果。未新增平台插件任意Bevy访问能力。
+
+合法NASA wire quat按40字节记录归一现有ori结构并保留sourceType=quat，每样本角速度置零使求值为纯slerp。路径ori不能决定二进制type或头长度；未知type继续拒绝。有效ORI缓存段到期也应补载，不仅在known-outside转入有效覆盖时。NASA源若有矛盾重复时间，严格decoder不放宽，仅对登记精确SHA可选择包含请求时刻的连续原记录块，冲突时刻拒绝并明确来源，不跨冲突插值。示例真实样本属于测试资源，不嵌入WASM。
+
+## 任务初始构图（0.0.42）
+
+`camera.observe(targetId, "nearby", {initialLook: {kind: "target" | "sky", referenceId}})`沿用camera.control。这是外部近景初始构图，保留卫星在前景：target令参考体位于背景方向，sky朝其反方向深空；不声明真实仪器光轴。initialLook只允许nearby、严格两个字段和合法ID、referenceId不能等于targetId；SDK复制冻结嵌套对象。Rust复核权限、当前有效状态和不同位置后原子设置，失败不改变焦点；注销参考体清理意图，会话/焦点释放沿用旧清理。systemId仍是所属系统显示上下文，不与构图reference混用。
+
+首次focus revision且自由环绕预设时应用一次，之后手动拖动/缩放不被每帧拉回，明确top/front/side优先。宿主任务表独立于机身DYN和太阳翼：Chandra/Hubble/JWST等登记朝深空，LRO/MRO等行星轨道构图朝当前主星，SDO/SOHO等明确朝Sun，日心巡航不指向未来目的地。缺少有效参考时保持普通近景，不猜仪器轴。
+
+时间倍率仅修改rate时不得清空上一帧基线，否则连续输入会每帧elapsed=0；暂停/恢复等playing状态变化才重置，避免累计暂停墙钟时间。可见工作区控制面板焦点与画布焦点采用相同30fps目标reactive等待节奏，不使用无界Continuous；浏览器隐藏/设备实际帧率另外验证，不把设置值当实测FPS。
+
+当所选航天器的真实直接父体为moon类时，也应按需升级已登记表面资源；不能只允许planet类型导致LRO背景为无纹理球。资源仍外置，不升级无关卫星或伪造地形LOD。
+
+### 轨迹阶段与帧预算（0.0.47）
+
+轨迹通过既有`visual.trajectory`受控发布。新增可选字段`referenceOrientation:boolean`（为true必须有同会话originId）、`visibleInterval:AlwaysVisible|DefaultVisibleFar`、`drawRangeTdbSeconds:[start,end]`。绘制范围为有限且严格递增的源区间，仅用于trail，实际绘制始终与已发布采样点时间范围相交；不能借此扩张科学覆盖。`drawEpochTdbSeconds`记录构建时刻，`drawRelativeStart`/`drawRelativeEnd`仅当范围与构建时刻齐全时可设true，表示该端点随当前核心TDB时刻平移；绝对端点不移动。数组快照冻结，Rust再校验，旧会话与错误归属拒绝。
+
+历史参考姿态轨迹由数据插件在每个采样时刻减去参考体位置并逆旋参考体历史姿态；核心以参考体当前姿态和位置显示，不能重复减原点或把已旋转世界点再次误旋。缺姿态不使用单位姿态冒充。固定28槽位只解释已审查字面量，源回调不执行。自然卫星保持轨道，人造对象使用历史拖尾。
+
+宿主轨迹采样是可取消生成器任务，最多两个活动任务、64个待办，按对象合并修订；每次维护采样预算2ms且最多2048个工作步骤，每周期最多一个结果发布。SDK复制、JSON序列化和Rust校验为点数受限的原子发布，单独测量publicationMs，不能把这部分隐藏在采样2ms通过声明里。选中/阶段/数据修订变化必须丢弃旧结果，单个轨迹错误不能暂停全局时间。
+
+60/30fps控制属于宿主与核心内部调度，不是插件访问Bevy或修改全局预算的权限。核心使用浏览器兼容单调时钟，主更新/资源提取/渲染共同限速，后台恢复重置计时；采样率不改变仿真倍率。诊断的rendered_frames是实际提交渲染周期数，GPU完成耗时不可用时为null，不把RAF次数视作已呈现GPU帧。高刷/轻微调度抖动允许0.5ms间隔容差，累计帧预算仍受上限约束，不执行积压补帧。
+
+本节替代0.0.42的旧30fps reactive等待：当前WASM以Continuous接收RAF，由统一预算门控制真正更新/提取/渲染，不能叠加第二个等待定时器。实际采样预算60档1.5ms、30档1ms，均低于2ms硬上限；原子发布独立计时。30档质量降级阈值为CPU p95>25ms或提交间隔p95>40ms持续2秒，逐级主通道分辨率1/.85/.7/.5；CPU<20ms且间隔<38ms持续10秒恢复质量，完整质量后CPU<8ms连续10秒且队列<=2才恢复60档。逻辑视口、FOV、拾取及科学时间不改变。
+
+## 保真帧预算修正（核心0.0.56 / 网页0.0.74）
+
+按最新用户原则撤销历史自动降低主通道分辨率策略：核心不再设置MainPassResolutionOverride，不因CPU或提交间隔超预算修改画质。resolution_scale诊断字段为兼容保留并恒为1；60/30fps节拍、2秒降档/CPU稳定10秒恢复及队列约束保留。插件权限、科学时间、轨迹长度、模型、标签、资源精度与已确认LOD规则不变。本文更早的质量降级/恢复条款仅为历史，不得作为继续执行授权。
+
+## ORI控制器与缓存身份（SDK0.0.48 / 网页0.0.76）
+
+姿态数据源内部按有效声明与实际覆盖选择最后ORI，后续fixed/align/spin按源顺序继续；同一包不套用其它未覆盖槽位。缓存同时验证活动声明key、选中track、原始覆盖和有效域，正倒跳及同父体阶段变化都要失效。多源已证实无覆盖仅缓存明确开区间，域外/声明变化重新查询；HTTP/坏包不得冒充absence，不得用单位四元数补真姿态。选择/absence元数据经宿主受控协议传递，随checkpoint/rollback/retain/dispose管理，不是新增平台插件或Bevy访问权限。
+
+高速调度：全部到期航天器每帧进入场景有界队列，不受天然轨道每帧一条同步重建的限制；按实测帧内余量、渲染CPU p95预留和有界任务量推进，保留已认证科学采样。真实DYN相邻分段在到期前预取，仅拼接同控制器、父体、类型与参数且重叠记录完全一致的连续数据；不跨缺口或推测未来。跨yield源替换必须使旧结果失效；取消、场景释放和阶段切换清理所有权。
+
+宿主计算Worker（网页0.0.96）：每工作区一个固定分片的纯科学计算池，数量max(1,min(4,floor(hardwareConcurrency/4)))，复用同一TS求值/采样代码，以不可变DYN/ORI增量快照输入、可转移Float64结果输出；禁止Worker自行联网、加载WASM、持有SDK或操作Bevy。时刻、相机、所有权、源版本、覆盖和受控发布始终在主线程确认，发布仍受帧预算约束。源移除/重建版本必须单调，失效和传输错误通过同一任务回退原路径；倍率或方向改变只替换计算任务，不清除显示轨迹。私有历史源保留原实现。Worker属于宿主内部实现，不增加插件权限。相机观察须使用带渲染时刻和实际取景参考体的状态，匹配当前采样时刻，不能混用缓存的旧世界位置。
+
+计算池内各线程收到同一版本的源增量与时刻，按对象ID稳定分片，不因选择或倍率变化重复生成多份同一任务。输入逻辑源上限100万记录，最多4线程复制合计400万记录副本；诊断的numericBytesEstimate仅为数值载荷估算，不能代表堆内存或显存。相邻源预取按最近过期排序，重试间隔按真实源分段跨度与倍率计算。航天器真实缓冲有效期依据已采样覆盖计算，不套用天然解析轨道的半周期便捷范围；源不足的已有部分轨迹仍保持明确缺口，不伪装成完整覆盖。
+`SolarSystemData`内部源请求并发默认4，只接受1..32。当前网页依据实测短分段吞吐显式使用32个等待网络的名额；正文读取和哈希仍共用4个名额，单响应16MiB上限保持。次要失效源的主动恢复仍最多4个，真正获得名额后才读取当前仿真时间。只为曾成功发布、仍保留在场景且启用拖尾的对象保留恢复意图；从未可用或不支持轨迹的对象不新增无限重试。逐帧ObjectState来源仅传有界摘要，完整分段溯源通过独立provenance读取，不能以溯源字段溢出误删有效对象。
+网页0.0.98 / SDK0.0.55 的增量采样：源扩展只有在布局/版本/参数、父体/控制器/轨道声明相同且相邻插值节点完全一致的区间内才能复用点和曲率证书。替换源前先关闭受影响的旧迭代器，再修剪缓存、更新源版本并以同一任务所有权重建；不能仅在发布时拒绝旧结果而任由旧迭代器回写保留缓存。姿态及参考系实质变化仍完整失效。前后缓冲与可见区交换真实点时使用独立容器，曲率证书要求相同观察者，已知失败探测不能被其它缓存掩盖。
+隐藏缓冲随播放方向按.25/1.75周期和相应点预算分配，总上限仍3N，可见区仍N；小于32点和默认方向0保留对称兼容路径。自然轨道、真实缺口、阶段边界和原误差约束不改变。反向桥接只有实际采样的四分之一周期，不能伪报更大覆盖。刷新依据实测计算提前量，不能等到旧采样过期后再补。Worker以MessageChannel让出任务，同一时刻仅一项待唤醒回调，原15ms量子及主线程发布预算保持；不把线程空闲时间当GPU耗时。

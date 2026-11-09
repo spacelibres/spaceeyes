@@ -1,0 +1,28 @@
+✖ high-speed forward and reverse playback stop inside NASA default century limits (129.3194ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 381.2693
+
+✖ failing tests:
+
+test at web\integration\solar-workspace.test.ts:2217:1
+✖ high-speed forward and reverse playback stop inside NASA default century limits (129.3194ms)
+  AssertionError [ERR_ASSERTION]: crossing the global boundary pauses instead of running beyond NASA's domain
+
+  true !== false
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/integration/solar-workspace.test.ts:2228:11)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

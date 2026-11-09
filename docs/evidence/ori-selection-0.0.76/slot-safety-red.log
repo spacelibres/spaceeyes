@@ -1,0 +1,55 @@
+✖ ORI selected earlier source is not replayed at an uncovered later slot after align (45.7395ms)
+✖ unproven ORI absence or foreign controller metadata cannot fabricate valid attitude (6.8922ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 316.6182
+
+✖ failing tests:
+
+test at platform\tests\solar-system.test.ts:1783:1
+✖ ORI selected earlier source is not replayed at an uncovered later slot after align (45.7395ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+  +   1,
+      0,
+      0,
+      0,
+  -   1
+    ]
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1786:44)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 1, 0, 0, 0 ],
+    expected: [ 0, 0, 0, 1 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at platform\tests\solar-system.test.ts:1788:1
+✖ unproven ORI absence or foreign controller metadata cannot fabricate valid attitude (6.8922ms)
+  AssertionError [ERR_ASSERTION]: foreign-track
+  + actual - expected
+
+  + 'ready'
+  - 'unavailable'
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1796:65)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'ready',
+    expected: 'unavailable',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

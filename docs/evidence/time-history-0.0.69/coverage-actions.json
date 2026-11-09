@@ -1,0 +1,2734 @@
+{
+  "method": "Static AST parsing and source hash matching only; callbacks never executed",
+  "actions": [
+    {
+      "entity": "jupiter",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        "Infinity"
+      ],
+      "phase": "update",
+      "sourceSha256": "9f8f2289b9d8d26ca99950257d213057939514c4d52a10570651fdce9c575895",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified695.js",
+          "line": 353,
+          "endLine": 377,
+          "source": "entity => {\n        if (entity.getOrientation().isNaN()) return;\n        const time = entity.getScene().getEngine().getTime();\n        const rotations = jupiterRotationTable.rotations;\n        let angularRate = (rotations[rotations.length - 1][1] - rotations[rotations.length - 2][1]) / (rotations[rotations.length - 1][0] - rotations[rotations.length - 2][0]);\n        let hintIndex = jupiterRotationTable.hintIndex;\n        if (time < rotations[hintIndex][0] || hintIndex < rotations.length - 1 && rotations[hintIndex + 1][0] <= time) {\n          if (time >= rotations[rotations.length - 1][0]) hintIndex = rotations.length - 1;else if (time < rotations[0][0]) {\n            hintIndex = 0;\n            angularRate = 0;\n          } else for (let rotationIndex = rotations.length - 2; rotationIndex >= 0; rotationIndex--) if (rotations[rotationIndex][0] <= time && time < rotations[rotationIndex + 1][0]) {\n            hintIndex = rotationIndex;\n            angularRate = (rotations[rotationIndex + 1][1] - rotations[rotationIndex][1]) / (rotations[rotationIndex + 1][0] - rotations[rotationIndex][0]);\n          }\n        } else if (hintIndex < rotations.length - 1) {\n          angularRate = (rotations[hintIndex + 1][1] - rotations[hintIndex][1]) / (rotations[hintIndex + 1][0] - rotations[hintIndex][0]);\n        }\n        jupiterRotationTable.hintIndex = hintIndex;\n        const rotationAngle = rotations[hintIndex][1] + (time - rotations[hintIndex][0]) * angularRate;\n        const textureLongitude = Pioneer.MathUtils.wrap(jupiterRotationTable.referenceAngleInSystemIII - (rotationAngle + jupiterRotationTable.textureAngleOffset - jupiterRotationTable.referenceAngleInSystemII) + (time - jupiterRotationTable.referenceTime) * jupiterRotationTable.offsetFactor, 0, 360);\n        const surface = entity.getComponent(Pioneer.SpheroidLODComponent);\n        if (null !== surface) {\n          surface.setLongitudeRotation(Pioneer.MathUtils.degToRad(textureLongitude));\n        }\n      }"
+        }
+      ],
+      "category": "surface-longitude-animation",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setLongitudeRotation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_grace_1",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        "Infinity"
+      ],
+      "phase": "update",
+      "sourceSha256": "6541a9d9b0fcb78ed152424f342416a391a5158c77c9f0749701a85b71b5751f",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1040,
+          "endLine": 1051,
+          "source": "entity => {\n        const microwave = entity.getComponent(Pioneer.ConnectedSpriteComponent, \"microwave\");\n        if (!microwave) return;\n        const engine = entity.getScene().getEngine();\n        const textureOffset = Pioneer.MathUtils.wrap(microwave.getTextureYOffset() - Pioneer.MathUtils.clamp(engine.getTimeRate(), -1, 1) * engine.getDeltaTime(), 0, 1);\n        microwave.setTextureYOffset(textureOffset);\n        const partnerEntity = entity.getScene().getEntity(\"sc_grace_2\");\n        const linkEnabled = null !== partnerEntity && partnerEntity.getPosition().distance(entity.getPosition()) <= 3929;\n        if (linkEnabled !== microwave.isEnabled()) {\n          microwave.setEnabled(linkEnabled);\n        }\n      }"
+        }
+      ],
+      "category": "inter-spacecraft-link-animation",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled",
+          "setTextureYOffset"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_grace_fo1",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        "Infinity"
+      ],
+      "phase": "update",
+      "sourceSha256": "4efe07f61bd0ed5249d9c85a33fd91a6751bafe84e33dd4a3c33bf2c4782f555",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1127,
+          "endLine": 1146,
+          "source": "entity => {\n        const microwave = entity.getComponent(Pioneer.ConnectedSpriteComponent, \"microwave\");\n        if (!microwave) return;\n        const engine = entity.getScene().getEngine();\n        const textureOffset = Pioneer.MathUtils.wrap(microwave.getTextureYOffset() - Pioneer.MathUtils.clamp(engine.getTimeRate(), -1, 1) * engine.getDeltaTime(), 0, 1);\n        microwave.setTextureYOffset(textureOffset);\n        const partnerEntity = entity.getScene().getEntity(\"sc_grace_fo2\");\n        const linkEnabled = null !== partnerEntity && partnerEntity.getPosition().distance(entity.getPosition()) <= 3929;\n        if (linkEnabled !== microwave.isEnabled()) {\n          microwave.setEnabled(linkEnabled);\n          const firstLaser = entity.getComponent(Pioneer.ConnectedSpriteComponent, \"laser1\");\n          const secondLaser = entity.getComponent(Pioneer.ConnectedSpriteComponent, \"laser2\");\n          if (firstLaser) {\n            firstLaser.setEnabled(linkEnabled);\n          }\n          if (secondLaser) {\n            secondLaser.setEnabled(linkEnabled);\n          }\n        }\n      }"
+        }
+      ],
+      "category": "inter-spacecraft-link-animation",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled",
+          "setTextureYOffset"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        694937889.184
+      ],
+      "phase": "enter",
+      "sourceSha256": "24dc831c46ea2fa3ef68d2fcc1d28f80745c692d59c5fd964e6160dc0682b82f",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1853,
+          "endLine": 1858,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_jwst/webb_stowed.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_jwst",
+      "controllerIndex": 2,
+      "coverage": [
+        "-Infinity",
+        694937889.184
+      ],
+      "phase": "exit",
+      "sourceSha256": "b82617fb2c6f92715da03942c5dfa0543600766e2034b4975d54fdd6a96de1d3",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified708.js",
+          "line": 1859,
+          "endLine": 1864,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_jwst/webb_deployed.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        -186451139
+      ],
+      "phase": "enter",
+      "sourceSha256": "e57e3c9d88842b4bf0d57eeed44c069b1d40622e334fd8b195bfaca068447ef2",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 138,
+          "endLine": 143,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_clementine/clementine_isas.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_clementine",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        -186451139
+      ],
+      "phase": "exit",
+      "sourceSha256": "0284c246f53167d0fc08faa33910bd32216886e2e176a34c6760c42bee433395",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 144,
+          "endLine": 149,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_clementine/clementine.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_themis_b",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        264427265
+      ],
+      "phase": "enter",
+      "sourceSha256": "86a61d33e4c2ed6c46b1716d606a01dec3a88b463b24bf638260a8134b528ccf",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"ARTEMIS P1\", \"THEMIS B\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_themis_b",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        264427265
+      ],
+      "phase": "exit",
+      "sourceSha256": "d697ff8e724c41ab7e3adee986d9585760f9ed98365768f27bc6dd45ac29f38f",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 520,
+          "endLine": 525,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"THEMIS B\", \"ARTEMIS P1\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_themis_c",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        264427265
+      ],
+      "phase": "enter",
+      "sourceSha256": "dc5992cb52474bd7eac0aea4e65089c700fd957e1ae6c3c891fd5c02adf1d0a8",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 561,
+          "endLine": 566,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"ARTEMIS P2\", \"THEMIS C\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_themis_c",
+      "controllerIndex": 4,
+      "coverage": [
+        "-Infinity",
+        264427265
+      ],
+      "phase": "exit",
+      "sourceSha256": "db261f3c0460ce3b52c6c4ff89265cc1765182b54687631c70bb2aeb1396bdef",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified709.js",
+          "line": 567,
+          "endLine": 572,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"THEMIS C\", \"ARTEMIS P2\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 10,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "79cdeb40844ae3e20f3226743c24f310d8d4bbc36c99996646d18320255b2865",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 144,
+          "endLine": 149,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML.replace(\"Mars 2020\", \"Perseverance\");\n        }\n      }"
+        }
+      ],
+      "category": "source-no-op-label-replace",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "source-no-op",
+        "reason": "Source replace return value discarded; no label mutation."
+      },
+      "priority": "exclude-source-no-op"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 10,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "b2ec9b5c077011e8e63bb5718479b1b5501f78911d93f6848ec50471d884d1b1",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 150,
+          "endLine": 155,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML.replace(\"Perseverance\", \"Mars 2020\");\n        }\n      }"
+        }
+      ],
+      "category": "source-no-op-label-replace",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "source-no-op",
+        "reason": "Source replace return value discarded; no label mutation."
+      },
+      "priority": "exclude-source-no-op"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "coverage": [
+        666953098.003,
+        676629898.003
+      ],
+      "phase": "enter",
+      "sourceSha256": "be798f0c829d5ffa7a32d92f0b402458f49b9398fde6dfc88d3f6dc10b30b150",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 159,
+          "endLine": 165,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setStartTime(666953098.003);\n          trail.setRelativeStartTime(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime",
+          "setStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 11,
+      "coverage": [
+        666953098.003,
+        676629898.003
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166,
+          "endLine": 171,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541,
+          "endLine": 546,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696,
+          "endLine": 701,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "coverage": [
+        666932224,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175,
+          "endLine": 180,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343,
+          "endLine": 348,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786,
+          "endLine": 791,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508,
+          "endLine": 513,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739,
+          "endLine": 744,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 12,
+      "coverage": [
+        666932224,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181,
+          "endLine": 186,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349,
+          "endLine": 354,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792,
+          "endLine": 797,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745,
+          "endLine": 750,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "5f595f571e3097a736f74ca738f6372e7c6f8aa8a8581362aabbea10b79aea5d",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 190,
+          "endLine": 197,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_2020/rover/perseverance.gltf\");\n          model.setRotation(new Pioneer.Quaternion(.5, -.5, .5, -.5));\n          model.setTranslation(new Pioneer.Vector3(0, 0, .001));\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 13,
+      "coverage": [
+        666953086.614,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "434a9ed71edf1abdfdff676a2583571f36776f0f87af458c06cd81581b2b0820",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 198,
+          "endLine": 205,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_2020/cruise_whole/msl_cruise_stage.gltf\");\n          model.setRotation(new Pioneer.Quaternion(.7071067811865478, -.7071067811865472, 0, 0));\n          model.setTranslation(new Pioneer.Vector3(0, 0, 0));\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "coverage": [
+        666953098.003,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 209,
+          "endLine": 214,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 377,
+          "endLine": 382,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 14,
+      "coverage": [
+        666953098.003,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 215,
+          "endLine": 220,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 383,
+          "endLine": 388,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "coverage": [
+        666952458,
+        666953086.614
+      ],
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 224,
+          "endLine": 230,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", true);\n          model.setHiddenObject(\"frame_etc\", true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 392,
+          "endLine": 398,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", true);\n          model.setHiddenObject(\"frame_etc\", true);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_2020",
+      "controllerIndex": 15,
+      "coverage": [
+        666952458,
+        666953086.614
+      ],
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 231,
+          "endLine": 237,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", false);\n          model.setHiddenObject(\"frame_etc\", false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 399,
+          "endLine": 405,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", false);\n          model.setHiddenObject(\"frame_etc\", false);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 12,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "ca8e1784d7bd7bf6324ba3e66670dd5f80bc4679ccde9649cd209a35bd602d8a",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 328,
+          "endLine": 333,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML.replace(\"Mars Science Laboratory\", \"Curiosity\");\n        }\n      }"
+        }
+      ],
+      "category": "source-no-op-label-replace",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "source-no-op",
+        "reason": "Source replace return value discarded; no label mutation."
+      },
+      "priority": "exclude-source-no-op"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 12,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "d69d02318fd01922e0decd95249ad8314eb72cf09c037bea51e39bc426045aed",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 334,
+          "endLine": 339,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (label) {\n          label.getDiv().innerHTML.replace(\"Curiosity\", \"Mars Science Laboratory\");\n        }\n      }"
+        }
+      ],
+      "category": "source-no-op-label-replace",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "source-no-op",
+        "reason": "Source replace return value discarded; no label mutation."
+      },
+      "priority": "exclude-source-no-op"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "coverage": [
+        397501373,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175,
+          "endLine": 180,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343,
+          "endLine": 348,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786,
+          "endLine": 791,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508,
+          "endLine": 513,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739,
+          "endLine": 744,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 13,
+      "coverage": [
+        397501373,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181,
+          "endLine": 186,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349,
+          "endLine": 354,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792,
+          "endLine": 797,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745,
+          "endLine": 750,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "coverage": [
+        397502324,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "fae57df2c378fcc8d8daf16094c50d2e636a2d004b3740b8172b51b06263729a",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 358,
+          "endLine": 365,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/rover/curiosity_static.gltf\");\n          model.setRotation(new Pioneer.Quaternion(.5, -.5, .5, -.5));\n          model.setTranslation(new Pioneer.Vector3(0, 0, .001));\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 14,
+      "coverage": [
+        397502324,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "2cfc19bde7ab21373dd25c0d1633056eea3247104e0eac3dd03dc07c2d6e2d1b",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 366,
+          "endLine": 373,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_science_laboratory/cruise/msl_cruisestage.gltf\");\n          model.setRotation(new Pioneer.Quaternion(.7071067811865478, -.7071067811865472, 0, 0));\n          model.setTranslation(new Pioneer.Vector3(0, 0, 0));\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d1fba85f3e57fe960f1dda83ac95e35077ce1041249c5c9322b9ebd53cfcf80",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 209,
+          "endLine": 214,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 377,
+          "endLine": 382,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 15,
+      "coverage": [
+        397502386.832,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "37ba8974701b71f670901c831e73436ea29a7b1080fa10801fd7d20c1cdac45b",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 215,
+          "endLine": 220,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 383,
+          "endLine": 388,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "coverage": [
+        397501758,
+        397502386.832
+      ],
+      "phase": "enter",
+      "sourceSha256": "00c0d0576e701e69446d29c73245faea84059334666d7be802f41795b21e79f1",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 224,
+          "endLine": 230,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", true);\n          model.setHiddenObject(\"frame_etc\", true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 392,
+          "endLine": 398,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", true);\n          model.setHiddenObject(\"frame_etc\", true);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_science_laboratory",
+      "controllerIndex": 16,
+      "coverage": [
+        397501758,
+        397502386.832
+      ],
+      "phase": "exit",
+      "sourceSha256": "b2863c97887888caa46c92ee2d09dc875dfba52d59aac2259fd7733ab8352037",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 231,
+          "endLine": 237,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", false);\n          model.setHiddenObject(\"frame_etc\", false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 399,
+          "endLine": 405,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"solar_panels\", false);\n          model.setHiddenObject(\"frame_etc\", false);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "coverage": [
+        128278419,
+        581920316.856
+      ],
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 517,
+          "endLine": 523,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 672,
+          "endLine": 678,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 12,
+      "coverage": [
+        128278419,
+        581920316.856
+      ],
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 524,
+          "endLine": 530,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 679,
+          "endLine": 685,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "coverage": [
+        128278523,
+        137955323
+      ],
+      "phase": "enter",
+      "sourceSha256": "d0a54186200a8b7bf2bb61f37461c744668e75cfe1ba004d142a22723164242c",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 534,
+          "endLine": 540,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setStartTime(128278523);\n          trail.setRelativeStartTime(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime",
+          "setStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 13,
+      "coverage": [
+        128278523,
+        137955323
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166,
+          "endLine": 171,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541,
+          "endLine": 546,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696,
+          "endLine": 701,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "coverage": [
+        128278523,
+        581920316.856
+      ],
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 550,
+          "endLine": 555,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf\");\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 705,
+          "endLine": 710,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_1",
+      "controllerIndex": 14,
+      "coverage": [
+        128278523,
+        581920316.856
+      ],
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 556,
+          "endLine": 561,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf\");\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 711,
+          "endLine": 716,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "coverage": [
+        126462105,
+        322567479.38962
+      ],
+      "phase": "enter",
+      "sourceSha256": "85cf71bbdc8651b1a2c614d9c4070b7e850b1c27bf6f6529ea41ff475f0a27b9",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 517,
+          "endLine": 523,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 672,
+          "endLine": 678,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.AlwaysVisible);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 12,
+      "coverage": [
+        126462105,
+        322567479.38962
+      ],
+      "phase": "exit",
+      "sourceSha256": "2d563a31952ccf6d7c794f821db8d055c92a7706db54c2c4bdaeb2232c2d03d7",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 524,
+          "endLine": 530,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 679,
+          "endLine": 685,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n          trail.setVisibleInterval(Pioneer.VisibleInterval.DefaultVisibleFar);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setVisibleInterval"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "coverage": [
+        126462396,
+        136139196
+      ],
+      "phase": "enter",
+      "sourceSha256": "ed50119548cfb4b3ff192203b7efd7766fafc1aa6fb183c16d288d51c76f29e9",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 689,
+          "endLine": 695,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setStartTime(126462396);\n          trail.setRelativeStartTime(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime",
+          "setStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 13,
+      "coverage": [
+        126462396,
+        136139196
+      ],
+      "phase": "exit",
+      "sourceSha256": "271b2b6bb637494f7197f8983f7e96962c8b5f305759e7a9db95957e3a853aa5",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 166,
+          "endLine": 171,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 541,
+          "endLine": 546,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 696,
+          "endLine": 701,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeStartTime(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "coverage": [
+        126462396,
+        322567479.38962
+      ],
+      "phase": "enter",
+      "sourceSha256": "94f91c24d6e35ddcfd6a85f0a026d947831020bcd34e9005cefee629960f8d58",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 550,
+          "endLine": 555,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf\");\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 705,
+          "endLine": 710,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/rover/mer_static.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_mars_exploration_rover_2",
+      "controllerIndex": 14,
+      "coverage": [
+        126462396,
+        322567479.38962
+      ],
+      "phase": "exit",
+      "sourceSha256": "53cc587a3093934d2a5f67865f43033c348659773d13474669122e0c27428a66",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 556,
+          "endLine": 561,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf\");\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 711,
+          "endLine": 716,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_mars_exploration_rover/cruise/mpf_mera_merb_cruise.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "coverage": [
+        596529871.284,
+        596533602
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175,
+          "endLine": 180,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343,
+          "endLine": 348,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786,
+          "endLine": 791,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508,
+          "endLine": 513,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739,
+          "endLine": 744,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 8,
+      "coverage": [
+        596529871.284,
+        596533602
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181,
+          "endLine": 186,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349,
+          "endLine": 354,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792,
+          "endLine": 797,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745,
+          "endLine": 750,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 9,
+      "coverage": [
+        578795968.9654216,
+        596533602
+      ],
+      "phase": "enter",
+      "sourceSha256": "4bcf06611b9726386c77e437e7d6bb6c3fbde0ba249e113cc385bbefa6972df8",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 801,
+          "endLine": 808,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_insight/cruise/model.gltf\");\n          model.setRotation(new Pioneer.Quaternion(Math.sqrt(.5), 0, Math.sqrt(.5), 0));\n          model.setTranslation(Pioneer.Vector3.Zero);\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_insight",
+      "controllerIndex": 10,
+      "coverage": [
+        596533602,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "89f4bee0d82b317ecd9bc93ff977798f9775d51b76c51b35c436e74eb863a79b",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 812,
+          "endLine": 819,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_insight/lander/insight.gltf\");\n          model.setRotation(new Pioneer.Quaternion(Math.sqrt(.5), Math.sqrt(.5), 0, 0));\n          model.setTranslation(new Pioneer.Vector3(0, 0, 85e-5));\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRotation",
+          "setTranslation",
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "coverage": [
+        265029904,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "983f33feadc06bfa233dbb372a7f74bd3d2a3b6a8165075bc6170e53d60d161a",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 1116,
+          "endLine": 1121,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_phoenix/edl/phoenix_edl.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_phoenix",
+      "controllerIndex": 8,
+      "coverage": [
+        265029904,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "390d9497c174d986f8351d68852030f1f3b4c82785e97f5e084bd243bfb8a5d8",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 1122,
+          "endLine": 1127,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) {\n          model.setUrl(\"$STATIC_ASSETS_URL/models/sc_phoenix/cruise/phoenix_cruise.gltf\");\n        }\n      }"
+        }
+      ],
+      "category": "model-url-transform-phase",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setUrl"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 11,
+      "coverage": [
+        393471366,
+        529749008
+      ],
+      "phase": "exit",
+      "sourceSha256": "624e027bde48ce788e017e15a7babfb51077248cce383826d5c807cdfe589bc5",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 74,
+          "endLine": 81,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (!model) return;\n        const engineCover = model.getThreeJsObjectByName(\"engine_cover\");\n        if (engineCover) {\n          engineCover.rotation.x = Math.PI;\n        }\n      }"
+        }
+      ],
+      "category": "model-joint-animation",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 11,
+      "coverage": [
+        393471366,
+        529749008
+      ],
+      "phase": "update",
+      "sourceSha256": "4695e9809719f5e5a9b1c02a86f6602b2856b584052a1314bb550c4351f33413",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 62,
+          "endLine": 73,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (!model) return;\n        const engineCover = model.getThreeJsObjectByName(\"engine_cover\");\n        if (!engineCover) return;\n        const time = entity.getScene().getEngine().getTime();\n        const intervalIndex = Pioneer.Sort.getIndexObject(time, junoCoverIntervals, (interval, sampleTime) => interval[1] < sampleTime);\n        const startTime = junoCoverIntervals[intervalIndex][0];\n        const endTime = junoCoverIntervals[intervalIndex][1];\n        const openingFraction = Pioneer.MathUtils.clamp01(((endTime - startTime) / 2 - Math.abs(time - (endTime + startTime) / 2)) / 600);\n        engineCover.rotation.x = Pioneer.MathUtils.lerp(Math.PI, Math.PI / 8, openingFraction);\n      }"
+        }
+      ],
+      "category": "model-joint-animation",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 12,
+      "coverage": [
+        399637867.183,
+        520959604.184
+      ],
+      "phase": "exit",
+      "sourceSha256": "895f8187e25fe98d243120a4414acf41743c9188965c8e85ecc45d9058012ab3",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 95,
+          "endLine": 100,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (spray) {\n          spray.setEnabled(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 202,
+          "endLine": 207,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (spray) {\n          spray.setEnabled(false);\n        }\n      }"
+        }
+      ],
+      "category": "burn-particle-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 12,
+      "coverage": [
+        399637867.183,
+        520959604.184
+      ],
+      "phase": "update",
+      "sourceSha256": "6afa633440a62b34cca2acce9e9fe29742bf7b9abca21e5bc07dc4ff5534bcbc",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 85,
+          "endLine": 94,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (!spray) return;\n        const time = entity.getScene().getEngine().getTime();\n        const intervalIndex = Pioneer.Sort.getIndexObject(time, junoBurnIntervals, (interval, sampleTime) => interval[1] < sampleTime);\n        const startTime = junoBurnIntervals[intervalIndex][0];\n        const endTime = junoBurnIntervals[intervalIndex][1];\n        const burnActive = startTime <= time && time < endTime;\n        spray.setEnabled(burnActive);\n      }"
+        }
+      ],
+      "category": "burn-particle-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "coverage": [
+        519652868.184,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "7d62e60a55597728f999ce8469b030c53d10f551f11565610cefee409bd06621",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 104,
+          "endLine": 109,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setRelativeToEntity(\"jupiter\");\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntity"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_juno",
+      "controllerIndex": 13,
+      "coverage": [
+        519652868.184,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "1ad1684454bd041c0865e3ac6c7fdadcc54ca7b34925dee98277a048b91fb422",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 110,
+          "endLine": 115,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (trail) {\n          trail.setRelativeToEntity(\"\");\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntity"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 10,
+      "coverage": [
+        -13098535.817,
+        534124760.143
+      ],
+      "phase": "exit",
+      "sourceSha256": "895f8187e25fe98d243120a4414acf41743c9188965c8e85ecc45d9058012ab3",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 95,
+          "endLine": 100,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (spray) {\n          spray.setEnabled(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 202,
+          "endLine": 207,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (spray) {\n          spray.setEnabled(false);\n        }\n      }"
+        }
+      ],
+      "category": "burn-particle-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 10,
+      "coverage": [
+        -13098535.817,
+        534124760.143
+      ],
+      "phase": "update",
+      "sourceSha256": "f7b52c941139a54e5c23a3fbd7b142665ff030803fca0953aa7a7192c4d6fc4c",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 192,
+          "endLine": 201,
+          "source": "entity => {\n        const spray = entity.getComponent(Pioneer.ParticleSprayComponent);\n        if (!spray) return;\n        const time = entity.getScene().getEngine().getTime();\n        const intervalIndex = Pioneer.Sort.getIndexObject(time, cassiniBurnIntervals, (interval, sampleTime) => interval[1] < sampleTime);\n        const startTime = cassiniBurnIntervals[intervalIndex][0];\n        const endTime = cassiniBurnIntervals[intervalIndex][1];\n        const burnActive = startTime <= time && time < endTime;\n        spray.setEnabled(burnActive);\n      }"
+        }
+      ],
+      "category": "burn-particle-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "coverage": [
+        157212064.184,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "cb802876a4021db648705a128a4e37e47ac9112cbbcc99788df24fad367b5392",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 211,
+          "endLine": 216,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"huygens_probe\", true);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_cassini",
+      "controllerIndex": 11,
+      "coverage": [
+        157212064.184,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "063defc0f61531ff3cea5d3336b4eeb1788526052e2cfbc33ad4274ed5b4e0fb",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 217,
+          "endLine": 222,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"huygens_probe\", false);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_galileo",
+      "controllerIndex": 9,
+      "coverage": [
+        -141114597.48322043,
+        -141114477.48322043
+      ],
+      "phase": "enter",
+      "sourceSha256": "cb921a21b3b14e49649aa7f5dc12a57bd30d109e4ee42e38e882791c1283f964",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 346,
+          "endLine": 351,
+          "source": "entity => {\n        const spinController = entity.getController(Pioneer.SpinController, \"rotorSpin\");\n        if (spinController) {\n          spinController.setRate(-14.8 * Math.PI / 60);\n        }\n      }"
+        }
+      ],
+      "category": "articulated-spin-rate",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRate"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_galileo",
+      "controllerIndex": 9,
+      "coverage": [
+        -141114597.48322043,
+        -141114477.48322043
+      ],
+      "phase": "exit",
+      "sourceSha256": "ac1721029b4ded0c22882683a6bde4bd09c423fb662570742293343beb5e3732",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 352,
+          "endLine": 357,
+          "source": "entity => {\n        const spinController = entity.getController(Pioneer.SpinController, \"rotorSpin\");\n        if (spinController) {\n          spinController.setRate(6 * Math.PI / 60);\n        }\n      }"
+        }
+      ],
+      "category": "articulated-spin-rate",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRate"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_galileo_probe",
+      "controllerIndex": 3,
+      "coverage": [
+        "-Infinity",
+        -141114537.48322043
+      ],
+      "phase": "enter",
+      "sourceSha256": "1150a9f64f99567ebbec0c45d7ae86bdb3836f28cb3ec531fdf6e24d7502270a",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 394,
+          "endLine": 407,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (null !== label) {\n          label.setEnabled(false);\n        }\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setEnabled(false);\n        }\n        const translationController = entity.getController(Pioneer.TranslateController);\n        if (translationController) {\n          translationController.setTranslation(new Pioneer.Vector3(0, 0, .001));\n        }\n      }"
+        }
+      ],
+      "category": "combined-label-trail-translation-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled",
+          "setTranslation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_galileo_probe",
+      "controllerIndex": 3,
+      "coverage": [
+        "-Infinity",
+        -141114537.48322043
+      ],
+      "phase": "exit",
+      "sourceSha256": "79a221f523321b17ebd104072390ccd3baadb933c43c92a959565d9812a8f6a1",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 408,
+          "endLine": 421,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (null !== label) {\n          label.setEnabled(true);\n        }\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setEnabled(true);\n        }\n        const translationController = entity.getController(Pioneer.TranslateController);\n        if (translationController) {\n          translationController.setTranslation(new Pioneer.Vector3(-16e-6, 24e-6, 7e-4));\n        }\n      }"
+        }
+      ],
+      "category": "combined-label-trail-translation-state",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setEnabled",
+          "setTranslation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P2-specialized-render-state"
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "coverage": [
+        158965616.707,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175,
+          "endLine": 180,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343,
+          "endLine": 348,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786,
+          "endLine": 791,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508,
+          "endLine": 513,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739,
+          "endLine": 744,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_huygens",
+      "controllerIndex": 7,
+      "coverage": [
+        158965616.707,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181,
+          "endLine": 186,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349,
+          "endLine": 354,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792,
+          "endLine": 797,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745,
+          "endLine": 750,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "coverage": [
+        469053367.183,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "556c0934dc1f5335fb3f62ccc85fb1e8fc842a98ad58b31afaaac97fb02e6d36",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 535,
+          "endLine": 540,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"Philae\", true);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_rosetta",
+      "controllerIndex": 15,
+      "coverage": [
+        469053367.183,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "4ac436fe485fef783d2a6f40a43a12ea78134d9eb6a088235047efc3339a6073",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 541,
+          "endLine": 546,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (null !== model) {\n          model.setHiddenObject(\"Philae\", false);\n        }\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_osiris_rex",
+      "controllerIndex": 11,
+      "coverage": [
+        748838793,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "ce7e38c35275e92229757cf39df493b2c7a93a5f962a52d7f55dddd463c04291",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 627,
+          "endLine": 632,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (null !== label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"REx\", \"APEX\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_osiris_rex",
+      "controllerIndex": 11,
+      "coverage": [
+        748838793,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "5b868b1ee8881f9b75111dcb4c6b39a672cba061e351aae15b046552e0564a23",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 633,
+          "endLine": 638,
+          "source": "entity => {\n        const label = entity.getComponent(Pioneer.DivComponent);\n        if (null !== label) {\n          label.getDiv().innerHTML = label.getDiv().innerHTML.replace(\"APEX\", \"REx\");\n        }\n      }"
+        }
+      ],
+      "category": "label-text",
+      "controlledSemanticCandidate": {
+        "setterNames": [],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "coverage": [
+        748838642,
+        748839373
+      ],
+      "phase": "enter",
+      "sourceSha256": "45aec1b155927828e7225ab51b6e3df3e8d52273623cbed84884b76df5b35042",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 175,
+          "endLine": 180,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 343,
+          "endLine": 348,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 786,
+          "endLine": 791,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 508,
+          "endLine": 513,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 739,
+          "endLine": 744,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_osiris_rex_src",
+      "controllerIndex": 3,
+      "coverage": [
+        748838642,
+        748839373
+      ],
+      "phase": "exit",
+      "sourceSha256": "51c87bd759058d90d8b18a51b89dff9655ffc3788372e2535aebf1cf93f4962e",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 181,
+          "endLine": 186,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 349,
+          "endLine": 354,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified710.js",
+          "line": 792,
+          "endLine": 797,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified712.js",
+          "line": 514,
+          "endLine": 519,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        },
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 745,
+          "endLine": 750,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "coverage": [
+        190576690.7833838,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "60678dd4002fdba931490136fd76adb88c45eb225b597b4af95b645ab17f4e01",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 943,
+          "endLine": 946,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) for (const partName of stardustModelParts) model.setHiddenObject(partName, true);\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_stardust",
+      "controllerIndex": 10,
+      "coverage": [
+        190576690.7833838,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "0f0900485c9dcea312d6c38620b9d57612ffe339958219f2c1ab63d6a5e9e9b0",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 947,
+          "endLine": 950,
+          "source": "entity => {\n        const model = entity.getComponent(Pioneer.ModelComponent);\n        if (model) for (const partName of stardustModelParts) model.setHiddenObject(partName, false);\n      }"
+        }
+      ],
+      "category": "model-part-visibility",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setHiddenObject"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "coverage": [
+        190591100,
+        "Infinity"
+      ],
+      "phase": "enter",
+      "sourceSha256": "4485dc90f139810656787f018b78594fdb6a92498a281509b6b410b266be1afc",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 988,
+          "endLine": 994,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(true);\n          trail.setStartTime(1600);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    },
+    {
+      "entity": "sc_stardust_src",
+      "controllerIndex": 2,
+      "coverage": [
+        190591100,
+        "Infinity"
+      ],
+      "phase": "exit",
+      "sourceSha256": "109caf9ba40a313ae600b1eedabf44b85f583bee79d9cb9d2f4502f20d239ced",
+      "matches": [
+        {
+          "file": "C:/Users/stone/Documents/solarsystem/eyes/src/engine/core/Unidentified713.js",
+          "line": 995,
+          "endLine": 1001,
+          "source": "entity => {\n        const trail = entity.getComponent(Pioneer.TrailComponent);\n        if (null !== trail) {\n          trail.setRelativeToEntityOrientation(false);\n          trail.setStartTime(18e3);\n        }\n      }"
+        }
+      ],
+      "category": "trail-policy",
+      "controlledSemanticCandidate": {
+        "setterNames": [
+          "setRelativeToEntityOrientation",
+          "setStartTime"
+        ],
+        "description": "Translate literal/static source operations into explicitly typed declarative state; preserve source snippet as authoritative detail. No callback evaluation."
+      },
+      "equivalenceAssessment": {
+        "status": "not-established",
+        "reason": "No generic coverage lifecycle consumer in current platform. Similar static controllers or trail duration policies do not establish action equivalence; per-action runtime mapping remains unverified."
+      },
+      "priority": "P1-declarative-phase-state"
+    }
+  ],
+  "summary": {
+    "entities": 23,
+    "controllers": 41,
+    "slots": 77,
+    "distinctSourceHashes": 58,
+    "matchedSlots": 77,
+    "categorySlotCounts": {
+      "surface-longitude-animation": 1,
+      "inter-spacecraft-link-animation": 2,
+      "model-url-transform-phase": 16,
+      "label-text": 6,
+      "source-no-op-label-replace": 4,
+      "trail-policy": 28,
+      "model-part-visibility": 10,
+      "model-joint-animation": 2,
+      "burn-particle-state": 4,
+      "articulated-spin-rate": 2,
+      "combined-label-trail-translation-state": 2
+    },
+    "equivalenceSlotCounts": {
+      "not-established": 73,
+      "source-no-op": 4
+    },
+    "implementedByThisEvidence": 0,
+    "limitation": "Missing callback lifecycle is established; exact missing user-visible behavior count is not established. Static existing equivalents require further consumer tracing. Counts are action slots, not independent user features."
+  },
+  "existingImplementationSearch": {
+    "files": [
+      "platform/eyes-controllers.ts",
+      "platform/eyes-trail-policy.ts",
+      "platform/solar-system.ts"
+    ],
+    "findings": "activeController filters declared coverage; eyesTrailDuration applies authored lengthCoverages; neither consumes Coverage enter/exit/update action bodies. No equivalence assigned solely from these mechanisms."
+  }
+}

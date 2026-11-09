@@ -1,0 +1,24 @@
+   Compiling spaceeyes-core v0.0.65 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.19s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-27a514b81418a7cc.exe)
+
+running 2 tests
+
+thread 'solar_lighting::tests::scientific_subtraction_precedes_f32_and_is_translation_invariant' (10296) panicked at src\solar_lighting.rs:25:3:
+assertion failed: a.distance(b) < 1e-6
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'solar_lighting::tests::opposite_bodies_receive_opposite_sunlight_without_a_camera_origin' (18456) panicked at src\solar_lighting.rs:16:3:
+assertion failed: solar_direction(sun, sun + DVec3::X * 1e8).unwrap().distance(-Vec3::X) < 1e-6
+test solar_lighting::tests::scientific_subtraction_precedes_f32_and_is_translation_invariant ... FAILED
+test solar_lighting::tests::opposite_bodies_receive_opposite_sunlight_without_a_camera_origin ... FAILED
+
+failures:
+
+failures:
+    solar_lighting::tests::opposite_bodies_receive_opposite_sunlight_without_a_camera_origin
+    solar_lighting::tests::scientific_subtraction_precedes_f32_and_is_translation_invariant
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 164 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

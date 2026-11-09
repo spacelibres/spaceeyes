@@ -1,0 +1,41 @@
+✖ automatic deep-space spacecraft history is not truncated to 30 days or by point count (32.6178ms)
+✖ Moon selection includes its own orbiters as well as Earth-system siblings (135.6963ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 363.9977
+
+✖ failing tests:
+
+test at platform\tests\solar-system.test.ts:1332:1
+✖ automatic deep-space spacecraft history is not truncated to 30 days or by point count (32.6178ms)
+  AssertionError [ERR_ASSERTION]: NASA auto orbital period must survive budget
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:1349:14)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at web\integration\solar-workspace.test.ts:1994:1
+✖ Moon selection includes its own orbiters as well as Earth-system siblings (135.6963ms)
+  AssertionError [ERR_ASSERTION]: Got unwanted exception.
+  Actual message: "undefined"
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/integration/solar-workspace.test.ts:2003:12)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'UnknownObject',
+    expected: undefined,
+    operator: 'doesNotThrow',
+    diff: 'simple'
+  }

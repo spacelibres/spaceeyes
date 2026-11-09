@@ -1,0 +1,268 @@
+{
+  "date": "2026-10-28",
+  "juno": {
+    "materials": [
+      {
+        "index": 0,
+        "name": "black_krinkle.005",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "normalTexture": "foil_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": {
+          "offset": [
+            0,
+            -1
+          ],
+          "scale": [
+            100.00000223517424,
+            2
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "name": "foil_silver.013",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "normalTexture": "foil_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 2,
+        "name": "crosses.001",
+        "alphaMode": "BLEND",
+        "roles": {
+          "baseColorTexture": "juno_transparent_crosses.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 3,
+        "name": "foil silver antenna.002",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "normalTexture": "foil_dish_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 4,
+        "name": "tex_01.007",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_tex_01_albedo.jpg",
+          "metallicRoughnessTexture": "juno_tex_01_pbr.jpg",
+          "normalTexture": "juno_tex_01_normal.png"
+        },
+        "normalScale": 0.6000000238418579,
+        "normalUVTransform": null
+      },
+      {
+        "index": 5,
+        "name": "foil_gold.010",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "normalTexture": "foil_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 6,
+        "name": "tex_01.010",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_tex_01_albedo.jpg",
+          "metallicRoughnessTexture": "juno_tex_01_pbr.jpg",
+          "normalTexture": "juno_tex_01_normal.png"
+        },
+        "normalScale": 0.6000000238418579,
+        "normalUVTransform": null
+      },
+      {
+        "index": 7,
+        "name": "brass.002",
+        "alphaMode": "OPAQUE",
+        "roles": {},
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 8,
+        "name": "hardware.001",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_tex_01_albedo.jpg",
+          "metallicRoughnessTexture": "juno_tex_01_pbr.jpg",
+          "normalTexture": "juno_tex_01_normal.png"
+        },
+        "normalScale": 0.6000000238418579,
+        "normalUVTransform": null
+      },
+      {
+        "index": 9,
+        "name": "shiny_panels.001",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_array_albedo.jpg",
+          "metallicRoughnessTexture": "juno_array_pbr.jpg",
+          "normalTexture": "juno_array_normal.png"
+        },
+        "normalScale": 0.5,
+        "normalUVTransform": null
+      },
+      {
+        "index": 10,
+        "name": "tex_01.009",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_tex_01_albedo.jpg",
+          "metallicRoughnessTexture": "juno_tex_01_pbr.jpg",
+          "normalTexture": "juno_tex_01_normal.png"
+        },
+        "normalScale": 0.6000000238418579,
+        "normalUVTransform": null
+      },
+      {
+        "index": 11,
+        "name": "solar_panels.001",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_array_albedo.jpg",
+          "metallicRoughnessTexture": "juno_array_pbr.jpg",
+          "normalTexture": "juno_array_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 12,
+        "name": "gold",
+        "alphaMode": "OPAQUE",
+        "roles": {},
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 13,
+        "name": "carbon fiber",
+        "alphaMode": "OPAQUE",
+        "roles": {},
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 14,
+        "name": "foil_silver",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "normalTexture": "foil_normal.png"
+        },
+        "normalScale": 1,
+        "normalUVTransform": null
+      },
+      {
+        "index": 15,
+        "name": "tex_01_A.001",
+        "alphaMode": "OPAQUE",
+        "roles": {
+          "baseColorTexture": "juno_tex_01_albedo.jpg",
+          "metallicRoughnessTexture": "juno_tex_01_pbr.jpg",
+          "normalTexture": "juno_tex_01_normal.png"
+        },
+        "normalScale": 0.6000000238418579,
+        "normalUVTransform": null
+      }
+    ],
+    "materialCount": 16,
+    "textureObjectCount": 27,
+    "imageCount": 9,
+    "nodeCount": 14,
+    "animationCount": 0,
+    "engineCoverNode": [
+      {
+        "mesh": 4,
+        "name": "engine_cover",
+        "rotation": [
+          1,
+          0,
+          0,
+          5.0065150247746715e-08
+        ],
+        "translation": [
+          0.05674038827419281,
+          0.37578800320625305,
+          1.6050735712051392
+        ]
+      }
+    ],
+    "rawModelHash": "f409aad5c1e59876eb0ca0a19b6c922b8fcca40fb24eb61b7c0a3e404eaf2de9"
+  },
+  "cmtsHeight": {
+    "configurationURL": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/height/configuration.json",
+    "sha256": "af1dff1275bc718fdb55f16414f56d3affb349bc8795873d6e185f6e447979be",
+    "configuration": {
+      "first_level": -3,
+      "tile_size": 128,
+      "extension": "webp",
+      "height_range": {
+        "min": -12.0,
+        "max": 10.0
+      },
+      "semi_major_axis": 6378.137,
+      "semi_minor_axis": 6356.752
+    },
+    "boundaryCount": 9
+  },
+  "cmtsColorTile": {
+    "url": "https://eyes.nasa.gov/assets/dynamic/cmts/earth/color/0/-7/0/0.ktx2",
+    "bytes": 728,
+    "sha256": "bee4dcfc2635d96bfb8266cf673ed1bba354b0189385cb97a51ecee681242c1e",
+    "header": {
+      "vkFormat": 0,
+      "typeSize": 1,
+      "pixelWidth": 20,
+      "pixelHeight": 20,
+      "pixelDepth": 0,
+      "layerCount": 0,
+      "faceCount": 1,
+      "levelCount": 5,
+      "supercompressionScheme": 1
+    },
+    "levels": [
+      {
+        "offset": 705,
+        "bytes": 23,
+        "uncompressedBytesField": 0
+      },
+      {
+        "offset": 695,
+        "bytes": 10,
+        "uncompressedBytesField": 0
+      },
+      {
+        "offset": 690,
+        "bytes": 5,
+        "uncompressedBytesField": 0
+      },
+      {
+        "offset": 688,
+        "bytes": 2,
+        "uncompressedBytesField": 0
+      },
+      {
+        "offset": 686,
+        "bytes": 2,
+        "uncompressedBytesField": 0
+      }
+    ],
+    "payloadDecoded": false
+  },
+  "limitations": "JSON/material and container metadata inspected; no mesh buffer validation, texture transcode, height pixel decode or browser render performed."
+}

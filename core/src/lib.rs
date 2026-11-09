@@ -1,0 +1,929 @@
+//! Core-owned state, lifecycle and resource contracts, with optional Bevy display adapters.
+use std::collections::{HashMap, HashSet};
+pub type AnnotationRef<'a> = (&'a str, Option<&'a str>, Option<&'a [[f64; 3]]>);
+pub type SharedCore = std::sync::Arc<std::sync::Mutex<Core>>;
+#[derive(Default, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct TrajectoryStyle {
+    pub draw_range_tdb_seconds: Option<[f64; 2]>,
+    pub draw_epoch_tdb_seconds: Option<f64>,
+    #[serde(default)]
+    pub draw_relative_start: bool,
+    #[serde(default)]
+    pub draw_relative_end: bool,
+    pub conic: Option<ConicOrbit>,
+    pub kind: Option<String>,
+    pub trail_duration_seconds: Option<f64>,
+    #[serde(default)]
+    pub break_indices: Vec<usize>,
+    pub origin_id: Option<String>,
+    #[serde(default)]
+    pub reference_orientation: bool,
+    pub visible_interval: Option<String>,
+    pub color_rgba: Option<[f32; 4]>,
+}
+#[derive(Clone, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ConicOrbit {
+    pub semi_latus_rectum_km: f64,
+    pub radial_unit: [f64; 3],
+    pub transverse_unit: [f64; 3],
+    pub eccentricity_radial: f64,
+    pub eccentricity_transverse: f64,
+}
+impl ConicOrbit {
+    pub fn is_valid(&self) -> bool {
+        let dot = |a: [f64; 3], b: [f64; 3]| a.into_iter().zip(b).map(|(x, y)| x * y).sum::<f64>();
+        self.semi_latus_rectum_km.is_finite()
+            && (0.0..=1e15).contains(&self.semi_latus_rectum_km)
+            && self.semi_latus_rectum_km > 0.
+            && self
+                .radial_unit
+                .iter()
+                .chain(&self.transverse_unit)
+                .all(|x| x.is_finite())
+            && (dot(self.radial_unit, self.radial_unit).sqrt() - 1.).abs() <= 1e-6
+            && (dot(self.transverse_unit, self.transverse_unit).sqrt() - 1.).abs() <= 1e-6
+            && dot(self.radial_unit, self.transverse_unit).abs() <= 1e-6
+            && self.eccentricity_radial.hypot(self.eccentricity_transverse) < 1.
+    }
+}
+#[cfg(feature = "bevy-runtime")]
+mod runtime;
+#[cfg(feature = "bevy-runtime")]
+pub use runtime::{DisplaySettings, SceneObject, SyncReport, create_headless_app};
+mod camera_intent;
+#[cfg(feature = "browser-render")]
+mod camera_motion;
+pub use camera_intent::{CameraObservation, CameraRenderStatus, InitialLook};
+mod clock;
+mod deep_space;
+#[cfg(feature = "browser-render")]
+mod label_visibility;
+pub mod time_conversion;
+pub use deep_space::EnvironmentSpec;
+mod starfield;
+pub use starfield::StarfieldSpec;
+#[cfg(feature = "browser-render")]
+mod camera_framing;
+#[cfg(feature = "browser-render")]
+mod deep_lod;
+#[cfg(feature = "browser-render")]
+mod deep_render;
+#[cfg(feature = "browser-render")]
+mod face_texture;
+#[cfg(feature = "browser-render")]
+mod hdr_assets;
+#[cfg(feature = "browser-render")]
+mod observation;
+mod orbit_lines;
+mod picking;
+#[cfg(feature = "browser-render")]
+mod render_assets;
+#[cfg(feature = "browser-render")]
+mod renderer;
+#[cfg(feature = "browser-render")]
+mod ring_texture;
+#[cfg(feature = "browser-render")]
+mod screen_layout;
+#[cfg(feature = "browser-render")]
+mod sky_render;
+#[cfg(feature = "browser-render")]
+mod solar_lighting;
+mod state;
+pub use clock::SimulationClock;
+pub use state::ObjectState;
+mod stellar_tuning;
+pub use stellar_tuning::{StellarProfile, StellarTuning};
+mod model_joints;
+pub use model_joints::JointAim;
+#[cfg(feature = "browser-render")]
+mod joint_render;
+mod visuals;
+pub use visuals::{
+    AssetDescriptor, AssetKind, VisualAssignment, VisualPhase, VisualSpec, VisualStatus,
+};
+mod wasm;
+pub use wasm::WasmCore;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum CoreError {
+    InvalidId,
+    DuplicateSession,
+    DuplicateObject,
+    InactiveSession,
+    WrongOwner,
+    PermissionDenied,
+    UnknownObject,
+    InvalidState,
+    InvalidTime,
+    OutsideCoverage,
+    StaleState,
+    CapacityExceeded,
+    UnknownAsset,
+    InvalidAsset,
+    DuplicateAsset,
+    InvalidVisual,
+}
+
+struct Session {
+    plugin_id: String,
+    permissions: SessionPermissions,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct SessionPermissions {
+    pub camera_control: bool,
+    pub data_publish: bool,
+    pub time_control: bool,
+    pub visual_control: bool,
+}
+
+/// Configurable resource budgets, not a limit on the platform's scientific scope.
+#[derive(Debug, Clone, Copy)]
+pub struct CoreLimits {
+    pub active_sessions: usize,
+    pub session_history: usize,
+    pub objects: usize,
+}
+
+impl Default for CoreLimits {
+    fn default() -> Self {
+        Self {
+            active_sessions: 256,
+            session_history: 65_536,
+            objects: 100_000,
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct Core {
+    model_joint_aims: HashMap<String, Vec<JointAim>>,
+    model_joint_statuses: HashMap<String, serde_json::Value>,
+    stellar_tuning: HashMap<String, StellarTuning>,
+    starfields: HashMap<(String, String), starfield::StarfieldLayer>,
+    starfield_revision: u64,
+    environment: Option<deep_space::EnvironmentLayer>,
+    environment_status: serde_json::Value,
+    environment_revision: u64,
+    assets: HashMap<String, AssetDescriptor>,
+    visuals: HashMap<String, VisualAssignment>,
+    visual_statuses: HashMap<String, VisualStatus>,
+    visual_parts: HashMap<String, HashSet<String>>,
+    next_visual_revision: u64,
+    limits: CoreLimits,
+    sessions: HashMap<String, Session>,
+    // Retired session IDs stay invalid for this core instance's lifetime.
+    used_sessions: HashSet<String>,
+    objects: HashMap<String, String>,
+    states: HashMap<String, ObjectState>,
+    focus: Option<(String, String)>,
+    observation: Option<(String, CameraObservation)>,
+    camera_input: [f32; 3],
+    camera_input_owner: Option<String>,
+    camera_lighting: Option<(String, String)>,
+    camera_render_status: Option<CameraRenderStatus>,
+    camera_view: String,
+    camera_fov: Option<f32>,
+    camera_fov_owner: Option<String>,
+    focus_revision: u64,
+    trajectories: HashMap<String, Vec<[f64; 3]>>,
+    trajectory_epochs: HashMap<String, Vec<f64>>,
+    trajectory_styles: HashMap<String, TrajectoryStyle>,
+    labels: HashMap<String, String>,
+    layers: HashMap<String, (bool, bool)>,
+    clock: SimulationClock,
+    time_owner: Option<String>,
+}
+
+fn valid_id(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 256
+        && id.as_bytes()[0].is_ascii_alphanumeric()
+        && id
+            .bytes()
+            .all(|c| c.is_ascii_alphanumeric() || b":._/-".contains(&c))
+}
+
+impl Core {
+    pub fn object_ids(&self) -> impl Iterator<Item = &str> {
+        self.objects.keys().map(String::as_str)
+    }
+    pub fn with_limits(limits: CoreLimits) -> Self {
+        Self {
+            limits,
+            ..Self::default()
+        }
+    }
+    fn authorize(
+        &self,
+        session_id: &str,
+        plugin_id: &str,
+    ) -> Result<SessionPermissions, CoreError> {
+        let session = self
+            .sessions
+            .get(session_id)
+            .ok_or(CoreError::InactiveSession)?;
+        if session.plugin_id != plugin_id {
+            return Err(CoreError::WrongOwner);
+        }
+        Ok(session.permissions)
+    }
+
+    pub fn publish_object(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        object_id: &str,
+        state: ObjectState,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session_id, plugin_id)?.data_publish {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !valid_id(object_id) {
+            return Err(CoreError::InvalidId);
+        }
+        state.validate()?;
+        if let Some(owner) = self.objects.get(object_id)
+            && owner != session_id
+        {
+            return Err(CoreError::WrongOwner);
+        }
+        if !self.objects.contains_key(object_id) && self.objects.len() >= self.limits.objects {
+            return Err(CoreError::CapacityExceeded);
+        }
+        self.objects
+            .insert(object_id.to_owned(), session_id.to_owned());
+        self.states.insert(object_id.to_owned(), state);
+        Ok(())
+    }
+
+    pub fn remove_object(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        object_id: &str,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session_id, plugin_id)?.data_publish {
+            return Err(CoreError::PermissionDenied);
+        }
+        let owner = self
+            .objects
+            .get(object_id)
+            .ok_or(CoreError::UnknownObject)?;
+        if owner != session_id {
+            return Err(CoreError::WrongOwner);
+        }
+        if let Some((_, observation)) = self.observation.as_mut()
+            && observation.system_id.as_deref() == Some(object_id)
+        {
+            observation.system_id = None;
+        }
+        if let Some((_, observation)) = self.observation.as_mut()
+            && observation
+                .initial_look
+                .as_ref()
+                .is_some_and(|look| look.reference_id == object_id)
+        {
+            observation.initial_look = None;
+        }
+        self.objects.remove(object_id);
+        self.trajectories.remove(object_id);
+        self.trajectory_epochs.remove(object_id);
+        self.trajectory_styles.remove(object_id);
+        self.labels.remove(object_id);
+        self.states.remove(object_id);
+        self.model_joint_aims.remove(object_id);
+        self.model_joint_statuses.remove(object_id);
+        self.visuals.remove(object_id);
+        self.stellar_tuning.remove(object_id);
+        self.visual_statuses.remove(object_id);
+        self.visual_parts.remove(object_id);
+        if self.focused_object() == Some(object_id) {
+            self.observation = None;
+            self.focus = None;
+        }
+        Ok(())
+    }
+
+    pub fn clock(&self) -> &SimulationClock {
+        &self.clock
+    }
+    pub fn tick(&mut self, elapsed_seconds: f64) -> Result<(), CoreError> {
+        self.clock.advance(elapsed_seconds)
+    }
+    pub fn seek(&mut self, session_id: &str, plugin_id: &str, epoch: f64) -> Result<(), CoreError> {
+        if !self.authorize(session_id, plugin_id)?.time_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        self.clock.seek(epoch)?;
+        self.time_owner = Some(session_id.to_owned());
+        Ok(())
+    }
+    pub fn set_playback(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        playing: bool,
+        rate: f64,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session_id, plugin_id)?.time_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        self.clock.set_rate(rate)?;
+        self.clock.set_playing(playing);
+        self.time_owner = Some(session_id.to_owned());
+        Ok(())
+    }
+    pub fn set_object_state(
+        &mut self,
+        session_id: &str,
+        object_id: &str,
+        state: ObjectState,
+    ) -> Result<(), CoreError> {
+        if !self.sessions.contains_key(session_id) {
+            return Err(CoreError::InactiveSession);
+        }
+        let owner = self
+            .objects
+            .get(object_id)
+            .ok_or(CoreError::UnknownObject)?;
+        if owner != session_id {
+            return Err(CoreError::WrongOwner);
+        }
+        state.validate()?;
+        self.states.insert(object_id.to_owned(), state);
+        Ok(())
+    }
+
+    pub fn object_state_at(&self, object_id: &str, epoch: f64) -> Result<&ObjectState, CoreError> {
+        if !epoch.is_finite() {
+            return Err(CoreError::InvalidTime);
+        }
+        if !self.objects.contains_key(object_id) {
+            return Err(CoreError::UnknownObject);
+        }
+        let state = self.states.get(object_id).ok_or(CoreError::StaleState)?;
+        if epoch < state.coverage_tdb_seconds[0] || epoch > state.coverage_tdb_seconds[1] {
+            return Err(CoreError::OutsideCoverage);
+        }
+        if epoch != state.epoch_tdb_seconds {
+            return Err(CoreError::StaleState);
+        }
+        Ok(state)
+    }
+
+    /// Host-only operation; never expose session grants directly to plugins.
+    pub fn open_session(
+        &mut self,
+        id: &str,
+        plugin_id: &str,
+        camera_control: bool,
+    ) -> Result<(), CoreError> {
+        self.open_session_with_permissions(
+            id,
+            plugin_id,
+            SessionPermissions {
+                camera_control,
+                ..Default::default()
+            },
+        )
+    }
+
+    pub fn open_session_with_permissions(
+        &mut self,
+        id: &str,
+        plugin_id: &str,
+        permissions: SessionPermissions,
+    ) -> Result<(), CoreError> {
+        if !valid_id(id) || !valid_id(plugin_id) {
+            return Err(CoreError::InvalidId);
+        }
+        if self.used_sessions.contains(id) {
+            return Err(CoreError::DuplicateSession);
+        }
+        if self.used_sessions.len() >= self.limits.session_history
+            || self.sessions.len() >= self.limits.active_sessions
+        {
+            return Err(CoreError::CapacityExceeded);
+        }
+        self.used_sessions.insert(id.to_owned());
+        self.sessions.insert(
+            id.to_owned(),
+            Session {
+                plugin_id: plugin_id.to_owned(),
+                permissions,
+            },
+        );
+        Ok(())
+    }
+
+    /// Internal registration only. A data-publishing SDK must enforce its own grant before calling.
+    pub fn register_object(&mut self, session_id: &str, object_id: &str) -> Result<(), CoreError> {
+        if !self.sessions.contains_key(session_id) {
+            return Err(CoreError::InactiveSession);
+        }
+        if !valid_id(object_id) {
+            return Err(CoreError::InvalidId);
+        }
+        if self.objects.contains_key(object_id) {
+            return Err(CoreError::DuplicateObject);
+        }
+        if self.objects.len() >= self.limits.objects {
+            return Err(CoreError::CapacityExceeded);
+        }
+        self.objects
+            .insert(object_id.to_owned(), session_id.to_owned());
+        Ok(())
+    }
+
+    /// Records an accepted intent; a Bevy adapter must apply the actual camera movement.
+    pub fn focus(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        target_id: &str,
+    ) -> Result<(), CoreError> {
+        let session = self
+            .sessions
+            .get(session_id)
+            .ok_or(CoreError::InactiveSession)?;
+        if session.plugin_id != plugin_id {
+            return Err(CoreError::WrongOwner);
+        }
+        if !session.permissions.camera_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !valid_id(target_id) {
+            return Err(CoreError::InvalidId);
+        }
+        if !self.objects.contains_key(target_id) {
+            return Err(CoreError::UnknownObject);
+        }
+        self.focus_revision = self
+            .focus_revision
+            .checked_add(1)
+            .ok_or(CoreError::CapacityExceeded)?;
+        self.observation = None;
+        self.focus = Some((session_id.to_owned(), target_id.to_owned()));
+        Ok(())
+    }
+
+    pub fn set_annotation(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Option<Vec<[f64; 3]>>,
+        label: Option<String>,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session, plugin)?.visual_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if self.objects.get(id).ok_or(CoreError::UnknownObject)? != session {
+            return Err(CoreError::WrongOwner);
+        }
+        if label
+            .as_ref()
+            .is_some_and(|s| s.chars().count() > 256 || s.chars().any(|c| c.is_control()))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if let Some(points) = points {
+            let used: usize = self
+                .trajectories
+                .iter()
+                .filter(|(key, _)| {
+                    key.as_str() != id
+                        && self.objects.get(*key).is_some_and(|owner| owner == session)
+                })
+                .map(|(_, points)| points.len())
+                .sum();
+            if points.len() > 4096
+                || used.saturating_add(points.len()) > 49152
+                || points.iter().flatten().any(|n| !n.is_finite())
+            {
+                return Err(CoreError::InvalidVisual);
+            }
+            self.trajectories.insert(id.to_owned(), points);
+            self.trajectory_epochs.remove(id);
+            self.trajectory_styles.remove(id);
+        }
+        if let Some(label) = label {
+            if label.chars().count() > 256 || label.chars().any(|c| c.is_control()) {
+                return Err(CoreError::InvalidVisual);
+            }
+            self.labels.insert(id.to_owned(), label);
+        }
+        Ok(())
+    }
+    pub fn set_timed_trajectory(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Vec<[f64; 3]>,
+        epochs: Vec<f64>,
+    ) -> Result<(), CoreError> {
+        self.set_trajectory_with_style(
+            session,
+            plugin,
+            id,
+            points,
+            epochs,
+            TrajectoryStyle::default(),
+        )
+    }
+    pub fn set_trajectory_with_style(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        id: &str,
+        points: Vec<[f64; 3]>,
+        epochs: Vec<f64>,
+        style: TrajectoryStyle,
+    ) -> Result<(), CoreError> {
+        // Bound analytic expansion independently of the scientific point budget.
+        if style.conic.is_some()
+            && self
+                .trajectory_styles
+                .iter()
+                .filter(|(key, value)| key.as_str() != id && value.conic.is_some())
+                .count()
+                >= 256
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if (style.reference_orientation && style.origin_id.is_none())
+            || style
+                .visible_interval
+                .as_deref()
+                .is_some_and(|v| v != "AlwaysVisible" && v != "DefaultVisibleFar")
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        let trail = style.kind.as_deref() == Some("trail");
+        if style.draw_epoch_tdb_seconds.is_some_and(|v| !v.is_finite())
+            || ((style.draw_relative_start || style.draw_relative_end)
+                && (style.draw_range_tdb_seconds.is_none()
+                    || style.draw_epoch_tdb_seconds.is_none()))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if style
+            .draw_range_tdb_seconds
+            .is_some_and(|r| !trail || !r.iter().all(|x| x.is_finite()) || r[0] >= r[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+
+        if style.conic.as_ref().is_some_and(|c| {
+            points.len() < 2
+                || !c.is_valid()
+                || style.kind.as_deref() != Some("orbit")
+                || !style.break_indices.is_empty()
+        }) || style
+            .kind
+            .as_deref()
+            .is_some_and(|k| k != "orbit" && k != "trail")
+            || (trail
+                && !style
+                    .trail_duration_seconds
+                    .is_some_and(|d| d.is_finite() && (1.0..=946080000.0).contains(&d)))
+            || (!trail && style.trail_duration_seconds.is_some())
+            || style
+                .break_indices
+                .iter()
+                .any(|&i| i == 0 || i >= points.len())
+            || style.break_indices.windows(2).any(|w| w[0] >= w[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if let Some(origin) = &style.origin_id {
+            if origin == id {
+                return Err(CoreError::InvalidVisual);
+            }
+            if self.objects.get(origin).ok_or(CoreError::UnknownObject)? != session {
+                return Err(CoreError::WrongOwner);
+            }
+        }
+        if style
+            .color_rgba
+            .is_some_and(|c| c.iter().any(|n| !n.is_finite() || !(0.0..=1.0).contains(n)))
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        if epochs.len() != points.len()
+            || epochs.len() == 1
+            || epochs.iter().any(|t| !t.is_finite())
+            || epochs.windows(2).any(|w| w[0] >= w[1])
+        {
+            return Err(CoreError::InvalidVisual);
+        }
+        self.set_annotation(session, plugin, id, Some(points), None)?;
+        if epochs.is_empty() {
+            return Ok(());
+        }
+        self.trajectory_epochs.insert(id.to_owned(), epochs);
+        self.trajectory_styles.insert(id.to_owned(), style);
+        Ok(())
+    }
+    pub fn trajectory_epochs(&self, id: &str) -> Option<&[f64]> {
+        self.trajectory_epochs.get(id).map(Vec::as_slice)
+    }
+    pub fn trajectory_style(&self, id: &str) -> Option<&TrajectoryStyle> {
+        self.trajectory_styles.get(id)
+    }
+    pub fn set_layers(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        labels: bool,
+        trajectories: bool,
+    ) -> Result<(), CoreError> {
+        if !self.authorize(session, plugin)?.visual_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        self.layers
+            .insert(session.to_owned(), (labels, trajectories));
+        Ok(())
+    }
+    pub fn annotations(&self) -> impl Iterator<Item = AnnotationRef<'_>> {
+        self.objects.iter().map(|(id, owner)| {
+            let (labels, trajectories) = self.layers.get(owner).copied().unwrap_or((true, true));
+            (
+                id.as_str(),
+                if labels {
+                    self.labels.get(id).map(String::as_str)
+                } else {
+                    None
+                },
+                if trajectories {
+                    self.trajectories.get(id).map(Vec::as_slice)
+                } else {
+                    None
+                },
+            )
+        })
+    }
+
+    pub fn focus_revision(&self) -> u64 {
+        self.focus_revision
+    }
+    pub fn camera_fov_degrees(&self) -> f32 {
+        self.camera_fov.unwrap_or(45.0)
+    }
+    pub fn set_camera_fov(
+        &mut self,
+        session: &str,
+        plugin: &str,
+        degrees: f32,
+    ) -> Result<(), CoreError> {
+        let permissions = self.authorize(session, plugin)?;
+        if !permissions.camera_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !degrees.is_finite() || !(10.0..=100.0).contains(&degrees) {
+            return Err(CoreError::InvalidState);
+        }
+        self.camera_fov = Some(degrees);
+        self.camera_fov_owner = Some(session.to_owned());
+        Ok(())
+    }
+    pub fn camera_view(&self) -> &str {
+        &self.camera_view
+    }
+    pub fn set_camera_view(
+        &mut self,
+        session_id: &str,
+        plugin_id: &str,
+        mode: &str,
+    ) -> Result<(), CoreError> {
+        let session = self
+            .sessions
+            .get(session_id)
+            .ok_or(CoreError::InactiveSession)?;
+        if session.plugin_id != plugin_id {
+            return Err(CoreError::WrongOwner);
+        }
+        if !session.permissions.camera_control {
+            return Err(CoreError::PermissionDenied);
+        }
+        if !["overview", "top", "front", "side", "orbit"].contains(&mode) {
+            return Err(CoreError::InvalidState);
+        }
+        if mode == "overview" {
+            self.observation = None;
+            self.focus = None;
+        }
+        self.camera_view = mode.to_owned();
+        Ok(())
+    }
+
+    pub fn focused_object(&self) -> Option<&str> {
+        self.focus.as_ref().map(|(_, target)| target.as_str())
+    }
+    #[cfg(feature = "browser-render")]
+    pub(crate) fn camera_zoom_to_overview(&mut self) {
+        self.focus = None;
+        self.observation = None;
+        self.camera_view = "overview".into();
+    }
+
+    pub fn release_session(&mut self, id: &str) {
+        if self
+            .camera_lighting
+            .as_ref()
+            .is_some_and(|(owner, _)| owner == id)
+        {
+            self.camera_lighting = None;
+        }
+        if self.camera_input_owner.as_deref() == Some(id) {
+            self.camera_input = [0.; 3];
+            self.camera_input_owner = None;
+        }
+        if self
+            .observation
+            .as_ref()
+            .is_some_and(|(owner, _)| owner == id)
+        {
+            self.observation = None;
+        }
+        if self.camera_fov_owner.as_deref() == Some(id) {
+            self.camera_fov = None;
+            self.camera_fov_owner = None;
+        }
+        if self.environment.as_ref().is_some_and(|v| v.owner == id) {
+            self.environment = None;
+            self.environment_status = serde_json::json!({"phase":"disabled"});
+        }
+        self.starfields.retain(|(session, _), _| session != id);
+        self.layers.remove(id);
+        self.trajectories
+            .retain(|object, _| self.objects.get(object).is_some_and(|owner| owner != id));
+        self.labels
+            .retain(|object, _| self.objects.get(object).is_some_and(|owner| owner != id));
+        if self.time_owner.as_deref() == Some(id) {
+            self.clock.set_playing(false);
+            self.time_owner = None;
+        }
+        self.sessions.remove(id);
+        self.objects.retain(|_, owner| owner != id);
+        self.model_joint_aims
+            .retain(|key, _| self.objects.contains_key(key));
+        self.model_joint_statuses
+            .retain(|key, _| self.objects.contains_key(key));
+        self.trajectory_epochs
+            .retain(|object, _| self.objects.contains_key(object));
+        self.trajectory_styles
+            .retain(|object, _| self.objects.contains_key(object));
+        self.states
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visuals
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.stellar_tuning
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visual_statuses
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        self.visual_parts
+            .retain(|object_id, _| self.objects.contains_key(object_id));
+        if self
+            .focus
+            .as_ref()
+            .is_some_and(|(owner, target)| owner == id || !self.objects.contains_key(target))
+        {
+            self.observation = None;
+            self.focus = None;
+        }
+    }
+}
+
+#[cfg(test)]
+mod annotation_tests {
+    use super::*;
+    #[test]
+    fn annotations_enforce_owner_budget_layers_and_cleanup() {
+        let mut c = Core::default();
+        for session in ["a", "b"] {
+            c.open_session_with_permissions(
+                session,
+                session,
+                SessionPermissions {
+                    visual_control: true,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+            c.register_object(session, session).unwrap();
+        }
+        assert_eq!(
+            c.set_annotation("a", "a", "b", None, Some("bad".into())),
+            Err(CoreError::WrongOwner)
+        );
+        assert_eq!(
+            c.set_annotation("a", "a", "a", Some(vec![[0.; 3]; 4097]), None),
+            Err(CoreError::InvalidVisual)
+        );
+        c.set_annotation("a", "a", "a", Some(vec![[0.; 3]; 2]), Some("Earth".into()))
+            .unwrap();
+        c.set_layers("a", "a", false, false).unwrap();
+        let (_, label, trajectory) = c.annotations().find(|(id, _, _)| *id == "a").unwrap();
+        assert!(label.is_none() && trajectory.is_none());
+        c.release_session("a");
+        assert!(!c.labels.contains_key("a") && !c.trajectories.contains_key("a"));
+    }
+}
+
+#[cfg(feature = "browser-render")]
+mod stellar_render;
+
+#[cfg(feature = "browser-render")]
+mod solar_surface;
+
+#[cfg(feature = "browser-render")]
+mod camera_collision;
+
+#[cfg(feature = "browser-render")]
+mod surface_collision;
+
+#[cfg(test)]
+mod fov_tests {
+    use super::*;
+    #[test]
+    fn fov_is_authorized_bounded_and_released_without_refocus() {
+        let mut c = Core::default();
+        assert_eq!(c.camera_fov_degrees(), 45.0);
+        c.open_session_with_permissions(
+            "camera",
+            "plugin",
+            SessionPermissions {
+                camera_control: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        c.open_session_with_permissions("reader", "reader", SessionPermissions::default())
+            .unwrap();
+        let revision = c.focus_revision();
+        assert_eq!(
+            c.set_camera_fov("reader", "reader", 20.0),
+            Err(CoreError::PermissionDenied)
+        );
+        for value in [f32::NAN, f32::INFINITY, 9.99, 100.01] {
+            assert_eq!(
+                c.set_camera_fov("camera", "plugin", value),
+                Err(CoreError::InvalidState)
+            );
+        }
+        for value in [10.0, 100.0, 30.0] {
+            c.set_camera_fov("camera", "plugin", value).unwrap();
+            assert_eq!(c.camera_fov_degrees(), value);
+            assert_eq!(c.focus_revision(), revision);
+        }
+        c.release_session("reader");
+        assert_eq!(c.camera_fov_degrees(), 30.0);
+        c.release_session("camera");
+        assert_eq!(c.camera_fov_degrees(), 45.0);
+    }
+}
+
+#[cfg(feature = "browser-render")]
+mod trajectory_render;
+
+#[cfg(feature = "browser-render")]
+pub mod frame_budget;
+#[cfg(test)]
+mod trajectory_reference_tests {
+    use super::*;
+    #[test]
+    fn trajectory_reference_types_and_missing_origin_rejected() {
+        assert!(serde_json::from_str::<TrajectoryStyle>(r#"{"referenceOrientation":1}"#).is_err());
+        assert!(
+            !serde_json::from_str::<TrajectoryStyle>("{}")
+                .unwrap()
+                .reference_orientation
+        );
+        let mut core = Core::default();
+        for json in [
+            r#"{"referenceOrientation":true}"#,
+            r#"{"visibleInterval":"Never"}"#,
+        ] {
+            let style = serde_json::from_str::<TrajectoryStyle>(json).unwrap();
+            assert_eq!(
+                core.set_trajectory_with_style(
+                    "s",
+                    "p",
+                    "object",
+                    vec![[0.; 3], [1.; 3]],
+                    vec![0., 1.],
+                    style
+                ),
+                Err(CoreError::InvalidVisual)
+            );
+        }
+    }
+}
+
+#[cfg(feature = "browser-render")]
+mod render_timings;

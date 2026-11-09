@@ -1,0 +1,20 @@
+[
+  {
+    "runningServerVersion": "0.0.75 before ORI rollout",
+    "epoch": 666953097.003,
+    "status": 502,
+    "error": "{\"error\":\"Error: DYN sample times must increase\"}"
+  },
+  {
+    "runningServerVersion": "0.0.75 before ORI rollout",
+    "epoch": 666953098.003,
+    "status": 502,
+    "error": "{\"error\":\"Error: DYN sample times must increase\"}"
+  },
+  {
+    "runningServerVersion": "0.0.75 before ORI rollout",
+    "epoch": 666953099.003,
+    "status": 502,
+    "error": "{\"error\":\"Error: DYN sample times must increase\"}"
+  }
+]

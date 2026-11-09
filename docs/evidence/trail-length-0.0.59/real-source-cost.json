@@ -1,0 +1,89 @@
+[
+  {
+    "id": "sc_iss",
+    "samples": [
+      {
+        "count": 24,
+        "points": 24,
+        "durationSeconds": 955.1464350703493,
+        "breaks": 0,
+        "minMs": 2.2994999999999663,
+        "maxMs": 6.9068999999999505
+      },
+      {
+        "count": 160,
+        "points": 160,
+        "durationSeconds": 5573.817460645905,
+        "breaks": 0,
+        "minMs": 10.000800000000027,
+        "maxMs": 12.908400000000029
+      },
+      {
+        "count": 256,
+        "points": 256,
+        "durationSeconds": 5573.817460645905,
+        "breaks": 0,
+        "minMs": 9.391700000000014,
+        "maxMs": 10.508000000000038
+      }
+    ]
+  },
+  {
+    "id": "sc_chandra",
+    "samples": [
+      {
+        "count": 24,
+        "points": 24,
+        "durationSeconds": 8530.070560041264,
+        "breaks": 0,
+        "minMs": 1.9303999999999633,
+        "maxMs": 3.6018000000001393
+      },
+      {
+        "count": 160,
+        "points": 160,
+        "durationSeconds": 14284.961462335063,
+        "breaks": 0,
+        "minMs": 18.40650000000005,
+        "maxMs": 23.27189999999996
+      },
+      {
+        "count": 256,
+        "points": 256,
+        "durationSeconds": 28569.922924670125,
+        "breaks": 0,
+        "minMs": 23.885499999999865,
+        "maxMs": 27.148200000000088
+      }
+    ]
+  },
+  {
+    "id": "sc_mars_reconnaissance_orbiter",
+    "samples": [
+      {
+        "count": 24,
+        "points": 24,
+        "durationSeconds": 1135.7644159721065,
+        "breaks": 0,
+        "minMs": 1.4604000000003907,
+        "maxMs": 2.936800000000403
+      },
+      {
+        "count": 160,
+        "points": 160,
+        "durationSeconds": 6691.019884035604,
+        "breaks": 0,
+        "minMs": 5.490400000000136,
+        "maxMs": 10.4091999999996
+      },
+      {
+        "count": 256,
+        "points": 256,
+        "durationSeconds": 6691.019884035604,
+        "breaks": 0,
+        "minMs": 8.794300000000021,
+        "maxMs": 9.221199999999953
+      }
+    ]
+  }
+]

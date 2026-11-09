@@ -1,0 +1,31 @@
+{
+  "sourceRoot": "C:\\Users\\stone\\Documents\\solarsystem\\eyes\\src\\engine",
+  "files": [
+    {
+      "path": "core/CameraScripts.js",
+      "sha256": "8585108c9ee0fb65db906af0074abe20b408850a56b4e4c3f78bffabe4e4c0b5"
+    },
+    {
+      "path": "core/Cameras.js",
+      "sha256": "dbe6a24e931eafabdf1bd064a4e0ab0ee2150fc6915645a8c0b2b84edead558c"
+    },
+    {
+      "path": "controllers/ZoomController.js",
+      "sha256": "4bdecb4c41b02d52cd29eeea1c0c5465f2ddf81750c3c9d13bc3317cbfcd081b"
+    },
+    {
+      "path": "components/CameraComponent.js",
+      "sha256": "12788965bbf8df9ca80375121389311a2320d13d95d4eac10127f6f771bfe27a"
+    }
+  ],
+  "lro": {
+    "epochTdbSeconds": 846807818.1325184,
+    "mode": "nearby",
+    "fovLongAxisDegrees": 45,
+    "playing": false,
+    "parent": "moon",
+    "occlusionRadiusKm": 0.00272,
+    "extentsRadiusKm": 0.0038
+  },
+  "onlineReference": "NASA official LRO loaded; later screenshot timed out, no paired image acceptance"
+}

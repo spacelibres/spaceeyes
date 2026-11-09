@@ -1,0 +1,25 @@
+{
+  "desktop": {
+    "width": 1280,
+    "height": 720,
+    "headers": 0,
+    "workbenchPanels": 0,
+    "zoomButtons": 0
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "headers": 0,
+    "workbenchPanels": 0,
+    "zoomButtons": 0
+  },
+  "canvasPick": {
+    "routeTarget": "sc_parker_solar_probe",
+    "infoPanels": 0
+  },
+  "dateInput": {
+    "pointerEvents": "auto"
+  },
+  "title": "太空之眼 · 太阳系工作区"
+}

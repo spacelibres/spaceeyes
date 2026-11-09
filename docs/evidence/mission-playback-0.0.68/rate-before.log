@@ -1,0 +1,25 @@
+✖ continuous playback rate changes never discard every animation interval (114.8168ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 347.6593
+
+✖ failing tests:
+
+test at web\integration\solar-workspace.test.ts:2067:1
+✖ continuous playback rate changes never discard every animation interval (114.8168ms)
+  AssertionError [ERR_ASSERTION]: continuous slider changes must retain frame time
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/web/integration/solar-workspace.test.ts:2074:11)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -1,0 +1,32 @@
+oyager 2"
+      - option "WIND"
+      - option "Valetudo"
+      - option "NOAA 20"
+      - option "NOAA 21"
+    - text: 观测视场 45°
+    - slider "观测视场（度）": "45"
+    - text: 观察视角
+    - combobox "观察视角":
+      - option "自由环绕" [selected]
+      - option "俯视"
+      - option "正视"
+      - option "侧视"
+    - button "收起观察设置" [expanded]:
+    - generic: 点击天体或标签 · 拖动环绕 · 滚轮缩放 · 远景标记非真实尺寸
+  - region "统一时间控制":
+    - paragraph: 统一仿真时间
+    - status: 1949-12-31T00:00:00.001Z
+    - generic: "-1577966367.815 J2000 TDB s"
+    - generic: 已暂停
+    - generic: 历史 / 仿真
+    - button "收起时间栏 ▾" [expanded]
+    - button "▶ 播放"
+    - button "降低播放倍率" [disabled]: −
+    - text: 播放速率 · -3 yr/s
+    - slider "播放速率" [active]: "0"
+    - button "提高播放倍率": +
+    - button "1× 速度"
+    - button "日期与跳转"
+    - button "当前时间"
+  - generic: 真实数据按需加载 · 覆盖、来源与加载状态可追溯 · 科学数据可用性与 GPU 效果分别核验
+- alert

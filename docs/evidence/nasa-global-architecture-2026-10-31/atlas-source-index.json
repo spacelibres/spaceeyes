@@ -1,0 +1,56 @@
+{
+  "url": "https://solar-system-atlas.pages.dev/solar/",
+  "scriptUrl": "https://solar-system-atlas.pages.dev/solar/assets/solar.js",
+  "sha256": "83ff217738979b60fd8e79f455260c4e8952abc7fa05d25f548f06b24c6dd8c0",
+  "bytes": 2336541,
+  "observedDate": "2026-10-31",
+  "runtimeVisualVerified": false,
+  "matches": [
+    {
+      "symbol": "function g$()",
+      "characterOffset": 1798571,
+      "line": 5596
+    },
+    {
+      "symbol": "function Vz(",
+      "characterOffset": 1797479,
+      "line": 5596
+    },
+    {
+      "symbol": "function cxe(",
+      "characterOffset": 1787805,
+      "line": 5495
+    },
+    {
+      "symbol": "const int STEPS=18",
+      "characterOffset": 1792608,
+      "line": 5535
+    },
+    {
+      "symbol": "function ESe()",
+      "characterOffset": 2154976,
+      "line": 6577
+    },
+    {
+      "symbol": "sun_sss-4k.jpg",
+      "characterOffset": 1526325,
+      "line": 4557
+    },
+    {
+      "symbol": "sun_halpha-2k.jpg",
+      "characterOffset": 1798777,
+      "line": 5596
+    },
+    {
+      "symbol": "Sun glow",
+      "characterOffset": 2076336,
+      "line": 6524
+    },
+    {
+      "symbol": "sim-sunglare",
+      "characterOffset": 2115843,
+      "line": 6563
+    }
+  ],
+  "note": "Public script downloaded for static analysis only; not executed or copied into platform. Full third-party bundle stays in ignored cache."
+}

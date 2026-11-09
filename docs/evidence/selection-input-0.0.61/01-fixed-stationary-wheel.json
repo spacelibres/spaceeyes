@@ -1,0 +1,52 @@
+{
+  "before": {
+    "focusedId": "sun",
+    "positionKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "desiredKm": [
+      0,
+      -3984492.3691749573,
+      0
+    ],
+    "framingRadiusKm": 695500,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "out": {
+    "focusedId": "sun",
+    "positionKm": [
+      0,
+      -8185872.814655304,
+      0
+    ],
+    "desiredKm": [
+      0,
+      -8185872.814655304,
+      0
+    ],
+    "framingRadiusKm": 695500,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "back": {
+    "focusedId": "sun",
+    "positionKm": [
+      0,
+      -3984491.3742542267,
+      0
+    ],
+    "desiredKm": [
+      0,
+      -3984491.3742542267,
+      0
+    ],
+    "framingRadiusKm": 695500,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "outRatio": 2.0544330509912103,
+  "expectedSinglePage": 2.0544332106438876
+}

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "243_ida",
+    "bytes": 3408004,
+    "sha256": "153fada3fa58f6452bf2f6b6ae3e2ed70738d4123a7e8685031c614be9ec0f4f",
+    "ms": 55.52550000000002,
+    "status": "ready"
+  },
+  {
+    "id": "65803_didymos",
+    "bytes": 3397412,
+    "sha256": "715fd87899f942a2e7b77bde977a99d5f979d02184686ceddc1d8dab39b91997",
+    "ms": 140.3972,
+    "status": "ready"
+  },
+  {
+    "id": "136108_haumea",
+    "bytes": 7097648,
+    "sha256": "eaba3a323b9910561597c11a2cc788174b7bf436df783b2c0d8d403ee54a72ee",
+    "ms": 110.6694,
+    "status": "ready"
+  },
+  {
+    "id": "4_vesta",
+    "bytes": 4872960,
+    "sha256": "b574e33ef0c525837e095a69b7d07f2e0457d9f3d69151a4caa65371c4676702",
+    "ms": 120.05050000000006,
+    "status": "ready"
+  },
+  {
+    "id": "9p_tempel_1",
+    "bytes": 174432,
+    "sha256": "be1ef2b17f30a7004018c55c00f6a3dfd2734ce570add73e1d0056bb1cd627a6",
+    "ms": 72.90970000000004,
+    "status": "ready"
+  },
+  {
+    "id": "103p_hartley_2",
+    "bytes": 1032276,
+    "sha256": "1d777ccbdf1d993fdbbb8419b3a5346ce6870a5917388bd6c40c6955aa57fee3",
+    "ms": 67.99809999999991,
+    "status": "ready"
+  },
+  {
+    "id": "9969_braille",
+    "bytes": 3407936,
+    "sha256": "0d82780f0c621871f1e98171d802115eca2a6fa85a58a593233e1a1b75aec552",
+    "ms": 26.46079999999995,
+    "status": "ready"
+  },
+  {
+    "id": "19p_borrelly",
+    "bytes": 8273348,
+    "sha256": "5e79d6b5b9f6159a4567d7c1e424319adf27378cdd744031397a1b4589af3ec5",
+    "ms": 128.45870000000002,
+    "status": "ready"
+  },
+  {
+    "id": "52246_donaldjohanson",
+    "bytes": 3407944,
+    "sha256": "24c79bb491f0b9d2359c957e148361fe401efe0585e3aeac0a6c4ac7595eedd7",
+    "ms": 30.73610000000008,
+    "status": "ready"
+  },
+  {
+    "id": "3548_eurybates",
+    "bytes": 3411304,
+    "sha256": "7be7079cb12ddd5d150452b2558f0b513a12c262ae655e2961d487fa2f5fbc01",
+    "ms": 31.80529999999999,
+    "status": "ready"
+  },
+  {
+    "id": "15094_polymele",
+    "bytes": 3696592,
+    "sha256": "7522da6ec7e29b521774e726649297dc3b58dfcc7527b07c23f11a1981d0f2e1",
+    "ms": 33.43899999999985,
+    "status": "ready"
+  },
+  {
+    "id": "11351_leucus",
+    "bytes": 3411304,
+    "sha256": "e425d8a7d4d68673c8cfb7d0ede00bd1874b9572ec5739df8bf88783db9b62de",
+    "ms": 35.70849999999996,
+    "status": "ready"
+  },
+  {
+    "id": "21900_orus",
+    "bytes": 3407944,
+    "sha256": "e3148498182a90d91a3b9d9d90c9682bf2061592577bc8ce123d1b12d11b3e77",
+    "ms": 30.801500000000033,
+    "status": "ready"
+  },
+  {
+    "id": "253_mathilde",
+    "bytes": 3411288,
+    "sha256": "096feb04922fb0f63f3a5b41d9b7ec29a029765d721b0b096b6bcd72279e7cbd",
+    "ms": 33.750299999999925,
+    "status": "ready"
+  },
+  {
+    "id": "433_eros",
+    "bytes": 1098048,
+    "sha256": "f88bd1b82bec6cc91df005ce105549539df426785d1a9410a6745e7f5109abcc",
+    "ms": 85.85050000000001,
+    "status": "ready"
+  },
+  {
+    "id": "486958_arrokoth",
+    "bytes": 174872,
+    "sha256": "d136b04c309eda14e62699b90bf5f03491b11e2dc145402be391a9cb3e2aaf41",
+    "ms": 75.14920000000006,
+    "status": "ready"
+  },
+  {
+    "id": "101955_bennu",
+    "bytes": 9076844,
+    "sha256": "6de1188f663630d4f107852e76e683e7c5d687ccac0a4b4525f20a65bad51262",
+    "ms": 143.58120000000008,
+    "status": "ready"
+  },
+  {
+    "id": "99942_apophis",
+    "bytes": 9367348,
+    "sha256": "a4bf53c613c45bba3ebaa84b5be4f9698f58e82bccd7e83c7d8434a3d9b1efcf",
+    "ms": 116.40130000000022,
+    "status": "ready"
+  },
+  {
+    "id": "67p_churyumov_gerasimenko",
+    "bytes": 1474716,
+    "sha256": "eff1d761e063ad1ba5abc1e39b5fbf8258b93682dedae2171aa867d5d7edd75d",
+    "ms": 95.50659999999993,
+    "status": "ready"
+  },
+  {
+    "id": "16_psyche",
+    "bytes": 2215488,
+    "sha256": "0986977623fc727c5afe9bec682cfde23c75f242f6d05ffe39dc86e094a35342",
+    "ms": 117.76710000000003,
+    "status": "ready"
+  },
+  {
+    "id": "5535_annefrank",
+    "bytes": 3411296,
+    "sha256": "39a52904af4396db8ef7ba3eb0c7336c2b82d9cc55d475dfcf24a9244931199c",
+    "ms": 33.0005000000001,
+    "status": "ready"
+  },
+  {
+    "id": "81p_wild_2",
+    "bytes": 3411292,
+    "sha256": "4601ccfcb22f176ee34e6c6412da224932f4c8b18a17e96977b648169f4a7412",
+    "ms": 32.0320999999999,
+    "status": "ready"
+  }
+]

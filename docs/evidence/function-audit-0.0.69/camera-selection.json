@@ -1,0 +1,357 @@
+{
+  "scope": "camera-selection-follow",
+  "baseline": "36b6cac55",
+  "mode": "read-only function-level source comparison; no complete function certified by name or existence",
+  "nasaRoot": "C:/Users/stone/Documents/solarsystem/eyes/src",
+  "entries": [
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToCelestialObject",
+      "ours": "web/lib/solar-workspace.ts:select/focus; core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "NASA lines97-147 construct entry vector relative to Sun, parent-orientation up, content customDistance, 1.3 fit, two-stage transition and cinematic option. Ours defaults OrbitView yaw/pitch or approved System selection; planetary Nearby does not derive Sun-facing entry direction. No goToPlanet symbol exists in this recovered file.",
+      "impact": "Planet initial illumination/framing and roll cannot be called identical; implement reference/up contract before polishing transitions.",
+      "priority": "P1"
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSpacecraft",
+      "ours": "web/lib/mission-view.ts:missionInitialLook; core/src/renderer.rs:update_focus;core/src/camera_framing.rs:initial_look_angles",
+      "status": "different",
+      "evidence": "NASA lines173-224 use parent-relative spacecraft position, parent up/ecliptic normal, customDistance, vertical/horizontal offsets. Ours uses reviewed one-shot target/sky external composition plus fixed presets.",
+      "impact": "User-approved task-background difference; keep it explicit rather than treating it as a recovered NASA instrument boresight."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToInstrument",
+      "ours": "core/src/camera_intent.rs:CameraObservation/InitialLook;web/lib/mission-view.ts:missionInitialLook",
+      "status": "missing",
+      "evidence": "NASA lines226-270 exposes explicit signed forward/up axes, instrument parent, instrument radius and transition. Current initialLook supplies only external composition relative to an entity.",
+      "impact": "Instrument optical-axis first-person mode must be a separate controlled feature; current external composition is not equivalent."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.lookAtSurfaceLatLon",
+      "ours": "core/src/camera_intent.rs:CameraObservation;web/lib/solar-workspace.ts:observation",
+      "status": "missing",
+      "evidence": "NASA accepts latitude/longitude surface location and camera options; current SDK has nearby/system/follow with no geodetic surface target.",
+      "impact": "Surface navigation/location stories cannot be mapped to ordinary body focus."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._easeOutExpoTransition",
+      "ours": "core/src/observation.rs;core/src/renderer.rs:update_focus CameraBlend",
+      "status": "different",
+      "evidence": "NASA has explicit recovered exponential transition function and parent transition coordinates. Ours uses current display/settings-aware blending; exact curve/parent transition equality has not been established.",
+      "impact": "Source-level transition name parity is not a timing or continuity verification."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._easeInOutExpoTransition",
+      "ours": "core/src/observation.rs;core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "NASA has a separate in/out exponential easing path; current camera has no public choice matching both functions.",
+      "impact": "Multi-stage cinematic/story transitions require a shared transition contract."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.compareObjects",
+      "ours": "web/lib/solar-workspace.ts;core/src/renderer.rs:DisplayCamera",
+      "status": "missing",
+      "evidence": "NASA comparison takes left/right entities and cameras with separate framing/context; no current comparison runtime or dual comparison viewport API found.",
+      "impact": "Do not claim complete Eyes UI parity; depends on viewport/input ownership before implementation."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocation",
+      "ours": "web/lib/solar-workspace.ts;platform/camera-contract.ts",
+      "status": "missing",
+      "evidence": "NASA location supports plane/reference entities and planeMode; no corresponding scene-link or camera observation DTO fields.",
+      "impact": "Location/event flows need explicit reference-frame and target contracts."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.alignObjects",
+      "ours": "web/lib/solar-workspace.ts:observation;core/src/renderer.rs:follow_display_direction",
+      "status": "different",
+      "evidence": "Current Follow provides reference-relative external placement, but recovered alignObjects is a separate script with its own focus/offset/transition options.",
+      "impact": "Do not substitute Follow for every alignment tool."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.alignSpacecraftPlanet",
+      "ours": "core/src/renderer.rs:update_focus;web/lib/mission-view.ts:missionInitialLook",
+      "status": "different",
+      "evidence": "NASA lines440 onward traverses to physical parent, computes surface-relative direction and radius-scaled alignment. Ours initialLook target computes opposite camera side once and retains foreground craft.",
+      "impact": "Approved composition covers task background, not all surface-alignment semantics."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.viewFromSide",
+      "ours": "core/src/camera_intent.rs:set_camera_view;core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "NASA side view derives orbital/reference geometry and optional signed up axis. Ours side preset assigns fixed yaw pi/2,pitch0 in display basis.",
+      "impact": "A fixed world-axis side preset is not guaranteed orbital side view across inclined systems.",
+      "priority": "P2"
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.spacecraftLookAtTarget",
+      "ours": "platform/camera-contract.ts:initialLook;core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "NASA lines532-538 sets LOOK_AT context; current initialLook is a one-shot external nearby composition and Follow continuously uses reference direction.",
+      "impact": "Preserve distinction between entry composition, continuing lock and sensor first-person; context state is not interchangeable."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.spacecraftLockedOnTarget",
+      "ours": "platform/camera-contract.ts;core/src/camera_intent.rs:CameraObservation",
+      "status": "missing",
+      "evidence": "NASA exposes distinct LOCKED_ON context; ours has no separate locked-on mode or lifecycle.",
+      "impact": "Cannot label Follow/initialLook as complete locked-on implementation."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSystemSideway",
+      "ours": "web/lib/solar-workspace.ts:systemMembers;core/src/renderer.rs:update_focus system branch",
+      "status": "different",
+      "evidence": "NASA lines546 onward has includeChildren, named extra entities, angle, physical barycenter resolution and default exclusion of sc-prefixed craft. Ours passes ready primary moon members with budgets and fixed preset/system minimums.",
+      "impact": "Child membership and entry angle differ; artificial orbiters excluded from natural system fit is not by itself a regression."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToSystem",
+      "ours": "web/lib/solar-workspace.ts:observation/select;core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "Both have explicit system observation rather than changing scientific positions; ours applies NASA minimum distance table and separate framing tests. Recovered goToSystem chooses script options and physical system context. NASA also has explicit inner_solar_system(7e8km) and outer_solar_system(1e10km) named entry contexts; current known-ID router lacks these dedicated camera contexts.",
+      "impact": "Tests of fit/minimums do not prove whole source function equivalence."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts._goToSystem",
+      "ours": "core/src/camera_framing.rs:fit_distance/system_min_distance_km;core/src/renderer.rs:update_focus",
+      "status": "different",
+      "evidence": "Ours uses aspect-aware horizontal/vertical fit and freezes entry framing to avoid continuous zoom pumping. NASA also derives fit from members and options, with additional reference and timing semantics. NASA preserves previous-camera relative approach by default and computes orbit/plane-relative up and 25-degree system angle, plus a portrait-specific distance adjustment; current entry resets OrbitView and does not reproduce that whole sequence.",
+      "impact": "Retain existing geometry tests; add same-epoch paired camera trajectories for full verification."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.goToCenter",
+      "ours": "platform/camera-contract.ts;web/lib/scene-link.ts",
+      "status": "missing",
+      "evidence": "No multi-entity sampled center camera intent or link representation matching this recovered script.",
+      "impact": "Needed for comparison/location tools; cannot use an arbitrary existing body as a fake center."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationCenter",
+      "ours": "platform/camera-contract.ts;web/lib/solar-workspace.ts",
+      "status": "missing",
+      "evidence": "No location center + plane/reference + sampleTime API.",
+      "impact": "Depends on location and multi-entity center implementation."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationInParentSystem",
+      "ours": "web/lib/solar-workspace.ts:overview/observation",
+      "status": "missing",
+      "evidence": "Current overview/system lacks location-preserving parent-system context.",
+      "impact": "Navigation cannot restore a location context that is not represented."
+    },
+    {
+      "nasaFile": "engine/core/CameraScripts.js",
+      "nasaSymbol": "CameraScripts.showLocationInSolarSystem",
+      "ours": "web/lib/solar-workspace.ts:overview",
+      "status": "missing",
+      "evidence": "Overview clears selected context; no explicit location projection in solar-system coordinates.",
+      "impact": "Story/location continuity remains incomplete."
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.goToEntity",
+      "ours": "core/src/camera_intent.rs:set_camera_observation_with_context;core/src/renderer.rs:update_focus/enforce_camera_collision",
+      "status": "different",
+      "evidence": "NASA lines169-250 accepts transition parent, keyframes, duration, custom transition, destination/up, zoom/select/roll/cinematic. Ours validates controlled intent, blends in scientific floating origin and enforces solid-sphere collision, without complete keyframe/roll contract.",
+      "impact": "API capability boundary is intentionally narrower; full source routing cannot yet be represented."
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.followTheEntity",
+      "ours": "web/lib/solar-workspace.ts:observation/follow;core/src/renderer.rs:update_focus follow branch",
+      "status": "different",
+      "evidence": "NASA lines252-313 uses 5x target extent offset, parent/orbit-derived up, target-angular-radius vertical offset, transition parent and radius clamps. Ours uses global Vec3::Y, FOV-based side offset capped1.5 radii and dynamic reference direction.",
+      "impact": "Inclined/high-latitude systems and framing/up can differ; fix geometry before changing Follow presentation.",
+      "priority": "P1"
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.goToBetweenPos",
+      "ours": "platform/camera-contract.ts;core/src/camera_intent.rs",
+      "status": "missing",
+      "evidence": "No equivalent between-position controlled intent.",
+      "impact": "Some location/compare routes cannot be reconstructed from current nearby/follow modes."
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.zoom/zoomIn/zoomOut",
+      "ours": "web/app/workspace-view.tsx:zoom controls;core/src/renderer.rs:controlled input",
+      "status": "source-compared",
+      "evidence": "Recovered zoom multiplies by powers of2 with distinct held/click sensitivity; current UI has separate held/click intention and bounded smoothing.",
+      "impact": "Timing, drag/hold cancel and multiple-device equivalence require UI evidence, not constants alone."
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.setContext/resetFreeFlyCamera",
+      "ours": "web/lib/scene-link.ts:SceneLinkState;core/src/camera_intent.rs:CameraObservation",
+      "status": "different",
+      "evidence": "NASA context enumerates celestial/spacecraft/instrument/alignment/location/system/look-at/locked-on/compare; current link persists only nearby/system/follow, presets, time/layers/FOV.",
+      "impact": "Returning from modes not represented cannot match NASA restoration."
+    },
+    {
+      "nasaFile": "engine/managers/CameraManager.js",
+      "nasaSymbol": "CameraManager.enableFreeFly/disableFreeFly/toggleFreeFly",
+      "ours": "core/src/camera_intent.rs;web/lib/scene-link.ts",
+      "status": "missing",
+      "evidence": "NASA explicit free-fly controller and context restoration exist; no free-fly mode/route in current controlled contract.",
+      "impact": "Keep keyboard/free camera feature out of claims until implemented and collision/lifecycle reviewed."
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.validateTimeLimits",
+      "ours": "web/lib/solar-workspace.ts:observation/validateFollow/reload",
+      "status": "different",
+      "evidence": "NASA computes target/follow coverage intersection, applies event limits, may navigate to overlap start and rejects disjoint timelines. Ours validates current ready states and falls back Nearby when reference loses coverage.",
+      "impact": "Follow time UI can permit epochs NASA clamps/jumps; add explicit overlap policy before exposing event Follow.",
+      "priority": "P1"
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.follow/unfollow/setEnabled",
+      "ours": "web/lib/solar-workspace.ts:observation/follow/select/overview/dispose",
+      "status": "different",
+      "evidence": "NASA temporarily owns forced visibility, search exclusion, label weights/clickability, occlusion, time limits and DOM observers; ours stores mode/followId and performs async revision guards/cleanup but lacks that full owned-state bundle.",
+      "impact": "Need transactional follow state capture/restore so future label/time fixes do not leak into other modes.",
+      "priority": "P1"
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setYawPitchLimits",
+      "ours": "core/src/renderer.rs:update_focus follow branch",
+      "status": "different",
+      "evidence": "NASA lines372-397 uses actual horizontal and vertical FOV independently and right/up UI offsets. Ours clamps yaw and pitch against the same long-FOV value and omits panel offsets.",
+      "impact": "Portrait/sidebar Follow input range differs even though existing native tests keep craft within frame.",
+      "priority": "P2"
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setLabelWeight/setTargetNotClickable",
+      "ours": "core/src/renderer.rs:draw_annotations;core/src/label_visibility.rs",
+      "status": "different",
+      "evidence": "NASA gives follow reference weight201 and suppresses target label clicks, restoring prior values on exit. Ours uses selected-object global hiding and normal layout priorities; no follow-specific weight/click restoration found.",
+      "impact": "Dense Follow can lose the reference label or route clicks differently; implement after ownership lifecycle.",
+      "priority": "P2"
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.updateOccludedEntities/setOcclusionProps",
+      "ours": "core/src/label_visibility.rs:occluded;core/src/renderer.rs:draw_annotations",
+      "status": "different",
+      "evidence": "NASA temporarily marks followed reference Div non-occludable then restores prior values. Ours applies normal solid-body label occlusion in all modes.",
+      "impact": "Reference label visibility differs; do not globally disable physical occlusion as a shortcut.",
+      "priority": "P2"
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager.setSearchOptions",
+      "ours": "web/app/workspace-view.tsx:follow reference combobox",
+      "status": "different",
+      "evidence": "NASA async follow search excludes current target and followed entity and ranks suggestions; ours presents a general reference combobox with self-reference rejected by runtime.",
+      "impact": "Search workflow and suggestion semantics remain unmatched."
+    },
+    {
+      "nasaFile": "engine/managers/CameraFollowManager.js",
+      "nasaSymbol": "CameraFollowManager._createSumParent",
+      "ours": "core/src/renderer.rs:update_focus follow branch",
+      "status": "missing",
+      "evidence": "Recovered Follow constructs an auxiliary sum-parent context; current implementation computes a direct current-reference direction without equivalent transition-parent object.",
+      "impact": "Depends on continuous reference frame and transition math; avoid adding an arbitrary scientific body to emulate display-only state."
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.selectEntity",
+      "ours": "web/lib/solar-workspace.ts:select;web/app/workspace.tsx:action",
+      "status": "different",
+      "evidence": "NASA only emits selectionupdate/class swap when id changes, distinct from navigation. Ours select always reloads and reissues focus for any known id, including repeated current id.",
+      "impact": "Repeated selection may reset manual framing; source navigation and selection state should be audited together before deduping.",
+      "priority": "P2"
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.unselect",
+      "ours": "web/lib/solar-workspace.ts:overview;core/src/lib.rs:camera_zoom_to_overview",
+      "status": "different",
+      "evidence": "NASA unselect clears selection/classes and emits unselect; it is not inherently a camera jump. Ours exposed overview combines selection clear, root data retention/loading and camera overview.",
+      "impact": "UI deselection and explicit overview are currently coupled; decouple before implementing selection-only actions."
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.handle3DSelection",
+      "ours": "web/app/workspace-view.tsx:onPointerUp;web/app/workspace.tsx:onPick;web/lib/solar-workspace.ts:pick",
+      "status": "source-compared",
+      "evidence": "Ours one canvas gesture calls current WASM hit then select; stale async selections guarded by revision/token; empty hits do nothing. NASA handles nonnull picks by parsed link navigation with keepTime default.",
+      "impact": "Existing stale-pick/empty-pick tests establish local safety, not all parsed-link routing parity."
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager.setSuppress",
+      "ours": "web/app/workspace-view.tsx:pointer gesture routing;core/src/picking.rs:PickFrame.pick",
+      "status": "not-applicable",
+      "evidence": "NASA separate DOM label click can suppress the following 3D pick once; our labels and objects share Bevy hit results and a single canvas pointer-up route, so copying its DOM suppression bit is not the same architecture.",
+      "impact": "Verify exactly one selection for label/model overlap and drag completion; do not install redundant suppression that consumes valid clicks."
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-562.js",
+      "nasaSymbol": "SelectionManager._switchSelectionClass",
+      "ours": "core/src/renderer.rs:draw_annotations;core/src/label_visibility.rs:Fade.update",
+      "status": "different",
+      "evidence": "NASA toggles CSS selection class on label DOM; ours hides selected nearby labels per explicit user request and draws all labels in Bevy.",
+      "impact": "User-approved presentation/architecture difference; cannot be checked by CSS class parity."
+    },
+    {
+      "nasaFile": "engine/managers/SelectionManager-925.js",
+      "nasaSymbol": "SelectionManager._getLink",
+      "ours": "web/lib/scene-link.ts:parseSceneLink/formatSceneLink;web/app/workspace.tsx:action",
+      "status": "different",
+      "evidence": "NASA application manager extends common selection and resolves content/link manager aliases; ours uses known target IDs and a strict semantic hash schema.",
+      "impact": "Content tool aliases and event/instrument route contexts absent; strict parsing alone is not equivalent content routing."
+    },
+    {
+      "nasaFile": "engine/managers/TrailManager.js",
+      "nasaSymbol": "TrailManager.onHoverChange",
+      "ours": "core/src/picking.rs:PickFrame.hover;core/src/renderer.rs:draw_annotations;core/src/trajectory_render.rs:opacity/widths",
+      "status": "source-compared",
+      "evidence": "Ours hover shares current object/label/ring picking and applies trajectory width/opacity; dragging suppresses hover. Source switches highlighted trajectory based on hovered entity.",
+      "impact": "Current material tests cover endpoints; animated switching and mobile/no-hover lifecycle still need paired verification."
+    }
+  ],
+  "priorityOrder": [
+    "Reference/up and transition contract for planetary Nearby and Follow geometry",
+    "Transactional Follow ownership and target/reference coverage intersection",
+    "Aspect/UI-offset limits and reference label policy",
+    "Selection-only deselection and repeated-select routing",
+    "Instrument/location/locked-on/freefly/compare contexts"
+  ],
+  "limitations": [
+    "Recovered NASA source only; no new official/live browser paired verification in this audit.",
+    "User-approved initial task-background composition and selected-label hiding are explicit differences, not bugs to undo.",
+    "Private accessors/constructor storage are excluded from business-entry certification; absence of a named goToPlanet symbol is recorded under goToCelestialObject."
+  ],
+  "summaryCounts": {
+    "verified": 0,
+    "source-compared": 3,
+    "different": 24,
+    "missing": 12,
+    "not-applicable": 1
+  },
+  "classificationNote": "P1/P2 denote confirmed functional parity gaps, not claims of newly introduced regressions or scientific state corruption. No complete function certified verified in this read-only audit."
+}

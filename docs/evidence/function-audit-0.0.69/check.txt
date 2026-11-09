@@ -1,0 +1,7 @@
+camera-selection.json 40 {'different': 24, 'missing': 12, 'source-compared': 3, 'not-applicable': 1}
+time-data.json 21 {'source-compared': 13, 'verified': 2, 'different': 5, 'missing': 1}
+render-resources.json 81 {'different': 46, 'missing': 26, 'source-compared': 9}
+Total comparison records (not unique functions or completed features): 142
+Statuses: {'different': 75, 'missing': 39, 'source-compared': 25, 'not-applicable': 1, 'verified': 2}
+Local source files verified: 26
+Source set SHA256: 5268ccb2abea18fbd19f60b7b7e692c0b42678da69a9e266b25744e8d4638f3c

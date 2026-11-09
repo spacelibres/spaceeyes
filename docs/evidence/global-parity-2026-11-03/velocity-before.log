@@ -1,0 +1,125 @@
+✔ orientation-only rotation leaves fixed scientific position and zero velocity available (2.1132ms)
+✖ dynamic cache cannot override a later fixed phase velocity when jumping both ways (31.6143ms)
+✖ static position provenance and velocity share fixed/orbital declaration order (2.7403ms)
+✔ overlapping position controllers invalidate same-parent cached data and rollback restores track identity (6.3687ms)
+✔ resolved controller metadata invalidates broad data when undeclared root coverage starts (4.0171ms)
+✔ private history preserves inclusive endpoints across same-parent root-controller switches (14.5758ms)
+✔ moon positions compose the true loaded parent and all publishes share epoch (2.3497ms)
+✔ moon displayed orbit remains parent-relative while world state includes Earth's motion (10.9076ms)
+✔ trajectory sampling contains the exact current epoch, refines locally and preserves real endpoints (6.7052ms)
+✔ instantaneous ellipse closes beyond DYN coverage without publishing extrapolated states (1.6607ms)
+✔ reviewed source identity and selected coverage survive into published provenance (1.0282ms)
+✔ disposed delayed fetch cannot resurrect objects (0.2811ms)
+✔ checkpoint restores previous cache and provenance after a failed load, never after dispose (1.2532ms)
+✔ missing catalog definitions stay unsupported without source requests (0.2382ms)
+✔ default load stays baseline ten and retain removes published states (3.5203ms)
+✔ retain removes only states owned by a successful publish (0.4358ms)
+✔ deferred static parent cannot resurrect landing state after retain or dispose (0.623ms)
+✔ child-only epoch jump reloads its parent segment (1.5854ms)
+✔ checkpoint restores retention and published ownership alongside data state (0.6216ms)
+✔ source network reads are bounded and disposal never starts queued fetches (1.5759ms)
+✔ instantaneous request falls back to covered linear source history (1.0457ms)
+✔ declared orbital elements expose finite covered trajectory history (1.051ms)
+✔ trail samples include the current epoch and covered future cache (5.2479ms)
+✔ trail uses a full past period against a moving parent and caches future (13.1867ms)
+✔ retain aborts active transport requests (0.4526ms)
+✔ retained pending planet retries immediately after scene cancellation (0.8615ms)
+✔ decoded caches and evidence are bounded by retained scene and record budget (1.1143ms)
+✔ replacement and repeated epochs retain only latest accepted evidence (1.4117ms)
+✔ rollback aborts in-flight requests without reviving cancelled results (0.7556ms)
+✔ invalid cache budgets and oversized retain reject without mutations (0.2594ms)
+✔ orientation budget and coverage failure are explicit while position remains ready (2.5952ms)
+✔ rollback removes newly published scene objects before restoring ownership (1.388ms)
+✔ fixed and sequential entity align orientations publish with explicit provenance (1.5938ms)
+✔ fixed quaternion publishes without ORI request and invalid attitude preserves position (0.7607ms)
+✔ orientation reference cycles reject without awaiting own pending load (0.7679ms)
+✔ self velocity align uses analytic parent plus child world velocity without self await (1.813ms)
+✔ fresh InSight surface load waits for Mars ORI and publishes finite source coverage (1.9999ms)
+✔ declared ecliptic reference is internal and retention stops at solar boundary (1.1227ms)
+✔ deferred static entity ORI cannot resurrect ready state after retain or dispose (0.5024ms)
+✔ real Rumba declaration derives attitude without requesting absent ORI (0.9552ms)
+✔ cached ORI still publishes after position-only dependency load downgrades requested status (1.354ms)
+✔ source Align velocity direction ignores fast parent translation (1.9779ms)
+✔ trajectory eligibility follows current position phase, not historical ORI or flight declarations (0.432ms)
+✔ spin source anchor survives checkpoint and clears with retained scene (4.8756ms)
+✔ finite trail budget shortens accelerating source arcs and retains exact source states (2.6254ms)
+✔ trail never bridges interior gap after bounded refinement (1.7874ms)
+✔ trail never bridges parent interior gap after bounded refinement (1.9484ms)
+✔ trail never bridges unresolved discontinuity after bounded refinement (4.6253ms)
+✔ publication reuses parent evaluation only within its exact invocation (2.5254ms)
+✔ non-orbital circular source uses local dynamics rather than its coverage length (7.1177ms)
+✔ automatic deep-space spacecraft history is not truncated to 30 days or by point count (13.9907ms)
+✔ orb automatic history uses interpolated eccentricity, combined mu and local state rather than mean motion (11.3678ms)
+✔ automatic spacecraft histories remain publishable for radial and stationary limits (1.6127ms)
+✔ known ORI root coverage skips its controller without erasing prior align (1.5915ms)
+✔ ORI absence and failures never fabricate a body orientation (2.8552ms)
+✔ valid ORI still overrides align in source controller order (1.8746ms)
+✔ actual LRO and Psyche align definitions remain valid outside their optional ORI epochs (3.0271ms)
+✔ private mission history crosses parent phases in the current frame without mutating published state (40.6127ms)
+✔ an expired valid ORI segment requests the next segment without a known-absence record (2.1904ms)
+✔ trail sampling exposes a resumable generator and historical orientation API (0.1261ms)
+✔ history inverse-rotates each sample by reference attitude at its historical epoch (0.2677ms)
+✔ authored past-only windows clamp sampling anchor and retain exact draw interval (8.0363ms)
+✔ fixed LLA reference orientation is derived from source landing frame rather than absent ORI (0.291ms)
+✔ reviewed Huygens landing keyframes load without requesting uncovered spacecraft DYN (5.4493ms)
+✔ InSight landed LLA orientation overrides earlier uncovered ORI without requesting it (0.3237ms)
+✔ ORI cache identity and source ordering survive forward/reverse covered-stage switches (3.383ms)
+✔ ORI effective cache domain refreshes an overlapping source despite unchanged declared set (1.5872ms)
+✔ ORI proven multi-source absence retains fixed attitude only inside its open domain (1.1056ms)
+✔ ORI selected earlier source is not replayed at an uncovered later slot after align (1.1151ms)
+✔ unproven ORI absence or foreign controller metadata cannot fabricate valid attitude (3.3373ms)
+✔ ORI multi-source absence shares the 256-object budget and retain/rollback lifecycle (26.3389ms)
+ℹ tests 71
+ℹ suites 0
+ℹ pass 69
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 459.1028
+
+✖ failing tests:
+
+test at platform\tests\solar-system.test.ts:58:1
+✖ dynamic cache cannot override a later fixed phase velocity when jumping both ways (31.6143ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+      0,
+  +   0.8775825618903728,
+      0,
+  -   0
+    ]
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:74:12)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 0, 0.8775825618903728, 0 ],
+    expected: [ 0, 0, 0 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at platform\tests\solar-system.test.ts:80:1
+✖ static position provenance and velocity share fixed/orbital declaration order (2.7403ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+    assert.ok(Math.hypot(...source.sourceVelocity("earth",5))>0)
+
+      at TestContext.<anonymous> (file:///C:/Users/stone/Documents/SPACEEYES/platform/tests/solar-system.test.ts:87:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

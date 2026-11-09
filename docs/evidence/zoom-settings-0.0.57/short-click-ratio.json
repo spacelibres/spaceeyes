@@ -1,0 +1,52 @@
+{
+  "zoomP0": {
+    "focusedId": "earth",
+    "positionKm": [
+      117502885.54356562,
+      83332609.13165416,
+      36138964.78535688
+    ],
+    "desiredKm": [
+      117502885.54356562,
+      83332609.13165416,
+      36138964.78535688
+    ],
+    "framingRadiusKm": 6378.1,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "zoomP1": {
+    "focusedId": "earth",
+    "positionKm": [
+      117502885.54356562,
+      83324163.13204478,
+      36138964.78535688
+    ],
+    "desiredKm": [
+      117502885.54356562,
+      83324163.13204478,
+      36138964.78535688
+    ],
+    "framingRadiusKm": 6378.1,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "zoomP2": {
+    "focusedId": "earth",
+    "positionKm": [
+      117502885.54356562,
+      83313764.90620373,
+      36138964.78535688
+    ],
+    "desiredKm": [
+      117502885.54356562,
+      83313764.90620373,
+      36138964.78535688
+    ],
+    "framingRadiusKm": 6378.1,
+    "collisionAdjusted": false,
+    "desiredInside": []
+  },
+  "stepRatio": 1.2311421172096768,
+  "expected": 1.2311444133449163
+}

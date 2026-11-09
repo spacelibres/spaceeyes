@@ -1,0 +1,148 @@
+[
+  {
+    "name": "03-mercury",
+    "url": "http://127.0.0.1:3006/#/mercury?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "04-venus",
+    "url": "http://127.0.0.1:3006/#/venus?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "05-earth-near",
+    "url": "http://127.0.0.1:3006/#/earth?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "06-mars",
+    "url": "http://127.0.0.1:3006/#/mars?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "07-jupiter",
+    "url": "http://127.0.0.1:3006/#/jupiter?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "08-saturn",
+    "url": "http://127.0.0.1:3006/#/saturn?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "09-uranus",
+    "url": "http://127.0.0.1:3006/#/uranus?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "10-neptune",
+    "url": "http://127.0.0.1:3006/#/neptune?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "11-overview-return",
+    "url": "http://127.0.0.1:3006/#/home?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪"
+    ]
+  },
+  {
+    "name": "12-labels-off",
+    "url": "http://127.0.0.1:3006/#/earth?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=0&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "13-labels-restored",
+    "url": "http://127.0.0.1:3006/#/earth?tdb=846723999.0743212&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪"
+    ]
+  },
+  {
+    "name": "14-iss-follow-playing",
+    "url": "http://127.0.0.1:3006/#/sc_iss?tdb=846723999.0743212&rate=1&play=1&mode=follow&follow=earth&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：82/86 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "15-iss-advanced",
+    "url": "http://127.0.0.1:3006/#/sc_iss?tdb=846723999.0743212&rate=1&play=1&mode=follow&follow=earth&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：82/86 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "16-mro-ready",
+    "url": "http://127.0.0.1:3006/#/sc_mars_reconnaissance_orbiter?tdb=846724021.367299&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：11/11 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪",
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "17-exit",
+    "url": "http://127.0.0.1:3006/#/sc_mars_reconnaissance_orbiter?tdb=846724021.367299&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - definition: ready · 显示资源 ready"
+    ]
+  },
+  {
+    "name": "18-reentry",
+    "url": "http://127.0.0.1:3006/#/sc_mars_reconnaissance_orbiter?tdb=846724021.367299&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：17/17 个对象可用 · 目录 633 项",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪"
+    ]
+  },
+  {
+    "name": "19-final-labels",
+    "url": "http://127.0.0.1:3006/#/earth?tdb=846724021.367299&rate=1&play=0&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "status": [
+      "    - generic: 当前场景：10/10 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+      "    - status \"八大行星资源准备\": 行星资源 8/8 · 已就绪"
+    ]
+  }
+]

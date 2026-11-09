@@ -1,0 +1,32 @@
+{
+  "observations": [
+    {
+      "wallMs": 1793422131265,
+      "epoch": 846805354.443,
+      "ui": [
+        "  - status:",
+        "    - generic: International Space Station",
+        "    - status: 2026-11-01T11:41:25.260Z",
+        "    - generic: 846805354.443 J2000 TDB s",
+        "    - generic: 8 min/s",
+        "    - button \"Ⅱ 暂停\"",
+        "    - text: 播放速率 · 8 min/s"
+      ]
+    },
+    {
+      "wallMs": 1793423360945,
+      "epoch": 847277568.46,
+      "ui": [
+        "  - status:",
+        "    - generic: 按对象和时间加载数据",
+        "    - generic: International Space Station",
+        "    - status: 2026-11-06T22:51:39.277Z",
+        "    - generic: 847277568.460 J2000 TDB s",
+        "    - generic: 8 min/s",
+        "    - button \"Ⅱ 暂停\"",
+        "    - text: 播放速率 · 8 min/s"
+      ]
+    }
+  ],
+  "note": "Two baseline UI observations; includes background-browser scheduling and real data waits, not a controlled FPS benchmark."
+}

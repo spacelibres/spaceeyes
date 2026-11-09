@@ -1,0 +1,2 @@
+{"rate":1,"commits":10,"maxPoints":203,"totalSteps":45690,"slices":117,"budgetMs":1.5,"maxSliceMs":3.213999999999942,"p95SliceMs":1.5631000000000768}
+{"rate":3600,"commits":10,"maxPoints":203,"totalSteps":45690,"slices":81,"budgetMs":1.5,"maxSliceMs":2.0075000000001637,"p95SliceMs":1.5443999999997686}

@@ -1,0 +1,36 @@
+{
+  "samples": 85,
+  "allResolutionScaleOne": true,
+  "eightScenePerformanceAcceptance": "not completed: background RAF throttling and externally changed scene/tab closure invalidated fixed-scene run",
+  "gpuCompletionMs": null,
+  "stages": {
+    "earth": {
+      "samples": 16,
+      "spanSeconds": 30.536,
+      "maxWindowP95Ms": 45.200000000022555,
+      "maxWindowP99Ms": 1009.7999999999843,
+      "notCertifiedAsFixedScene": true
+    },
+    "earth-background-settle": {
+      "samples": 5,
+      "spanSeconds": 8.186,
+      "maxWindowP95Ms": 35.70000000001983,
+      "maxWindowP99Ms": 38.90000000001237,
+      "notCertifiedAsFixedScene": true
+    },
+    "earth-foreground": {
+      "samples": 31,
+      "spanSeconds": 113.485,
+      "maxWindowP95Ms": 40.300000000002,
+      "maxWindowP99Ms": 96.50000000004866,
+      "notCertifiedAsFixedScene": true
+    },
+    "overview": {
+      "samples": 33,
+      "spanSeconds": 125.88,
+      "maxWindowP95Ms": 35.899999999998045,
+      "maxWindowP99Ms": 41.89999999999827,
+      "notCertifiedAsFixedScene": true
+    }
+  }
+}

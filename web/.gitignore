@@ -1,0 +1,8 @@
+node_modules/
+.next/
+public/wasm/
+public/assets/
+*.tsbuildinfo
+next-env.d.ts
+.cache/
+.env.local

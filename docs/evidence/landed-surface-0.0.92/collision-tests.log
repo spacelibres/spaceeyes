@@ -1,0 +1,18 @@
+   Compiling spaceeyes-core v0.0.65 (C:\Users\stone\Documents\SPACEEYES\core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 45.44s
+     Running unittests src\lib.rs (core\target\debug\deps\spaceeyes_core-27a514b81418a7cc.exe)
+
+running 11 tests
+test camera_collision::tests::sweep_blocks_tunneling_and_allows_tangent_motion ... ok
+test camera_collision::tests::recovers_inside_and_detours_repeated_head_on_focus ... ok
+test camera_collision::tests::nearest_body_and_rebased_coordinates_are_consistent ... ok
+test surface_collision::tests::irregular_surface_does_not_push_a_lander_out_to_mean_radius ... ok
+test surface_collision::tests::transformed_surface_is_stable_at_au_coordinates ... ok
+test surface_collision::tests::surface_sweep_blocks_tunneling_and_recovers_overlap ... ok
+test screen_layout::tests::collision_fades_out_and_removal_clears_index ... ok
+test renderer::camera_collision_system_tests::a_noncentral_body_blocks_camera_after_floating_origin_changes ... ok
+test renderer::camera_collision_system_tests::ready_closed_surface_replaces_mean_sphere_but_missing_mesh_keeps_protection ... ok
+test renderer::camera_collision_system_tests::fast_orbit_rebases_sweep_and_keeps_parent_in_clip_range ... ok
+test renderer::camera_collision_system_tests::rumba_seek_then_focus_converges_with_solar_and_earth_collision ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 152 filtered out; finished in 0.12s

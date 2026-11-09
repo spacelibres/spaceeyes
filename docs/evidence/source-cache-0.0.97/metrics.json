@@ -1,0 +1,1832 @@
+{
+  "case": {
+    "hash": "#/sc_iss?tdb=846977547.8542687&rate=36000&play=1&mode=nearby&view=orbit&light=shadow&fov=45&labels=1&orbits=1&trails=1&moons=1&craft=1",
+    "epoch": 848092763.0542765,
+    "camera": {
+      "focusedId": "sc_iss",
+      "epochTdbSeconds": 848092763.0542765,
+      "framingReferenceId": "sc_iss",
+      "framingReferencePositionKm": [
+        87684005.61859457,
+        109344035.19304709,
+        47401783.90728851
+      ],
+      "followReferenceId": null,
+      "followReferencePositionKm": null,
+      "positionKm": [
+        87684005.57325651,
+        109344035.48154418,
+        47401784.19859227
+      ],
+      "desiredKm": [
+        87684005.57325651,
+        109344035.48154418,
+        47401784.19859227
+      ],
+      "framingRadiusKm": 0.072,
+      "collisionAdjusted": false,
+      "desiredInside": []
+    },
+    "workers": 4,
+    "tracked": 67,
+    "headMissingLast": [
+      "sc_acs3",
+      "sc_aqua",
+      "sc_cygnss_4",
+      "sc_iss",
+      "sc_aura",
+      "sc_cygnss_1",
+      "sc_cygnss_2",
+      "sc_cygnss_3",
+      "sc_cygnss_5",
+      "sc_cygnss_8",
+      "sc_gpm",
+      "sc_cygnss_7",
+      "sc_grace_fo1",
+      "sc_grace_fo2",
+      "sc_icesat_2",
+      "sc_ixpe",
+      "sc_jason_3",
+      "sc_jwst",
+      "sc_landsat_9",
+      "sc_nisar",
+      "sc_oco_2",
+      "sc_pace",
+      "sc_spherex",
+      "sc_starling_3",
+      "sc_nustar",
+      "sc_prefire_1",
+      "sc_prefire_2",
+      "sc_sentinel_6",
+      "sc_sentinel_6b",
+      "sc_starling_4",
+      "sc_tdrs_11",
+      "sc_suomi_npp",
+      "sc_terra",
+      "sc_smap",
+      "sc_starling_2",
+      "sc_themis_e",
+      "sc_noaa_20",
+      "sc_noaa_21",
+      "sc_swot"
+    ],
+    "headMissingMaxLast5Seconds": 39,
+    "partialLast": [
+      "sc_ace",
+      "sc_acs3",
+      "sc_aqua",
+      "sc_cygnss_4",
+      "sc_iss",
+      "sc_aura",
+      "sc_cygnss_1",
+      "sc_cygnss_2",
+      "sc_cygnss_3",
+      "sc_cygnss_5",
+      "sc_cygnss_8",
+      "sc_gpm",
+      "sc_cygnss_7",
+      "sc_grace_fo1",
+      "sc_grace_fo2",
+      "sc_icesat_2",
+      "sc_imap",
+      "sc_ixpe",
+      "sc_jason_3",
+      "sc_jwst",
+      "sc_landsat_9",
+      "sc_nisar",
+      "sc_oco_2",
+      "sc_pace",
+      "sc_soho",
+      "sc_spherex",
+      "sc_starling_3",
+      "sc_nustar",
+      "sc_prefire_1",
+      "sc_prefire_2",
+      "sc_sentinel_6",
+      "sc_sentinel_6b",
+      "sc_starling_4",
+      "sc_tdrs_11",
+      "sc_suomi_npp",
+      "sc_terra",
+      "sc_smap",
+      "sc_starling_2",
+      "sc_themis_e",
+      "sc_wind",
+      "sc_noaa_20",
+      "sc_noaa_21",
+      "sc_swot"
+    ],
+    "perf": {
+      "cpu_p50_ms": 20.6,
+      "cpu_p95_ms": 22,
+      "cpu_p99_ms": 23.5,
+      "gpu_ms": null,
+      "noncritical_pending": 19,
+      "present_interval_p50_ms": 33.200000000000784,
+      "present_interval_p95_ms": 38.39999999999577,
+      "present_interval_p99_ms": 45.899999999996055,
+      "rendered_frames": 1212,
+      "resolution_scale": 1,
+      "skipped_frames": 1542,
+      "stagesMs": {
+        "annotations": {
+          "count": 120,
+          "latest": 1.4,
+          "mean": 1.4649999999999979,
+          "p50": 1.5,
+          "p95": 1.7,
+          "p99": 1.8
+        },
+        "extract": {
+          "count": 120,
+          "latest": 1.1,
+          "mean": 1.2675000000000005,
+          "p50": 1.2,
+          "p95": 1.6,
+          "p99": 1.7
+        },
+        "main": {
+          "count": 120,
+          "latest": 6.8,
+          "mean": 6.754999999999998,
+          "p50": 6.8,
+          "p95": 7.3,
+          "p99": 7.5
+        },
+        "render": {
+          "count": 120,
+          "latest": 12.7,
+          "mean": 12.473333333333334,
+          "p50": 12.5,
+          "p95": 13.5,
+          "p99": 15.2
+        },
+        "sync_scene": {
+          "count": 120,
+          "latest": 0.1,
+          "mean": 0.06083333333333327,
+          "p50": 0.1,
+          "p95": 0.1,
+          "p99": 0.2
+        },
+        "trajectory_upload": {
+          "count": 120,
+          "latest": 0.5,
+          "mean": 0.41166666666666624,
+          "p50": 0.4,
+          "p95": 0.5,
+          "p99": 0.5
+        }
+      },
+      "target_fps": 30,
+      "transition_reason": "sustained_overload",
+      "transition_seconds": 2.4971,
+      "visible": true,
+      "worst_one_second_frames": 2
+    },
+    "rows": {
+      "sc_ace": {
+        "first": 834157454.6192824,
+        "last": 848999254.3792689,
+        "built": 847017036.2542689,
+        "duration": 31715490,
+        "count": 87,
+        "draw": [
+          815301546.2542689,
+          847017036.2542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15806,
+        "publications": 5
+      },
+      "sc_acs3": {
+        "first": 848060925.4350902,
+        "last": 848079440.8638694,
+        "built": 848073269.0542763,
+        "duration": 6171.809593037954,
+        "count": 385,
+        "draw": [
+          848067097.2446833,
+          848073269.0542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45010.59999999404,
+        "publications": 114
+      },
+      "sc_aqua": {
+        "first": 848069149.2542765,
+        "last": 848086949.7542765,
+        "built": 848081016.2542765,
+        "duration": 5933.5,
+        "count": 385,
+        "draw": [
+          848075082.7542765,
+          848081016.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45257.69999998808,
+        "publications": 127
+      },
+      "sc_cygnss_4": {
+        "first": 847770695.8542744,
+        "last": 847787414.8542744,
+        "built": 847781841.8542744,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          847776268.8542744,
+          847781841.8542744
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 36943.09999999404,
+        "publications": 72
+      },
+      "sc_iss": {
+        "first": 848075619.4542764,
+        "last": 848092338.4542764,
+        "built": 848086765.4542764,
+        "duration": 5573,
+        "count": 737,
+        "draw": [
+          848081192.4542764,
+          848086765.4542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45442.40000000596,
+        "publications": 305
+      },
+      "sc_chandra": {
+        "first": 847526283.2542754,
+        "last": 848211799.7542754,
+        "built": 847983294.2542754,
+        "duration": 228505.5,
+        "count": 469,
+        "draw": [
+          847754788.7542754,
+          847983294.2542754
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 42674.80000001192,
+        "publications": 12
+      },
+      "sc_aura": {
+        "first": 848071399.2542765,
+        "last": 848089199.7542765,
+        "built": 848083266.2542765,
+        "duration": 5933.5,
+        "count": 481,
+        "draw": [
+          848077332.7542765,
+          848083266.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45322,
+        "publications": 148
+      },
+      "sc_cygnss_1": {
+        "first": 847806688.6542745,
+        "last": 847823407.6542745,
+        "built": 847817834.6542745,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          847812261.6542745,
+          847817834.6542745
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37981.09999999404,
+        "publications": 101
+      },
+      "sc_cygnss_2": {
+        "first": 847773197.8542744,
+        "last": 847788601.0955203,
+        "built": 847784343.8542744,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          847778770.8542744,
+          847784343.8542744
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37045.09999999404,
+        "publications": 87
+      },
+      "sc_cygnss_3": {
+        "first": 847766203.0542744,
+        "last": 847782922.0542744,
+        "built": 847777349.0542744,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          847771776.0542744,
+          847777349.0542744
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 36816.80000001192,
+        "publications": 57
+      },
+      "sc_cygnss_5": {
+        "first": 847796943.4542744,
+        "last": 847810327.9665899,
+        "built": 847808089.4542744,
+        "duration": 5573,
+        "count": 321,
+        "draw": [
+          847802516.4542744,
+          847808089.4542744
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37644.80000001192,
+        "publications": 103
+      },
+      "sc_cygnss_8": {
+        "first": 847806688.6542745,
+        "last": 847823407.6542745,
+        "built": 847817834.6542745,
+        "duration": 5573,
+        "count": 442,
+        "draw": [
+          847812261.6542745,
+          847817834.6542745
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37948.90000000596,
+        "publications": 93
+      },
+      "sc_euclid": {
+        "first": 813508783.4542689,
+        "last": 848986783.4542689,
+        "built": 847015783.4542689,
+        "duration": 31536000,
+        "count": 239,
+        "draw": [
+          815479783.4542689,
+          847015783.4542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15806.300000011921,
+        "publications": 7
+      },
+      "sc_gpm": {
+        "first": 848070918.0542765,
+        "last": 848087566.5542765,
+        "built": 848082017.0542765,
+        "duration": 5549.5,
+        "count": 385,
+        "draw": [
+          848076467.5542765,
+          848082017.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45289.30000001192,
+        "publications": 136
+      },
+      "sc_hubble_space_telescope": {
+        "first": 848078767.6542765,
+        "last": 848096013.1542765,
+        "built": 848090264.6542765,
+        "duration": 5748.5,
+        "count": 385,
+        "draw": [
+          848084516.1542765,
+          848090264.6542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45511.40000000596,
+        "publications": 137
+      },
+      "sc_cygnss_7": {
+        "first": 847731207.4542739,
+        "last": 847747926.4542739,
+        "built": 847742353.4542739,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          847736780.4542739,
+          847742353.4542739
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 35842,
+        "publications": 55
+      },
+      "sc_grace_fo1": {
+        "first": 848069866.2542765,
+        "last": 848086591.2542765,
+        "built": 848081016.2542765,
+        "duration": 5575,
+        "count": 385,
+        "draw": [
+          848075441.2542765,
+          848081016.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45256.80000001192,
+        "publications": 88
+      },
+      "sc_grace_fo2": {
+        "first": 847879915.8542752,
+        "last": 847896640.8542752,
+        "built": 847891065.8542752,
+        "duration": 5575,
+        "count": 586,
+        "draw": [
+          847885490.8542752,
+          847891065.8542752
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 40009.09999999404,
+        "publications": 113
+      },
+      "sc_ibex": {
+        "first": 846753110.2942754,
+        "last": 848101572.2542737,
+        "built": 847826085.8542745,
+        "duration": 797489.16,
+        "count": 275,
+        "draw": [
+          847028596.6942745,
+          847826085.8542745
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 38146.30000001192,
+        "publications": 11
+      },
+      "sc_icesat_2": {
+        "first": 847773037.4542743,
+        "last": 847789997.0542744,
+        "built": 847784343.8542744,
+        "duration": 5653.2,
+        "count": 385,
+        "draw": [
+          847778690.6542743,
+          847784343.8542744
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37012,
+        "publications": 81
+      },
+      "sc_imap": {
+        "first": 846552361.8494804,
+        "last": 848509999.4588792,
+        "built": 847017036.2542689,
+        "duration": 31536000,
+        "count": 245,
+        "draw": [
+          815481036.2542689,
+          847017036.2542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15905.300000011921,
+        "publications": 7
+      },
+      "sc_ixpe": {
+        "first": 847807034.6542745,
+        "last": 847823234.6542745,
+        "built": 847817834.6542745,
+        "duration": 5400,
+        "count": 385,
+        "draw": [
+          847812434.6542745,
+          847817834.6542745
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 37945.90000000596,
+        "publications": 86
+      },
+      "sc_jason_3": {
+        "first": 848063574.6542764,
+        "last": 848083737.6542764,
+        "built": 848077016.6542764,
+        "duration": 6721,
+        "count": 385,
+        "draw": [
+          848070295.6542764,
+          848077016.6542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45256.30000001192,
+        "publications": 83
+      },
+      "sc_jwst": {
+        "first": 844408932.0477004,
+        "last": 847656568.5369012,
+        "built": 847015783.4542689,
+        "duration": 31536000,
+        "count": 263,
+        "draw": [
+          815479783.4542689,
+          847015783.4542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15935.699999988079,
+        "publications": 7
+      },
+      "sc_landsat_8": {
+        "first": 848078408.6542765,
+        "last": 848096192.6542765,
+        "built": 848090264.6542765,
+        "duration": 5928,
+        "count": 385,
+        "draw": [
+          848084336.6542765,
+          848090264.6542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45475.5,
+        "publications": 135
+      },
+      "sc_landsat_9": {
+        "first": 848069136.2542765,
+        "last": 848086956.2542765,
+        "built": 848081016.2542765,
+        "duration": 5940,
+        "count": 385,
+        "draw": [
+          848075076.2542765,
+          848081016.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45258.19999998808,
+        "publications": 137
+      },
+      "sc_mms_1": {
+        "first": 847877290.6542763,
+        "last": 848135272.6542763,
+        "built": 848049278.6542763,
+        "duration": 85994,
+        "count": 151,
+        "draw": [
+          847963284.6542763,
+          848049278.6542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44374.5,
+        "publications": 19
+      },
+      "sc_mms_2": {
+        "first": 847896845.0542765,
+        "last": 848154731.0542765,
+        "built": 848068769.0542765,
+        "duration": 85962,
+        "count": 148,
+        "draw": [
+          847982807.0542765,
+          848068769.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44940.69999998808,
+        "publications": 19
+      },
+      "sc_mms_3": {
+        "first": 847864585.8542761,
+        "last": 848123626.8542761,
+        "built": 848037279.8542761,
+        "duration": 86347,
+        "count": 149,
+        "draw": [
+          847950932.8542761,
+          848037279.8542761
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44007.90000000596,
+        "publications": 18
+      },
+      "sc_mms_4": {
+        "first": 847882227.4542763,
+        "last": 848140299.4542763,
+        "built": 848054275.4542763,
+        "duration": 86024,
+        "count": 151,
+        "draw": [
+          847968251.4542763,
+          848054275.4542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44480,
+        "publications": 19
+      },
+      "sc_nisar": {
+        "first": 848058623.8542764,
+        "last": 848075342.8542764,
+        "built": 848069769.8542764,
+        "duration": 5573,
+        "count": 385,
+        "draw": [
+          848064196.8542764,
+          848069769.8542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44940.5,
+        "publications": 89
+      },
+      "sc_oco_2": {
+        "first": 848070150.3876097,
+        "last": 848087950.3876098,
+        "built": 848082017.0542765,
+        "duration": 5933.333333333333,
+        "count": 385,
+        "draw": [
+          848076083.7209431,
+          848082017.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45289.69999998808,
+        "publications": 115
+      },
+      "sc_pace": {
+        "first": 848074996.0598651,
+        "last": 848092650.1514821,
+        "built": 848086765.4542764,
+        "duration": 5884.69720564958,
+        "count": 385,
+        "draw": [
+          848080880.7570708,
+          848086765.4542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45405.80000001192,
+        "publications": 148
+      },
+      "sc_soho": {
+        "first": 842171103.8903233,
+        "last": 848988036.2542689,
+        "built": 847017036.2542689,
+        "duration": 31536000,
+        "count": 53,
+        "draw": [
+          815481036.2542689,
+          847017036.2542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15967.09999999404,
+        "publications": 7
+      },
+      "sc_spherex": {
+        "first": 848070289.6555176,
+        "last": 848087880.7536559,
+        "built": 848082017.0542765,
+        "duration": 5863.699379494467,
+        "count": 385,
+        "draw": [
+          848076153.354897,
+          848082017.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45290.09999999404,
+        "publications": 148
+      },
+      "sc_starling_3": {
+        "first": 848071855.774678,
+        "last": 848088971.4940758,
+        "built": 848083266.2542765,
+        "duration": 5705.2397992551605,
+        "count": 385,
+        "draw": [
+          848077561.0144773,
+          848083266.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45320.90000000596,
+        "publications": 129
+      },
+      "sc_nustar": {
+        "first": 848068421.7342765,
+        "last": 848085817.7142764,
+        "built": 848080019.0542765,
+        "duration": 5798.66,
+        "count": 385,
+        "draw": [
+          848074220.3942765,
+          848080019.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45221.69999998808,
+        "publications": 81
+      },
+      "sc_prefire_1": {
+        "first": 848070685.8528943,
+        "last": 848087682.6549675,
+        "built": 848082017.0542765,
+        "duration": 5665.6006911092945,
+        "count": 385,
+        "draw": [
+          848076351.4535854,
+          848082017.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45287.90000000596,
+        "publications": 83
+      },
+      "sc_prefire_2": {
+        "first": 848075426.7243108,
+        "last": 848092434.8192593,
+        "built": 848086765.4542764,
+        "duration": 5669.364982806743,
+        "count": 385,
+        "draw": [
+          848081096.0892936,
+          848086765.4542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45406.19999998808,
+        "publications": 142
+      },
+      "sc_sdo": {
+        "first": 847897494.5342765,
+        "last": 848155907.5142764,
+        "built": 848069769.8542764,
+        "duration": 86137.66,
+        "count": 397,
+        "draw": [
+          847983632.1942765,
+          848069769.8542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44942.40000000596,
+        "publications": 17
+      },
+      "sc_sentinel_6": {
+        "first": 847922190.0542753,
+        "last": 847937334.9410089,
+        "built": 847934057.0542753,
+        "duration": 5933.5,
+        "count": 321,
+        "draw": [
+          847928123.5542753,
+          847934057.0542753
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 41147.90000000596,
+        "publications": 65
+      },
+      "sc_sentinel_6b": {
+        "first": 848070150.0542765,
+        "last": 848087950.5542765,
+        "built": 848082017.0542765,
+        "duration": 5933.5,
+        "count": 385,
+        "draw": [
+          848076083.5542765,
+          848082017.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45321.5,
+        "publications": 81
+      },
+      "sc_starling_1": {
+        "first": 848078807.1791424,
+        "last": 848095993.3918436,
+        "built": 848090264.6542765,
+        "duration": 5728.7375670887595,
+        "count": 385,
+        "draw": [
+          848084535.9167094,
+          848090264.6542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45511.69999998808,
+        "publications": 135
+      },
+      "sc_starling_4": {
+        "first": 848068571.5039418,
+        "last": 848085742.8294438,
+        "built": 848080019.0542765,
+        "duration": 5723.775167394262,
+        "count": 385,
+        "draw": [
+          848074295.2791091,
+          848080019.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45288.40000000596,
+        "publications": 137
+      },
+      "sc_tdrs_5": {
+        "first": 847899992.9342765,
+        "last": 848158405.9142764,
+        "built": 848072268.2542764,
+        "duration": 86137.66,
+        "count": 391,
+        "draw": [
+          847986130.5942764,
+          848072268.2542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44974.30000001192,
+        "publications": 17
+      },
+      "sc_tdrs_6": {
+        "first": 847907743.7342765,
+        "last": 848166156.7142764,
+        "built": 848080019.0542765,
+        "duration": 86137.66,
+        "count": 385,
+        "draw": [
+          847993881.3942765,
+          848080019.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45257.19999998808,
+        "publications": 17
+      },
+      "sc_tdrs_8": {
+        "first": 847900966.6542763,
+        "last": 848159420.2542764,
+        "built": 848073269.0542763,
+        "duration": 86151.2,
+        "count": 385,
+        "draw": [
+          847987117.8542763,
+          848073269.0542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45040.09999999404,
+        "publications": 17
+      },
+      "sc_tdrs_9": {
+        "first": 847903472.6542764,
+        "last": 848161925.6542764,
+        "built": 848075774.6542764,
+        "duration": 86151,
+        "count": 391,
+        "draw": [
+          847989623.6542764,
+          848075774.6542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45130.40000000596,
+        "publications": 17
+      },
+      "sc_tdrs_11": {
+        "first": 847827984.2542758,
+        "last": 848086437.2542758,
+        "built": 848000286.2542758,
+        "duration": 86151,
+        "count": 385,
+        "draw": [
+          847914135.2542758,
+          848000286.2542758
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 43042.09999999404,
+        "publications": 16
+      },
+      "sc_tdrs_12": {
+        "first": 847907717.0542765,
+        "last": 848166170.0542765,
+        "built": 848080019.0542765,
+        "duration": 86151,
+        "count": 385,
+        "draw": [
+          847993868.0542765,
+          848080019.0542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45288.90000000596,
+        "publications": 17
+      },
+      "sc_suomi_npp": {
+        "first": 848061671.7342764,
+        "last": 848079067.7142763,
+        "built": 848073269.0542763,
+        "duration": 5798.66,
+        "count": 322,
+        "draw": [
+          848067470.3942764,
+          848073269.0542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45042.19999998808,
+        "publications": 117
+      },
+      "sc_terra": {
+        "first": 848060401.5942763,
+        "last": 848078201.5842764,
+        "built": 848072268.2542764,
+        "duration": 5933.33,
+        "count": 385,
+        "draw": [
+          848066334.9242764,
+          848072268.2542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45010.19999998808,
+        "publications": 111
+      },
+      "sc_smap": {
+        "first": 847891499.4542754,
+        "last": 847909219.8542752,
+        "built": 847903313.0542753,
+        "duration": 5906.8,
+        "count": 385,
+        "draw": [
+          847897406.2542753,
+          847903313.0542753
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 40354.59999999404,
+        "publications": 50
+      },
+      "sc_starling_2": {
+        "first": 848064315.8423102,
+        "last": 848081504.0602595,
+        "built": 848075774.6542764,
+        "duration": 5729.405983074313,
+        "count": 385,
+        "draw": [
+          848070045.2482933,
+          848075774.6542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45128.80000001192,
+        "publications": 73
+      },
+      "sc_tdrs_3": {
+        "first": 847868752.794276,
+        "last": 848127164.7842761,
+        "built": 848041027.4542761,
+        "duration": 86137.33,
+        "count": 385,
+        "draw": [
+          847954890.124276,
+          848041027.4542761
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44146.19999998808,
+        "publications": 16
+      },
+      "sc_tdrs_13": {
+        "first": 847914463.4542764,
+        "last": 848172916.4542764,
+        "built": 848086765.4542764,
+        "duration": 86151,
+        "count": 385,
+        "draw": [
+          848000614.4542764,
+          848086765.4542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45406.69999998808,
+        "publications": 17
+      },
+      "sc_tempo": {
+        "first": 847886683.3178184,
+        "last": 848145194.1225054,
+        "built": 848059023.8542764,
+        "duration": 86170.2682289663,
+        "count": 391,
+        "draw": [
+          847972853.5860474,
+          848059023.8542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44610.30000001192,
+        "publications": 17
+      },
+      "sc_themis_a": {
+        "first": 847820177.4542758,
+        "last": 848115461.4542758,
+        "built": 848017033.4542758,
+        "duration": 98428,
+        "count": 485,
+        "draw": [
+          847918605.4542758,
+          848017033.4542758
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 43444.69999998808,
+        "publications": 15
+      },
+      "sc_themis_e": {
+        "first": 847760729.6542754,
+        "last": 848078452.1542754,
+        "built": 847972544.6542754,
+        "duration": 105907.5,
+        "count": 505,
+        "draw": [
+          847866637.1542754,
+          847972544.6542754
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 42250.69999998808,
+        "publications": 14
+      },
+      "sc_wind": {
+        "first": 845877686.1539876,
+        "last": 849078644.6917763,
+        "built": 848048274.2542763,
+        "duration": 16485927,
+        "count": 493,
+        "draw": [
+          831562347.2542763,
+          848048274.2542763
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44346.19999998808,
+        "publications": 6
+      },
+      "sc_noaa_20": {
+        "first": 848029161.4542761,
+        "last": 848044848.4634588,
+        "built": 848041027.4542761,
+        "duration": 5933,
+        "count": 399,
+        "draw": [
+          848035094.4542761,
+          848041027.4542761
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44149,
+        "publications": 74
+      },
+      "sc_noaa_21": {
+        "first": 848071400.2542765,
+        "last": 848089199.2542765,
+        "built": 848083266.2542765,
+        "duration": 5933,
+        "count": 385,
+        "draw": [
+          848077333.2542765,
+          848083266.2542765
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45290.5,
+        "publications": 129
+      },
+      "sc_tdrs_7": {
+        "first": 847870230.254276,
+        "last": 848128683.254276,
+        "built": 848042532.254276,
+        "duration": 86151,
+        "count": 385,
+        "draw": [
+          847956381.254276,
+          848042532.254276
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44177.40000000596,
+        "publications": 16
+      },
+      "sc_tdrs_10": {
+        "first": 847880720.2542763,
+        "last": 848139173.8542764,
+        "built": 848053022.6542764,
+        "duration": 86151.2,
+        "count": 385,
+        "draw": [
+          847966871.4542763,
+          848053022.6542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 44505.90000000596,
+        "publications": 16
+      },
+      "sc_solar_1": {
+        "first": 811990990,
+        "last": 849260691.192296,
+        "built": 847017036.2542689,
+        "duration": 35898479.00843525,
+        "count": 247,
+        "draw": [
+          811118557.2458336,
+          847017036.2542689
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 15738.699999988079,
+        "publications": 5
+      },
+      "sc_swot": {
+        "first": 847653508.6542733,
+        "last": 847671307.6542733,
+        "built": 847665374.6542733,
+        "duration": 5933,
+        "count": 385,
+        "draw": [
+          847659441.6542733,
+          847665374.6542733
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 33743,
+        "publications": 43
+      },
+      "sc_themis_d": {
+        "first": 847846160.6542764,
+        "last": 848190581.6542764,
+        "built": 848075774.6542764,
+        "duration": 114807,
+        "count": 586,
+        "draw": [
+          847960967.6542764,
+          848075774.6542764
+        ],
+        "rs": true,
+        "re": true,
+        "wall": 45255.80000001192,
+        "publications": 14
+      }
+    }
+  },
+  "liveState": [
+    {
+      "level": 5,
+      "state": {
+        "planetPreparation": {
+          "total": 8,
+          "ready": 8,
+          "failed": 0
+        },
+        "observationMode": "nearby",
+        "dataCache": {
+          "records": 17082,
+          "positionEntries": 76,
+          "orientationEntries": 8,
+          "trailSamplingEntries": 1,
+          "provenance": 84,
+          "maxRecords": 1000000
+        },
+        "live": false,
+        "lighting": "shadow",
+        "fovDegrees": 45,
+        "galaxy": {
+          "enabled": true,
+          "desiredLod": 6,
+          "readyLod": 6,
+          "currentLod": 6,
+          "blend": 1,
+          "loadedTiles": 51,
+          "gpuBytes": 28209536,
+          "phase": "ready"
+        },
+        "starfield": {
+          "enabled": true,
+          "loading": false,
+          "readyLayers": 7,
+          "totalLayers": 7,
+          "pointCount": 43878,
+          "error": ""
+        },
+        "active": true,
+        "busy": false,
+        "phase": "当前场景：76/86 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+        "error": "部分源数据暂不可用：DSCOVR、ESCAPADE Blue、ESCAPADE Gold、Nancy Grace Roman Space Telescope、TESS。选择对象查看具体原因。",
+        "epoch": 855571629.8543348,
+        "playing": true,
+        "rate": 36000,
+        "selected": "sc_iss",
+        "view": "orbit",
+        "labels": true,
+        "trajectories": true,
+        "moons": true,
+        "spacecraft": true,
+        "trails": true,
+        "source": "NASA Eyes DYN · 近似星历（精度未验收） · SHA256 9bc913006f2a · 获取 2026-11-03T19:54:11.979Z · 已隔离源文件异常，使用核验有效区段",
+        "coverage": "855470941.9501276 — 856618150.1340694",
+        "attitude": "NASA Eyes 实体控制器推导姿态（非实测，精度未验收）",
+        "dataStatus": "ready · 显示资源 ready",
+        "utc": "2027-02-10T22:46:00.669Z",
+        "cameraDebug": {
+          "focusedId": "sc_iss",
+          "epochTdbSeconds": 855570377.0543349,
+          "framingReferenceId": "sc_iss",
+          "framingReferencePositionKm": [
+            -115568964.7583963,
+            84271775.08153853,
+            36530897.438601345
+          ],
+          "followReferenceId": null,
+          "followReferencePositionKm": null,
+          "positionKm": [
+            -115568964.80373436,
+            84271775.37003562,
+            36530897.729905106
+          ],
+          "desiredKm": [
+            -115568964.80373436,
+            84271775.37003562,
+            36530897.729905106
+          ],
+          "framingRadiusKm": 0.072,
+          "collisionAdjusted": false,
+          "desiredInside": []
+        },
+        "articulation": "已启用 10 个对日关节，遵循各自转轴约束",
+        "startupMs": 2335,
+        "parentId": "earth",
+        "performance": {
+          "asyncPhases": {
+            "configure": {
+              "samples": 6,
+              "p50": 7.200000017881393,
+              "p95": 10.400000005960464,
+              "p99": 10.400000005960464,
+              "latest": 10.400000005960464,
+              "mean": 7.6500000059604645,
+              "max": 14.400000005960464
+            },
+            "reloadApply": {
+              "samples": 4,
+              "p50": 11.5,
+              "p95": 15.5,
+              "p99": 15.5,
+              "latest": 11.5,
+              "mean": 11.350000001490116,
+              "max": 17
+            },
+            "secondaryApply": {
+              "samples": 230,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0.09999999403953552,
+              "latest": 0,
+              "mean": 0.0665217390526896,
+              "max": 14.599999994039536
+            },
+            "checkpoint": {
+              "samples": 5,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "latest": 0.09999999403953552,
+              "mean": 0.019999998807907104,
+              "max": 0.09999999403953552
+            }
+          },
+          "monotonicNowMs": 253085.1,
+          "hostFrames": 7469,
+          "admittedIntervalMs": {
+            "samples": 240,
+            "p50": 34.69999999998254,
+            "p95": 34.89999999999418,
+            "p99": 41.80000000001746
+          },
+          "rafIntervalMs": {
+            "samples": 240,
+            "p50": 27.70000000001164,
+            "p95": 34.79999999998836,
+            "p99": 34.80000000001746
+          },
+          "hostWorkMs": {
+            "samples": 240,
+            "p50": 9.099999994039536,
+            "p95": 9.699999988079071,
+            "p99": 10.400000005960464
+          },
+          "trajectorySliceMs": {
+            "samples": 240,
+            "p50": 0.30000004172325134,
+            "p95": 0.699999988079071,
+            "p99": 0.8000000417232513
+          },
+          "trajectoryPublicationMs": {
+            "samples": 240,
+            "p50": 2.7000000178813934,
+            "p95": 4.5,
+            "p99": 4.800000011920929
+          },
+          "longTaskMs": {
+            "samples": 37,
+            "p50": 52,
+            "p95": 433,
+            "p99": 555
+          },
+          "sampleIntervalSeconds": 1,
+          "targetHz": 30,
+          "core": {
+            "cpu_p50_ms": 21.6,
+            "cpu_p95_ms": 23.3,
+            "cpu_p99_ms": 23.7,
+            "gpu_ms": null,
+            "noncritical_pending": 37,
+            "present_interval_p50_ms": 33.50000000000364,
+            "present_interval_p95_ms": 36.59999999999286,
+            "present_interval_p99_ms": 39.299999999997226,
+            "rendered_frames": 7468,
+            "resolution_scale": 1,
+            "skipped_frames": 5494,
+            "stagesMs": {
+              "annotations": {
+                "count": 120,
+                "latest": 1.7,
+                "mean": 1.6400000000000003,
+                "p50": 1.6,
+                "p95": 1.9,
+                "p99": 1.9
+              },
+              "extract": {
+                "count": 120,
+                "latest": 1.2,
+                "mean": 1.180000000000001,
+                "p50": 1.2,
+                "p95": 1.4,
+                "p99": 1.5
+              },
+              "main": {
+                "count": 120,
+                "latest": 7.7,
+                "mean": 7.080000000000007,
+                "p50": 7.1000000000000005,
+                "p95": 7.7,
+                "p99": 8.1
+              },
+              "render": {
+                "count": 120,
+                "latest": 14.8,
+                "mean": 13.195833333333338,
+                "p50": 13.299999999999999,
+                "p95": 14.4,
+                "p99": 14.8
+              },
+              "sync_scene": {
+                "count": 120,
+                "latest": 0.1,
+                "mean": 0.08249999999999985,
+                "p50": 0.1,
+                "p95": 0.2,
+                "p99": 0.2
+              },
+              "trajectory_upload": {
+                "count": 120,
+                "latest": 0.5,
+                "mean": 0.4599999999999999,
+                "p50": 0.5,
+                "p95": 0.6,
+                "p99": 0.6
+              }
+            },
+            "target_fps": 30,
+            "transition_reason": "sustained_overload",
+            "transition_seconds": 2.4971,
+            "visible": true,
+            "worst_one_second_frames": 2
+          },
+          "geometry": {
+            "workers": 4,
+            "sourceRecords": 17087,
+            "sourceNumericBytesEstimate": 1224376,
+            "aggregateRecordCopies": 68348,
+            "aggregateNumericBytesEstimate": 4897504,
+            "maxAggregateRecords": 4000000,
+            "pendingOwners": 5
+          },
+          "trajectoryErrors": {
+            "sc_smap": "Error: Trail unavailable",
+            "sc_cygnss_7": "Error: Trail unavailable",
+            "sc_jwst": "Error: Trail unavailable",
+            "sc_swot": "Error: Trail unavailable",
+            "sc_icesat_2": "Error: Trail unavailable",
+            "sc_cygnss_3": "Error: Trail unavailable",
+            "sc_cygnss_4": "Error: Trail unavailable",
+            "sc_ixpe": "Error: Trail unavailable",
+            "sc_cygnss_1": "Error: Trail unavailable",
+            "sc_cygnss_8": "Error: Trail unavailable",
+            "sc_grace_fo2": "Error: Trail unavailable",
+            "sc_sentinel_6": "Error: Trail unavailable",
+            "sc_noaa_20": "Error: Trail unavailable",
+            "sc_cygnss_5": "Error: Trail unavailable",
+            "sc_cygnss_2": "Error: Trail unavailable",
+            "sc_wind": "Error: Trail unavailable",
+            "sc_hubble_space_telescope": "Error: Trail unavailable"
+          }
+        }
+      }
+    },
+    {
+      "level": 5,
+      "state": {
+        "planetPreparation": {
+          "total": 8,
+          "ready": 8,
+          "failed": 0
+        },
+        "observationMode": "nearby",
+        "dataCache": {
+          "records": 17082,
+          "positionEntries": 76,
+          "orientationEntries": 8,
+          "trailSamplingEntries": 1,
+          "provenance": 84,
+          "maxRecords": 1000000
+        },
+        "live": false,
+        "lighting": "shadow",
+        "fovDegrees": 45,
+        "galaxy": {
+          "enabled": true,
+          "desiredLod": 6,
+          "readyLod": 6,
+          "currentLod": 6,
+          "blend": 1,
+          "loadedTiles": 51,
+          "gpuBytes": 28209536,
+          "phase": "ready"
+        },
+        "starfield": {
+          "enabled": true,
+          "loading": false,
+          "readyLayers": 7,
+          "totalLayers": 7,
+          "pointCount": 43878,
+          "error": ""
+        },
+        "active": true,
+        "busy": false,
+        "phase": "当前场景：76/86 个对象可用 · 目录 633 项 · 4项当前时间无覆盖",
+        "error": "部分源数据暂不可用：DSCOVR、ESCAPADE Blue、ESCAPADE Gold、Nancy Grace Roman Space Telescope、TESS。选择对象查看具体原因。",
+        "epoch": 855571629.8543348,
+        "playing": true,
+        "rate": 36000,
+        "selected": "sc_iss",
+        "view": "orbit",
+        "labels": true,
+        "trajectories": true,
+        "moons": true,
+        "spacecraft": true,
+        "trails": true,
+        "source": "NASA Eyes DYN · 近似星历（精度未验收） · SHA256 9bc913006f2a · 获取 2026-11-03T19:54:11.979Z · 已隔离源文件异常，使用核验有效区段",
+        "coverage": "855470941.9501276 — 856618150.1340694",
+        "attitude": "NASA Eyes 实体控制器推导姿态（非实测，精度未验收）",
+        "dataStatus": "ready · 显示资源 ready",
+        "utc": "2027-02-10T22:46:00.669Z",
+        "cameraDebug": {
+          "focusedId": "sc_iss",
+          "epochTdbSeconds": 855570377.0543349,
+          "framingReferenceId": "sc_iss",
+          "framingReferencePositionKm": [
+            -115568964.7583963,
+            84271775.08153853,
+            36530897.438601345
+          ],
+          "followReferenceId": null,
+          "followReferencePositionKm": null,
+          "positionKm": [
+            -115568964.80373436,
+            84271775.37003562,
+            36530897.729905106
+          ],
+          "desiredKm": [
+            -115568964.80373436,
+            84271775.37003562,
+            36530897.729905106
+          ],
+          "framingRadiusKm": 0.072,
+          "collisionAdjusted": false,
+          "desiredInside": []
+        },
+        "articulation": "已启用 10 个对日关节，遵循各自转轴约束",
+        "startupMs": 2335,
+        "parentId": "earth",
+        "performance": {
+          "asyncPhases": {
+            "configure": {
+              "samples": 6,
+              "p50": 7.200000017881393,
+              "p95": 10.400000005960464,
+              "p99": 10.400000005960464,
+              "latest": 10.400000005960464,
+              "mean": 7.6500000059604645,
+              "max": 14.400000005960464
+            },
+            "reloadApply": {
+              "samples": 4,
+              "p50": 11.5,
+              "p95": 15.5,
+              "p99": 15.5,
+              "latest": 11.5,
+              "mean": 11.350000001490116,
+              "max": 17
+            },
+            "secondaryApply": {
+              "samples": 230,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0.09999999403953552,
+              "latest": 0,
+              "mean": 0.0665217390526896,
+              "max": 14.599999994039536
+            },
+            "checkpoint": {
+              "samples": 5,
+              "p50": 0,
+              "p95": 0,
+              "p99": 0,
+              "latest": 0.09999999403953552,
+              "mean": 0.019999998807907104,
+              "max": 0.09999999403953552
+            }
+          },
+          "monotonicNowMs": 253085.1,
+          "hostFrames": 7469,
+          "admittedIntervalMs": {
+            "samples": 240,
+            "p50": 34.69999999998254,
+            "p95": 34.89999999999418,
+            "p99": 41.80000000001746
+          },
+          "rafIntervalMs": {
+            "samples": 240,
+            "p50": 27.70000000001164,
+            "p95": 34.79999999998836,
+            "p99": 34.80000000001746
+          },
+          "hostWorkMs": {
+            "samples": 240,
+            "p50": 9.099999994039536,
+            "p95": 9.699999988079071,
+            "p99": 10.400000005960464
+          },
+          "trajectorySliceMs": {
+            "samples": 240,
+            "p50": 0.30000004172325134,
+            "p95": 0.699999988079071,
+            "p99": 0.8000000417232513
+          },
+          "trajectoryPublicationMs": {
+            "samples": 240,
+            "p50": 2.7000000178813934,
+            "p95": 4.5,
+            "p99": 4.800000011920929
+          },
+          "longTaskMs": {
+            "samples": 37,
+            "p50": 52,
+            "p95": 433,
+            "p99": 555
+          },
+          "sampleIntervalSeconds": 1,
+          "targetHz": 30,
+          "core": {
+            "cpu_p50_ms": 21.6,
+            "cpu_p95_ms": 23.3,
+            "cpu_p99_ms": 23.7,
+            "gpu_ms": null,
+            "noncritical_pending": 37,
+            "present_interval_p50_ms": 33.50000000000364,
+            "present_interval_p95_ms": 36.59999999999286,
+            "present_interval_p99_ms": 39.299999999997226,
+            "rendered_frames": 7468,
+            "resolution_scale": 1,
+            "skipped_frames": 5494,
+            "stagesMs": {
+              "annotations": {
+                "count": 120,
+                "latest": 1.7,
+                "mean": 1.6400000000000003,
+                "p50": 1.6,
+                "p95": 1.9,
+                "p99": 1.9
+              },
+              "extract": {
+                "count": 120,
+                "latest": 1.2,
+                "mean": 1.180000000000001,
+                "p50": 1.2,
+                "p95": 1.4,
+                "p99": 1.5
+              },
+              "main": {
+                "count": 120,
+                "latest": 7.7,
+                "mean": 7.080000000000007,
+                "p50": 7.1000000000000005,
+                "p95": 7.7,
+                "p99": 8.1
+              },
+              "render": {
+                "count": 120,
+                "latest": 14.8,
+                "mean": 13.195833333333338,
+                "p50": 13.299999999999999,
+                "p95": 14.4,
+                "p99": 14.8
+              },
+              "sync_scene": {
+                "count": 120,
+                "latest": 0.1,
+                "mean": 0.08249999999999985,
+                "p50": 0.1,
+                "p95": 0.2,
+                "p99": 0.2
+              },
+              "trajectory_upload": {
+                "count": 120,
+                "latest": 0.5,
+                "mean": 0.4599999999999999,
+                "p50": 0.5,
+                "p95": 0.6,
+                "p99": 0.6
+              }
+            },
+            "target_fps": 30,
+            "transition_reason": "sustained_overload",
+            "transition_seconds": 2.4971,
+            "visible": true,
+            "worst_one_second_frames": 2
+          },
+          "geometry": {
+            "workers": 4,
+            "sourceRecords": 17087,
+            "sourceNumericBytesEstimate": 1224376,
+            "aggregateRecordCopies": 68348,
+            "aggregateNumericBytesEstimate": 4897504,
+            "maxAggregateRecords": 4000000,
+            "pendingOwners": 5
+          },
+          "trajectoryErrors": {
+            "sc_smap": "Error: Trail unavailable",
+            "sc_cygnss_7": "Error: Trail unavailable",
+            "sc_jwst": "Error: Trail unavailable",
+            "sc_swot": "Error: Trail unavailable",
+            "sc_icesat_2": "Error: Trail unavailable",
+            "sc_cygnss_3": "Error: Trail unavailable",
+            "sc_cygnss_4": "Error: Trail unavailable",
+            "sc_ixpe": "Error: Trail unavailable",
+            "sc_cygnss_1": "Error: Trail unavailable",
+            "sc_cygnss_8": "Error: Trail unavailable",
+            "sc_grace_fo2": "Error: Trail unavailable",
+            "sc_sentinel_6": "Error: Trail unavailable",
+            "sc_noaa_20": "Error: Trail unavailable",
+            "sc_cygnss_5": "Error: Trail unavailable",
+            "sc_cygnss_2": "Error: Trail unavailable",
+            "sc_wind": "Error: Trail unavailable",
+            "sc_hubble_space_telescope": "Error: Trail unavailable"
+          }
+        }
+      }
+    }
+  ],
+  "heaps": {
+    "main": {
+      "usedSize": 42855720,
+      "totalSize": 108376064,
+      "embedderHeapUsedSize": 9320032,
+      "backingStorageSize": 6518083
+    },
+    "targets": [
+      {
+        "sessionId": "09AE5897238FADBF8BBF89342173C715",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.97e815ae9fb89d96.js"
+      },
+      {
+        "sessionId": "9B65446846B38C3179A3BFF2C2BCC56E",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.97e815ae9fb89d96.js"
+      },
+      {
+        "sessionId": "7A396AC1620E3EA9FE4D96FEB2CF6AE8",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.97e815ae9fb89d96.js"
+      },
+      {
+        "sessionId": "E95521619F1623B445FCB927C6D91D56",
+        "type": "worker",
+        "url": "http://127.0.0.1:3006/_next/static/chunks/122.97e815ae9fb89d96.js"
+      }
+    ],
+    "responses": [
+      {
+        "sessionId": "7A396AC1620E3EA9FE4D96FEB2CF6AE8",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "E95521619F1623B445FCB927C6D91D56",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "9B65446846B38C3179A3BFF2C2BCC56E",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "09AE5897238FADBF8BBF89342173C715",
+        "message": {
+          "method": "Inspector.workerScriptLoaded",
+          "params": {}
+        }
+      },
+      {
+        "sessionId": "09AE5897238FADBF8BBF89342173C715",
+        "message": {
+          "id": 1,
+          "result": {
+            "usedSize": 21404548,
+            "totalSize": 106168320,
+            "embedderHeapUsedSize": 469000,
+            "backingStorageSize": 649235
+          }
+        }
+      },
+      {
+        "sessionId": "9B65446846B38C3179A3BFF2C2BCC56E",
+        "message": {
+          "id": 2,
+          "result": {
+            "usedSize": 28876760,
+            "totalSize": 101974016,
+            "embedderHeapUsedSize": 605976,
+            "backingStorageSize": 649235
+          }
+        }
+      },
+      {
+        "sessionId": "7A396AC1620E3EA9FE4D96FEB2CF6AE8",
+        "message": {
+          "id": 3,
+          "result": {
+            "usedSize": 46197632,
+            "totalSize": 116391936,
+            "embedderHeapUsedSize": 587296,
+            "backingStorageSize": 649235
+          }
+        }
+      },
+      {
+        "sessionId": "E95521619F1623B445FCB927C6D91D56",
+        "message": {
+          "id": 4,
+          "result": {
+            "usedSize": 34654080,
+            "totalSize": 107216896,
+            "embedderHeapUsedSize": 635792,
+            "backingStorageSize": 649235
+          }
+        }
+      }
+    ]
+  },
+  "limitations": "Cache-only milestone. +36000 stress still fails; no constant FPS, GPU time or VRAM claim. Runtime JS heaps are not RSS. Source-extension sampling resets require the next iteration."
+}
