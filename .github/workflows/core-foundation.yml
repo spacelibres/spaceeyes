@@ -39,6 +39,7 @@ jobs:
           rm -rf -- "$root/web/.cache" "$root/web/.next/cache"
           cp -a web/public "$root/web/public"
           cp -a web/.next/static "$root/web/.next/static"
+          (cd "$root/web" && node -e "const r=require.resolve('@loaders.gl/textures'),p=require('path'),f=require('fs');if(!r.includes('/standalone/'))throw Error('codec outside standalone');for(const n of ['basis_encoder.js','basis_encoder.wasm'])f.accessSync(p.join(p.dirname(r),'libs',n))")
           tar -czhf "$RUNNER_TEMP/spaceeyes-release.tar.gz" -C "$root" .
           python3 deploy/validate_archive.py "$RUNNER_TEMP/spaceeyes-release.tar.gz"
           (cd "$root/web" && HOSTNAME=127.0.0.1 PORT=4310 node server.js > "$RUNNER_TEMP/spaceeyes-smoke.log" 2>&1) &

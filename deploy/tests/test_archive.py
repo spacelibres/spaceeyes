@@ -16,7 +16,7 @@ class ArchiveTest(unittest.TestCase):
         temp.close()
         self.addCleanup(Path(temp.name).unlink, missing_ok=True)
         with tarfile.open(temp.name, "w:gz") as archive:
-            for entry in ["web/server.js", "web/.next/BUILD_ID", "web/public/wasm/spaceeyes_core_bg.wasm", name]:
+            for entry in list(validator.REQUIRED) + [name]:
                 info = tarfile.TarInfo(entry)
                 if entry == name and link:
                     info.type, info.linkname = tarfile.SYMTYPE, "../../etc/passwd"

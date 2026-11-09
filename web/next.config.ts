@@ -7,6 +7,14 @@ const config: NextConfig = {
   outputFileTracingExcludes: {
     "/*": ["./.cache/**/*", "../validation/.cache/**/*"],
   },
+  // Model conversion resolves this codec dynamically, so Next cannot infer it.
+  outputFileTracingIncludes: {
+    "/*": [
+      "./node_modules/@loaders.gl/textures/package.json",
+      "./node_modules/@loaders.gl/textures/dist/index.cjs",
+      "./node_modules/@loaders.gl/textures/dist/libs/basis_encoder.*",
+    ],
+  },
   async rewrites() {
     return { beforeFiles: [
       { source: "/assets/planets/:body/:file", destination: "/api/_buffered-assets/planets/:body/:file" },

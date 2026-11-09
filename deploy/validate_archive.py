@@ -3,7 +3,13 @@ import posixpath
 import sys
 import tarfile
 
-REQUIRED = {"web/server.js", "web/.next/BUILD_ID", "web/public/wasm/spaceeyes_core_bg.wasm"}
+REQUIRED = {
+    "web/server.js", "web/.next/BUILD_ID", "web/public/wasm/spaceeyes_core_bg.wasm",
+    "web/node_modules/@loaders.gl/textures/package.json",
+    "web/node_modules/@loaders.gl/textures/dist/index.cjs",
+    "web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.js",
+    "web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.wasm",
+}
 MAX_UNPACKED = 1024 * 1024 * 1024
 
 

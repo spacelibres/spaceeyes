@@ -4,11 +4,15 @@ repo="$(cd -- "$(dirname -- "$0")/../.." && pwd)"
 temp="$(mktemp -d)"
 trap 'rm -rf -- "$temp"' EXIT
 root="$temp/app"
-mkdir -p "$root/bin" "$root/releases" "$root/shared/cache" "$root/incoming" "$root/node/bin" "$temp/fake" "$temp/package/web/.next" "$temp/package/web/public/wasm"
+mkdir -p "$root/bin" "$root/releases" "$root/shared/cache" "$root/incoming" "$root/node/bin" "$temp/fake" "$temp/package/web/.next" "$temp/package/web/public/wasm" "$temp/package/web/node_modules/@loaders.gl/textures/dist/libs"
 cp "$repo/deploy/validate_archive.py" "$root/bin/validate_archive.py"
 printf x > "$temp/package/web/server.js"
 printf x > "$temp/package/web/.next/BUILD_ID"
 printf x > "$temp/package/web/public/wasm/spaceeyes_core_bg.wasm"
+printf x > "$temp/package/web/node_modules/@loaders.gl/textures/package.json"
+printf x > "$temp/package/web/node_modules/@loaders.gl/textures/dist/index.cjs"
+printf x > "$temp/package/web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.js"
+printf x > "$temp/package/web/node_modules/@loaders.gl/textures/dist/libs/basis_encoder.wasm"
 tar -czf "$temp/package.tar.gz" -C "$temp/package" .
 cat > "$temp/fake/curl" <<'SH'
 #!/usr/bin/env bash
